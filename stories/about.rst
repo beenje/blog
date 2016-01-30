@@ -10,5 +10,4 @@
 Random programming notes to myself.
 
 The legend has it that I used to whistle tchut-tchut while hacking
-on my computer...
-Hence the name of this blog.
+on my computer :-)
