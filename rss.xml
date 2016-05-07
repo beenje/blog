@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="assets/xml/rss.xsl" media="all"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title>Tchut-Tchut Blog</title><link>http://tchutchut.ovh/</link><description>Notes to myself</description><atom:link href="http://tchutchut.ovh/rss.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Fri, 05 Feb 2016 21:54:05 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Switching from git-bigfile to git-lfs</title><link>http://tchutchut.ovh/posts/switching-from-git-bigfile-to-git-lfs/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In 2012, I was looking for a way to store big files in git. &lt;a class="reference external" href="https://git-annex.branchable.com"&gt;git-annex&lt;/a&gt;
+<?xml-stylesheet type="text/xsl" href="assets/xml/rss.xsl" media="all"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog</title><link>http://beenje.github.io/blog/</link><description>Notes to myself</description><atom:link rel="self" type="application/rss+xml" href="http://beenje.github.io/blog/rss.xml"></atom:link><language>en</language><lastBuildDate>Sat, 07 May 2016 18:36:02 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Switching from git-bigfile to git-lfs</title><link>http://beenje.github.io/blog/posts/switching-from-git-bigfile-to-git-lfs/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In 2012, I was looking for a way to store big files in git. &lt;a class="reference external" href="https://git-annex.branchable.com"&gt;git-annex&lt;/a&gt;
 was already around, but I found it a bit too complex for my use case.
 I discovered &lt;a class="reference external" href="https://github.com/schacon/git-media"&gt;git-media&lt;/a&gt; from Scott Chacon and it looked like what I was looking for.
 It was in Ruby which made it not super easy to install on some machines at work.
@@ -57,7 +57,7 @@ $ rm -rf .git/bigfile
 &lt;/ol&gt;
 &lt;p&gt;Note: to push files larger than 2.1GB to your gitlab server, wait for this
 &lt;a class="reference external" href="https://gitlab.com/gitlab-org/gitlab-ce/issues/12745"&gt;fix&lt;/a&gt;. Hopefully
-it will be in 8.4.3.&lt;/p&gt;&lt;/div&gt;</description><category>git</category><guid>http://tchutchut.ovh/posts/switching-from-git-bigfile-to-git-lfs/</guid><pubDate>Sat, 30 Jan 2016 20:55:32 GMT</pubDate></item><item><title>crontab and date</title><link>http://tchutchut.ovh/posts/crontab-and-date/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;The other day, I wanted to add a script to the crontab and to redirect the
+it will be in 8.4.3.&lt;/p&gt;&lt;/div&gt;</description><category>git</category><guid>http://beenje.github.io/blog/posts/switching-from-git-bigfile-to-git-lfs/</guid><pubDate>Sat, 30 Jan 2016 20:55:32 GMT</pubDate></item><item><title>crontab and date</title><link>http://beenje.github.io/blog/posts/crontab-and-date/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;The other day, I wanted to add a script to the crontab and to redirect the
 output to a file including the current date. Easy. I have used the
 &lt;cite&gt;date&lt;/cite&gt; command many times in bash script like that:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;
@@ -85,7 +85,7 @@ $  man 5 crontab
 &lt;pre class="literal-block"&gt;
 0 1 * * * /usr/local/bin/foo &amp;gt; /tmp/foo.$(date +\%Y\%m\%dT\%H\%M).log 2&amp;gt;&amp;amp;1
 &lt;/pre&gt;
-&lt;p&gt;Lesson to remember: check the man pages before to google!&lt;/p&gt;&lt;/div&gt;</description><category>bash</category><category>cron</category><category>linux</category><guid>http://tchutchut.ovh/posts/crontab-and-date/</guid><pubDate>Mon, 18 Jan 2016 21:42:39 GMT</pubDate></item><item><title>Compile and install Kodi on iPad without jailbreak</title><link>http://tchutchut.ovh/posts/compile-and-install-kodi-on-ipad-without-jailbreak/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;With iOS 9 and Xcode 7 it's finally possible to compile and deploy apps on
+&lt;p&gt;Lesson to remember: check the man pages before to google!&lt;/p&gt;&lt;/div&gt;</description><category>bash</category><category>cron</category><category>linux</category><guid>http://beenje.github.io/blog/posts/crontab-and-date/</guid><pubDate>Mon, 18 Jan 2016 21:42:39 GMT</pubDate></item><item><title>Compile and install Kodi on iPad without jailbreak</title><link>http://beenje.github.io/blog/posts/compile-and-install-kodi-on-ipad-without-jailbreak/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;With iOS 9 and Xcode 7 it's finally possible to compile and deploy apps on
 your iPhone/iPad with a free Apple developer account (no paid membership
 required).&lt;/p&gt;
 &lt;p&gt;I compiled XBMC/Kodi many times on my mac but had never signed an app with
@@ -117,12 +117,12 @@ $ make -j4 xcode_depends
 &lt;p&gt;Start Xcode and open the Kodi project.
 Open the Preferences, and add your Apple ID if not already
 done:&lt;/p&gt;
-&lt;img alt="/images/add_account.png" src="http://tchutchut.ovh/images/add_account.png"&gt;
+&lt;img alt="/images/add_account.png" src="http://beenje.github.io/blog/images/add_account.png"&gt;
 &lt;p&gt;Select the Kodi-iOS target:&lt;/p&gt;
-&lt;img alt="/images/kodi_ios_target.png" src="http://tchutchut.ovh/images/kodi_ios_target.png"&gt;
+&lt;img alt="/images/kodi_ios_target.png" src="http://beenje.github.io/blog/images/kodi_ios_target.png"&gt;
 &lt;p&gt;Change the bundle identifier to something unique and click on &lt;em&gt;Fix Issue&lt;/em&gt;
 to create a provisioning profile.&lt;/p&gt;
-&lt;img alt="/images/bundle_identifier.png" src="http://tchutchut.ovh/images/bundle_identifier.png"&gt;
+&lt;img alt="/images/bundle_identifier.png" src="http://beenje.github.io/blog/images/bundle_identifier.png"&gt;
 &lt;p&gt;Connect your device to your mac and select it:&lt;/p&gt;
-&lt;img alt="/images/device.png" src="http://tchutchut.ovh/images/device.png"&gt;
-&lt;p&gt;Click on &lt;em&gt;Run&lt;/em&gt; to compile and install Kodi on your device!&lt;/p&gt;&lt;/div&gt;</description><category>iOS</category><category>iPad</category><category>iPhone</category><category>kodi</category><category>Mac</category><category>OSX</category><category>Xcode</category><guid>http://tchutchut.ovh/posts/compile-and-install-kodi-on-ipad-without-jailbreak/</guid><pubDate>Sun, 10 Jan 2016 21:10:42 GMT</pubDate></item></channel></rss>
+&lt;img alt="/images/device.png" src="http://beenje.github.io/blog/images/device.png"&gt;
+&lt;p&gt;Click on &lt;em&gt;Run&lt;/em&gt; to compile and install Kodi on your device!&lt;/p&gt;&lt;/div&gt;</description><category>iOS</category><category>iPad</category><category>iPhone</category><category>kodi</category><category>Mac</category><category>OSX</category><category>Xcode</category><guid>http://beenje.github.io/blog/posts/compile-and-install-kodi-on-ipad-without-jailbreak/</guid><pubDate>Sun, 10 Jan 2016 21:10:42 GMT</pubDate></item></channel></rss>

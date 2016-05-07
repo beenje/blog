@@ -1,4 +1,4 @@
-Sitemap: http://tchutchut.ovh/sitemapindex.xml
+Sitemap: http://beenje.github.io/blog/sitemapindex.xml
 
 User-Agent: *
-Host: tchutchut.ovh
+Host: beenje.github.io

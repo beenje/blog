@@ -6,95 +6,95 @@
     xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
                         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
  <url>
-  <loc>http://tchutchut.ovh/</loc>
+  <loc>http://beenje.github.io/blog/</loc>
   <lastmod>2016-05-07T16:49:00Z</lastmod>
  </url>
  <url>
-  <loc>http://tchutchut.ovh/2016/</loc>
+  <loc>http://beenje.github.io/blog/2016/</loc>
   <lastmod>2016-01-03T15:17:00Z</lastmod>
  </url>
  <url>
-  <loc>http://tchutchut.ovh/archive.html</loc>
+  <loc>http://beenje.github.io/blog/archive.html</loc>
+  <lastmod>2016-05-07T18:36:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/</loc>
   <lastmod>2016-01-30T21:32:00Z</lastmod>
  </url>
  <url>
-  <loc>http://tchutchut.ovh/categories/</loc>
+  <loc>http://beenje.github.io/blog/categories/bash/</loc>
+  <lastmod>2016-01-18T22:06:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/cat_git/</loc>
   <lastmod>2016-01-30T21:32:00Z</lastmod>
  </url>
  <url>
-  <loc>http://tchutchut.ovh/categories/bash/</loc>
+  <loc>http://beenje.github.io/blog/categories/cat_linux/</loc>
   <lastmod>2016-01-18T22:06:00Z</lastmod>
  </url>
  <url>
-  <loc>http://tchutchut.ovh/categories/cat_git/</loc>
+  <loc>http://beenje.github.io/blog/categories/cron/</loc>
+  <lastmod>2016-01-18T22:06:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/git/</loc>
   <lastmod>2016-01-30T21:32:00Z</lastmod>
  </url>
  <url>
-  <loc>http://tchutchut.ovh/categories/cat_linux/</loc>
+  <loc>http://beenje.github.io/blog/categories/ios/</loc>
+  <lastmod>2016-01-09T22:51:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/ipad/</loc>
+  <lastmod>2016-01-09T22:51:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/iphone/</loc>
+  <lastmod>2016-01-09T22:51:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/kodi/</loc>
+  <lastmod>2016-01-09T22:51:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/linux/</loc>
   <lastmod>2016-01-18T22:06:00Z</lastmod>
  </url>
  <url>
-  <loc>http://tchutchut.ovh/categories/cron/</loc>
-  <lastmod>2016-01-18T22:06:00Z</lastmod>
- </url>
- <url>
-  <loc>http://tchutchut.ovh/categories/git/</loc>
-  <lastmod>2016-01-30T21:32:00Z</lastmod>
- </url>
- <url>
-  <loc>http://tchutchut.ovh/categories/ios/</loc>
-  <lastmod>2016-01-09T22:51:00Z</lastmod>
- </url>
- <url>
-  <loc>http://tchutchut.ovh/categories/ipad/</loc>
-  <lastmod>2016-01-09T22:51:00Z</lastmod>
- </url>
- <url>
-  <loc>http://tchutchut.ovh/categories/iphone/</loc>
-  <lastmod>2016-01-09T22:51:00Z</lastmod>
- </url>
- <url>
-  <loc>http://tchutchut.ovh/categories/kodi/</loc>
-  <lastmod>2016-01-09T22:51:00Z</lastmod>
- </url>
- <url>
-  <loc>http://tchutchut.ovh/categories/linux/</loc>
-  <lastmod>2016-01-18T22:06:00Z</lastmod>
- </url>
- <url>
-  <loc>http://tchutchut.ovh/categories/mac/</loc>
+  <loc>http://beenje.github.io/blog/categories/mac/</loc>
   <lastmod>2016-01-10T20:57:00Z</lastmod>
  </url>
  <url>
-  <loc>http://tchutchut.ovh/categories/osx/</loc>
+  <loc>http://beenje.github.io/blog/categories/osx/</loc>
   <lastmod>2016-01-10T20:57:00Z</lastmod>
  </url>
  <url>
-  <loc>http://tchutchut.ovh/categories/xcode/</loc>
+  <loc>http://beenje.github.io/blog/categories/xcode/</loc>
   <lastmod>2016-01-09T22:51:00Z</lastmod>
  </url>
  <url>
-  <loc>http://tchutchut.ovh/galleries/</loc>
+  <loc>http://beenje.github.io/blog/galleries/</loc>
   <lastmod>2016-01-03T15:17:00Z</lastmod>
  </url>
  <url>
-  <loc>http://tchutchut.ovh/listings/</loc>
+  <loc>http://beenje.github.io/blog/listings/</loc>
   <lastmod>2016-01-03T15:17:00Z</lastmod>
  </url>
  <url>
-  <loc>http://tchutchut.ovh/posts/compile-and-install-kodi-on-ipad-without-jailbreak/</loc>
+  <loc>http://beenje.github.io/blog/posts/compile-and-install-kodi-on-ipad-without-jailbreak/</loc>
   <lastmod>2016-01-09T22:51:00Z</lastmod>
  </url>
  <url>
-  <loc>http://tchutchut.ovh/posts/crontab-and-date/</loc>
+  <loc>http://beenje.github.io/blog/posts/crontab-and-date/</loc>
   <lastmod>2016-01-18T22:06:00Z</lastmod>
  </url>
  <url>
-  <loc>http://tchutchut.ovh/posts/switching-from-git-bigfile-to-git-lfs/</loc>
+  <loc>http://beenje.github.io/blog/posts/switching-from-git-bigfile-to-git-lfs/</loc>
   <lastmod>2016-01-30T21:32:00Z</lastmod>
  </url>
  <url>
-  <loc>http://tchutchut.ovh/stories/about/</loc>
+  <loc>http://beenje.github.io/blog/stories/about/</loc>
   <lastmod>2016-01-10T11:07:00Z</lastmod>
  </url>
 </urlset>

@@ -6,67 +6,67 @@
     xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
                         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
  <sitemap>
-  <loc>http://tchutchut.ovh/categories/bash.xml</loc>
-  <lastmod>2016-01-18T22:10:00Z</lastmod>
+  <loc>http://beenje.github.io/blog/categories/bash.xml</loc>
+  <lastmod>2016-05-07T18:36:00Z</lastmod>
  </sitemap>
  <sitemap>
-  <loc>http://tchutchut.ovh/categories/cat_git.xml</loc>
-  <lastmod>2016-02-05T21:54:00Z</lastmod>
+  <loc>http://beenje.github.io/blog/categories/cat_git.xml</loc>
+  <lastmod>2016-05-07T18:36:00Z</lastmod>
  </sitemap>
  <sitemap>
-  <loc>http://tchutchut.ovh/categories/cat_linux.xml</loc>
-  <lastmod>2016-01-18T22:10:00Z</lastmod>
+  <loc>http://beenje.github.io/blog/categories/cat_linux.xml</loc>
+  <lastmod>2016-05-07T18:36:00Z</lastmod>
  </sitemap>
  <sitemap>
-  <loc>http://tchutchut.ovh/categories/cron.xml</loc>
-  <lastmod>2016-01-18T22:10:00Z</lastmod>
+  <loc>http://beenje.github.io/blog/categories/cron.xml</loc>
+  <lastmod>2016-05-07T18:36:00Z</lastmod>
  </sitemap>
  <sitemap>
-  <loc>http://tchutchut.ovh/categories/git.xml</loc>
-  <lastmod>2016-02-05T21:54:00Z</lastmod>
+  <loc>http://beenje.github.io/blog/categories/git.xml</loc>
+  <lastmod>2016-05-07T18:36:00Z</lastmod>
  </sitemap>
  <sitemap>
-  <loc>http://tchutchut.ovh/categories/ios.xml</loc>
-  <lastmod>2016-01-10T21:10:00Z</lastmod>
+  <loc>http://beenje.github.io/blog/categories/ios.xml</loc>
+  <lastmod>2016-05-07T18:36:00Z</lastmod>
  </sitemap>
  <sitemap>
-  <loc>http://tchutchut.ovh/categories/ipad.xml</loc>
-  <lastmod>2016-01-10T21:10:00Z</lastmod>
+  <loc>http://beenje.github.io/blog/categories/ipad.xml</loc>
+  <lastmod>2016-05-07T18:36:00Z</lastmod>
  </sitemap>
  <sitemap>
-  <loc>http://tchutchut.ovh/categories/iphone.xml</loc>
-  <lastmod>2016-01-10T21:10:00Z</lastmod>
+  <loc>http://beenje.github.io/blog/categories/iphone.xml</loc>
+  <lastmod>2016-05-07T18:36:00Z</lastmod>
  </sitemap>
  <sitemap>
-  <loc>http://tchutchut.ovh/categories/kodi.xml</loc>
-  <lastmod>2016-01-10T21:10:00Z</lastmod>
+  <loc>http://beenje.github.io/blog/categories/kodi.xml</loc>
+  <lastmod>2016-05-07T18:36:00Z</lastmod>
  </sitemap>
  <sitemap>
-  <loc>http://tchutchut.ovh/categories/linux.xml</loc>
-  <lastmod>2016-01-18T22:10:00Z</lastmod>
+  <loc>http://beenje.github.io/blog/categories/linux.xml</loc>
+  <lastmod>2016-05-07T18:36:00Z</lastmod>
  </sitemap>
  <sitemap>
-  <loc>http://tchutchut.ovh/categories/mac.xml</loc>
-  <lastmod>2016-01-10T21:10:00Z</lastmod>
+  <loc>http://beenje.github.io/blog/categories/mac.xml</loc>
+  <lastmod>2016-05-07T18:36:00Z</lastmod>
  </sitemap>
  <sitemap>
-  <loc>http://tchutchut.ovh/categories/osx.xml</loc>
-  <lastmod>2016-01-10T21:10:00Z</lastmod>
+  <loc>http://beenje.github.io/blog/categories/osx.xml</loc>
+  <lastmod>2016-05-07T18:36:00Z</lastmod>
  </sitemap>
  <sitemap>
-  <loc>http://tchutchut.ovh/categories/xcode.xml</loc>
-  <lastmod>2016-01-10T21:10:00Z</lastmod>
+  <loc>http://beenje.github.io/blog/categories/xcode.xml</loc>
+  <lastmod>2016-05-07T18:36:00Z</lastmod>
  </sitemap>
  <sitemap>
-  <loc>http://tchutchut.ovh/galleries/rss.xml</loc>
-  <lastmod>2016-01-10T20:57:00Z</lastmod>
+  <loc>http://beenje.github.io/blog/galleries/rss.xml</loc>
+  <lastmod>2016-05-07T18:36:00Z</lastmod>
  </sitemap>
  <sitemap>
-  <loc>http://tchutchut.ovh/rss.xml</loc>
-  <lastmod>2016-02-05T21:54:00Z</lastmod>
+  <loc>http://beenje.github.io/blog/rss.xml</loc>
+  <lastmod>2016-05-07T18:36:00Z</lastmod>
  </sitemap>
  <sitemap>
-  <loc>http://tchutchut.ovh/sitemap.xml</loc>
-  <lastmod>2016-05-07T16:49:00Z</lastmod>
+  <loc>http://beenje.github.io/blog/sitemap.xml</loc>
+  <lastmod>2016-05-07T18:36:00Z</lastmod>
  </sitemap>
 </sitemapindex>
