@@ -11,7 +11,7 @@
  </sitemap>
  <sitemap>
   <loc>http://tchutchut.ovh/categories/cat_git.xml</loc>
-  <lastmod>2016-01-30T21:32:00Z</lastmod>
+  <lastmod>2016-02-05T21:54:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://tchutchut.ovh/categories/cat_linux.xml</loc>
@@ -23,7 +23,7 @@
  </sitemap>
  <sitemap>
   <loc>http://tchutchut.ovh/categories/git.xml</loc>
-  <lastmod>2016-01-30T21:32:00Z</lastmod>
+  <lastmod>2016-02-05T21:54:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://tchutchut.ovh/categories/ios.xml</loc>
@@ -58,23 +58,15 @@
   <lastmod>2016-01-10T21:10:00Z</lastmod>
  </sitemap>
  <sitemap>
-  <loc>http://tchutchut.ovh/fr/galleries/rss.xml</loc>
-  <lastmod>2016-01-05T21:43:00Z</lastmod>
- </sitemap>
- <sitemap>
-  <loc>http://tchutchut.ovh/fr/rss.xml</loc>
-  <lastmod>2016-01-05T21:43:00Z</lastmod>
- </sitemap>
- <sitemap>
   <loc>http://tchutchut.ovh/galleries/rss.xml</loc>
   <lastmod>2016-01-10T20:57:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://tchutchut.ovh/rss.xml</loc>
-  <lastmod>2016-01-30T21:32:00Z</lastmod>
+  <lastmod>2016-02-05T21:54:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://tchutchut.ovh/sitemap.xml</loc>
-  <lastmod>2016-01-30T21:32:00Z</lastmod>
+  <lastmod>2016-05-07T16:49:00Z</lastmod>
  </sitemap>
 </sitemapindex>

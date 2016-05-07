@@ -7,7 +7,7 @@
                         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
  <url>
   <loc>http://tchutchut.ovh/</loc>
-  <lastmod>2016-01-10T11:07:00Z</lastmod>
+  <lastmod>2016-05-07T16:49:00Z</lastmod>
  </url>
  <url>
   <loc>http://tchutchut.ovh/2016/</loc>
@@ -74,30 +74,6 @@
   <lastmod>2016-01-09T22:51:00Z</lastmod>
  </url>
  <url>
-  <loc>http://tchutchut.ovh/fr/</loc>
-  <lastmod>2016-01-03T15:17:00Z</lastmod>
- </url>
- <url>
-  <loc>http://tchutchut.ovh/fr/2016/</loc>
-  <lastmod>2016-01-03T15:17:00Z</lastmod>
- </url>
- <url>
-  <loc>http://tchutchut.ovh/fr/archive.html</loc>
-  <lastmod>2016-01-05T21:43:00Z</lastmod>
- </url>
- <url>
-  <loc>http://tchutchut.ovh/fr/categories/</loc>
-  <lastmod>2016-01-03T15:17:00Z</lastmod>
- </url>
- <url>
-  <loc>http://tchutchut.ovh/fr/galleries/</loc>
-  <lastmod>2016-01-03T15:17:00Z</lastmod>
- </url>
- <url>
-  <loc>http://tchutchut.ovh/fr/posts/test/</loc>
-  <lastmod>2016-01-03T15:17:00Z</lastmod>
- </url>
- <url>
   <loc>http://tchutchut.ovh/galleries/</loc>
   <lastmod>2016-01-03T15:17:00Z</lastmod>
  </url>
@@ -116,10 +92,6 @@
  <url>
   <loc>http://tchutchut.ovh/posts/switching-from-git-bigfile-to-git-lfs/</loc>
   <lastmod>2016-01-30T21:32:00Z</lastmod>
- </url>
- <url>
-  <loc>http://tchutchut.ovh/posts/test/</loc>
-  <lastmod>2016-01-03T15:17:00Z</lastmod>
  </url>
  <url>
   <loc>http://tchutchut.ovh/stories/about/</loc>
