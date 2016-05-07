@@ -1,0 +1,4 @@
+Sitemap: http://tchutchut.ovh/sitemapindex.xml
+
+User-Agent: *
+Host: tchutchut.ovh

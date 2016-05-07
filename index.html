@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article# " lang="en">
+<head>
+<meta charset="utf-8">
+<base href="http://tchutchut.ovh/">
+<meta name="description" content="Notes to myself">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tchut-Tchut Blog</title>
+<link href="assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+<meta content="#5670d4" name="theme-color">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="rss.xml">
+<link rel="canonical" href="http://tchutchut.ovh/">
+<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/switching-from-git-bigfile-to-git-lfs/" type="text/html">
+</head>
+<body>
+<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+
+<!-- Menubar -->
+
+<nav class="navbar navbar-inverse navbar-static-top"><div class="container">
+<!-- This keeps the margins nice -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar" aria-controls="bs-navbar" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://tchutchut.ovh/">
+
+                <span id="blog-title">Tchut-Tchut Blog</span>
+            </a>
+        </div>
+<!-- /.navbar-header -->
+        <div class="collapse navbar-collapse" id="bs-navbar" aria-expanded="false">
+            <ul class="nav navbar-nav">
+<li>
+<a href="archive.html">Archive</a>
+                </li>
+<li>
+<a href="categories/">Tags</a>
+                </li>
+<li>
+<a href="rss.xml">RSS feed</a>
+                </li>
+<li>
+<a href="stories/about/index.html">About</a>
+
+                
+            </li>
+</ul>
+<ul class="nav navbar-nav navbar-right"></ul>
+</div>
+<!-- /.navbar-collapse -->
+    </div>
+<!-- /.container -->
+</nav><!-- End of Menubar --><div class="container" id="content" role="main">
+    <div class="body-content">
+        <!--Body content-->
+        <div class="row">
+            
+            
+
+<div class="postindex">
+    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/switching-from-git-bigfile-to-git-lfs/" class="u-url">Switching from git-bigfile to git-lfs</a></h1>
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn">
+                Benjamin Bertrand
+            </span></p>
+            <p class="dateline"><a href="posts/switching-from-git-bigfile-to-git-lfs/" rel="bookmark"><time class="published dt-published" datetime="2016-01-30T21:55:32+01:00" title="2016-01-30 21:55">2016-01-30 21:55</time></a></p>
+                <p class="commentline">
+        
+    <a href="posts/switching-from-git-bigfile-to-git-lfs/#disqus_thread" data-disqus-identifier="cache/posts/switching-from-git-bigfile-to-git-lfs.html">Comments</a>
+
+
+        </p>
+</div>
+    </header><div class="e-content entry-content">
+    <div>
+<p>In 2012, I was looking for a way to store big files in git. <a class="reference external" href="https://git-annex.branchable.com">git-annex</a>
+was already around, but I found it a bit too complex for my use case.
+I discovered <a class="reference external" href="https://github.com/schacon/git-media">git-media</a> from Scott Chacon and it looked like what I was looking for.
+It was in Ruby which made it not super easy to install on some machines at work.
+I thought it was a good exercise to port it to Python. That's how <a class="reference external" href="https://github.com/beenje/git-bigfile">git-bigfile</a> was born.
+It was simple and was doing the job.</p>
+<p>Last year, I was thinking about giving it some love: port it to Python 3,
+add some unittests... That's about when I switched from <a class="reference external" href="https://gogs.io">Gogs</a>
+to <a class="reference external" href="https://about.gitlab.com">Gitlab</a> and read that <a class="reference external" href="https://about.gitlab.com">Gitlab</a> was about to support <a class="reference external" href="https://git-lfs.github.com">git-lfs</a>.</p>
+<p>Being developed by GitHub and with <a class="reference external" href="https://about.gitlab.com">Gitlab</a> support, <a class="reference external" href="https://git-lfs.github.com">git-lfs</a> was an
+obvious option to replace <a class="reference external" href="https://github.com/beenje/git-bigfile">git-bigfile</a>.</p>
+<p>Here is how to switch a project using <a class="reference external" href="https://github.com/beenje/git-bigfile">git-bigfile</a> to <a class="reference external" href="https://git-lfs.github.com">git-lfs</a>:</p>
+<ol class="arabic">
+<li>
+<p class="first">Make a list of all files tracked by git-bigfile:</p>
+<pre class="literal-block">
+$ git bigfile status | awk '/pushed/ {print $NF}' &gt; /tmp/list
+</pre>
+</li>
+<li>
+<p class="first">Edit .gitattributes to replace the filter. Replace <cite>filter=bigfile -crlf</cite> with <cite>filter=lfs diff=lfs merge=lfs -text</cite>:</p>
+<pre class="literal-block">
+$ cat .gitattributes
+*.tar.bz2 filter=lfs diff=lfs merge=lfs -text
+*.iso filter=lfs diff=lfs merge=lfs -text
+*.img filter=lfs diff=lfs merge=lfs -text
+</pre>
+</li>
+<li>
+<p class="first">Remove all big files from the staging area and add them back with git-lfs:</p>
+<pre class="literal-block">
+$ git rm --cached $(cat /tmp/list)
+$ git add .
+$ git commit -m "Switch to git-lfs"
+</pre>
+</li>
+<li>
+<p class="first">Check that the files were added using git-lfs. You should see something
+like that:</p>
+<pre class="literal-block">
+$ git show HEAD
+diff --git a/CentOS_6.4/images/install.img
+b/CentOS_6.4/images/install.img
+index 227ea55..a9cc6a8 100644
+--- a/CentOS_6.4/images/install.img
++++ b/CentOS_6.4/images/install.img
+@@ -1 +1,3 @@
+-5d243948497ceb9f07b033da62498e52269f4b83
++version https://git-lfs.github.com/spec/v1
++oid
+sha256:6fcaac620b82e38e2092a6353ca766a3b01fba7f3fd6a0397c57e979aa293db0
++size 133255168
+</pre>
+</li>
+<li>
+<p class="first">Remove git-bigfile cache directory:</p>
+<pre class="literal-block">
+$ rm -rf .git/bigfile
+</pre>
+</li>
+</ol>
+<p>Note: to push files larger than 2.1GB to your gitlab server, wait for this
+<a class="reference external" href="https://gitlab.com/gitlab-org/gitlab-ce/issues/12745">fix</a>. Hopefully
+it will be in 8.4.3.</p>
+</div>
+    </div>
+    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/crontab-and-date/" class="u-url">crontab and date</a></h1>
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn">
+                Benjamin Bertrand
+            </span></p>
+            <p class="dateline"><a href="posts/crontab-and-date/" rel="bookmark"><time class="published dt-published" datetime="2016-01-18T22:42:39+01:00" title="2016-01-18 22:42">2016-01-18 22:42</time></a></p>
+                <p class="commentline">
+        
+    <a href="posts/crontab-and-date/#disqus_thread" data-disqus-identifier="cache/posts/crontab-and-date.html">Comments</a>
+
+
+        </p>
+</div>
+    </header><div class="e-content entry-content">
+    <div>
+<p>The other day, I wanted to add a script to the crontab and to redirect the
+output to a file including the current date. Easy. I have used the
+<cite>date</cite> command many times in bash script like that:</p>
+<pre class="literal-block">
+current_date=$(date +"%Y%m%dT%H%M")
+</pre>
+<p>So I added the following to my crontab:</p>
+<pre class="literal-block">
+0 1 * * * /usr/local/bin/foo &gt; /tmp/foo.$(date +%Y%m%dT%H%M).log 2&gt;&amp;1
+</pre>
+<p>And... it didn't work...</p>
+<p>I quickly identified that the script was working properly when run from the
+crontab (it's easy to get a script working from the prompt, not running
+from the crontab due to incorrect PATH). The problem was the redirection
+but I couldn't see why.</p>
+<p>I googled a bit but didn't find anything...</p>
+<p>I finally looked at the man pages:</p>
+<pre class="literal-block">
+$  man 5 crontab
+
+     ...
+     The  ``sixth''  field  (the  rest of the line) specifies the command to be run.  The entire command portion of the line, up to a
+     newline or % character...
+</pre>
+<p>Here it was of course! <cite>%</cite> is a special character. It needs to be escaped:</p>
+<pre class="literal-block">
+0 1 * * * /usr/local/bin/foo &gt; /tmp/foo.$(date +\%Y\%m\%dT\%H\%M).log 2&gt;&amp;1
+</pre>
+<p>Lesson to remember: check the man pages before to google!</p>
+</div>
+    </div>
+    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/compile-and-install-kodi-on-ipad-without-jailbreak/" class="u-url">Compile and install Kodi on iPad without jailbreak</a></h1>
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn">
+                Benjamin Bertrand
+            </span></p>
+            <p class="dateline"><a href="posts/compile-and-install-kodi-on-ipad-without-jailbreak/" rel="bookmark"><time class="published dt-published" datetime="2016-01-10T22:10:42+01:00" title="2016-01-10 22:10">2016-01-10 22:10</time></a></p>
+                <p class="commentline">
+        
+    <a href="posts/compile-and-install-kodi-on-ipad-without-jailbreak/#disqus_thread" data-disqus-identifier="cache/posts/compile-and-install-kodi-on-ipad-without-jailbreak.html">Comments</a>
+
+
+        </p>
+</div>
+    </header><div class="e-content entry-content">
+    <div>
+<p>With iOS 9 and Xcode 7 it's finally possible to compile and deploy apps on
+your iPhone/iPad with a free Apple developer account (no paid membership
+required).</p>
+<p>I compiled XBMC/Kodi many times on my mac but had never signed an app with
+Xcode before and it took me some time to get it right.
+So here are my notes:</p>
+<p>First thanks to memphiz for the <a class="reference external" href="http://forum.kodi.tv/showthread.php?tid=239610">iOS9 support</a>!</p>
+<p>I compiled from his ios9_workaround branch, but it has been <a class="reference external" href="https://github.com/xbmc/xbmc/pull/8250">merged</a> to
+master since:</p>
+<pre class="literal-block">
+$ git clone https://github.com/xbmc/xbmc.git Kodi
+$ cd Kodi
+$ git remote add memphiz https://github.com/Memphiz/xbmc.git
+$ git fetch memphiz
+$ git checkout -b ios9_workaround memphiz/ios9_workaround
+</pre>
+<p>Follow the instructions from the README.ios file:</p>
+<pre class="literal-block">
+$ git submodule update --init addons/skin.re-touched
+$ cd tools/depends
+$ ./bootstrap
+$ ./configure --host=arm-apple-darwin
+$ make -j4
+$ make -j4 -C target/binary-addons
+$ cd ../..
+$ make -j4 -C tools/depends/target/xbmc
+$ make clean
+$ make -j4 xcode_depends
+</pre>
+<p>Start Xcode and open the Kodi project.
+Open the Preferences, and add your Apple ID if not already
+done:</p>
+<img alt="/images/add_account.png" src="images/add_account.png"><p>Select the Kodi-iOS target:</p>
+<img alt="/images/kodi_ios_target.png" src="images/kodi_ios_target.png"><p>Change the bundle identifier to something unique and click on <em>Fix Issue</em>
+to create a provisioning profile.</p>
+<img alt="/images/bundle_identifier.png" src="images/bundle_identifier.png"><p>Connect your device to your mac and select it:</p>
+<img alt="/images/device.png" src="images/device.png"><p>Click on <em>Run</em> to compile and install Kodi on your device!</p>
+</div>
+    </div>
+    </article>
+</div>
+
+
+
+        
+       <script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script>
+</div>
+        <!--End of body content-->
+
+        <footer id="footer">
+            Contents © 2016         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
+        </footer>
+</div>
+</div>
+
+
+            <script src="assets/js/all-nocdn.js"></script><script>$('a.image-reference:not(.islink) img:not(.islink)').parent().colorbox({rel:"gal",maxWidth:"100%",maxHeight:"100%",scalePhotos:true});</script><!-- fancy dates --><script>
+    moment.locale("en");
+    fancydates(0, "YYYY-MM-DD HH:mm");
+    </script><!-- end fancy dates -->
+</body>
+</html>

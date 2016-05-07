@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="assets/xml/rss.xsl" media="all"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title>Tchut-Tchut Blog</title><link>http://tchutchut.ovh/</link><description>Notes to myself</description><atom:link href="http://tchutchut.ovh/rss.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Fri, 05 Feb 2016 21:54:05 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Switching from git-bigfile to git-lfs</title><link>http://tchutchut.ovh/posts/switching-from-git-bigfile-to-git-lfs/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In 2012, I was looking for a way to store big files in git. &lt;a class="reference external" href="https://git-annex.branchable.com"&gt;git-annex&lt;/a&gt;
+was already around, but I found it a bit too complex for my use case.
+I discovered &lt;a class="reference external" href="https://github.com/schacon/git-media"&gt;git-media&lt;/a&gt; from Scott Chacon and it looked like what I was looking for.
+It was in Ruby which made it not super easy to install on some machines at work.
+I thought it was a good exercise to port it to Python. That's how &lt;a class="reference external" href="https://github.com/beenje/git-bigfile"&gt;git-bigfile&lt;/a&gt; was born.
+It was simple and was doing the job.&lt;/p&gt;
+&lt;p&gt;Last year, I was thinking about giving it some love: port it to Python 3,
+add some unittests... That's about when I switched from &lt;a class="reference external" href="https://gogs.io"&gt;Gogs&lt;/a&gt;
+to &lt;a class="reference external" href="https://about.gitlab.com"&gt;Gitlab&lt;/a&gt; and read that &lt;a class="reference external" href="https://about.gitlab.com"&gt;Gitlab&lt;/a&gt; was about to support &lt;a class="reference external" href="https://git-lfs.github.com"&gt;git-lfs&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Being developed by GitHub and with &lt;a class="reference external" href="https://about.gitlab.com"&gt;Gitlab&lt;/a&gt; support, &lt;a class="reference external" href="https://git-lfs.github.com"&gt;git-lfs&lt;/a&gt; was an
+obvious option to replace &lt;a class="reference external" href="https://github.com/beenje/git-bigfile"&gt;git-bigfile&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Here is how to switch a project using &lt;a class="reference external" href="https://github.com/beenje/git-bigfile"&gt;git-bigfile&lt;/a&gt; to &lt;a class="reference external" href="https://git-lfs.github.com"&gt;git-lfs&lt;/a&gt;:&lt;/p&gt;
+&lt;ol class="arabic"&gt;
+&lt;li&gt;&lt;p class="first"&gt;Make a list of all files tracked by git-bigfile:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ git bigfile status | awk '/pushed/ {print $NF}' &amp;gt; /tmp/list
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p class="first"&gt;Edit .gitattributes to replace the filter. Replace &lt;cite&gt;filter=bigfile -crlf&lt;/cite&gt; with &lt;cite&gt;filter=lfs diff=lfs merge=lfs -text&lt;/cite&gt;:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ cat .gitattributes
+*.tar.bz2 filter=lfs diff=lfs merge=lfs -text
+*.iso filter=lfs diff=lfs merge=lfs -text
+*.img filter=lfs diff=lfs merge=lfs -text
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p class="first"&gt;Remove all big files from the staging area and add them back with git-lfs:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ git rm --cached $(cat /tmp/list)
+$ git add .
+$ git commit -m "Switch to git-lfs"
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p class="first"&gt;Check that the files were added using git-lfs. You should see something
+like that:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ git show HEAD
+diff --git a/CentOS_6.4/images/install.img
+b/CentOS_6.4/images/install.img
+index 227ea55..a9cc6a8 100644
+--- a/CentOS_6.4/images/install.img
++++ b/CentOS_6.4/images/install.img
+@@ -1 +1,3 @@
+-5d243948497ceb9f07b033da62498e52269f4b83
++version https://git-lfs.github.com/spec/v1
++oid
+sha256:6fcaac620b82e38e2092a6353ca766a3b01fba7f3fd6a0397c57e979aa293db0
++size 133255168
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p class="first"&gt;Remove git-bigfile cache directory:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ rm -rf .git/bigfile
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Note: to push files larger than 2.1GB to your gitlab server, wait for this
+&lt;a class="reference external" href="https://gitlab.com/gitlab-org/gitlab-ce/issues/12745"&gt;fix&lt;/a&gt;. Hopefully
+it will be in 8.4.3.&lt;/p&gt;&lt;/div&gt;</description><category>git</category><guid>http://tchutchut.ovh/posts/switching-from-git-bigfile-to-git-lfs/</guid><pubDate>Sat, 30 Jan 2016 20:55:32 GMT</pubDate></item><item><title>crontab and date</title><link>http://tchutchut.ovh/posts/crontab-and-date/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;The other day, I wanted to add a script to the crontab and to redirect the
+output to a file including the current date. Easy. I have used the
+&lt;cite&gt;date&lt;/cite&gt; command many times in bash script like that:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+current_date=$(date +"%Y%m%dT%H%M")
+&lt;/pre&gt;
+&lt;p&gt;So I added the following to my crontab:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+0 1 * * * /usr/local/bin/foo &amp;gt; /tmp/foo.$(date +%Y%m%dT%H%M).log 2&amp;gt;&amp;amp;1
+&lt;/pre&gt;
+&lt;p&gt;And... it didn't work...&lt;/p&gt;
+&lt;p&gt;I quickly identified that the script was working properly when run from the
+crontab (it's easy to get a script working from the prompt, not running
+from the crontab due to incorrect PATH). The problem was the redirection
+but I couldn't see why.&lt;/p&gt;
+&lt;p&gt;I googled a bit but didn't find anything...&lt;/p&gt;
+&lt;p&gt;I finally looked at the man pages:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$  man 5 crontab
+
+     ...
+     The  ``sixth''  field  (the  rest of the line) specifies the command to be run.  The entire command portion of the line, up to a
+     newline or % character...
+&lt;/pre&gt;
+&lt;p&gt;Here it was of course! &lt;cite&gt;%&lt;/cite&gt; is a special character. It needs to be escaped:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+0 1 * * * /usr/local/bin/foo &amp;gt; /tmp/foo.$(date +\%Y\%m\%dT\%H\%M).log 2&amp;gt;&amp;amp;1
+&lt;/pre&gt;
+&lt;p&gt;Lesson to remember: check the man pages before to google!&lt;/p&gt;&lt;/div&gt;</description><category>bash</category><category>cron</category><category>linux</category><guid>http://tchutchut.ovh/posts/crontab-and-date/</guid><pubDate>Mon, 18 Jan 2016 21:42:39 GMT</pubDate></item><item><title>Compile and install Kodi on iPad without jailbreak</title><link>http://tchutchut.ovh/posts/compile-and-install-kodi-on-ipad-without-jailbreak/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;With iOS 9 and Xcode 7 it's finally possible to compile and deploy apps on
+your iPhone/iPad with a free Apple developer account (no paid membership
+required).&lt;/p&gt;
+&lt;p&gt;I compiled XBMC/Kodi many times on my mac but had never signed an app with
+Xcode before and it took me some time to get it right.
+So here are my notes:&lt;/p&gt;
+&lt;p&gt;First thanks to memphiz for the &lt;a class="reference external" href="http://forum.kodi.tv/showthread.php?tid=239610"&gt;iOS9 support&lt;/a&gt;!&lt;/p&gt;
+&lt;p&gt;I compiled from his ios9_workaround branch, but it has been &lt;a class="reference external" href="https://github.com/xbmc/xbmc/pull/8250"&gt;merged&lt;/a&gt; to
+master since:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ git clone https://github.com/xbmc/xbmc.git Kodi
+$ cd Kodi
+$ git remote add memphiz https://github.com/Memphiz/xbmc.git
+$ git fetch memphiz
+$ git checkout -b ios9_workaround memphiz/ios9_workaround
+&lt;/pre&gt;
+&lt;p&gt;Follow the instructions from the README.ios file:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ git submodule update --init addons/skin.re-touched
+$ cd tools/depends
+$ ./bootstrap
+$ ./configure --host=arm-apple-darwin
+$ make -j4
+$ make -j4 -C target/binary-addons
+$ cd ../..
+$ make -j4 -C tools/depends/target/xbmc
+$ make clean
+$ make -j4 xcode_depends
+&lt;/pre&gt;
+&lt;p&gt;Start Xcode and open the Kodi project.
+Open the Preferences, and add your Apple ID if not already
+done:&lt;/p&gt;
+&lt;img alt="/images/add_account.png" src="http://tchutchut.ovh/images/add_account.png"&gt;
+&lt;p&gt;Select the Kodi-iOS target:&lt;/p&gt;
+&lt;img alt="/images/kodi_ios_target.png" src="http://tchutchut.ovh/images/kodi_ios_target.png"&gt;
+&lt;p&gt;Change the bundle identifier to something unique and click on &lt;em&gt;Fix Issue&lt;/em&gt;
+to create a provisioning profile.&lt;/p&gt;
+&lt;img alt="/images/bundle_identifier.png" src="http://tchutchut.ovh/images/bundle_identifier.png"&gt;
+&lt;p&gt;Connect your device to your mac and select it:&lt;/p&gt;
+&lt;img alt="/images/device.png" src="http://tchutchut.ovh/images/device.png"&gt;
+&lt;p&gt;Click on &lt;em&gt;Run&lt;/em&gt; to compile and install Kodi on your device!&lt;/p&gt;&lt;/div&gt;</description><category>iOS</category><category>iPad</category><category>iPhone</category><category>kodi</category><category>Mac</category><category>OSX</category><category>Xcode</category><guid>http://tchutchut.ovh/posts/compile-and-install-kodi-on-ipad-without-jailbreak/</guid><pubDate>Sun, 10 Jan 2016 21:10:42 GMT</pubDate></item></channel></rss>
