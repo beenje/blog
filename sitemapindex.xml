@@ -18,12 +18,28 @@
   <lastmod>2016-05-07T18:36:00Z</lastmod>
  </sitemap>
  <sitemap>
+  <loc>http://beenje.github.io/blog/categories/cat_python.xml</loc>
+  <lastmod>2016-06-07T20:54:00Z</lastmod>
+ </sitemap>
+ <sitemap>
+  <loc>http://beenje.github.io/blog/categories/ci.xml</loc>
+  <lastmod>2016-06-07T20:54:00Z</lastmod>
+ </sitemap>
+ <sitemap>
+  <loc>http://beenje.github.io/blog/categories/conda.xml</loc>
+  <lastmod>2016-06-07T20:54:00Z</lastmod>
+ </sitemap>
+ <sitemap>
   <loc>http://beenje.github.io/blog/categories/cron.xml</loc>
   <lastmod>2016-05-07T18:36:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/git.xml</loc>
-  <lastmod>2016-05-07T18:36:00Z</lastmod>
+  <lastmod>2016-06-07T20:54:00Z</lastmod>
+ </sitemap>
+ <sitemap>
+  <loc>http://beenje.github.io/blog/categories/gitlab.xml</loc>
+  <lastmod>2016-06-07T20:54:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/ios.xml</loc>
@@ -54,6 +70,10 @@
   <lastmod>2016-05-07T18:36:00Z</lastmod>
  </sitemap>
  <sitemap>
+  <loc>http://beenje.github.io/blog/categories/python.xml</loc>
+  <lastmod>2016-06-07T20:54:00Z</lastmod>
+ </sitemap>
+ <sitemap>
   <loc>http://beenje.github.io/blog/categories/xcode.xml</loc>
   <lastmod>2016-05-07T18:36:00Z</lastmod>
  </sitemap>
@@ -63,10 +83,10 @@
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/rss.xml</loc>
-  <lastmod>2016-05-07T18:36:00Z</lastmod>
+  <lastmod>2016-06-07T20:54:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/sitemap.xml</loc>
-  <lastmod>2016-05-07T18:36:00Z</lastmod>
+  <lastmod>2016-06-07T20:54:00Z</lastmod>
  </sitemap>
 </sitemapindex>

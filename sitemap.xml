@@ -7,7 +7,7 @@
                         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
  <url>
   <loc>http://beenje.github.io/blog/</loc>
-  <lastmod>2016-05-07T16:49:00Z</lastmod>
+  <lastmod>2016-05-31T14:43:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/2016/</loc>
@@ -15,11 +15,11 @@
  </url>
  <url>
   <loc>http://beenje.github.io/blog/archive.html</loc>
-  <lastmod>2016-05-07T18:36:00Z</lastmod>
+  <lastmod>2016-05-31T16:00:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/</loc>
-  <lastmod>2016-01-30T21:32:00Z</lastmod>
+  <lastmod>2016-06-07T20:54:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/bash/</loc>
@@ -34,12 +34,28 @@
   <lastmod>2016-01-18T22:06:00Z</lastmod>
  </url>
  <url>
+  <loc>http://beenje.github.io/blog/categories/cat_python/</loc>
+  <lastmod>2016-05-31T16:00:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/ci/</loc>
+  <lastmod>2016-06-07T20:54:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/conda/</loc>
+  <lastmod>2016-05-31T16:00:00Z</lastmod>
+ </url>
+ <url>
   <loc>http://beenje.github.io/blog/categories/cron/</loc>
   <lastmod>2016-01-18T22:06:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/git/</loc>
   <lastmod>2016-01-30T21:32:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/gitlab/</loc>
+  <lastmod>2016-05-31T16:00:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/ios/</loc>
@@ -70,6 +86,10 @@
   <lastmod>2016-01-10T20:57:00Z</lastmod>
  </url>
  <url>
+  <loc>http://beenje.github.io/blog/categories/python/</loc>
+  <lastmod>2016-05-31T16:00:00Z</lastmod>
+ </url>
+ <url>
   <loc>http://beenje.github.io/blog/categories/xcode/</loc>
   <lastmod>2016-01-09T22:51:00Z</lastmod>
  </url>
@@ -88,6 +108,10 @@
  <url>
   <loc>http://beenje.github.io/blog/posts/crontab-and-date/</loc>
   <lastmod>2016-01-18T22:06:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/posts/gitlab-ci-and-conda/</loc>
+  <lastmod>2016-05-31T16:00:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/switching-from-git-bigfile-to-git-lfs/</loc>

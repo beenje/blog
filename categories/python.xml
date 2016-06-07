@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (python)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/python.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Tue, 07 Jun 2016 20:54:20 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>GitLab CI and conda</title><link>http://beenje.github.io/blog/posts/gitlab-ci-and-conda/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I setup GitLab to host several projects at work and I have been quite
+pleased with it. I read that setting GitLab CI for test and deployment was
+easy so I decided to try it to automatically run the test suite and the
+sphinx documentation.&lt;/p&gt;
+&lt;p&gt;I found the official &lt;a class="reference external" href="http://docs.gitlab.com/ce/ci/quick_start/README.html"&gt;documentation&lt;/a&gt; to be quite good
+to setup a runner so I won't go into details here. I chose the &lt;a class="reference external" href="https://gitlab.com/gitlab-org/gitlab-ci-multi-runner/blob/master/docs/executors/docker.md"&gt;Docker
+executor&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Here is my first &lt;cite&gt;.gitlab-ci.yml&lt;/cite&gt; test:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+image: python:3.4
+
+before_script:
+  - pip install -r requirements.txt
+
+tests:
+  stage: test
+  script:
+    - python -m unittest discover -v
+&lt;/pre&gt;
+&lt;p&gt;Success, it works! Nice. But... 8 minutes 33 seconds build time for a test suite that
+runs in less than 1 second... that's a bit long.&lt;/p&gt;
+&lt;p&gt;Let's try using some caching to avoid having to download all the pip
+requirements every time. After googling, I found this &lt;a class="reference external" href="https://fleschenberg.net/gitlab-pip-cache/"&gt;post&lt;/a&gt; explaining that the cache
+path must be inside the build directory:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+image: python:3.4
+
+before_script:
+  - export PIP_CACHE_DIR="pip-cache"
+  - pip install -r requirements.txt
+
+cache:
+  paths:
+    - pip-cache
+
+tests:
+  stage: test
+  script:
+    - python -m unittest discover -v
+&lt;/pre&gt;
+&lt;p&gt;With the pip cache, the build time went down to about 6 minutes. A bit
+better, but far from acceptable.&lt;/p&gt;
+&lt;p&gt;Of course I knew the problem was not the download, but the
+installation of the pip requirements. I use &lt;a class="reference external" href="http://pandas.pydata.org"&gt;pandas&lt;/a&gt;
+which explains why it takes a while to compile.&lt;/p&gt;
+&lt;p&gt;So how do you install &lt;a class="reference external" href="http://pandas.pydata.org"&gt;pandas&lt;/a&gt; easily? With &lt;a class="reference external" href="http://conda.pydata.org/docs/"&gt;conda&lt;/a&gt; of course!
+There are even some nice &lt;a class="reference external" href="https://github.com/ContinuumIO/docker-images"&gt;docker images&lt;/a&gt;  created by Continuum Analytics ready to be used.&lt;/p&gt;
+&lt;p&gt;So let's try again:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+image: continuumio/miniconda3:latest
+
+before_script:
+  - conda env create -f environment.yml
+  - source activate koopa
+
+tests:
+  stage: test
+  script:
+    - python -m unittest discover -v
+&lt;/pre&gt;
+&lt;p&gt;Build time: 2 minutes 55 seconds. Nice but we need some cache to avoid
+downloading all the packages everytime.
+The first problem is that the cache path has to be in the build directory.
+Conda packages are saved in &lt;cite&gt;/opt/conda/pkgs&lt;/cite&gt; by default. A solution is to
+replace that directory with a link to a local directory. It works but the
+problem is that Gitlab makes a compressed archive to save and restore the
+cache which takes quite some time in this case...&lt;/p&gt;
+&lt;p&gt;How to get a fast cache? Let's use a docker volume!
+I modified my &lt;cite&gt;/etc/gitlab-runner/config.toml&lt;/cite&gt; to add two volumes:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+[runners.docker]
+  tls_verify = false
+  image = "continuumio/miniconda3:latest"
+  privileged = false
+  disable_cache = false
+  volumes = ["/cache", "/opt/cache/conda/pkgs:/opt/conda/pkgs:rw", "/opt/cache/pip:/opt/cache/pip:rw"]
+&lt;/pre&gt;
+&lt;p&gt;One volume for &lt;a class="reference external" href="http://conda.pydata.org/docs/"&gt;conda&lt;/a&gt; packages and one for &lt;cite&gt;pip&lt;/cite&gt;.
+My new &lt;cite&gt;.gitlab-ci.yml&lt;/cite&gt;:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+image: continuumio/miniconda3:latest
+
+before_script:
+  - export PIP_CACHE_DIR="/opt/cache/pip"
+  - conda env create -f environment.yml
+  - source activate koopa
+
+tests:
+  stage: test
+  script:
+    - python -m unittest discover -v
+&lt;/pre&gt;
+&lt;p&gt;The build time is about 10 seconds!&lt;/p&gt;
+&lt;p&gt;Just a few days after my tests, GitLab announced &lt;a class="reference external" href="https://about.gitlab.com/2016/05/23/gitlab-container-registry/"&gt;GitLab Container
+Registry&lt;/a&gt;.
+I already thought about building my own docker image and this new feature
+would make it even easier than before. But I would have to remember to update
+my image if I change my requirements. Which I don't have to think about with the
+current solution.&lt;/p&gt;&lt;/div&gt;</description><category>ci</category><category>conda</category><category>git</category><category>gitlab</category><category>python</category><guid>http://beenje.github.io/blog/posts/gitlab-ci-and-conda/</guid><pubDate>Tue, 31 May 2016 14:48:23 GMT</pubDate></item></channel></rss>
