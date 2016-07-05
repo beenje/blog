@@ -1,4 +1,4 @@
-.. title: uWSGI, send_file and Python3.5
+.. title: uWSGI, send_file and Python 3.5
 .. slug: uwsgi-send_file-and-python35
 .. date: 2016-07-05 20:39:29 UTC+02:00
 .. tags: python,flask,uwsgi
