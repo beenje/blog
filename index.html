@@ -10,7 +10,7 @@
 <meta content="#5670d4" name="theme-color">
 <link rel="alternate" type="application/rss+xml" title="RSS" href="rss.xml">
 <link rel="canonical" href="http://beenje.github.io/blog/">
-<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/gitlab-ci-and-conda/" type="text/html">
+<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/uwsgi-send_file-and-python35/" type="text/html">
 </head>
 <body>
 <a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
@@ -62,7 +62,70 @@
             
 
 <div class="postindex">
-    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/gitlab-ci-and-conda/" class="u-url">GitLab CI and conda</a></h1>
+    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/uwsgi-send_file-and-python35/" class="u-url">uWSGI, send_file and Python3.5</a></h1>
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn">
+                Benjamin Bertrand
+            </span></p>
+            <p class="dateline"><a href="posts/uwsgi-send_file-and-python35/" rel="bookmark"><time class="published dt-published" datetime="2016-07-05T20:39:29+02:00" title="2016-07-05 20:39">2016-07-05 20:39</time></a></p>
+                <p class="commentline">
+        
+    <a href="posts/uwsgi-send_file-and-python35/#disqus_thread" data-disqus-identifier="cache/posts/uwsgi-send_file-and-python35.html">Comments</a>
+
+
+        </p>
+</div>
+    </header><div class="e-content entry-content">
+    <div>
+<p>I have a Flask app that returns an in-memory bytes buffer (<a class="reference external" href="https://docs.python.org/3/library/io.html#io.BytesIO">io.Bytesio</a>) using Flask <a class="reference external" href="http://flask.pocoo.org/docs/0.11/api/#flask.send_file">send_file</a> function.</p>
+<p>The app is deployed using <a class="reference external" href="http://uwsgi-docs.readthedocs.io/en/latest/">uWSGI</a> behind Nginx.
+This was working fine with Python 3.4.</p>
+<p>When I updated Python to 3.5, I got the following exception when trying to download a file:</p>
+<pre class="literal-block">
+io.UnsupportedOperation: fileno
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask/app.py", line 1817, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask/app.py", line 1477, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask/app.py", line 1381, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask/_compat.py", line 33, in reraise
+    raise value
+  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask/app.py", line 1475, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask/app.py", line 1461, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask_login.py", line 758, in decorated_view
+    return func(*args, **kwargs)
+  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask_security/decorators.py", line 194, in decorated_view
+    return fn(*args, **kwargs)
+  File "/webapps/bowser/bowser/app/bext/views.py", line 116, in download
+    as_attachment=True)
+  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask/helpers.py", line 523, in send_file
+    data = wrap_file(request.environ, file)
+  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/werkzeug/wsgi.py", line 726, in wrap_file
+    return environ.get('wsgi.file_wrapper', FileWrapper)(file, buffer_size)
+SystemError: &lt;built-in function uwsgi_sendfile&gt; returned a result with an error set
+</pre>
+<p>I quickly found the following <a class="reference external" href="http://lists.unbit.it/pipermail/uwsgi/2015-September/008186.html">post</a> with the same exception, but no answer...
+A little more googling brought me to this github issue: <a class="reference external" href="https://github.com/unbit/uwsgi/issues/1126">In python3, uwsgi fails to respond a
+stream from BytesIO object</a></p>
+<p>As described, you should run uwsgi with the <cite>--wsgi-disable-file-wrapper</cite> flag to avoid this problem.
+As with all command line options, you can add the following entry in your
+uwsgi.ini file:</p>
+<pre class="literal-block">
+wsgi-disable-file-wrapper = true
+</pre>
+<p>Note that <a class="reference external" href="http://uwsgi-docs.readthedocs.io/en/latest/">uWSGI</a> 2.0.12 is required.</p>
+<p>When searching in <a class="reference external" href="http://uwsgi-docs.readthedocs.io/en/latest/">uWSGI</a> documentation, I only found one match in <a class="reference external" href="http://uwsgi-docs.readthedocs.io/en/latest/Changelog-2.0.12.html?highlight=wsgi-disable-file-wrapper">uWSGI 2.0.12 release notes</a>.</p>
+<p>A problem/option that should be better documented. Probably a pull request to open :-)</p>
+</div>
+    </div>
+    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/gitlab-ci-and-conda/" class="u-url">GitLab CI and conda</a></h1>
         <div class="metadata">
             <p class="byline author vcard"><span class="byline-name fn">
                 Benjamin Bertrand
