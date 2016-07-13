@@ -64,5 +64,6 @@ When searching in uWSGI_ documentation, I only found one match in `uWSGI 2.0.12 
 
 A problem/option that should be better documented. Probably a pull request to open :-)
 
+UPDATE (2016-07-13): pull request `merged <https://github.com/unbit/uwsgi-docs/pull/317>`_
 
 .. _uWSGI: http://uwsgi-docs.readthedocs.io/en/latest/
