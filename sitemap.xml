@@ -15,11 +15,15 @@
  </url>
  <url>
   <loc>http://beenje.github.io/blog/archive.html</loc>
-  <lastmod>2016-07-05T20:41:00Z</lastmod>
+  <lastmod>2016-07-19T20:52:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/</loc>
-  <lastmod>2016-07-05T20:41:00Z</lastmod>
+  <lastmod>2016-07-19T20:52:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/ansible/</loc>
+  <lastmod>2016-07-19T20:52:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/bash/</loc>
@@ -90,12 +94,20 @@
   <lastmod>2016-01-10T20:57:00Z</lastmod>
  </url>
  <url>
+  <loc>http://beenje.github.io/blog/categories/pi/</loc>
+  <lastmod>2016-07-19T20:52:00Z</lastmod>
+ </url>
+ <url>
   <loc>http://beenje.github.io/blog/categories/python/</loc>
   <lastmod>2016-05-31T16:00:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/uwsgi/</loc>
   <lastmod>2016-07-05T20:41:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/vpn/</loc>
+  <lastmod>2016-07-19T20:52:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/xcode/</loc>
@@ -120,6 +132,10 @@
  <url>
   <loc>http://beenje.github.io/blog/posts/gitlab-ci-and-conda/</loc>
   <lastmod>2016-05-31T16:00:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</loc>
+  <lastmod>2016-07-19T20:52:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/switching-from-git-bigfile-to-git-lfs/</loc>

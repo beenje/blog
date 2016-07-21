@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article# " lang="en">
+<head>
+<meta charset="utf-8">
+<base href="http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Installing OpenVPN on a Raspberry Pi with Ansible | Tchut-Tchut Blog</title>
+<link href="../../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+<meta content="#5670d4" name="theme-color">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="../../rss.xml">
+<link rel="canonical" href="http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/">
+<!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><meta name="author" content="Benjamin Bertrand">
+<link rel="prev" href="../uwsgi-send_file-and-python35/" title="uWSGI, send_file and Python 3.5" type="text/html">
+<meta property="og:site_name" content="Tchut-Tchut Blog">
+<meta property="og:title" content="Installing OpenVPN on a Raspberry Pi with Ansible">
+<meta property="og:url" content="http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/">
+<meta property="og:description" content="I have to confess that I initially decided to install a VPN,
+not to secure my connection when using a free Wireless Acces Point in an
+airport or hotel, but to watch Netflix :-)
+I had a VPS in France w">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2016-07-18T22:26:28+02:00">
+<meta property="article:tag" content="Ansible">
+<meta property="article:tag" content="pi">
+<meta property="article:tag" content="VPN">
+</head>
+<body>
+<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+
+<!-- Menubar -->
+
+<nav class="navbar navbar-inverse navbar-static-top"><div class="container">
+<!-- This keeps the margins nice -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar" aria-controls="bs-navbar" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://beenje.github.io/blog/">
+
+                <span id="blog-title">Tchut-Tchut Blog</span>
+            </a>
+        </div>
+<!-- /.navbar-header -->
+        <div class="collapse navbar-collapse" id="bs-navbar" aria-expanded="false">
+            <ul class="nav navbar-nav">
+<li>
+<a href="../../archive.html">Archive</a>
+                </li>
+<li>
+<a href="../../categories/">Tags</a>
+                </li>
+<li>
+<a href="../../rss.xml">RSS feed</a>
+                </li>
+<li>
+<a href="../../stories/about/index.html">About</a>
+
+                
+            </li>
+</ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+    <a href="index.rst" id="sourcelink">Source</a>
+    </li>
+
+                
+            </ul>
+</div>
+<!-- /.navbar-collapse -->
+    </div>
+<!-- /.container -->
+</nav><!-- End of Menubar --><div class="container" id="content" role="main">
+    <div class="body-content">
+        <!--Body content-->
+        <div class="row">
+            
+            
+<article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Installing OpenVPN on a Raspberry Pi with Ansible</a></h1>
+
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn">
+                    Benjamin Bertrand
+            </span></p>
+            <p class="dateline"><a href="." rel="bookmark"><time class="published dt-published" datetime="2016-07-18T22:26:28+02:00" itemprop="datePublished" title="2016-07-18 22:26">2016-07-18 22:26</time></a></p>
+                <p class="commentline">
+        
+    <a href="#disqus_thread" data-disqus-identifier="cache/posts/installing-openvpn-on-a-raspberry-pi-with-ansible.html">Comments</a>
+
+
+            
+        </p>
+<p class="sourceline"><a href="index.rst" id="sourcelink">Source</a></p>
+
+        </div>
+        
+
+    </header><div class="e-content entry-content" itemprop="articleBody text">
+    <div>
+<p>I have to confess that I initially decided to install a VPN,
+not to secure my connection when using a free Wireless Acces Point in an
+airport or hotel, but to watch Netflix :-)</p>
+<p>I had a VPS in France where I installed sniproxy to access Netflix.
+Not that I find the french catalogue so great, but as a French guy living
+in Sweden, it was a good way for my kids to watch some french programs.
+But Netflix started to block VPS providers...</p>
+<p>I have a brother in France who has a Fiber Optic Internet access.
+That was a good opportunity to setup a private VPN and I bought him a Raspberry Pi.</p>
+<p>There are many resources on the web about <a class="reference external" href="https://openvpn.net/index.php/open-source/documentation/howto.html">OpenVPN</a>.
+A paper worth mentioning is: <a class="reference external" href="https://www.sans.org/reading-room/whitepapers/networkdevs/soho-remote-access-vpn-easy-pie-raspberry-pi-34427">SOHO Remote Access VPN. Easy as Pie, Raspberry Pi...</a>
+It's from end of 2013 and describes Esay-RSA 2.0 (that used to be installed with
+OpenVPN), but it's still an interesting read.</p>
+<p>Anyway, most resources describe all the commands to run.
+I don't really like installing softwares by running a bunch of commands. Propably due
+to my professional experience, I like things to be reproducible.
+That's why I love to automate things. I wrote a lot of shell scripts over
+the years. About two years ago, I discovered <a class="reference external" href="http://docs.ansible.com/ansible/index.html">Ansible</a> and it quickly became my
+favorite tool to deploy software.</p>
+<p>So let's write a small Ansible playbook to install OpenVPN on a Raspberry Pi.</p>
+<p>First the firewall configuration. I like to use <a class="reference external" href="https://help.ubuntu.com/community/UFW">ufw</a> which is quite easy to
+setup:</p>
+<pre class="literal-block">
+- name: install dependencies
+  apt: name=ufw state=present update_cache=yes cache_valid_time=3600
+
+- name: update ufw default forward policy
+  lineinfile: dest=/etc/default/ufw regexp=^DEFAULT_FORWARD_POLICY line=DEFAULT_FORWARD_POLICY="ACCEPT"
+  notify: reload ufw
+
+- name: enable ufw ip forward
+  lineinfile: dest=/etc/ufw/sysctl.conf regexp=^net/ipv4/ip_forward line=net/ipv4/ip_forward=1
+  notify: reload ufw
+
+- name: add NAT rules to ufw
+  blockinfile:
+    dest: /etc/ufw/before.rules
+    insertbefore: BOF
+    block: |
+      # Nat table
+      *nat
+      :POSTROUTING ACCEPT [0:0]
+
+      # Nat rules
+      -F
+      -A POSTROUTING -s 10.8.0.0/24 -o eth0 -j SNAT --to-source {{ansible_eth0.ipv4.address}}
+
+      # don't delete the 'COMMIT' line or these nat rules won't be processed
+      COMMIT
+  notify: reload ufw
+
+- name: allow ssh
+  ufw: rule=limit port=ssh proto=tcp
+
+- name: allow openvpn
+  ufw: rule=allow port={{openvpn_port}} proto={{openvpn_protocol}}
+
+- name: enable ufw
+  ufw: logging=on state=enabled
+</pre>
+<p>This enables IP forwarding, adds the required NAT rules and allows ssh and
+openvpn.</p>
+<p>The rest of the playbook installs OpenVPN and generates all the keys automatically,
+except the Diffie-Hellman one that should be generated locally.
+This is just because it takes for ever on the Pi :-)</p>
+<pre class="literal-block">
+- name: install openvpn
+  apt: name=openvpn state=present
+
+- name: create /etc/openvpn
+  file: path=/etc/openvpn state=directory mode=0755 owner=root group=root
+
+- name: create /etc/openvpn/keys
+  file: path=/etc/openvpn/keys state=directory mode=0700 owner=root group=root
+
+- name: create clientside and serverside directories
+  file: path="{{item}}" state=directory mode=0755
+  with_items:
+      - "{{clientside}}/keys"
+      - "{{serverside}}"
+  become: true
+  become_user: "{{user}}"
+
+- name: create openvpn base client.conf
+  template: src=client.conf.j2 dest={{clientside}}/client.conf owner=root group=root mode=0644
+
+- name: download EasyRSA
+  get_url: url={{easyrsa_url}} dest=/home/{{user}}/openvpn
+  become: true
+  become_user: "{{user}}"
+
+- name: create scripts
+  template: src={{item}}.j2 dest=/home/{{user}}/openvpn/{{item}} owner=root group=root mode=0755
+  with_items:
+    - create_serverside
+    - create_clientside
+  tags: client
+
+- name: run serverside script
+  command: ./create_serverside
+  args:
+    chdir: /home/{{user}}/openvpn
+    creates: "{{easyrsa_server}}/ta.key"
+  become: true
+  become_user: "{{user}}"
+
+- name: run clientside script
+  command: ./create_clientside {{item}}
+  args:
+    chdir: /home/{{user}}/openvpn
+    creates: "{{clientside}}/files/{{item}}.ovpn"
+  become: true
+  become_user: "{{user}}"
+  with_items: "{{openvpn_clients}}"
+  tags: client
+
+- name: install all server keys
+  command: install -o root -g root -m 600 {{item.name}} /etc/openvpn/keys/
+  args:
+    chdir: "{{item.path}}"
+    creates: /etc/openvpn/keys/{{item.name}}
+  with_items:
+    - { name: 'ca.crt', path: "{{easyrsa_server}}/pki" }
+    - { name: '{{ansible_hostname}}.crt', path: "{{easyrsa_server}}/pki/issued" }
+    - { name: '{{ansible_hostname}}.key', path: "{{easyrsa_server}}/pki/private" }
+    - { name: 'ta.key', path: "{{easyrsa_server}}" }
+
+- name: copy Diffie-Hellman key
+  copy: src="{{openvpn_dh}}" dest=/etc/openvpn/keys/dh.pem owner=root group=root mode=0600
+
+- name: create openvpn server.conf
+  template: src=server.conf.j2 dest=/etc/openvpn/server.conf owner=root group=root mode=0644
+  notify: restart openvpn
+
+- name: start openvpn
+  service: name=openvpn state=started
+</pre>
+<p>The <em>create_clientside</em> script generates all the required client keys and creates an ovpn file
+that includes them.  It makes it very easy to install on any device: just one file to
+drop.</p>
+<p>One thing I stumbled upon is the <em>ns-cert-type server</em> option that I
+initially used in the server configuration. This prevented the client to
+connect. As explained <a class="reference external" href="https://community.openvpn.net/openvpn/wiki/EasyRSA3-OpenVPN-Howto">here</a>,
+this option is a deprecated "Netscape" cert attribute. It's not enabled by
+default with Easy-RSA 3.</p>
+<p>Fortunately, the mentioned <a class="reference external" href="https://community.openvpn.net/openvpn/wiki/EasyRSA3-OpenVPN-Howto">howto</a> and
+the <a class="reference external" href="https://github.com/OpenVPN/easy-rsa">Easy-RSA github</a> page are good references
+for Easy-RSA 3.</p>
+<p>One important thing to note is that I create all the keys with no password.
+That's obviously not the most secure and recommended way.
+Anyone accessing the CA could sign new requests. But it can be stored offline on an USB stick.
+I actually think that for my use case it's not even worth keeping the CA.
+Sure it means I can't easily add a new client or revoke a certificate.
+But with the playbook, it's super easy to throw all the keys and regenerate everything.
+That forces to replace all clients configuration but with 2 or 3
+clients, this is not a problem.</p>
+<p>For sure don't leave all the generated keys on the Pi!
+After copying the clients ovpn files, remove the /home/pi/openvpn
+directory (save it somewhere safe if you want to add new clients or revoke
+a certificate without regenerating everything).</p>
+<p>The full playbook can be found on <a class="reference external" href="https://github.com/beenje/pi_openvpn">github</a>.
+The README includes some quick instructions.</p>
+<p>I now have a private VPN in France and one at home that I can use to
+securely access my NAS from anywhere!</p>
+</div>
+    </div>
+    <aside class="postpromonav"><nav><ul itemprop="keywords" class="tags">
+<li><a class="tag p-category" href="../../categories/ansible/" rel="tag">Ansible</a></li>
+            <li><a class="tag p-category" href="../../categories/pi/" rel="tag">pi</a></li>
+            <li><a class="tag p-category" href="../../categories/vpn/" rel="tag">VPN</a></li>
+        </ul>
+<ul class="pager hidden-print">
+<li class="previous">
+                <a href="../uwsgi-send_file-and-python35/" rel="prev" title="uWSGI, send_file and Python 3.5">Previous post</a>
+            </li>
+        </ul></nav></aside><section class="comments hidden-print"><h2>Comments</h2>
+        
+        
+        <div id="disqus_thread"></div>
+        <script>
+        var disqus_shortname ="tchutchut",
+            disqus_url="http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/",
+        disqus_title="Installing OpenVPN on a Raspberry Pi with Ansible",
+        disqus_identifier="cache/posts/installing-openvpn-on-a-raspberry-pi-with-ansible.html",
+        disqus_config = function () {
+            this.language = "en";
+        };
+        (function() {
+            var dsq = document.createElement('script'); dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script><noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a>
+</noscript>
+    <a href="https://disqus.com" class="dsq-brlink" rel="nofollow">Comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+        </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script>
+</div>
+        <!--End of body content-->
+
+        <footer id="footer">
+            Contents © 2016         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
+        </footer>
+</div>
+</div>
+
+
+            <script src="../../assets/js/all-nocdn.js"></script><script>$('a.image-reference:not(.islink) img:not(.islink)').parent().colorbox({rel:"gal",maxWidth:"100%",maxHeight:"100%",scalePhotos:true});</script><!-- fancy dates --><script>
+    moment.locale("en");
+    fancydates(0, "YYYY-MM-DD HH:mm");
+    </script><!-- end fancy dates -->
+</body>
+</html>

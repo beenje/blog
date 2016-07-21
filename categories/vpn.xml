@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title>Tchut-Tchut Blog (linux)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link rel="self" href="http://beenje.github.io/blog/categories/cat_linux.xml" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Thu, 21 Jul 2016 18:59:47 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Installing OpenVPN on a Raspberry Pi with Ansible</title><link>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I have to confess that I initially decided to install a VPN,
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title>Tchut-Tchut Blog (VPN)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link rel="self" href="http://beenje.github.io/blog/categories/vpn.xml" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Thu, 21 Jul 2016 18:59:47 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Installing OpenVPN on a Raspberry Pi with Ansible</title><link>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I have to confess that I initially decided to install a VPN,
 not to secure my connection when using a free Wireless Acces Point in an
 airport or hotel, but to watch Netflix :-)&lt;/p&gt;
 &lt;p&gt;I had a VPS in France where I installed sniproxy to access Netflix.
@@ -162,32 +162,4 @@ a certificate without regenerating everything).&lt;/p&gt;
 &lt;p&gt;The full playbook can be found on &lt;a class="reference external" href="https://github.com/beenje/pi_openvpn"&gt;github&lt;/a&gt;.
 The README includes some quick instructions.&lt;/p&gt;
 &lt;p&gt;I now have a private VPN in France and one at home that I can use to
-securely access my NAS from anywhere!&lt;/p&gt;&lt;/div&gt;</description><category>Ansible</category><category>pi</category><category>VPN</category><guid>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</guid><pubDate>Mon, 18 Jul 2016 20:26:28 GMT</pubDate></item><item><title>crontab and date</title><link>http://beenje.github.io/blog/posts/crontab-and-date/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;The other day, I wanted to add a script to the crontab and to redirect the
-output to a file including the current date. Easy. I have used the
-&lt;cite&gt;date&lt;/cite&gt; command many times in bash script like that:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-current_date=$(date +"%Y%m%dT%H%M")
-&lt;/pre&gt;
-&lt;p&gt;So I added the following to my crontab:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-0 1 * * * /usr/local/bin/foo &amp;gt; /tmp/foo.$(date +%Y%m%dT%H%M).log 2&amp;gt;&amp;amp;1
-&lt;/pre&gt;
-&lt;p&gt;And... it didn't work...&lt;/p&gt;
-&lt;p&gt;I quickly identified that the script was working properly when run from the
-crontab (it's easy to get a script working from the prompt, not running
-from the crontab due to incorrect PATH). The problem was the redirection
-but I couldn't see why.&lt;/p&gt;
-&lt;p&gt;I googled a bit but didn't find anything...&lt;/p&gt;
-&lt;p&gt;I finally looked at the man pages:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-$  man 5 crontab
-
-     ...
-     The  ``sixth''  field  (the  rest of the line) specifies the command to be run.  The entire command portion of the line, up to a
-     newline or % character...
-&lt;/pre&gt;
-&lt;p&gt;Here it was of course! &lt;cite&gt;%&lt;/cite&gt; is a special character. It needs to be escaped:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-0 1 * * * /usr/local/bin/foo &amp;gt; /tmp/foo.$(date +\%Y\%m\%dT\%H\%M).log 2&amp;gt;&amp;amp;1
-&lt;/pre&gt;
-&lt;p&gt;Lesson to remember: check the man pages before to google!&lt;/p&gt;&lt;/div&gt;</description><category>bash</category><category>cron</category><category>linux</category><guid>http://beenje.github.io/blog/posts/crontab-and-date/</guid><pubDate>Mon, 18 Jan 2016 21:42:39 GMT</pubDate></item></channel></rss>
+securely access my NAS from anywhere!&lt;/p&gt;&lt;/div&gt;</description><category>Ansible</category><category>pi</category><category>VPN</category><guid>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</guid><pubDate>Mon, 18 Jul 2016 20:26:28 GMT</pubDate></item></channel></rss>

@@ -1,5 +1,168 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>Tchut-Tchut Blog</title><link>http://beenje.github.io/blog/</link><description>Notes to myself</description><atom:link rel="self" href="http://beenje.github.io/blog/rss.xml" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Wed, 13 Jul 2016 20:33:15 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>uWSGI, send_file and Python 3.5</title><link>http://beenje.github.io/blog/posts/uwsgi-send_file-and-python35/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I have a Flask app that returns an in-memory bytes buffer (&lt;a class="reference external" href="https://docs.python.org/3/library/io.html#io.BytesIO"&gt;io.Bytesio&lt;/a&gt;) using Flask &lt;a class="reference external" href="http://flask.pocoo.org/docs/0.11/api/#flask.send_file"&gt;send_file&lt;/a&gt; function.&lt;/p&gt;
+<?xml-stylesheet type="text/xsl" href="assets/xml/rss.xsl" media="all"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title>Tchut-Tchut Blog</title><link>http://beenje.github.io/blog/</link><description>Notes to myself</description><atom:link rel="self" href="http://beenje.github.io/blog/rss.xml" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Thu, 21 Jul 2016 18:59:47 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Installing OpenVPN on a Raspberry Pi with Ansible</title><link>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I have to confess that I initially decided to install a VPN,
+not to secure my connection when using a free Wireless Acces Point in an
+airport or hotel, but to watch Netflix :-)&lt;/p&gt;
+&lt;p&gt;I had a VPS in France where I installed sniproxy to access Netflix.
+Not that I find the french catalogue so great, but as a French guy living
+in Sweden, it was a good way for my kids to watch some french programs.
+But Netflix started to block VPS providers...&lt;/p&gt;
+&lt;p&gt;I have a brother in France who has a Fiber Optic Internet access.
+That was a good opportunity to setup a private VPN and I bought him a Raspberry Pi.&lt;/p&gt;
+&lt;p&gt;There are many resources on the web about &lt;a class="reference external" href="https://openvpn.net/index.php/open-source/documentation/howto.html"&gt;OpenVPN&lt;/a&gt;.
+A paper worth mentioning is: &lt;a class="reference external" href="https://www.sans.org/reading-room/whitepapers/networkdevs/soho-remote-access-vpn-easy-pie-raspberry-pi-34427"&gt;SOHO Remote Access VPN. Easy as Pie, Raspberry Pi...&lt;/a&gt;
+It's from end of 2013 and describes Esay-RSA 2.0 (that used to be installed with
+OpenVPN), but it's still an interesting read.&lt;/p&gt;
+&lt;p&gt;Anyway, most resources describe all the commands to run.
+I don't really like installing softwares by running a bunch of commands. Propably due
+to my professional experience, I like things to be reproducible.
+That's why I love to automate things. I wrote a lot of shell scripts over
+the years. About two years ago, I discovered &lt;a class="reference external" href="http://docs.ansible.com/ansible/index.html"&gt;Ansible&lt;/a&gt; and it quickly became my
+favorite tool to deploy software.&lt;/p&gt;
+&lt;p&gt;So let's write a small Ansible playbook to install OpenVPN on a Raspberry Pi.&lt;/p&gt;
+&lt;p&gt;First the firewall configuration. I like to use &lt;a class="reference external" href="https://help.ubuntu.com/community/UFW"&gt;ufw&lt;/a&gt; which is quite easy to
+setup:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+- name: install dependencies
+  apt: name=ufw state=present update_cache=yes cache_valid_time=3600
+
+- name: update ufw default forward policy
+  lineinfile: dest=/etc/default/ufw regexp=^DEFAULT_FORWARD_POLICY line=DEFAULT_FORWARD_POLICY="ACCEPT"
+  notify: reload ufw
+
+- name: enable ufw ip forward
+  lineinfile: dest=/etc/ufw/sysctl.conf regexp=^net/ipv4/ip_forward line=net/ipv4/ip_forward=1
+  notify: reload ufw
+
+- name: add NAT rules to ufw
+  blockinfile:
+    dest: /etc/ufw/before.rules
+    insertbefore: BOF
+    block: |
+      # Nat table
+      *nat
+      :POSTROUTING ACCEPT [0:0]
+
+      # Nat rules
+      -F
+      -A POSTROUTING -s 10.8.0.0/24 -o eth0 -j SNAT --to-source {{ansible_eth0.ipv4.address}}
+
+      # don't delete the 'COMMIT' line or these nat rules won't be processed
+      COMMIT
+  notify: reload ufw
+
+- name: allow ssh
+  ufw: rule=limit port=ssh proto=tcp
+
+- name: allow openvpn
+  ufw: rule=allow port={{openvpn_port}} proto={{openvpn_protocol}}
+
+- name: enable ufw
+  ufw: logging=on state=enabled
+&lt;/pre&gt;
+&lt;p&gt;This enables IP forwarding, adds the required NAT rules and allows ssh and
+openvpn.&lt;/p&gt;
+&lt;p&gt;The rest of the playbook installs OpenVPN and generates all the keys automatically,
+except the Diffie-Hellman one that should be generated locally.
+This is just because it takes for ever on the Pi :-)&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+- name: install openvpn
+  apt: name=openvpn state=present
+
+- name: create /etc/openvpn
+  file: path=/etc/openvpn state=directory mode=0755 owner=root group=root
+
+- name: create /etc/openvpn/keys
+  file: path=/etc/openvpn/keys state=directory mode=0700 owner=root group=root
+
+- name: create clientside and serverside directories
+  file: path="{{item}}" state=directory mode=0755
+  with_items:
+      - "{{clientside}}/keys"
+      - "{{serverside}}"
+  become: true
+  become_user: "{{user}}"
+
+- name: create openvpn base client.conf
+  template: src=client.conf.j2 dest={{clientside}}/client.conf owner=root group=root mode=0644
+
+- name: download EasyRSA
+  get_url: url={{easyrsa_url}} dest=/home/{{user}}/openvpn
+  become: true
+  become_user: "{{user}}"
+
+- name: create scripts
+  template: src={{item}}.j2 dest=/home/{{user}}/openvpn/{{item}} owner=root group=root mode=0755
+  with_items:
+    - create_serverside
+    - create_clientside
+  tags: client
+
+- name: run serverside script
+  command: ./create_serverside
+  args:
+    chdir: /home/{{user}}/openvpn
+    creates: "{{easyrsa_server}}/ta.key"
+  become: true
+  become_user: "{{user}}"
+
+- name: run clientside script
+  command: ./create_clientside {{item}}
+  args:
+    chdir: /home/{{user}}/openvpn
+    creates: "{{clientside}}/files/{{item}}.ovpn"
+  become: true
+  become_user: "{{user}}"
+  with_items: "{{openvpn_clients}}"
+  tags: client
+
+- name: install all server keys
+  command: install -o root -g root -m 600 {{item.name}} /etc/openvpn/keys/
+  args:
+    chdir: "{{item.path}}"
+    creates: /etc/openvpn/keys/{{item.name}}
+  with_items:
+    - { name: 'ca.crt', path: "{{easyrsa_server}}/pki" }
+    - { name: '{{ansible_hostname}}.crt', path: "{{easyrsa_server}}/pki/issued" }
+    - { name: '{{ansible_hostname}}.key', path: "{{easyrsa_server}}/pki/private" }
+    - { name: 'ta.key', path: "{{easyrsa_server}}" }
+
+- name: copy Diffie-Hellman key
+  copy: src="{{openvpn_dh}}" dest=/etc/openvpn/keys/dh.pem owner=root group=root mode=0600
+
+- name: create openvpn server.conf
+  template: src=server.conf.j2 dest=/etc/openvpn/server.conf owner=root group=root mode=0644
+  notify: restart openvpn
+
+- name: start openvpn
+  service: name=openvpn state=started
+&lt;/pre&gt;
+&lt;p&gt;The &lt;em&gt;create_clientside&lt;/em&gt; script generates all the required client keys and creates an ovpn file
+that includes them.  It makes it very easy to install on any device: just one file to
+drop.&lt;/p&gt;
+&lt;p&gt;One thing I stumbled upon is the &lt;em&gt;ns-cert-type server&lt;/em&gt; option that I
+initially used in the server configuration. This prevented the client to
+connect. As explained &lt;a class="reference external" href="https://community.openvpn.net/openvpn/wiki/EasyRSA3-OpenVPN-Howto"&gt;here&lt;/a&gt;,
+this option is a deprecated "Netscape" cert attribute. It's not enabled by
+default with Easy-RSA 3.&lt;/p&gt;
+&lt;p&gt;Fortunately, the mentioned &lt;a class="reference external" href="https://community.openvpn.net/openvpn/wiki/EasyRSA3-OpenVPN-Howto"&gt;howto&lt;/a&gt; and
+the &lt;a class="reference external" href="https://github.com/OpenVPN/easy-rsa"&gt;Easy-RSA github&lt;/a&gt; page are good references
+for Easy-RSA 3.&lt;/p&gt;
+&lt;p&gt;One important thing to note is that I create all the keys with no password.
+That's obviously not the most secure and recommended way.
+Anyone accessing the CA could sign new requests. But it can be stored offline on an USB stick.
+I actually think that for my use case it's not even worth keeping the CA.
+Sure it means I can't easily add a new client or revoke a certificate.
+But with the playbook, it's super easy to throw all the keys and regenerate everything.
+That forces to replace all clients configuration but with 2 or 3
+clients, this is not a problem.&lt;/p&gt;
+&lt;p&gt;For sure don't leave all the generated keys on the Pi!
+After copying the clients ovpn files, remove the /home/pi/openvpn
+directory (save it somewhere safe if you want to add new clients or revoke
+a certificate without regenerating everything).&lt;/p&gt;
+&lt;p&gt;The full playbook can be found on &lt;a class="reference external" href="https://github.com/beenje/pi_openvpn"&gt;github&lt;/a&gt;.
+The README includes some quick instructions.&lt;/p&gt;
+&lt;p&gt;I now have a private VPN in France and one at home that I can use to
+securely access my NAS from anywhere!&lt;/p&gt;&lt;/div&gt;</description><category>Ansible</category><category>pi</category><category>VPN</category><guid>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</guid><pubDate>Mon, 18 Jul 2016 20:26:28 GMT</pubDate></item><item><title>uWSGI, send_file and Python 3.5</title><link>http://beenje.github.io/blog/posts/uwsgi-send_file-and-python35/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I have a Flask app that returns an in-memory bytes buffer (&lt;a class="reference external" href="https://docs.python.org/3/library/io.html#io.BytesIO"&gt;io.Bytesio&lt;/a&gt;) using Flask &lt;a class="reference external" href="http://flask.pocoo.org/docs/0.11/api/#flask.send_file"&gt;send_file&lt;/a&gt; function.&lt;/p&gt;
 &lt;p&gt;The app is deployed using &lt;a class="reference external" href="http://uwsgi-docs.readthedocs.io/en/latest/"&gt;uWSGI&lt;/a&gt; behind Nginx.
 This was working fine with Python 3.4.&lt;/p&gt;
 &lt;p&gt;When I updated Python to 3.5, I got the following exception when trying to download a file:&lt;/p&gt;
