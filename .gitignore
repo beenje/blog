@@ -1,6 +1,6 @@
 .DS_Store
 *.swp
-.doit.db.db
+.doit.db.*
 __pycache__/
 cache/
 output/
