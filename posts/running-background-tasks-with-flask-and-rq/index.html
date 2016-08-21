@@ -2,15 +2,29 @@
 <html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article# " lang="en">
 <head>
 <meta charset="utf-8">
-<base href="http://beenje.github.io/blog/">
-<meta name="description" content="Notes to myself">
+<base href="http://beenje.github.io/blog/posts/running-background-tasks-with-flask-and-rq/">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tchut-Tchut Blog</title>
-<link href="assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+<title>Running background tasks with Flask and RQ | Tchut-Tchut Blog</title>
+<link href="../../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
 <meta content="#5670d4" name="theme-color">
-<link rel="alternate" type="application/rss+xml" title="RSS" href="rss.xml">
-<link rel="canonical" href="http://beenje.github.io/blog/">
-<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/running-background-tasks-with-flask-and-rq/" type="text/html">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="../../rss.xml">
+<link rel="canonical" href="http://beenje.github.io/blog/posts/running-background-tasks-with-flask-and-rq/">
+<!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><meta name="author" content="Benjamin Bertrand">
+<link rel="prev" href="../installing-openvpn-on-a-raspberry-pi-with-ansible/" title="Installing OpenVPN on a Raspberry Pi with Ansible" type="text/html">
+<meta property="og:site_name" content="Tchut-Tchut Blog">
+<meta property="og:title" content="Running background tasks with Flask and RQ">
+<meta property="og:url" content="http://beenje.github.io/blog/posts/running-background-tasks-with-flask-and-rq/">
+<meta property="og:description" content="I wrote several webapps but it took me a while to understand how to run a
+long task and get the result back (without blocking the server).
+Of course, you should use a task queue like Celery or RQ.
+It'">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2016-08-20T23:32:16+02:00">
+<meta property="article:tag" content="ajax">
+<meta property="article:tag" content="flask">
+<meta property="article:tag" content="python">
+<meta property="article:tag" content="redis">
+<meta property="article:tag" content="rq">
 </head>
 <body>
 <a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
@@ -35,21 +49,27 @@
         <div class="collapse navbar-collapse" id="bs-navbar" aria-expanded="false">
             <ul class="nav navbar-nav">
 <li>
-<a href="archive.html">Archive</a>
+<a href="../../archive.html">Archive</a>
                 </li>
 <li>
-<a href="categories/">Tags</a>
+<a href="../../categories/">Tags</a>
                 </li>
 <li>
-<a href="rss.xml">RSS feed</a>
+<a href="../../rss.xml">RSS feed</a>
                 </li>
 <li>
-<a href="stories/about/index.html">About</a>
+<a href="../../stories/about/index.html">About</a>
 
                 
             </li>
 </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+    <a href="index.rst" id="sourcelink">Source</a>
+    </li>
+
+                
+            </ul>
 </div>
 <!-- /.navbar-collapse -->
     </div>
@@ -60,23 +80,26 @@
         <div class="row">
             
             
+<article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Running background tasks with Flask and RQ</a></h1>
 
-    
-<div class="postindex">
-    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/running-background-tasks-with-flask-and-rq/" class="u-url">Running background tasks with Flask and RQ</a></h1>
         <div class="metadata">
             <p class="byline author vcard"><span class="byline-name fn">
-                Benjamin Bertrand
+                    Benjamin Bertrand
             </span></p>
-            <p class="dateline"><a href="posts/running-background-tasks-with-flask-and-rq/" rel="bookmark"><time class="published dt-published" datetime="2016-08-20T23:32:16+02:00" title="2016-08-20 23:32">2016-08-20 23:32</time></a></p>
+            <p class="dateline"><a href="." rel="bookmark"><time class="published dt-published" datetime="2016-08-20T23:32:16+02:00" itemprop="datePublished" title="2016-08-20 23:32">2016-08-20 23:32</time></a></p>
                 <p class="commentline">
         
-    <a href="posts/running-background-tasks-with-flask-and-rq/#disqus_thread" data-disqus-identifier="cache/posts/running-background-tasks-with-flask-and-rq.html">Comments</a>
+    <a href="#disqus_thread" data-disqus-identifier="cache/posts/running-background-tasks-with-flask-and-rq.html">Comments</a>
 
 
+            
         </p>
-</div>
-    </header><div class="e-content entry-content">
+<p class="sourceline"><a href="index.rst" id="sourcelink">Source</a></p>
+
+        </div>
+        
+
+    </header><div class="e-content entry-content" itemprop="articleBody text">
     <div>
 <p>I wrote several webapps but it took me a while to understand how to run a
 long task and get the result back (without blocking the server).
@@ -257,7 +280,7 @@ $ docker-compose build
 $ docker-compose up
 </pre>
 <p>Go to <a class="reference external" href="http://localhost:5000">http://localhost:5000</a>. You should see the following window:</p>
-<img alt="/images/flask-rq-example.png" src="images/flask-rq-example.png"><p>Choose a task and press run. See how The UI is stuck while waiting for the server?
+<img alt="/images/flask-rq-example.png" src="../../images/flask-rq-example.png"><p>Choose a task and press run. See how The UI is stuck while waiting for the server?
 Not very nice...
 Let' improve that a little by using some JavaScript.</p>
 </div>
@@ -581,555 +604,40 @@ and all his posts about Flask!</p>
 </div>
 </div>
     </div>
-    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/installing-openvpn-on-a-raspberry-pi-with-ansible/" class="u-url">Installing OpenVPN on a Raspberry Pi with Ansible</a></h1>
-        <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn">
-                Benjamin Bertrand
-            </span></p>
-            <p class="dateline"><a href="posts/installing-openvpn-on-a-raspberry-pi-with-ansible/" rel="bookmark"><time class="published dt-published" datetime="2016-07-18T22:26:28+02:00" title="2016-07-18 22:26">2016-07-18 22:26</time></a></p>
-                <p class="commentline">
+    <aside class="postpromonav"><nav><ul itemprop="keywords" class="tags">
+<li><a class="tag p-category" href="../../categories/ajax/" rel="tag">ajax</a></li>
+            <li><a class="tag p-category" href="../../categories/flask/" rel="tag">flask</a></li>
+            <li><a class="tag p-category" href="../../categories/python/" rel="tag">python</a></li>
+            <li><a class="tag p-category" href="../../categories/redis/" rel="tag">redis</a></li>
+            <li><a class="tag p-category" href="../../categories/rq/" rel="tag">rq</a></li>
+        </ul>
+<ul class="pager hidden-print">
+<li class="previous">
+                <a href="../installing-openvpn-on-a-raspberry-pi-with-ansible/" rel="prev" title="Installing OpenVPN on a Raspberry Pi with Ansible">Previous post</a>
+            </li>
+        </ul></nav></aside><section class="comments hidden-print"><h2>Comments</h2>
         
-    <a href="posts/installing-openvpn-on-a-raspberry-pi-with-ansible/#disqus_thread" data-disqus-identifier="cache/posts/installing-openvpn-on-a-raspberry-pi-with-ansible.html">Comments</a>
-
-
-        </p>
-</div>
-    </header><div class="e-content entry-content">
-    <div>
-<p>I have to confess that I initially decided to install a VPN,
-not to secure my connection when using a free Wireless Acces Point in an
-airport or hotel, but to watch Netflix :-)</p>
-<p>I had a VPS in France where I installed sniproxy to access Netflix.
-Not that I find the french catalogue so great, but as a French guy living
-in Sweden, it was a good way for my kids to watch some french programs.
-But Netflix started to block VPS providers...</p>
-<p>I have a brother in France who has a Fiber Optic Internet access.
-That was a good opportunity to setup a private VPN and I bought him a Raspberry Pi.</p>
-<p>There are many resources on the web about <a class="reference external" href="https://openvpn.net/index.php/open-source/documentation/howto.html">OpenVPN</a>.
-A paper worth mentioning is: <a class="reference external" href="https://www.sans.org/reading-room/whitepapers/networkdevs/soho-remote-access-vpn-easy-pie-raspberry-pi-34427">SOHO Remote Access VPN. Easy as Pie, Raspberry Pi...</a>
-It's from end of 2013 and describes Esay-RSA 2.0 (that used to be installed with
-OpenVPN), but it's still an interesting read.</p>
-<p>Anyway, most resources describe all the commands to run.
-I don't really like installing softwares by running a bunch of commands. Propably due
-to my professional experience, I like things to be reproducible.
-That's why I love to automate things. I wrote a lot of shell scripts over
-the years. About two years ago, I discovered <a class="reference external" href="http://docs.ansible.com/ansible/index.html">Ansible</a> and it quickly became my
-favorite tool to deploy software.</p>
-<p>So let's write a small Ansible playbook to install OpenVPN on a Raspberry Pi.</p>
-<p>First the firewall configuration. I like to use <a class="reference external" href="https://help.ubuntu.com/community/UFW">ufw</a> which is quite easy to
-setup:</p>
-<pre class="literal-block">
-- name: install dependencies
-  apt: name=ufw state=present update_cache=yes cache_valid_time=3600
-
-- name: update ufw default forward policy
-  lineinfile: dest=/etc/default/ufw regexp=^DEFAULT_FORWARD_POLICY line=DEFAULT_FORWARD_POLICY="ACCEPT"
-  notify: reload ufw
-
-- name: enable ufw ip forward
-  lineinfile: dest=/etc/ufw/sysctl.conf regexp=^net/ipv4/ip_forward line=net/ipv4/ip_forward=1
-  notify: reload ufw
-
-- name: add NAT rules to ufw
-  blockinfile:
-    dest: /etc/ufw/before.rules
-    insertbefore: BOF
-    block: |
-      # Nat table
-      *nat
-      :POSTROUTING ACCEPT [0:0]
-
-      # Nat rules
-      -F
-      -A POSTROUTING -s 10.8.0.0/24 -o eth0 -j SNAT --to-source {{ansible_eth0.ipv4.address}}
-
-      # don't delete the 'COMMIT' line or these nat rules won't be processed
-      COMMIT
-  notify: reload ufw
-
-- name: allow ssh
-  ufw: rule=limit port=ssh proto=tcp
-
-- name: allow openvpn
-  ufw: rule=allow port={{openvpn_port}} proto={{openvpn_protocol}}
-
-- name: enable ufw
-  ufw: logging=on state=enabled
-</pre>
-<p>This enables IP forwarding, adds the required NAT rules and allows ssh and
-openvpn.</p>
-<p>The rest of the playbook installs OpenVPN and generates all the keys automatically,
-except the Diffie-Hellman one that should be generated locally.
-This is just because it takes for ever on the Pi :-)</p>
-<pre class="literal-block">
-- name: install openvpn
-  apt: name=openvpn state=present
-
-- name: create /etc/openvpn
-  file: path=/etc/openvpn state=directory mode=0755 owner=root group=root
-
-- name: create /etc/openvpn/keys
-  file: path=/etc/openvpn/keys state=directory mode=0700 owner=root group=root
-
-- name: create clientside and serverside directories
-  file: path="{{item}}" state=directory mode=0755
-  with_items:
-      - "{{clientside}}/keys"
-      - "{{serverside}}"
-  become: true
-  become_user: "{{user}}"
-
-- name: create openvpn base client.conf
-  template: src=client.conf.j2 dest={{clientside}}/client.conf owner=root group=root mode=0644
-
-- name: download EasyRSA
-  get_url: url={{easyrsa_url}} dest=/home/{{user}}/openvpn
-  become: true
-  become_user: "{{user}}"
-
-- name: create scripts
-  template: src={{item}}.j2 dest=/home/{{user}}/openvpn/{{item}} owner=root group=root mode=0755
-  with_items:
-    - create_serverside
-    - create_clientside
-  tags: client
-
-- name: run serverside script
-  command: ./create_serverside
-  args:
-    chdir: /home/{{user}}/openvpn
-    creates: "{{easyrsa_server}}/ta.key"
-  become: true
-  become_user: "{{user}}"
-
-- name: run clientside script
-  command: ./create_clientside {{item}}
-  args:
-    chdir: /home/{{user}}/openvpn
-    creates: "{{clientside}}/files/{{item}}.ovpn"
-  become: true
-  become_user: "{{user}}"
-  with_items: "{{openvpn_clients}}"
-  tags: client
-
-- name: install all server keys
-  command: install -o root -g root -m 600 {{item.name}} /etc/openvpn/keys/
-  args:
-    chdir: "{{item.path}}"
-    creates: /etc/openvpn/keys/{{item.name}}
-  with_items:
-    - { name: 'ca.crt', path: "{{easyrsa_server}}/pki" }
-    - { name: '{{ansible_hostname}}.crt', path: "{{easyrsa_server}}/pki/issued" }
-    - { name: '{{ansible_hostname}}.key', path: "{{easyrsa_server}}/pki/private" }
-    - { name: 'ta.key', path: "{{easyrsa_server}}" }
-
-- name: copy Diffie-Hellman key
-  copy: src="{{openvpn_dh}}" dest=/etc/openvpn/keys/dh.pem owner=root group=root mode=0600
-
-- name: create openvpn server.conf
-  template: src=server.conf.j2 dest=/etc/openvpn/server.conf owner=root group=root mode=0644
-  notify: restart openvpn
-
-- name: start openvpn
-  service: name=openvpn state=started
-</pre>
-<p>The <em>create_clientside</em> script generates all the required client keys and creates an ovpn file
-that includes them.  It makes it very easy to install on any device: just one file to
-drop.</p>
-<p>One thing I stumbled upon is the <em>ns-cert-type server</em> option that I
-initially used in the server configuration. This prevented the client to
-connect. As explained <a class="reference external" href="https://community.openvpn.net/openvpn/wiki/EasyRSA3-OpenVPN-Howto">here</a>,
-this option is a deprecated "Netscape" cert attribute. It's not enabled by
-default with Easy-RSA 3.</p>
-<p>Fortunately, the mentioned <a class="reference external" href="https://community.openvpn.net/openvpn/wiki/EasyRSA3-OpenVPN-Howto">howto</a> and
-the <a class="reference external" href="https://github.com/OpenVPN/easy-rsa">Easy-RSA github</a> page are good references
-for Easy-RSA 3.</p>
-<p>One important thing to note is that I create all the keys with no password.
-That's obviously not the most secure and recommended way.
-Anyone accessing the CA could sign new requests. But it can be stored offline on an USB stick.
-I actually think that for my use case it's not even worth keeping the CA.
-Sure it means I can't easily add a new client or revoke a certificate.
-But with the playbook, it's super easy to throw all the keys and regenerate everything.
-That forces to replace all clients configuration but with 2 or 3
-clients, this is not a problem.</p>
-<p>For sure don't leave all the generated keys on the Pi!
-After copying the clients ovpn files, remove the /home/pi/openvpn
-directory (save it somewhere safe if you want to add new clients or revoke
-a certificate without regenerating everything).</p>
-<p>The full playbook can be found on <a class="reference external" href="https://github.com/beenje/pi_openvpn">github</a>.
-The README includes some quick instructions.</p>
-<p>I now have a private VPN in France and one at home that I can use to
-securely access my NAS from anywhere!</p>
-</div>
-    </div>
-    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/uwsgi-send_file-and-python35/" class="u-url">uWSGI, send_file and Python 3.5</a></h1>
-        <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn">
-                Benjamin Bertrand
-            </span></p>
-            <p class="dateline"><a href="posts/uwsgi-send_file-and-python35/" rel="bookmark"><time class="published dt-published" datetime="2016-07-05T20:39:29+02:00" title="2016-07-05 20:39">2016-07-05 20:39</time></a></p>
-                <p class="commentline">
         
-    <a href="posts/uwsgi-send_file-and-python35/#disqus_thread" data-disqus-identifier="cache/posts/uwsgi-send_file-and-python35.html">Comments</a>
+        <div id="disqus_thread"></div>
+        <script>
+        var disqus_shortname ="tchutchut",
+            disqus_url="http://beenje.github.io/blog/posts/running-background-tasks-with-flask-and-rq/",
+        disqus_title="Running background tasks with Flask and RQ",
+        disqus_identifier="cache/posts/running-background-tasks-with-flask-and-rq.html",
+        disqus_config = function () {
+            this.language = "en";
+        };
+        (function() {
+            var dsq = document.createElement('script'); dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script><noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a>
+</noscript>
+    <a href="https://disqus.com" class="dsq-brlink" rel="nofollow">Comments powered by <span class="logo-disqus">Disqus</span></a>
 
 
-        </p>
-</div>
-    </header><div class="e-content entry-content">
-    <div>
-<p>I have a Flask app that returns an in-memory bytes buffer (<a class="reference external" href="https://docs.python.org/3/library/io.html#io.BytesIO">io.Bytesio</a>) using Flask <a class="reference external" href="http://flask.pocoo.org/docs/0.11/api/#flask.send_file">send_file</a> function.</p>
-<p>The app is deployed using <a class="reference external" href="http://uwsgi-docs.readthedocs.io/en/latest/">uWSGI</a> behind Nginx.
-This was working fine with Python 3.4.</p>
-<p>When I updated Python to 3.5, I got the following exception when trying to download a file:</p>
-<pre class="literal-block">
-io.UnsupportedOperation: fileno
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask/app.py", line 1817, in wsgi_app
-    response = self.full_dispatch_request()
-  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask/app.py", line 1477, in full_dispatch_request
-    rv = self.handle_user_exception(e)
-  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask/app.py", line 1381, in handle_user_exception
-    reraise(exc_type, exc_value, tb)
-  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask/_compat.py", line 33, in reraise
-    raise value
-  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask/app.py", line 1475, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask/app.py", line 1461, in dispatch_request
-    return self.view_functions[rule.endpoint](**req.view_args)
-  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask_login.py", line 758, in decorated_view
-    return func(*args, **kwargs)
-  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask_security/decorators.py", line 194, in decorated_view
-    return fn(*args, **kwargs)
-  File "/webapps/bowser/bowser/app/bext/views.py", line 116, in download
-    as_attachment=True)
-  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask/helpers.py", line 523, in send_file
-    data = wrap_file(request.environ, file)
-  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/werkzeug/wsgi.py", line 726, in wrap_file
-    return environ.get('wsgi.file_wrapper', FileWrapper)(file, buffer_size)
-SystemError: &lt;built-in function uwsgi_sendfile&gt; returned a result with an error set
-</pre>
-<p>I quickly found the following <a class="reference external" href="http://lists.unbit.it/pipermail/uwsgi/2015-September/008186.html">post</a> with the same exception, but no answer...
-A little more googling brought me to this github issue: <a class="reference external" href="https://github.com/unbit/uwsgi/issues/1126">In python3, uwsgi fails to respond a
-stream from BytesIO object</a></p>
-<p>As described, you should run uwsgi with the <cite>--wsgi-disable-file-wrapper</cite> flag to avoid this problem.
-As with all command line options, you can add the following entry in your
-uwsgi.ini file:</p>
-<pre class="literal-block">
-wsgi-disable-file-wrapper = true
-</pre>
-<p>Note that <a class="reference external" href="http://uwsgi-docs.readthedocs.io/en/latest/">uWSGI</a> 2.0.12 is required.</p>
-<p>When searching in <a class="reference external" href="http://uwsgi-docs.readthedocs.io/en/latest/">uWSGI</a> documentation, I only found one match in <a class="reference external" href="http://uwsgi-docs.readthedocs.io/en/latest/Changelog-2.0.12.html?highlight=wsgi-disable-file-wrapper">uWSGI 2.0.12 release notes</a>.</p>
-<p>A problem/option that should be better documented. Probably a pull request to open :-)</p>
-<p>UPDATE (2016-07-13): pull request <a class="reference external" href="https://github.com/unbit/uwsgi-docs/pull/317">merged</a></p>
-</div>
-    </div>
-    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/gitlab-ci-and-conda/" class="u-url">GitLab CI and conda</a></h1>
-        <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn">
-                Benjamin Bertrand
-            </span></p>
-            <p class="dateline"><a href="posts/gitlab-ci-and-conda/" rel="bookmark"><time class="published dt-published" datetime="2016-05-31T16:48:23+02:00" title="2016-05-31 16:48">2016-05-31 16:48</time></a></p>
-                <p class="commentline">
-        
-    <a href="posts/gitlab-ci-and-conda/#disqus_thread" data-disqus-identifier="cache/posts/gitlab-ci-and-conda.html">Comments</a>
-
-
-        </p>
-</div>
-    </header><div class="e-content entry-content">
-    <div>
-<p>I setup GitLab to host several projects at work and I have been quite
-pleased with it. I read that setting GitLab CI for test and deployment was
-easy so I decided to try it to automatically run the test suite and the
-sphinx documentation.</p>
-<p>I found the official <a class="reference external" href="http://docs.gitlab.com/ce/ci/quick_start/README.html">documentation</a> to be quite good
-to setup a runner so I won't go into details here. I chose the <a class="reference external" href="https://gitlab.com/gitlab-org/gitlab-ci-multi-runner/blob/master/docs/executors/docker.md">Docker
-executor</a>.</p>
-<p>Here is my first <cite>.gitlab-ci.yml</cite> test:</p>
-<pre class="literal-block">
-image: python:3.4
-
-before_script:
-  - pip install -r requirements.txt
-
-tests:
-  stage: test
-  script:
-    - python -m unittest discover -v
-</pre>
-<p>Success, it works! Nice. But... 8 minutes 33 seconds build time for a test suite that
-runs in less than 1 second... that's a bit long.</p>
-<p>Let's try using some caching to avoid having to download all the pip
-requirements every time. After googling, I found this <a class="reference external" href="https://fleschenberg.net/gitlab-pip-cache/">post</a> explaining that the cache
-path must be inside the build directory:</p>
-<pre class="literal-block">
-image: python:3.4
-
-before_script:
-  - export PIP_CACHE_DIR="pip-cache"
-  - pip install -r requirements.txt
-
-cache:
-  paths:
-    - pip-cache
-
-tests:
-  stage: test
-  script:
-    - python -m unittest discover -v
-</pre>
-<p>With the pip cache, the build time went down to about 6 minutes. A bit
-better, but far from acceptable.</p>
-<p>Of course I knew the problem was not the download, but the
-installation of the pip requirements. I use <a class="reference external" href="http://pandas.pydata.org">pandas</a>
-which explains why it takes a while to compile.</p>
-<p>So how do you install <a class="reference external" href="http://pandas.pydata.org">pandas</a> easily? With <a class="reference external" href="http://conda.pydata.org/docs/">conda</a> of course!
-There are even some nice <a class="reference external" href="https://github.com/ContinuumIO/docker-images">docker images</a>  created by Continuum Analytics ready to be used.</p>
-<p>So let's try again:</p>
-<pre class="literal-block">
-image: continuumio/miniconda3:latest
-
-before_script:
-  - conda env create -f environment.yml
-  - source activate koopa
-
-tests:
-  stage: test
-  script:
-    - python -m unittest discover -v
-</pre>
-<p>Build time: 2 minutes 55 seconds. Nice but we need some cache to avoid
-downloading all the packages everytime.
-The first problem is that the cache path has to be in the build directory.
-Conda packages are saved in <cite>/opt/conda/pkgs</cite> by default. A solution is to
-replace that directory with a link to a local directory. It works but the
-problem is that Gitlab makes a compressed archive to save and restore the
-cache which takes quite some time in this case...</p>
-<p>How to get a fast cache? Let's use a docker volume!
-I modified my <cite>/etc/gitlab-runner/config.toml</cite> to add two volumes:</p>
-<pre class="literal-block">
-[runners.docker]
-  tls_verify = false
-  image = "continuumio/miniconda3:latest"
-  privileged = false
-  disable_cache = false
-  volumes = ["/cache", "/opt/cache/conda/pkgs:/opt/conda/pkgs:rw", "/opt/cache/pip:/opt/cache/pip:rw"]
-</pre>
-<p>One volume for <a class="reference external" href="http://conda.pydata.org/docs/">conda</a> packages and one for <cite>pip</cite>.
-My new <cite>.gitlab-ci.yml</cite>:</p>
-<pre class="literal-block">
-image: continuumio/miniconda3:latest
-
-before_script:
-  - export PIP_CACHE_DIR="/opt/cache/pip"
-  - conda env create -f environment.yml
-  - source activate koopa
-
-tests:
-  stage: test
-  script:
-    - python -m unittest discover -v
-</pre>
-<p>The build time is about 10 seconds!</p>
-<p>Just a few days after my tests, GitLab announced <a class="reference external" href="https://about.gitlab.com/2016/05/23/gitlab-container-registry/">GitLab Container
-Registry</a>.
-I already thought about building my own docker image and this new feature
-would make it even easier than before. But I would have to remember to update
-my image if I change my requirements. Which I don't have to think about with the
-current solution.</p>
-</div>
-    </div>
-    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/switching-from-git-bigfile-to-git-lfs/" class="u-url">Switching from git-bigfile to git-lfs</a></h1>
-        <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn">
-                Benjamin Bertrand
-            </span></p>
-            <p class="dateline"><a href="posts/switching-from-git-bigfile-to-git-lfs/" rel="bookmark"><time class="published dt-published" datetime="2016-01-30T21:55:32+01:00" title="2016-01-30 21:55">2016-01-30 21:55</time></a></p>
-                <p class="commentline">
-        
-    <a href="posts/switching-from-git-bigfile-to-git-lfs/#disqus_thread" data-disqus-identifier="cache/posts/switching-from-git-bigfile-to-git-lfs.html">Comments</a>
-
-
-        </p>
-</div>
-    </header><div class="e-content entry-content">
-    <div>
-<p>In 2012, I was looking for a way to store big files in git. <a class="reference external" href="https://git-annex.branchable.com">git-annex</a>
-was already around, but I found it a bit too complex for my use case.
-I discovered <a class="reference external" href="https://github.com/schacon/git-media">git-media</a> from Scott Chacon and it looked like what I was looking for.
-It was in Ruby which made it not super easy to install on some machines at work.
-I thought it was a good exercise to port it to Python. That's how <a class="reference external" href="https://github.com/beenje/git-bigfile">git-bigfile</a> was born.
-It was simple and was doing the job.</p>
-<p>Last year, I was thinking about giving it some love: port it to Python 3,
-add some unittests... That's about when I switched from <a class="reference external" href="https://gogs.io">Gogs</a>
-to <a class="reference external" href="https://about.gitlab.com">Gitlab</a> and read that <a class="reference external" href="https://about.gitlab.com">Gitlab</a> was about to support <a class="reference external" href="https://git-lfs.github.com">git-lfs</a>.</p>
-<p>Being developed by GitHub and with <a class="reference external" href="https://about.gitlab.com">Gitlab</a> support, <a class="reference external" href="https://git-lfs.github.com">git-lfs</a> was an
-obvious option to replace <a class="reference external" href="https://github.com/beenje/git-bigfile">git-bigfile</a>.</p>
-<p>Here is how to switch a project using <a class="reference external" href="https://github.com/beenje/git-bigfile">git-bigfile</a> to <a class="reference external" href="https://git-lfs.github.com">git-lfs</a>:</p>
-<ol class="arabic">
-<li>
-<p class="first">Make a list of all files tracked by git-bigfile:</p>
-<pre class="literal-block">
-$ git bigfile status | awk '/pushed/ {print $NF}' &gt; /tmp/list
-</pre>
-</li>
-<li>
-<p class="first">Edit .gitattributes to replace the filter. Replace <cite>filter=bigfile -crlf</cite> with <cite>filter=lfs diff=lfs merge=lfs -text</cite>:</p>
-<pre class="literal-block">
-$ cat .gitattributes
-*.tar.bz2 filter=lfs diff=lfs merge=lfs -text
-*.iso filter=lfs diff=lfs merge=lfs -text
-*.img filter=lfs diff=lfs merge=lfs -text
-</pre>
-</li>
-<li>
-<p class="first">Remove all big files from the staging area and add them back with git-lfs:</p>
-<pre class="literal-block">
-$ git rm --cached $(cat /tmp/list)
-$ git add .
-$ git commit -m "Switch to git-lfs"
-</pre>
-</li>
-<li>
-<p class="first">Check that the files were added using git-lfs. You should see something
-like that:</p>
-<pre class="literal-block">
-$ git show HEAD
-diff --git a/CentOS_6.4/images/install.img
-b/CentOS_6.4/images/install.img
-index 227ea55..a9cc6a8 100644
---- a/CentOS_6.4/images/install.img
-+++ b/CentOS_6.4/images/install.img
-@@ -1 +1,3 @@
--5d243948497ceb9f07b033da62498e52269f4b83
-+version https://git-lfs.github.com/spec/v1
-+oid
-sha256:6fcaac620b82e38e2092a6353ca766a3b01fba7f3fd6a0397c57e979aa293db0
-+size 133255168
-</pre>
-</li>
-<li>
-<p class="first">Remove git-bigfile cache directory:</p>
-<pre class="literal-block">
-$ rm -rf .git/bigfile
-</pre>
-</li>
-</ol>
-<p>Note: to push files larger than 2.1GB to your gitlab server, wait for this
-<a class="reference external" href="https://gitlab.com/gitlab-org/gitlab-ce/issues/12745">fix</a>. Hopefully
-it will be in 8.4.3.</p>
-</div>
-    </div>
-    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/crontab-and-date/" class="u-url">crontab and date</a></h1>
-        <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn">
-                Benjamin Bertrand
-            </span></p>
-            <p class="dateline"><a href="posts/crontab-and-date/" rel="bookmark"><time class="published dt-published" datetime="2016-01-18T22:42:39+01:00" title="2016-01-18 22:42">2016-01-18 22:42</time></a></p>
-                <p class="commentline">
-        
-    <a href="posts/crontab-and-date/#disqus_thread" data-disqus-identifier="cache/posts/crontab-and-date.html">Comments</a>
-
-
-        </p>
-</div>
-    </header><div class="e-content entry-content">
-    <div>
-<p>The other day, I wanted to add a script to the crontab and to redirect the
-output to a file including the current date. Easy. I have used the
-<cite>date</cite> command many times in bash script like that:</p>
-<pre class="literal-block">
-current_date=$(date +"%Y%m%dT%H%M")
-</pre>
-<p>So I added the following to my crontab:</p>
-<pre class="literal-block">
-0 1 * * * /usr/local/bin/foo &gt; /tmp/foo.$(date +%Y%m%dT%H%M).log 2&gt;&amp;1
-</pre>
-<p>And... it didn't work...</p>
-<p>I quickly identified that the script was working properly when run from the
-crontab (it's easy to get a script working from the prompt, not running
-from the crontab due to incorrect PATH). The problem was the redirection
-but I couldn't see why.</p>
-<p>I googled a bit but didn't find anything...</p>
-<p>I finally looked at the man pages:</p>
-<pre class="literal-block">
-$  man 5 crontab
-
-     ...
-     The  ``sixth''  field  (the  rest of the line) specifies the command to be run.  The entire command portion of the line, up to a
-     newline or % character...
-</pre>
-<p>Here it was of course! <cite>%</cite> is a special character. It needs to be escaped:</p>
-<pre class="literal-block">
-0 1 * * * /usr/local/bin/foo &gt; /tmp/foo.$(date +\%Y\%m\%dT\%H\%M).log 2&gt;&amp;1
-</pre>
-<p>Lesson to remember: check the man pages before to google!</p>
-</div>
-    </div>
-    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/compile-and-install-kodi-on-ipad-without-jailbreak/" class="u-url">Compile and install Kodi on iPad without jailbreak</a></h1>
-        <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn">
-                Benjamin Bertrand
-            </span></p>
-            <p class="dateline"><a href="posts/compile-and-install-kodi-on-ipad-without-jailbreak/" rel="bookmark"><time class="published dt-published" datetime="2016-01-10T22:10:42+01:00" title="2016-01-10 22:10">2016-01-10 22:10</time></a></p>
-                <p class="commentline">
-        
-    <a href="posts/compile-and-install-kodi-on-ipad-without-jailbreak/#disqus_thread" data-disqus-identifier="cache/posts/compile-and-install-kodi-on-ipad-without-jailbreak.html">Comments</a>
-
-
-        </p>
-</div>
-    </header><div class="e-content entry-content">
-    <div>
-<p>With iOS 9 and Xcode 7 it's finally possible to compile and deploy apps on
-your iPhone/iPad with a free Apple developer account (no paid membership
-required).</p>
-<p>I compiled XBMC/Kodi many times on my mac but had never signed an app with
-Xcode before and it took me some time to get it right.
-So here are my notes:</p>
-<p>First thanks to memphiz for the <a class="reference external" href="http://forum.kodi.tv/showthread.php?tid=239610">iOS9 support</a>!</p>
-<p>I compiled from his ios9_workaround branch, but it has been <a class="reference external" href="https://github.com/xbmc/xbmc/pull/8250">merged</a> to
-master since:</p>
-<pre class="literal-block">
-$ git clone https://github.com/xbmc/xbmc.git Kodi
-$ cd Kodi
-$ git remote add memphiz https://github.com/Memphiz/xbmc.git
-$ git fetch memphiz
-$ git checkout -b ios9_workaround memphiz/ios9_workaround
-</pre>
-<p>Follow the instructions from the README.ios file:</p>
-<pre class="literal-block">
-$ git submodule update --init addons/skin.re-touched
-$ cd tools/depends
-$ ./bootstrap
-$ ./configure --host=arm-apple-darwin
-$ make -j4
-$ make -j4 -C target/binary-addons
-$ cd ../..
-$ make -j4 -C tools/depends/target/xbmc
-$ make clean
-$ make -j4 xcode_depends
-</pre>
-<p>Start Xcode and open the Kodi project.
-Open the Preferences, and add your Apple ID if not already
-done:</p>
-<img alt="/images/add_account.png" src="images/add_account.png"><p>Select the Kodi-iOS target:</p>
-<img alt="/images/kodi_ios_target.png" src="images/kodi_ios_target.png"><p>Change the bundle identifier to something unique and click on <em>Fix Issue</em>
-to create a provisioning profile.</p>
-<img alt="/images/bundle_identifier.png" src="images/bundle_identifier.png"><p>Connect your device to your mac and select it:</p>
-<img alt="/images/device.png" src="images/device.png"><p>Click on <em>Run</em> to compile and install Kodi on your device!</p>
-</div>
-    </div>
-    </article>
-</div>
-
-
-
-        
-       <script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script>
+        </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script>
 </div>
         <!--End of body content-->
 
@@ -1143,7 +651,7 @@ to create a provisioning profile.</p>
 </div>
 
 
-            <script src="assets/js/all-nocdn.js"></script><script>$('a.image-reference:not(.islink) img:not(.islink)').parent().colorbox({rel:"gal",maxWidth:"100%",maxHeight:"100%",scalePhotos:true});</script><!-- fancy dates --><script>
+            <script src="../../assets/js/all-nocdn.js"></script><script>$('a.image-reference:not(.islink) img:not(.islink)').parent().colorbox({rel:"gal",maxWidth:"100%",maxHeight:"100%",scalePhotos:true});</script><!-- fancy dates --><script>
     moment.locale("en");
     fancydates(0, "YYYY-MM-DD HH:mm");
     </script><!-- end fancy dates -->

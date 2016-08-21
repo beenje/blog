@@ -1,5 +1,488 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>Tchut-Tchut Blog (python)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link rel="self" href="http://beenje.github.io/blog/categories/cat_python.xml" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Wed, 13 Jul 2016 20:33:15 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>uWSGI, send_file and Python 3.5</title><link>http://beenje.github.io/blog/posts/uwsgi-send_file-and-python35/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I have a Flask app that returns an in-memory bytes buffer (&lt;a class="reference external" href="https://docs.python.org/3/library/io.html#io.BytesIO"&gt;io.Bytesio&lt;/a&gt;) using Flask &lt;a class="reference external" href="http://flask.pocoo.org/docs/0.11/api/#flask.send_file"&gt;send_file&lt;/a&gt; function.&lt;/p&gt;
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0"><channel><title>Tchut-Tchut Blog (python)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link type="application/rss+xml" rel="self" href="http://beenje.github.io/blog/categories/cat_python.xml"></atom:link><language>en</language><lastBuildDate>Sun, 21 Aug 2016 20:31:21 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Running background tasks with Flask and RQ</title><link>http://beenje.github.io/blog/posts/running-background-tasks-with-flask-and-rq/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I wrote several webapps but it took me a while to understand how to run a
+long task and get the result back (without blocking the server).
+Of course, you should use a task queue like &lt;a class="reference external" href="http://www.celeryproject.org"&gt;Celery&lt;/a&gt; or &lt;a class="reference external" href="http://python-rq.org"&gt;RQ&lt;/a&gt;.
+It's easy to find examples how to send a task to a queue and... forget
+about it. But how do you get the result?&lt;/p&gt;
+&lt;p&gt;I found a great blog post from Miguel Grinberg:
+&lt;a class="reference external" href="http://blog.miguelgrinberg.com/post/using-celery-with-flask"&gt;Using Celery With Flask&lt;/a&gt;.
+It explains how to use ajax to poll the server for status updates.
+And I finally got it!
+As Miguel's post already detailed &lt;a class="reference external" href="http://www.celeryproject.org"&gt;Celery&lt;/a&gt;, I wanted to investigate
+&lt;a class="reference external" href="http://python-rq.org"&gt;RQ&lt;/a&gt; (Redis Queue), a simple library to queue job.&lt;/p&gt;
+&lt;p&gt;As a side note, Miguel's blog is really great. I learned Flask following the &lt;a class="reference external" href="http://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world"&gt;The Flask Mega-Tutorial&lt;/a&gt;.
+If you are starting with Flask, I highly recommend it, as well as the
+&lt;a class="reference external" href="http://flaskbook.com"&gt;Flask book&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;We'll make a simple app with a form to run some actions.&lt;/p&gt;
+&lt;div class="section" id="first-version-send-a-post-to-the-server-and-wait-for-the-response"&gt;
+&lt;h2&gt;First version: send a post to the server and wait for the response&lt;/h2&gt;
+&lt;p&gt;Let's start with some boilerplate code. This is gonna be a very
+simple example, but I'll organize it like I use to for a real application
+using &lt;a class="reference external" href="http://flask.pocoo.org/docs/0.11/blueprints/"&gt;Blueprints&lt;/a&gt;, an
+&lt;a class="reference external" href="http://flask.pocoo.org/docs/0.11/patterns/appfactories/"&gt;application factory&lt;/a&gt;
+and some extensions (&lt;a class="reference external" href="https://pythonhosted.org/Flask-Bootstrap/"&gt;Flask-Bootstrap&lt;/a&gt;, &lt;a class="reference external" href="https://flask-script.readthedocs.io/en/latest/"&gt;Flask-Script&lt;/a&gt; and &lt;a class="reference external" href="http://flask-wtf.readthedocs.io/en/latest/"&gt;Flask-WTF&lt;/a&gt;):&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+├── Dockerfile
+├── LICENSE
+├── README.rst
+├── app
+│   ├── __init__.py
+│   ├── extensions.py
+│   ├── factory.py
+│   ├── main
+│   │   ├── __init__.py
+│   │   ├── forms.py
+│   │   └── views.py
+│   ├── settings.py
+│   ├── static
+│   │   └── css
+│   │       └── main.css
+│   ├── tasks.py
+│   └── templates
+│       ├── base.html
+│       └── index.html
+├── docker-compose.yml
+├── environment.yml
+├── manage.py
+└── uwsgi.py
+&lt;/pre&gt;
+&lt;p&gt;I define all the used extensions in &lt;cite&gt;app/extensions.py&lt;/cite&gt;, my application factory in &lt;cite&gt;app/factory.py&lt;/cite&gt; and
+my default settings in &lt;cite&gt;app/settings.py&lt;/cite&gt;. Nothing strange in there. You can refer to the
+&lt;a class="reference external" href="https://github.com/beenje/flask-rq-example"&gt;GitHub repository&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Here is our main &lt;cite&gt;app/main/views.py&lt;/cite&gt;:&lt;/p&gt;
+&lt;pre class="code python"&gt;&lt;a name="rest_code_a0c07721020d4d8c9eb3af20fb71311f-1"&gt;&lt;/a&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Blueprint&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;render_template&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;url_for&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;flash&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;redirect&lt;/span&gt;
+&lt;a name="rest_code_a0c07721020d4d8c9eb3af20fb71311f-2"&gt;&lt;/a&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;..&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;tasks&lt;/span&gt;
+&lt;a name="rest_code_a0c07721020d4d8c9eb3af20fb71311f-3"&gt;&lt;/a&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;.forms&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;TaskForm&lt;/span&gt;
+&lt;a name="rest_code_a0c07721020d4d8c9eb3af20fb71311f-4"&gt;&lt;/a&gt;
+&lt;a name="rest_code_a0c07721020d4d8c9eb3af20fb71311f-5"&gt;&lt;/a&gt;&lt;span class="n"&gt;bp&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Blueprint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'main'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;__name__&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;a name="rest_code_a0c07721020d4d8c9eb3af20fb71311f-6"&gt;&lt;/a&gt;
+&lt;a name="rest_code_a0c07721020d4d8c9eb3af20fb71311f-7"&gt;&lt;/a&gt;
+&lt;a name="rest_code_a0c07721020d4d8c9eb3af20fb71311f-8"&gt;&lt;/a&gt;&lt;span class="nd"&gt;@bp.route&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'/'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;methods&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'GET'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'POST'&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;a name="rest_code_a0c07721020d4d8c9eb3af20fb71311f-9"&gt;&lt;/a&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;index&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+&lt;a name="rest_code_a0c07721020d4d8c9eb3af20fb71311f-10"&gt;&lt;/a&gt;    &lt;span class="n"&gt;form&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;TaskForm&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;a name="rest_code_a0c07721020d4d8c9eb3af20fb71311f-11"&gt;&lt;/a&gt;    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;form&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;validate_on_submit&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+&lt;a name="rest_code_a0c07721020d4d8c9eb3af20fb71311f-12"&gt;&lt;/a&gt;        &lt;span class="n"&gt;task&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;form&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;task&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;
+&lt;a name="rest_code_a0c07721020d4d8c9eb3af20fb71311f-13"&gt;&lt;/a&gt;        &lt;span class="k"&gt;try&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+&lt;a name="rest_code_a0c07721020d4d8c9eb3af20fb71311f-14"&gt;&lt;/a&gt;            &lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;tasks&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;run&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;task&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;a name="rest_code_a0c07721020d4d8c9eb3af20fb71311f-15"&gt;&lt;/a&gt;        &lt;span class="k"&gt;except&lt;/span&gt; &lt;span class="ne"&gt;Exception&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+&lt;a name="rest_code_a0c07721020d4d8c9eb3af20fb71311f-16"&gt;&lt;/a&gt;            &lt;span class="n"&gt;flash&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'Task failed: {}'&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="s1"&gt;'danger'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;a name="rest_code_a0c07721020d4d8c9eb3af20fb71311f-17"&gt;&lt;/a&gt;        &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+&lt;a name="rest_code_a0c07721020d4d8c9eb3af20fb71311f-18"&gt;&lt;/a&gt;            &lt;span class="n"&gt;flash&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;result&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'success'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;a name="rest_code_a0c07721020d4d8c9eb3af20fb71311f-19"&gt;&lt;/a&gt;        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;redirect&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url_for&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'main.index'&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;a name="rest_code_a0c07721020d4d8c9eb3af20fb71311f-20"&gt;&lt;/a&gt;    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;render_template&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'index.html'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;form&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;form&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;p&gt;As said previously, we create a form. On submit, we run the task and send the response back.&lt;/p&gt;
+&lt;p&gt;The form is defined in &lt;cite&gt;app/main/forms.py&lt;/cite&gt;:&lt;/p&gt;
+&lt;pre class="code python"&gt;&lt;a name="rest_code_bb767867ec7b447b814ab85f50b3017c-1"&gt;&lt;/a&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;current_app&lt;/span&gt;
+&lt;a name="rest_code_bb767867ec7b447b814ab85f50b3017c-2"&gt;&lt;/a&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask_wtf&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Form&lt;/span&gt;
+&lt;a name="rest_code_bb767867ec7b447b814ab85f50b3017c-3"&gt;&lt;/a&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;wtforms&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;SelectField&lt;/span&gt;
+&lt;a name="rest_code_bb767867ec7b447b814ab85f50b3017c-4"&gt;&lt;/a&gt;
+&lt;a name="rest_code_bb767867ec7b447b814ab85f50b3017c-5"&gt;&lt;/a&gt;
+&lt;a name="rest_code_bb767867ec7b447b814ab85f50b3017c-6"&gt;&lt;/a&gt;&lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;TaskForm&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Form&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+&lt;a name="rest_code_bb767867ec7b447b814ab85f50b3017c-7"&gt;&lt;/a&gt;    &lt;span class="n"&gt;task&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;SelectField&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'Task'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;a name="rest_code_bb767867ec7b447b814ab85f50b3017c-8"&gt;&lt;/a&gt;
+&lt;a name="rest_code_bb767867ec7b447b814ab85f50b3017c-9"&gt;&lt;/a&gt;    &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;kwargs&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+&lt;a name="rest_code_bb767867ec7b447b814ab85f50b3017c-10"&gt;&lt;/a&gt;        &lt;span class="nb"&gt;super&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;**&lt;/span&gt;&lt;span class="n"&gt;kwargs&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;a name="rest_code_bb767867ec7b447b814ab85f50b3017c-11"&gt;&lt;/a&gt;        &lt;span class="bp"&gt;self&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;task&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;choices&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[(&lt;/span&gt;&lt;span class="n"&gt;task&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;task&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;task&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;current_app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'TASKS'&lt;/span&gt;&lt;span class="p"&gt;]]&lt;/span&gt;
+&lt;/pre&gt;&lt;p&gt;In &lt;cite&gt;app/tasks.py&lt;/cite&gt;, we have our &lt;cite&gt;run&lt;/cite&gt; function to start a dummy task:&lt;/p&gt;
+&lt;pre class="code python"&gt;&lt;a name="rest_code_b3438832553841afb063a5b66d0c588d-1"&gt;&lt;/a&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;random&lt;/span&gt;
+&lt;a name="rest_code_b3438832553841afb063a5b66d0c588d-2"&gt;&lt;/a&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;time&lt;/span&gt;
+&lt;a name="rest_code_b3438832553841afb063a5b66d0c588d-3"&gt;&lt;/a&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;current_app&lt;/span&gt;
+&lt;a name="rest_code_b3438832553841afb063a5b66d0c588d-4"&gt;&lt;/a&gt;
+&lt;a name="rest_code_b3438832553841afb063a5b66d0c588d-5"&gt;&lt;/a&gt;
+&lt;a name="rest_code_b3438832553841afb063a5b66d0c588d-6"&gt;&lt;/a&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;run&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;task&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+&lt;a name="rest_code_b3438832553841afb063a5b66d0c588d-7"&gt;&lt;/a&gt;    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="s1"&gt;'error'&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="n"&gt;task&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+&lt;a name="rest_code_b3438832553841afb063a5b66d0c588d-8"&gt;&lt;/a&gt;        &lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sleep&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mf"&gt;0.5&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;a name="rest_code_b3438832553841afb063a5b66d0c588d-9"&gt;&lt;/a&gt;        &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+&lt;a name="rest_code_b3438832553841afb063a5b66d0c588d-10"&gt;&lt;/a&gt;    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;task&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;startswith&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'Short'&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+&lt;a name="rest_code_b3438832553841afb063a5b66d0c588d-11"&gt;&lt;/a&gt;        &lt;span class="n"&gt;seconds&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+&lt;a name="rest_code_b3438832553841afb063a5b66d0c588d-12"&gt;&lt;/a&gt;    &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+&lt;a name="rest_code_b3438832553841afb063a5b66d0c588d-13"&gt;&lt;/a&gt;        &lt;span class="n"&gt;seconds&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;random&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;randint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;current_app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'MAX_TIME_TO_WAIT'&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;a name="rest_code_b3438832553841afb063a5b66d0c588d-14"&gt;&lt;/a&gt;    &lt;span class="n"&gt;time&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;sleep&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;seconds&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;a name="rest_code_b3438832553841afb063a5b66d0c588d-15"&gt;&lt;/a&gt;    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="s1"&gt;'{} performed in {} second(s)'&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;task&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;seconds&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;p&gt;In &lt;cite&gt;app/templates/base.html&lt;/cite&gt;, we define a fixed to top navbar and
+a container to show flash messages and our main code. Note that we take advantage of
+&lt;a class="reference external" href="https://pythonhosted.org/Flask-Bootstrap/"&gt;Flask-Bootstrap&lt;/a&gt;.&lt;/p&gt;
+&lt;pre class="code html"&gt;&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-1"&gt;&lt;/a&gt;{%- extends "bootstrap/base.html" %}
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-2"&gt;&lt;/a&gt;{% import "bootstrap/utils.html" as utils %}
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-3"&gt;&lt;/a&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-4"&gt;&lt;/a&gt;{% block head %}
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-5"&gt;&lt;/a&gt;  &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;meta&lt;/span&gt; &lt;span class="na"&gt;charset&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"utf-8"&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-6"&gt;&lt;/a&gt;  &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;meta&lt;/span&gt; &lt;span class="na"&gt;http-equiv&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"X-UA-Compatible"&lt;/span&gt; &lt;span class="na"&gt;content&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"IE=edge"&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-7"&gt;&lt;/a&gt;  {{super()}}
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-8"&gt;&lt;/a&gt;{% endblock %}
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-9"&gt;&lt;/a&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-10"&gt;&lt;/a&gt;{% block styles %}
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-11"&gt;&lt;/a&gt;  {{super()}}
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-12"&gt;&lt;/a&gt;  &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;link&lt;/span&gt; &lt;span class="na"&gt;href&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"{{ url_for('static', filename='css/main.css') }}"&lt;/span&gt; &lt;span class="na"&gt;rel&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"stylesheet"&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-13"&gt;&lt;/a&gt;{% endblock %}
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-14"&gt;&lt;/a&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-15"&gt;&lt;/a&gt;{% block title %}My App{% endblock %}
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-16"&gt;&lt;/a&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-17"&gt;&lt;/a&gt;{% block navbar %}
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-18"&gt;&lt;/a&gt;  &lt;span class="c"&gt;&amp;lt;!-- Fixed navbar --&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-19"&gt;&lt;/a&gt;  &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"navbar navbar-default navbar-fixed-top"&lt;/span&gt; &lt;span class="na"&gt;role&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"navigation"&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-20"&gt;&lt;/a&gt;    &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"container"&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-21"&gt;&lt;/a&gt;      &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"navbar-header"&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-22"&gt;&lt;/a&gt;        &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;button&lt;/span&gt; &lt;span class="na"&gt;type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"button"&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"navbar-toggle"&lt;/span&gt; &lt;span class="na"&gt;data-toggle&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"collapse"&lt;/span&gt; &lt;span class="na"&gt;data-target&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;".navbar-collapse"&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-23"&gt;&lt;/a&gt;          &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;span&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"sr-only"&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;Toggle navigation&lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;span&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-24"&gt;&lt;/a&gt;          &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;span&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"icon-bar"&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;span&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-25"&gt;&lt;/a&gt;          &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;span&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"icon-bar"&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;span&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-26"&gt;&lt;/a&gt;          &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;span&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"icon-bar"&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;span&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-27"&gt;&lt;/a&gt;        &lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;button&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-28"&gt;&lt;/a&gt;        &lt;span class="c"&gt;&amp;lt;!--img class="navbar-brand" src="../../static/logo.png"--&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-29"&gt;&lt;/a&gt;        &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;a&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"navbar-brand"&lt;/span&gt; &lt;span class="na"&gt;href&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"{{ url_for('main.index') }}"&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;My App&lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;a&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-30"&gt;&lt;/a&gt;      &lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-31"&gt;&lt;/a&gt;    &lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-32"&gt;&lt;/a&gt;  &lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-33"&gt;&lt;/a&gt;{% endblock %}
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-34"&gt;&lt;/a&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-35"&gt;&lt;/a&gt;{% block content %}
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-36"&gt;&lt;/a&gt;  &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"container"&lt;/span&gt; &lt;span class="na"&gt;id&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"mainContent"&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-37"&gt;&lt;/a&gt;    {{utils.flashed_messages(container=False, dismissible=True)}}
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-38"&gt;&lt;/a&gt;    {% block main %}{% endblock %}
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-39"&gt;&lt;/a&gt;  &lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_e6b6b494c7534f608d7ecad6e5e0ccfc-40"&gt;&lt;/a&gt;{% endblock %}
+&lt;/pre&gt;&lt;p&gt;The html code for our view is in &lt;cite&gt;app/templates/index.html&lt;/cite&gt;:&lt;/p&gt;
+&lt;pre class="code html"&gt;&lt;a name="rest_code_f342f8b7eede48beaa7abb62b9e93810-1"&gt;&lt;/a&gt;{%- extends "base.html" %}
+&lt;a name="rest_code_f342f8b7eede48beaa7abb62b9e93810-2"&gt;&lt;/a&gt;{% import "bootstrap/wtf.html" as wtf %}
+&lt;a name="rest_code_f342f8b7eede48beaa7abb62b9e93810-3"&gt;&lt;/a&gt;
+&lt;a name="rest_code_f342f8b7eede48beaa7abb62b9e93810-4"&gt;&lt;/a&gt;{% block main %}
+&lt;a name="rest_code_f342f8b7eede48beaa7abb62b9e93810-5"&gt;&lt;/a&gt;      &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"panel panel-default"&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_f342f8b7eede48beaa7abb62b9e93810-6"&gt;&lt;/a&gt;        &lt;span class="c"&gt;&amp;lt;!-- Default panel contents --&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_f342f8b7eede48beaa7abb62b9e93810-7"&gt;&lt;/a&gt;        &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"panel-heading"&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;Select task to run&lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_f342f8b7eede48beaa7abb62b9e93810-8"&gt;&lt;/a&gt;        &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"panel-body"&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_f342f8b7eede48beaa7abb62b9e93810-9"&gt;&lt;/a&gt;          &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"col-md-3"&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_f342f8b7eede48beaa7abb62b9e93810-10"&gt;&lt;/a&gt;            &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;form&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"form"&lt;/span&gt; &lt;span class="na"&gt;id&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"taskForm"&lt;/span&gt; &lt;span class="na"&gt;method&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"POST"&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_f342f8b7eede48beaa7abb62b9e93810-11"&gt;&lt;/a&gt;              {{ form.hidden_tag() }}
+&lt;a name="rest_code_f342f8b7eede48beaa7abb62b9e93810-12"&gt;&lt;/a&gt;              {{ wtf.form_field(form.task) }}
+&lt;a name="rest_code_f342f8b7eede48beaa7abb62b9e93810-13"&gt;&lt;/a&gt;              &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"form-group"&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_f342f8b7eede48beaa7abb62b9e93810-14"&gt;&lt;/a&gt;                &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;button&lt;/span&gt; &lt;span class="na"&gt;type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"submit"&lt;/span&gt; &lt;span class="na"&gt;class&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"btn btn-default"&lt;/span&gt; &lt;span class="na"&gt;id&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;"submit"&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;Run&lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;button&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_f342f8b7eede48beaa7abb62b9e93810-15"&gt;&lt;/a&gt;              &lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_f342f8b7eede48beaa7abb62b9e93810-16"&gt;&lt;/a&gt;            &lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;form&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_f342f8b7eede48beaa7abb62b9e93810-17"&gt;&lt;/a&gt;          &lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_f342f8b7eede48beaa7abb62b9e93810-18"&gt;&lt;/a&gt;        &lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_f342f8b7eede48beaa7abb62b9e93810-19"&gt;&lt;/a&gt;      &lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;div&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_f342f8b7eede48beaa7abb62b9e93810-20"&gt;&lt;/a&gt;{% endblock %}
+&lt;/pre&gt;&lt;p&gt;Let's run this first example. We could just create a virtual environment using &lt;a class="reference external" href="https://virtualenv.pypa.io/en/stable/"&gt;virtualenv&lt;/a&gt;
+or &lt;a class="reference external" href="http://conda.pydata.org/docs/intro.html"&gt;conda&lt;/a&gt;. As we'll soon need &lt;a class="reference external" href="http://redis.io"&gt;Redis&lt;/a&gt;, let's directly go for &lt;a class="reference external" href="https://www.docker.com"&gt;Docker&lt;/a&gt;:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ git clone https://github.com/beenje/flask-rq-example.git
+$ cd flask-rq-example
+$ git checkout faa61009dbe3bafe49aae473f0fa19ab05a3ab90
+$ docker-compose build
+$ docker-compose up
+&lt;/pre&gt;
+&lt;p&gt;Go to &lt;a class="reference external" href="http://localhost:5000"&gt;http://localhost:5000&lt;/a&gt;. You should see the following window:&lt;/p&gt;
+&lt;img alt="/images/flask-rq-example.png" src="http://beenje.github.io/blog/images/flask-rq-example.png"&gt;
+&lt;p&gt;Choose a task and press run. See how The UI is stuck while waiting for the server?
+Not very nice...
+Let' improve that a little by using some JavaScript.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="second-version-use-ajax-to-submit-the-form"&gt;
+&lt;h2&gt;Second version: use Ajax to submit the form&lt;/h2&gt;
+&lt;p&gt;Let's write some javascript. Here is the &lt;cite&gt;app/static/js/main.js&lt;/cite&gt;:&lt;/p&gt;
+&lt;pre class="code javascript"&gt;&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-1"&gt;&lt;/a&gt;&lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;document&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="nx"&gt;ready&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kd"&gt;function&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-2"&gt;&lt;/a&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-3"&gt;&lt;/a&gt;  &lt;span class="c1"&gt;// flash an alert&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-4"&gt;&lt;/a&gt;  &lt;span class="c1"&gt;// remove previous alerts by default&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-5"&gt;&lt;/a&gt;  &lt;span class="c1"&gt;// set clean to false to keep old alerts&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-6"&gt;&lt;/a&gt;  &lt;span class="kd"&gt;function&lt;/span&gt; &lt;span class="nx"&gt;flash_alert&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;message&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;category&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;clean&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-7"&gt;&lt;/a&gt;    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;typeof&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;clean&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;===&lt;/span&gt; &lt;span class="s2"&gt;"undefined"&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="nx"&gt;clean&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-8"&gt;&lt;/a&gt;    &lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;clean&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-9"&gt;&lt;/a&gt;      &lt;span class="nx"&gt;remove_alerts&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-10"&gt;&lt;/a&gt;    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-11"&gt;&lt;/a&gt;    &lt;span class="kd"&gt;var&lt;/span&gt; &lt;span class="nx"&gt;htmlString&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;'&amp;lt;div class="alert alert-'&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="nx"&gt;category&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s1"&gt;' alert-dismissible" role="alert"&amp;gt;'&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-12"&gt;&lt;/a&gt;    &lt;span class="nx"&gt;htmlString&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="s1"&gt;'&amp;lt;button type="button" class="close" data-dismiss="alert" aria-label="Close"&amp;gt;'&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-13"&gt;&lt;/a&gt;    &lt;span class="nx"&gt;htmlString&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="s1"&gt;'&amp;lt;span aria-hidden="true"&amp;gt;&amp;amp;times;&amp;lt;/span&amp;gt;&amp;lt;/button&amp;gt;'&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="nx"&gt;message&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s1"&gt;'&amp;lt;/div&amp;gt;'&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-14"&gt;&lt;/a&gt;    &lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;htmlString&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="nx"&gt;prependTo&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"#mainContent"&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="nx"&gt;hide&lt;/span&gt;&lt;span class="p"&gt;().&lt;/span&gt;&lt;span class="nx"&gt;slideDown&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-15"&gt;&lt;/a&gt;  &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-16"&gt;&lt;/a&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-17"&gt;&lt;/a&gt;  &lt;span class="kd"&gt;function&lt;/span&gt; &lt;span class="nx"&gt;remove_alerts&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-18"&gt;&lt;/a&gt;    &lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;".alert"&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="nx"&gt;slideUp&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"normal"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kd"&gt;function&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-19"&gt;&lt;/a&gt;      &lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="nx"&gt;remove&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-20"&gt;&lt;/a&gt;    &lt;span class="p"&gt;});&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-21"&gt;&lt;/a&gt;  &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-22"&gt;&lt;/a&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-23"&gt;&lt;/a&gt;  &lt;span class="c1"&gt;// submit form&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-24"&gt;&lt;/a&gt;  &lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"#submit"&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="nx"&gt;on&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'click'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kd"&gt;function&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-25"&gt;&lt;/a&gt;    &lt;span class="nx"&gt;flash_alert&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"Running "&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"#task"&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="nx"&gt;val&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s2"&gt;"..."&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"info"&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-26"&gt;&lt;/a&gt;    &lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;ajax&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-27"&gt;&lt;/a&gt;      &lt;span class="nx"&gt;url&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="nx"&gt;$SCRIPT_ROOT&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="s2"&gt;"/_run_task"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-28"&gt;&lt;/a&gt;      &lt;span class="nx"&gt;data&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"#taskForm"&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="nx"&gt;serialize&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-29"&gt;&lt;/a&gt;      &lt;span class="nx"&gt;method&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;"POST"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-30"&gt;&lt;/a&gt;      &lt;span class="nx"&gt;dataType&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;"json"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-31"&gt;&lt;/a&gt;      &lt;span class="nx"&gt;success&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="kd"&gt;function&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-32"&gt;&lt;/a&gt;        &lt;span class="nx"&gt;flash_alert&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;data&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;result&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"success"&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-33"&gt;&lt;/a&gt;      &lt;span class="p"&gt;},&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-34"&gt;&lt;/a&gt;      &lt;span class="nx"&gt;error&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="kd"&gt;function&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;jqXHR&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;textStatus&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;errorThrown&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-35"&gt;&lt;/a&gt;        &lt;span class="nx"&gt;flash_alert&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;JSON&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;parse&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;jqXHR&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;responseText&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="nx"&gt;message&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"danger"&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-36"&gt;&lt;/a&gt;      &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-37"&gt;&lt;/a&gt;    &lt;span class="p"&gt;});&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-38"&gt;&lt;/a&gt;  &lt;span class="p"&gt;});&lt;/span&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-39"&gt;&lt;/a&gt;
+&lt;a name="rest_code_43645b7ff9d94ebe9413e787e586357e-40"&gt;&lt;/a&gt;&lt;span class="p"&gt;});&lt;/span&gt;
+&lt;/pre&gt;&lt;p&gt;To include this file in our html, we add the following block to &lt;cite&gt;app/templates/base.html&lt;/cite&gt;:&lt;/p&gt;
+&lt;pre class="code html"&gt;&lt;a name="rest_code_597cf8b5305d4889a208f89f0ffee64d-1"&gt;&lt;/a&gt;{% block scripts %}
+&lt;a name="rest_code_597cf8b5305d4889a208f89f0ffee64d-2"&gt;&lt;/a&gt;  {{super()}}
+&lt;a name="rest_code_597cf8b5305d4889a208f89f0ffee64d-3"&gt;&lt;/a&gt;  &lt;span class="p"&gt;&amp;lt;&lt;/span&gt;&lt;span class="nt"&gt;script&lt;/span&gt; &lt;span class="na"&gt;type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s"&gt;text/javascript&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_597cf8b5305d4889a208f89f0ffee64d-4"&gt;&lt;/a&gt;    &lt;span class="nx"&gt;$SCRIPT_ROOT&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{{&lt;/span&gt; &lt;span class="nx"&gt;request&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;script_root&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="nx"&gt;tojson&lt;/span&gt;&lt;span class="o"&gt;|&lt;/span&gt;&lt;span class="nx"&gt;safe&lt;/span&gt; &lt;span class="p"&gt;}};&lt;/span&gt;
+&lt;a name="rest_code_597cf8b5305d4889a208f89f0ffee64d-5"&gt;&lt;/a&gt;  &lt;span class="p"&gt;&amp;lt;/&lt;/span&gt;&lt;span class="nt"&gt;script&lt;/span&gt;&lt;span class="p"&gt;&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_597cf8b5305d4889a208f89f0ffee64d-6"&gt;&lt;/a&gt;  {% block app_scripts %}{% endblock %}
+&lt;a name="rest_code_597cf8b5305d4889a208f89f0ffee64d-7"&gt;&lt;/a&gt;{% endblock %}
+&lt;/pre&gt;&lt;p&gt;And here is a diff for our &lt;cite&gt;app/templates/index.html&lt;/cite&gt;:&lt;/p&gt;
+&lt;pre class="code diff"&gt;&lt;a name="rest_code_7ea2d3c5cbdd4ee38205fac5d5e62e3b-1"&gt;&lt;/a&gt;               {{ form.hidden_tag() }}
+&lt;a name="rest_code_7ea2d3c5cbdd4ee38205fac5d5e62e3b-2"&gt;&lt;/a&gt;               {{ wtf.form_field(form.task) }}
+&lt;a name="rest_code_7ea2d3c5cbdd4ee38205fac5d5e62e3b-3"&gt;&lt;/a&gt;               &amp;lt;div class="form-group"&amp;gt;
+&lt;a name="rest_code_7ea2d3c5cbdd4ee38205fac5d5e62e3b-4"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-                &amp;lt;button type="submit" class="btn btn-default" id="submit"&amp;gt;Run&amp;lt;/button&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_7ea2d3c5cbdd4ee38205fac5d5e62e3b-5"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+                &amp;lt;button type="button" class="btn btn-default" id="submit"&amp;gt;Run&amp;lt;/button&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_7ea2d3c5cbdd4ee38205fac5d5e62e3b-6"&gt;&lt;/a&gt;               &amp;lt;/div&amp;gt;
+&lt;a name="rest_code_7ea2d3c5cbdd4ee38205fac5d5e62e3b-7"&gt;&lt;/a&gt;             &amp;lt;/form&amp;gt;
+&lt;a name="rest_code_7ea2d3c5cbdd4ee38205fac5d5e62e3b-8"&gt;&lt;/a&gt;           &amp;lt;/div&amp;gt;
+&lt;a name="rest_code_7ea2d3c5cbdd4ee38205fac5d5e62e3b-9"&gt;&lt;/a&gt;         &amp;lt;/div&amp;gt;
+&lt;a name="rest_code_7ea2d3c5cbdd4ee38205fac5d5e62e3b-10"&gt;&lt;/a&gt;       &amp;lt;/div&amp;gt;
+&lt;a name="rest_code_7ea2d3c5cbdd4ee38205fac5d5e62e3b-11"&gt;&lt;/a&gt; {% endblock %}
+&lt;a name="rest_code_7ea2d3c5cbdd4ee38205fac5d5e62e3b-12"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+&lt;/span&gt;
+&lt;a name="rest_code_7ea2d3c5cbdd4ee38205fac5d5e62e3b-13"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+{% block app_scripts %}&lt;/span&gt;
+&lt;a name="rest_code_7ea2d3c5cbdd4ee38205fac5d5e62e3b-14"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+  &amp;lt;script src="{{ url_for('static', filename='js/main.js') }}"&amp;gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
+&lt;a name="rest_code_7ea2d3c5cbdd4ee38205fac5d5e62e3b-15"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+{% endblock %}&lt;/span&gt;
+&lt;/pre&gt;&lt;p&gt;We change the &lt;cite&gt;button&lt;/cite&gt; type from &lt;cite&gt;submit&lt;/cite&gt; to &lt;cite&gt;button&lt;/cite&gt; so that it doesn't send a POST when clicked.
+We send an Ajax query to &lt;cite&gt;$SCRIPT_ROOT/_run_task&lt;/cite&gt; instead.&lt;/p&gt;
+&lt;p&gt;This is our new &lt;cite&gt;app/main/views.py&lt;/cite&gt;:&lt;/p&gt;
+&lt;pre class="code python"&gt;&lt;a name="rest_code_2a0190aafd2540c3bb58b0e08c2c0d7d-1"&gt;&lt;/a&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Blueprint&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;render_template&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;jsonify&lt;/span&gt;
+&lt;a name="rest_code_2a0190aafd2540c3bb58b0e08c2c0d7d-2"&gt;&lt;/a&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;..&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;tasks&lt;/span&gt;
+&lt;a name="rest_code_2a0190aafd2540c3bb58b0e08c2c0d7d-3"&gt;&lt;/a&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;.forms&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;TaskForm&lt;/span&gt;
+&lt;a name="rest_code_2a0190aafd2540c3bb58b0e08c2c0d7d-4"&gt;&lt;/a&gt;
+&lt;a name="rest_code_2a0190aafd2540c3bb58b0e08c2c0d7d-5"&gt;&lt;/a&gt;&lt;span class="n"&gt;bp&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Blueprint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'main'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;__name__&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;a name="rest_code_2a0190aafd2540c3bb58b0e08c2c0d7d-6"&gt;&lt;/a&gt;
+&lt;a name="rest_code_2a0190aafd2540c3bb58b0e08c2c0d7d-7"&gt;&lt;/a&gt;
+&lt;a name="rest_code_2a0190aafd2540c3bb58b0e08c2c0d7d-8"&gt;&lt;/a&gt;&lt;span class="nd"&gt;@bp.route&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'/_run_task'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;methods&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'POST'&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;a name="rest_code_2a0190aafd2540c3bb58b0e08c2c0d7d-9"&gt;&lt;/a&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;run_task&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+&lt;a name="rest_code_2a0190aafd2540c3bb58b0e08c2c0d7d-10"&gt;&lt;/a&gt;    &lt;span class="n"&gt;task&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;form&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'task'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;a name="rest_code_2a0190aafd2540c3bb58b0e08c2c0d7d-11"&gt;&lt;/a&gt;    &lt;span class="k"&gt;try&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+&lt;a name="rest_code_2a0190aafd2540c3bb58b0e08c2c0d7d-12"&gt;&lt;/a&gt;        &lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;tasks&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;run&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;task&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;a name="rest_code_2a0190aafd2540c3bb58b0e08c2c0d7d-13"&gt;&lt;/a&gt;    &lt;span class="k"&gt;except&lt;/span&gt; &lt;span class="ne"&gt;Exception&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+&lt;a name="rest_code_2a0190aafd2540c3bb58b0e08c2c0d7d-14"&gt;&lt;/a&gt;        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;jsonify&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;&lt;span class="s1"&gt;'message'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;'Task failed: {}'&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="p"&gt;)}),&lt;/span&gt; &lt;span class="mi"&gt;500&lt;/span&gt;
+&lt;a name="rest_code_2a0190aafd2540c3bb58b0e08c2c0d7d-15"&gt;&lt;/a&gt;    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;jsonify&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;&lt;span class="s1"&gt;'result'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;result&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
+&lt;a name="rest_code_2a0190aafd2540c3bb58b0e08c2c0d7d-16"&gt;&lt;/a&gt;
+&lt;a name="rest_code_2a0190aafd2540c3bb58b0e08c2c0d7d-17"&gt;&lt;/a&gt;
+&lt;a name="rest_code_2a0190aafd2540c3bb58b0e08c2c0d7d-18"&gt;&lt;/a&gt;&lt;span class="nd"&gt;@bp.route&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'/'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;a name="rest_code_2a0190aafd2540c3bb58b0e08c2c0d7d-19"&gt;&lt;/a&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;index&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+&lt;a name="rest_code_2a0190aafd2540c3bb58b0e08c2c0d7d-20"&gt;&lt;/a&gt;    &lt;span class="n"&gt;form&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;TaskForm&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;a name="rest_code_2a0190aafd2540c3bb58b0e08c2c0d7d-21"&gt;&lt;/a&gt;    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;render_template&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'index.html'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;form&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;form&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;p&gt;Let's run this new example:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ git checkout c1ccfe8b3a39079ab80f813b5733b324c8b65c6f
+$ docker rm flaskrqexample_web
+$ docker-compose up
+&lt;/pre&gt;
+&lt;p&gt;This time we immediately get some feedback when clicking on &lt;em&gt;Run&lt;/em&gt;. There is no reload.
+That's better, but the server is still busy during the processing. If you try to open a new page, you won't get any answer until the task is done...&lt;/p&gt;
+&lt;p&gt;To avoid blocking the server, we'll use a task queue.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="third-version-setup-rq"&gt;
+&lt;h2&gt;Third version: setup RQ&lt;/h2&gt;
+&lt;p&gt;As its name indicates, &lt;a class="reference external" href="http://python-rq.org"&gt;RQ&lt;/a&gt; (Redis Queue) is backed by &lt;a class="reference external" href="http://redis.io"&gt;Redis&lt;/a&gt;.
+It is designed to have a low barrier entry.
+What do we need to integrate &lt;a class="reference external" href="http://python-rq.org"&gt;RQ&lt;/a&gt; in our &lt;a class="reference external" href="http://flask.pocoo.org"&gt;Flask&lt;/a&gt; web app?&lt;/p&gt;
+&lt;p&gt;Let's first add some variables in &lt;cite&gt;app/settings.py&lt;/cite&gt;:&lt;/p&gt;
+&lt;pre class="code python"&gt;&lt;a name="rest_code_771b9e477f534b7594d7888177bd291b-1"&gt;&lt;/a&gt;&lt;span class="c1"&gt;# The Redis database to use&lt;/span&gt;
+&lt;a name="rest_code_771b9e477f534b7594d7888177bd291b-2"&gt;&lt;/a&gt;&lt;span class="n"&gt;REDIS_URL&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;'redis://redis:6379/0'&lt;/span&gt;
+&lt;a name="rest_code_771b9e477f534b7594d7888177bd291b-3"&gt;&lt;/a&gt;&lt;span class="c1"&gt;# The queues to listen on&lt;/span&gt;
+&lt;a name="rest_code_771b9e477f534b7594d7888177bd291b-4"&gt;&lt;/a&gt;&lt;span class="n"&gt;QUEUES&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'default'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;p&gt;To execute a background job, we need a worker.
+&lt;a class="reference external" href="http://python-rq.org"&gt;RQ&lt;/a&gt; comes with the &lt;cite&gt;rq worker&lt;/cite&gt; command to start a worker. To integrate it
+better with our Flask app, we are going to write a simple &lt;a class="reference external" href="https://flask-script.readthedocs.io/en/latest/"&gt;Flask-Script&lt;/a&gt;
+command. We add the following to our &lt;cite&gt;manage.py&lt;/cite&gt;:&lt;/p&gt;
+&lt;pre class="code python"&gt;&lt;a name="rest_code_755fcbdd1a0c44dca636e919ef417395-1"&gt;&lt;/a&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;rq&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Connection&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Worker&lt;/span&gt;
+&lt;a name="rest_code_755fcbdd1a0c44dca636e919ef417395-2"&gt;&lt;/a&gt;
+&lt;a name="rest_code_755fcbdd1a0c44dca636e919ef417395-3"&gt;&lt;/a&gt;&lt;span class="nd"&gt;@manager.command&lt;/span&gt;
+&lt;a name="rest_code_755fcbdd1a0c44dca636e919ef417395-4"&gt;&lt;/a&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;runworker&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+&lt;a name="rest_code_755fcbdd1a0c44dca636e919ef417395-5"&gt;&lt;/a&gt;    &lt;span class="n"&gt;redis_url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'REDIS_URL'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;a name="rest_code_755fcbdd1a0c44dca636e919ef417395-6"&gt;&lt;/a&gt;    &lt;span class="n"&gt;redis_connection&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;redis&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;from_url&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;redis_url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;a name="rest_code_755fcbdd1a0c44dca636e919ef417395-7"&gt;&lt;/a&gt;    &lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="n"&gt;Connection&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;redis_connection&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+&lt;a name="rest_code_755fcbdd1a0c44dca636e919ef417395-8"&gt;&lt;/a&gt;        &lt;span class="n"&gt;worker&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Worker&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'QUEUES'&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;a name="rest_code_755fcbdd1a0c44dca636e919ef417395-9"&gt;&lt;/a&gt;        &lt;span class="n"&gt;worker&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;work&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;p&gt;The Manager runs the command inside a Flask test context, meaning we can
+access the app config from within the worker.
+This is nice because both our web application and
+workers (and thus the jobs run on the worker) have access to the same
+configuration variables. No separate config file. No discrepancy.
+Everything is in &lt;cite&gt;app/settings.py&lt;/cite&gt; and can be overwritten by &lt;em&gt;LOCAL_SETTINGS&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;To put a job in a Queue, you just create a &lt;em&gt;RQ Queue&lt;/em&gt; and enqueue it.
+One way to do that is to pass the connection when creating the &lt;em&gt;Queue&lt;/em&gt;. This is a bit tedious.
+&lt;a class="reference external" href="http://python-rq.org"&gt;RQ&lt;/a&gt; has the notion of &lt;a class="reference external" href="http://python-rq.org/docs/connections/"&gt;connection context&lt;/a&gt;. We take advantage of that
+and register a function to push the connection and pop it before and after a request (&lt;cite&gt;app/main/views.py&lt;/cite&gt;):&lt;/p&gt;
+&lt;pre class="code python"&gt;&lt;a name="rest_code_20ff7e05372b405f927537a5e83d49e4-1"&gt;&lt;/a&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;redis&lt;/span&gt;
+&lt;a name="rest_code_20ff7e05372b405f927537a5e83d49e4-2"&gt;&lt;/a&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;flask&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Blueprint&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;render_template&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;jsonify&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;current_app&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;g&lt;/span&gt;
+&lt;a name="rest_code_20ff7e05372b405f927537a5e83d49e4-3"&gt;&lt;/a&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;rq&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;push_connection&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;pop_connection&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Queue&lt;/span&gt;
+&lt;a name="rest_code_20ff7e05372b405f927537a5e83d49e4-4"&gt;&lt;/a&gt;
+&lt;a name="rest_code_20ff7e05372b405f927537a5e83d49e4-5"&gt;&lt;/a&gt;
+&lt;a name="rest_code_20ff7e05372b405f927537a5e83d49e4-6"&gt;&lt;/a&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_redis_connection&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+&lt;a name="rest_code_20ff7e05372b405f927537a5e83d49e4-7"&gt;&lt;/a&gt;    &lt;span class="n"&gt;redis_connection&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;getattr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;g&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'_redis_connection'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;a name="rest_code_20ff7e05372b405f927537a5e83d49e4-8"&gt;&lt;/a&gt;    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;redis_connection&lt;/span&gt; &lt;span class="ow"&gt;is&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+&lt;a name="rest_code_20ff7e05372b405f927537a5e83d49e4-9"&gt;&lt;/a&gt;        &lt;span class="n"&gt;redis_url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;current_app&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;config&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'REDIS_URL'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;a name="rest_code_20ff7e05372b405f927537a5e83d49e4-10"&gt;&lt;/a&gt;        &lt;span class="n"&gt;redis_connection&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;g&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;_redis_connection&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;redis&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;from_url&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;redis_url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;a name="rest_code_20ff7e05372b405f927537a5e83d49e4-11"&gt;&lt;/a&gt;    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;redis_connection&lt;/span&gt;
+&lt;a name="rest_code_20ff7e05372b405f927537a5e83d49e4-12"&gt;&lt;/a&gt;
+&lt;a name="rest_code_20ff7e05372b405f927537a5e83d49e4-13"&gt;&lt;/a&gt;
+&lt;a name="rest_code_20ff7e05372b405f927537a5e83d49e4-14"&gt;&lt;/a&gt;&lt;span class="nd"&gt;@bp.before_request&lt;/span&gt;
+&lt;a name="rest_code_20ff7e05372b405f927537a5e83d49e4-15"&gt;&lt;/a&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;push_rq_connection&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+&lt;a name="rest_code_20ff7e05372b405f927537a5e83d49e4-16"&gt;&lt;/a&gt;    &lt;span class="n"&gt;push_connection&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;get_redis_connection&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+&lt;a name="rest_code_20ff7e05372b405f927537a5e83d49e4-17"&gt;&lt;/a&gt;
+&lt;a name="rest_code_20ff7e05372b405f927537a5e83d49e4-18"&gt;&lt;/a&gt;
+&lt;a name="rest_code_20ff7e05372b405f927537a5e83d49e4-19"&gt;&lt;/a&gt;&lt;span class="nd"&gt;@bp.teardown_request&lt;/span&gt;
+&lt;a name="rest_code_20ff7e05372b405f927537a5e83d49e4-20"&gt;&lt;/a&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;pop_rq_connection&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;exception&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+&lt;a name="rest_code_20ff7e05372b405f927537a5e83d49e4-21"&gt;&lt;/a&gt;    &lt;span class="n"&gt;pop_connection&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;p&gt;This makes it easy to create a &lt;em&gt;Queue&lt;/em&gt; in a request or application context.&lt;/p&gt;
+&lt;p&gt;The &lt;cite&gt;get_redis_connection&lt;/cite&gt; function gets the Redis connection and stores it in the &lt;em&gt;flask.g&lt;/em&gt; object.
+This is the same as what is explained for SQLite &lt;a class="reference external" href="http://flask.pocoo.org/docs/0.11/patterns/sqlite3/"&gt;here&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;With that in place, it's easy to enqueue a job. Here are the changes to the &lt;em&gt;run_task&lt;/em&gt; function:&lt;/p&gt;
+&lt;pre class="code diff"&gt;&lt;a name="rest_code_eba5e27085d14b85b47a6d19213be087-1"&gt;&lt;/a&gt; @bp.route('/_run_task', methods=['POST'])
+&lt;a name="rest_code_eba5e27085d14b85b47a6d19213be087-2"&gt;&lt;/a&gt; def run_task():
+&lt;a name="rest_code_eba5e27085d14b85b47a6d19213be087-3"&gt;&lt;/a&gt;     task = request.form.get('task')
+&lt;a name="rest_code_eba5e27085d14b85b47a6d19213be087-4"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    try:&lt;/span&gt;
+&lt;a name="rest_code_eba5e27085d14b85b47a6d19213be087-5"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-        result = tasks.run(task)&lt;/span&gt;
+&lt;a name="rest_code_eba5e27085d14b85b47a6d19213be087-6"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    except Exception as e:&lt;/span&gt;
+&lt;a name="rest_code_eba5e27085d14b85b47a6d19213be087-7"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-        return jsonify({'message': 'Task failed: {}'.format(e)}), 500&lt;/span&gt;
+&lt;a name="rest_code_eba5e27085d14b85b47a6d19213be087-8"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    return jsonify({'result': result})&lt;/span&gt;
+&lt;a name="rest_code_eba5e27085d14b85b47a6d19213be087-9"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+    q = Queue()&lt;/span&gt;
+&lt;a name="rest_code_eba5e27085d14b85b47a6d19213be087-10"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+    job = q.enqueue(tasks.run, task)&lt;/span&gt;
+&lt;a name="rest_code_eba5e27085d14b85b47a6d19213be087-11"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+    return jsonify({'job_id': job.get_id()})&lt;/span&gt;
+&lt;/pre&gt;&lt;p&gt;We enqeue our task and just return the job id for now.&lt;/p&gt;
+&lt;p&gt;Docker and &lt;cite&gt;docker-compose&lt;/cite&gt; are now gonna come in handy to start eveything
+(Redis, our web app and a worker). We just have to add the following to our
+&lt;cite&gt;docker-compose.yml&lt;/cite&gt; file:&lt;/p&gt;
+&lt;pre class="code diff"&gt;&lt;a name="rest_code_55aa1c7b52d54d158c2dbac7e34d3cc7-1"&gt;&lt;/a&gt; - "5000:5000"
+&lt;a name="rest_code_55aa1c7b52d54d158c2dbac7e34d3cc7-2"&gt;&lt;/a&gt; volumes:
+&lt;a name="rest_code_55aa1c7b52d54d158c2dbac7e34d3cc7-3"&gt;&lt;/a&gt; - .:/app
+&lt;a name="rest_code_55aa1c7b52d54d158c2dbac7e34d3cc7-4"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+    depends_on:&lt;/span&gt;
+&lt;a name="rest_code_55aa1c7b52d54d158c2dbac7e34d3cc7-5"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+    - redis&lt;/span&gt;
+&lt;a name="rest_code_55aa1c7b52d54d158c2dbac7e34d3cc7-6"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+  worker:&lt;/span&gt;
+&lt;a name="rest_code_55aa1c7b52d54d158c2dbac7e34d3cc7-7"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+    image: flaskrqexample&lt;/span&gt;
+&lt;a name="rest_code_55aa1c7b52d54d158c2dbac7e34d3cc7-8"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+    container_name: flaskrqexample_worker&lt;/span&gt;
+&lt;a name="rest_code_55aa1c7b52d54d158c2dbac7e34d3cc7-9"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+    environment:&lt;/span&gt;
+&lt;a name="rest_code_55aa1c7b52d54d158c2dbac7e34d3cc7-10"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+      LOCAL_SETTINGS: /app/settings.cfg&lt;/span&gt;
+&lt;a name="rest_code_55aa1c7b52d54d158c2dbac7e34d3cc7-11"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+    command: python manage.py runworker&lt;/span&gt;
+&lt;a name="rest_code_55aa1c7b52d54d158c2dbac7e34d3cc7-12"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+    volumes:&lt;/span&gt;
+&lt;a name="rest_code_55aa1c7b52d54d158c2dbac7e34d3cc7-13"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+    - .:/app&lt;/span&gt;
+&lt;a name="rest_code_55aa1c7b52d54d158c2dbac7e34d3cc7-14"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+    depends_on:&lt;/span&gt;
+&lt;a name="rest_code_55aa1c7b52d54d158c2dbac7e34d3cc7-15"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+    - redis&lt;/span&gt;
+&lt;a name="rest_code_55aa1c7b52d54d158c2dbac7e34d3cc7-16"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+  redis:&lt;/span&gt;
+&lt;a name="rest_code_55aa1c7b52d54d158c2dbac7e34d3cc7-17"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+    image: redis:3.2&lt;/span&gt;
+&lt;/pre&gt;&lt;p&gt;Don't forget to add &lt;em&gt;redis&lt;/em&gt; and &lt;em&gt;rq&lt;/em&gt; to your &lt;cite&gt;environment.yml&lt;/cite&gt; file!&lt;/p&gt;
+&lt;pre class="code diff"&gt;&lt;a name="rest_code_cb14d6efeaf9410f9855add58f047504-1"&gt;&lt;/a&gt;   - dominate==2.2.1
+&lt;a name="rest_code_cb14d6efeaf9410f9855add58f047504-2"&gt;&lt;/a&gt;   - flask-bootstrap==3.3.6.0
+&lt;a name="rest_code_cb14d6efeaf9410f9855add58f047504-3"&gt;&lt;/a&gt;   - flask-script==2.0.5
+&lt;a name="rest_code_cb14d6efeaf9410f9855add58f047504-4"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+  - redis==2.10.5&lt;/span&gt;
+&lt;a name="rest_code_cb14d6efeaf9410f9855add58f047504-5"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+  - rq==0.6.0&lt;/span&gt;
+&lt;a name="rest_code_cb14d6efeaf9410f9855add58f047504-6"&gt;&lt;/a&gt;   - visitor==0.1.3
+&lt;/pre&gt;&lt;p&gt;Rebuild the docker image and start the app:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ git checkout 437e710df3df0dd4b153f20027f5f00270b2e1a3
+$ docker rm flaskrqexample_web
+$ docker-compose build
+$ docker-compose up
+&lt;/pre&gt;
+&lt;p&gt;OK, nice, we started a job in the background! This is fine to run a task
+and forget about it (like sending an e-mail). But how do we get the result back?&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="fourth-version-poll-job-status-and-get-the-result"&gt;
+&lt;h2&gt;Fourth version: poll job status and get the result&lt;/h2&gt;
+&lt;p&gt;This is the part I have been missing for some time. But, as often, it's not difficult when you have seen it.
+When launching the job, we return an url to check the status of the job.
+The trick is to periodically call back the same function until the job is finished or failed.&lt;/p&gt;
+&lt;p&gt;On the server side, the &lt;cite&gt;job_status&lt;/cite&gt; endpoint uses the job_id to retrieve
+the job and to get its status and result.&lt;/p&gt;
+&lt;pre class="code python"&gt;&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-1"&gt;&lt;/a&gt;&lt;span class="nd"&gt;@bp.route&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'/status/&amp;lt;job_id&amp;gt;'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-2"&gt;&lt;/a&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;job_status&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;job_id&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-3"&gt;&lt;/a&gt;    &lt;span class="n"&gt;q&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Queue&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-4"&gt;&lt;/a&gt;    &lt;span class="n"&gt;job&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fetch_job&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;job_id&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-5"&gt;&lt;/a&gt;    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;job&lt;/span&gt; &lt;span class="ow"&gt;is&lt;/span&gt; &lt;span class="bp"&gt;None&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-6"&gt;&lt;/a&gt;        &lt;span class="n"&gt;response&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;'status'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;'unknown'&lt;/span&gt;&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-7"&gt;&lt;/a&gt;    &lt;span class="k"&gt;else&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-8"&gt;&lt;/a&gt;        &lt;span class="n"&gt;response&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-9"&gt;&lt;/a&gt;            &lt;span class="s1"&gt;'status'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;job&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get_status&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt;
+&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-10"&gt;&lt;/a&gt;            &lt;span class="s1"&gt;'result'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;job&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;result&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-11"&gt;&lt;/a&gt;        &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-12"&gt;&lt;/a&gt;        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;job&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;is_failed&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-13"&gt;&lt;/a&gt;            &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'message'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;job&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;exc_info&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;strip&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;split&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s1"&gt;'&lt;/span&gt;&lt;span class="p"&gt;)[&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-14"&gt;&lt;/a&gt;    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;jsonify&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-15"&gt;&lt;/a&gt;
+&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-16"&gt;&lt;/a&gt;
+&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-17"&gt;&lt;/a&gt;&lt;span class="nd"&gt;@bp.route&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'/_run_task'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;methods&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'POST'&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-18"&gt;&lt;/a&gt;&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;run_task&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-19"&gt;&lt;/a&gt;    &lt;span class="n"&gt;task&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;form&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'task'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-20"&gt;&lt;/a&gt;    &lt;span class="n"&gt;q&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Queue&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-21"&gt;&lt;/a&gt;    &lt;span class="n"&gt;job&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;enqueue&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tasks&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;run&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;task&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;a name="rest_code_8f7bf6b180dd4a59baa69fef9c4c4ba5-22"&gt;&lt;/a&gt;    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;jsonify&lt;/span&gt;&lt;span class="p"&gt;({}),&lt;/span&gt; &lt;span class="mi"&gt;202&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;'Location'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;url_for&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'main.job_status'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;job_id&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;job&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get_id&lt;/span&gt;&lt;span class="p"&gt;())}&lt;/span&gt;
+&lt;/pre&gt;&lt;p&gt;The &lt;cite&gt;run_task&lt;/cite&gt; function returns an empty response with the &lt;a class="reference external" href="https://httpstatuses.com/202"&gt;202&lt;/a&gt; status
+code. We use the &lt;em&gt;Location&lt;/em&gt; response-header field to pass the &lt;cite&gt;job_status&lt;/cite&gt; URL to the
+client.&lt;/p&gt;
+&lt;p&gt;On the client side, we retrieve the URL from the header and call the new
+&lt;cite&gt;check_job_status&lt;/cite&gt; function.&lt;/p&gt;
+&lt;pre class="code diff"&gt;&lt;a name="rest_code_ecdf69e01b8c44b48da2cbe008036a97-1"&gt;&lt;/a&gt;&lt;span class="gu"&gt;@@ -28,8 +53,11 @@ $(document).ready(function() {&lt;/span&gt;
+&lt;a name="rest_code_ecdf69e01b8c44b48da2cbe008036a97-2"&gt;&lt;/a&gt;       data: $("#taskForm").serialize(),
+&lt;a name="rest_code_ecdf69e01b8c44b48da2cbe008036a97-3"&gt;&lt;/a&gt;       method: "POST",
+&lt;a name="rest_code_ecdf69e01b8c44b48da2cbe008036a97-4"&gt;&lt;/a&gt;       dataType: "json",
+&lt;a name="rest_code_ecdf69e01b8c44b48da2cbe008036a97-5"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-      success: function(data) {&lt;/span&gt;
+&lt;a name="rest_code_ecdf69e01b8c44b48da2cbe008036a97-6"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-        flash_alert("Job " + data.job_id + " started...", "info", false);&lt;/span&gt;
+&lt;a name="rest_code_ecdf69e01b8c44b48da2cbe008036a97-7"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+      success: function(data, status, request) {&lt;/span&gt;
+&lt;a name="rest_code_ecdf69e01b8c44b48da2cbe008036a97-8"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+        $("#submit").attr("disabled", "disabled");&lt;/span&gt;
+&lt;a name="rest_code_ecdf69e01b8c44b48da2cbe008036a97-9"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+        flash_alert("Running " + task + "...", "info");&lt;/span&gt;
+&lt;a name="rest_code_ecdf69e01b8c44b48da2cbe008036a97-10"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+        var status_url = request.getResponseHeader('Location');&lt;/span&gt;
+&lt;a name="rest_code_ecdf69e01b8c44b48da2cbe008036a97-11"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+        check_job_status(status_url);&lt;/span&gt;
+&lt;a name="rest_code_ecdf69e01b8c44b48da2cbe008036a97-12"&gt;&lt;/a&gt;       },
+&lt;a name="rest_code_ecdf69e01b8c44b48da2cbe008036a97-13"&gt;&lt;/a&gt;       error: function(jqXHR, textStatus, errorThrown) {
+&lt;a name="rest_code_ecdf69e01b8c44b48da2cbe008036a97-14"&gt;&lt;/a&gt;         flash_alert("Failed to start " + task, "danger");
+&lt;/pre&gt;&lt;p&gt;We use &lt;cite&gt;setTimeout&lt;/cite&gt; to call back the same function until the job is done (finished
+or failed).&lt;/p&gt;
+&lt;pre class="code javascript"&gt;&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-1"&gt;&lt;/a&gt;&lt;span class="kd"&gt;function&lt;/span&gt; &lt;span class="nx"&gt;check_job_status&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;status_url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-2"&gt;&lt;/a&gt;  &lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;getJSON&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;status_url&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kd"&gt;function&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-3"&gt;&lt;/a&gt;    &lt;span class="nx"&gt;console&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;log&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;data&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-4"&gt;&lt;/a&gt;    &lt;span class="k"&gt;switch&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;data&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;status&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-5"&gt;&lt;/a&gt;      &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="s2"&gt;"unknown"&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-6"&gt;&lt;/a&gt;          &lt;span class="nx"&gt;flash_alert&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"Unknown job id"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"danger"&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-7"&gt;&lt;/a&gt;          &lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"#submit"&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="nx"&gt;removeAttr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"disabled"&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-8"&gt;&lt;/a&gt;          &lt;span class="k"&gt;break&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-9"&gt;&lt;/a&gt;      &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="s2"&gt;"finished"&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-10"&gt;&lt;/a&gt;          &lt;span class="nx"&gt;flash_alert&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;data&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;result&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"success"&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-11"&gt;&lt;/a&gt;          &lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"#submit"&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="nx"&gt;removeAttr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"disabled"&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-12"&gt;&lt;/a&gt;          &lt;span class="k"&gt;break&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-13"&gt;&lt;/a&gt;      &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="s2"&gt;"failed"&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-14"&gt;&lt;/a&gt;          &lt;span class="nx"&gt;flash_alert&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"Job failed: "&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="nx"&gt;data&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;message&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"danger"&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-15"&gt;&lt;/a&gt;          &lt;span class="nx"&gt;$&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"#submit"&lt;/span&gt;&lt;span class="p"&gt;).&lt;/span&gt;&lt;span class="nx"&gt;removeAttr&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;"disabled"&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-16"&gt;&lt;/a&gt;          &lt;span class="k"&gt;break&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-17"&gt;&lt;/a&gt;      &lt;span class="k"&gt;default&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-18"&gt;&lt;/a&gt;        &lt;span class="c1"&gt;// queued/started/deferred&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-19"&gt;&lt;/a&gt;        &lt;span class="nx"&gt;setTimeout&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kd"&gt;function&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-20"&gt;&lt;/a&gt;          &lt;span class="nx"&gt;check_job_status&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;status_url&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-21"&gt;&lt;/a&gt;        &lt;span class="p"&gt;},&lt;/span&gt; &lt;span class="mi"&gt;500&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-22"&gt;&lt;/a&gt;    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-23"&gt;&lt;/a&gt;  &lt;span class="p"&gt;});&lt;/span&gt;
+&lt;a name="rest_code_1771e533f9134fbe868a3104398a1e53-24"&gt;&lt;/a&gt;&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;p&gt;Let's checkout this commit and run our app again:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ git checkout da8360aefb222afc17417a518ac25029566071d6
+$ docker rm flaskrqexample_web
+$ docker rm flaskrqexample_worker
+$ docker-compose up
+&lt;/pre&gt;
+&lt;p&gt;Try submitting some tasks. This time you can open another window and the
+server will answer even when a task is running :-)
+You can open a console in your browser to see the polling and the response
+from the &lt;cite&gt;job_status&lt;/cite&gt; function.
+Note that we only have one worker, so if you start a second task, it will be enqueued
+and run only when the first one is done.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="conclusion"&gt;
+&lt;h2&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;Using &lt;a class="reference external" href="http://python-rq.org"&gt;RQ&lt;/a&gt; with &lt;a class="reference external" href="http://flask.pocoo.org"&gt;Flask&lt;/a&gt; isn't that difficult. So no need to block the server to
+get the result of a long task.
+There are a few more things to say, but this post starts to be a bit long,
+so I'll keep that for another time.&lt;/p&gt;
+&lt;p&gt;Thanks again to &lt;a class="reference external" href="http://blog.miguelgrinberg.com/"&gt;Miguel Grinberg&lt;/a&gt;
+and all his posts about Flask!&lt;/p&gt;
+&lt;/div&gt;&lt;/div&gt;</description><category>ajax</category><category>flask</category><category>python</category><category>redis</category><category>rq</category><guid>http://beenje.github.io/blog/posts/running-background-tasks-with-flask-and-rq/</guid><pubDate>Sat, 20 Aug 2016 21:32:16 GMT</pubDate></item><item><title>uWSGI, send_file and Python 3.5</title><link>http://beenje.github.io/blog/posts/uwsgi-send_file-and-python35/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I have a Flask app that returns an in-memory bytes buffer (&lt;a class="reference external" href="https://docs.python.org/3/library/io.html#io.BytesIO"&gt;io.Bytesio&lt;/a&gt;) using Flask &lt;a class="reference external" href="http://flask.pocoo.org/docs/0.11/api/#flask.send_file"&gt;send_file&lt;/a&gt; function.&lt;/p&gt;
 &lt;p&gt;The app is deployed using &lt;a class="reference external" href="http://uwsgi-docs.readthedocs.io/en/latest/"&gt;uWSGI&lt;/a&gt; behind Nginx.
 This was working fine with Python 3.4.&lt;/p&gt;
 &lt;p&gt;When I updated Python to 3.5, I got the following exception when trying to download a file:&lt;/p&gt;

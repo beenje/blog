@@ -7,146 +7,154 @@
                         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
  <url>
   <loc>http://beenje.github.io/blog/</loc>
-  <lastmod>2016-05-31T14:43:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/2016/</loc>
-  <lastmod>2016-01-03T15:17:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/archive.html</loc>
-  <lastmod>2016-07-19T20:52:00Z</lastmod>
+  <lastmod>2016-08-21T20:38:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/</loc>
-  <lastmod>2016-07-19T20:52:00Z</lastmod>
+  <lastmod>2016-08-19T12:48:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/ajax/</loc>
+  <lastmod>2016-08-19T12:48:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/ansible/</loc>
-  <lastmod>2016-07-19T20:52:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/bash/</loc>
-  <lastmod>2016-01-18T22:06:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/cat_git/</loc>
-  <lastmod>2016-01-30T21:32:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/cat_linux/</loc>
-  <lastmod>2016-01-18T22:06:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/cat_python/</loc>
-  <lastmod>2016-05-31T16:00:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/ci/</loc>
-  <lastmod>2016-06-07T20:54:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/conda/</loc>
-  <lastmod>2016-05-31T16:00:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/cron/</loc>
-  <lastmod>2016-01-18T22:06:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/flask/</loc>
-  <lastmod>2016-07-05T20:41:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/git/</loc>
-  <lastmod>2016-01-30T21:32:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/gitlab/</loc>
-  <lastmod>2016-05-31T16:00:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/ios/</loc>
-  <lastmod>2016-01-09T22:51:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/ipad/</loc>
-  <lastmod>2016-01-09T22:51:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/iphone/</loc>
-  <lastmod>2016-01-09T22:51:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/kodi/</loc>
-  <lastmod>2016-01-09T22:51:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/linux/</loc>
-  <lastmod>2016-01-18T22:06:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/mac/</loc>
-  <lastmod>2016-01-10T20:57:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/osx/</loc>
-  <lastmod>2016-01-10T20:57:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/pi/</loc>
-  <lastmod>2016-07-19T20:52:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/python/</loc>
-  <lastmod>2016-05-31T16:00:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/redis/</loc>
+  <lastmod>2016-08-19T12:48:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/rq/</loc>
+  <lastmod>2016-08-19T12:48:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/uwsgi/</loc>
-  <lastmod>2016-07-05T20:41:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/vpn/</loc>
-  <lastmod>2016-07-19T20:52:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/xcode/</loc>
-  <lastmod>2016-01-09T22:51:00Z</lastmod>
- </url>
- <url>
-  <loc>http://beenje.github.io/blog/galleries/</loc>
-  <lastmod>2016-01-03T15:17:00Z</lastmod>
- </url>
- <url>
-  <loc>http://beenje.github.io/blog/listings/</loc>
-  <lastmod>2016-01-03T15:17:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/compile-and-install-kodi-on-ipad-without-jailbreak/</loc>
-  <lastmod>2016-01-09T22:51:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/crontab-and-date/</loc>
-  <lastmod>2016-01-18T22:06:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/gitlab-ci-and-conda/</loc>
-  <lastmod>2016-05-31T16:00:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</loc>
-  <lastmod>2016-07-19T20:52:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/posts/running-background-tasks-with-flask-and-rq/</loc>
+  <lastmod>2016-08-19T12:48:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/switching-from-git-bigfile-to-git-lfs/</loc>
-  <lastmod>2016-01-30T21:32:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/uwsgi-send_file-and-python35/</loc>
-  <lastmod>2016-07-05T20:41:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/stories/about/</loc>
-  <lastmod>2016-01-10T11:07:00Z</lastmod>
+  <lastmod>2016-08-17T15:40:00Z</lastmod>
  </url>
 </urlset>

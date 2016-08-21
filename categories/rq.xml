@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0"><channel><title>Tchut-Tchut Blog (flask)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link type="application/rss+xml" rel="self" href="http://beenje.github.io/blog/categories/flask.xml"></atom:link><language>en</language><lastBuildDate>Sun, 21 Aug 2016 20:31:21 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Running background tasks with Flask and RQ</title><link>http://beenje.github.io/blog/posts/running-background-tasks-with-flask-and-rq/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I wrote several webapps but it took me a while to understand how to run a
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0"><channel><title>Tchut-Tchut Blog (rq)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link type="application/rss+xml" rel="self" href="http://beenje.github.io/blog/categories/rq.xml"></atom:link><language>en</language><lastBuildDate>Sun, 21 Aug 2016 20:31:21 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Running background tasks with Flask and RQ</title><link>http://beenje.github.io/blog/posts/running-background-tasks-with-flask-and-rq/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I wrote several webapps but it took me a while to understand how to run a
 long task and get the result back (without blocking the server).
 Of course, you should use a task queue like &lt;a class="reference external" href="http://www.celeryproject.org"&gt;Celery&lt;/a&gt; or &lt;a class="reference external" href="http://python-rq.org"&gt;RQ&lt;/a&gt;.
 It's easy to find examples how to send a task to a queue and... forget
@@ -482,50 +482,4 @@ There are a few more things to say, but this post starts to be a bit long,
 so I'll keep that for another time.&lt;/p&gt;
 &lt;p&gt;Thanks again to &lt;a class="reference external" href="http://blog.miguelgrinberg.com/"&gt;Miguel Grinberg&lt;/a&gt;
 and all his posts about Flask!&lt;/p&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>ajax</category><category>flask</category><category>python</category><category>redis</category><category>rq</category><guid>http://beenje.github.io/blog/posts/running-background-tasks-with-flask-and-rq/</guid><pubDate>Sat, 20 Aug 2016 21:32:16 GMT</pubDate></item><item><title>uWSGI, send_file and Python 3.5</title><link>http://beenje.github.io/blog/posts/uwsgi-send_file-and-python35/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I have a Flask app that returns an in-memory bytes buffer (&lt;a class="reference external" href="https://docs.python.org/3/library/io.html#io.BytesIO"&gt;io.Bytesio&lt;/a&gt;) using Flask &lt;a class="reference external" href="http://flask.pocoo.org/docs/0.11/api/#flask.send_file"&gt;send_file&lt;/a&gt; function.&lt;/p&gt;
-&lt;p&gt;The app is deployed using &lt;a class="reference external" href="http://uwsgi-docs.readthedocs.io/en/latest/"&gt;uWSGI&lt;/a&gt; behind Nginx.
-This was working fine with Python 3.4.&lt;/p&gt;
-&lt;p&gt;When I updated Python to 3.5, I got the following exception when trying to download a file:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-io.UnsupportedOperation: fileno
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask/app.py", line 1817, in wsgi_app
-    response = self.full_dispatch_request()
-  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask/app.py", line 1477, in full_dispatch_request
-    rv = self.handle_user_exception(e)
-  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask/app.py", line 1381, in handle_user_exception
-    reraise(exc_type, exc_value, tb)
-  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask/_compat.py", line 33, in reraise
-    raise value
-  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask/app.py", line 1475, in full_dispatch_request
-    rv = self.dispatch_request()
-  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask/app.py", line 1461, in dispatch_request
-    return self.view_functions[rule.endpoint](**req.view_args)
-  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask_login.py", line 758, in decorated_view
-    return func(*args, **kwargs)
-  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask_security/decorators.py", line 194, in decorated_view
-    return fn(*args, **kwargs)
-  File "/webapps/bowser/bowser/app/bext/views.py", line 116, in download
-    as_attachment=True)
-  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/flask/helpers.py", line 523, in send_file
-    data = wrap_file(request.environ, file)
-  File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/werkzeug/wsgi.py", line 726, in wrap_file
-    return environ.get('wsgi.file_wrapper', FileWrapper)(file, buffer_size)
-SystemError: &amp;lt;built-in function uwsgi_sendfile&amp;gt; returned a result with an error set
-&lt;/pre&gt;
-&lt;p&gt;I quickly found the following &lt;a class="reference external" href="http://lists.unbit.it/pipermail/uwsgi/2015-September/008186.html"&gt;post&lt;/a&gt; with the same exception, but no answer...
-A little more googling brought me to this github issue: &lt;a class="reference external" href="https://github.com/unbit/uwsgi/issues/1126"&gt;In python3, uwsgi fails to respond a
-stream from BytesIO object&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;As described, you should run uwsgi with the &lt;cite&gt;--wsgi-disable-file-wrapper&lt;/cite&gt; flag to avoid this problem.
-As with all command line options, you can add the following entry in your
-uwsgi.ini file:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-wsgi-disable-file-wrapper = true
-&lt;/pre&gt;
-&lt;p&gt;Note that &lt;a class="reference external" href="http://uwsgi-docs.readthedocs.io/en/latest/"&gt;uWSGI&lt;/a&gt; 2.0.12 is required.&lt;/p&gt;
-&lt;p&gt;When searching in &lt;a class="reference external" href="http://uwsgi-docs.readthedocs.io/en/latest/"&gt;uWSGI&lt;/a&gt; documentation, I only found one match in &lt;a class="reference external" href="http://uwsgi-docs.readthedocs.io/en/latest/Changelog-2.0.12.html?highlight=wsgi-disable-file-wrapper"&gt;uWSGI 2.0.12 release notes&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;A problem/option that should be better documented. Probably a pull request to open :-)&lt;/p&gt;
-&lt;p&gt;UPDATE (2016-07-13): pull request &lt;a class="reference external" href="https://github.com/unbit/uwsgi-docs/pull/317"&gt;merged&lt;/a&gt;&lt;/p&gt;&lt;/div&gt;</description><category>flask</category><category>python</category><category>uwsgi</category><guid>http://beenje.github.io/blog/posts/uwsgi-send_file-and-python35/</guid><pubDate>Tue, 05 Jul 2016 18:39:29 GMT</pubDate></item></channel></rss>
+&lt;/div&gt;&lt;/div&gt;</description><category>ajax</category><category>flask</category><category>python</category><category>redis</category><category>rq</category><guid>http://beenje.github.io/blog/posts/running-background-tasks-with-flask-and-rq/</guid><pubDate>Sat, 20 Aug 2016 21:32:16 GMT</pubDate></item></channel></rss>
