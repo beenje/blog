@@ -118,7 +118,7 @@ article.post-micro {
 }
 
 .metadata p:before,
-.postlist .listdate:after {
+.postlist .listdate:before {
     content: " — ";
 }
 
@@ -175,14 +175,6 @@ article.post-micro {
     padding-top: 19px;
     color: #777;
     border-top: 1px solid #e5e5e5;
-}
-
-.codetable {
-    table-layout: fixed;
-}
-
-.codetable pre {
-    overflow-x: scroll;
 }
 
 /* hat tip bootstrap/html5 boilerplate */
