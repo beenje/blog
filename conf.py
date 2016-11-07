@@ -174,6 +174,7 @@ THEME_COLOR = '#5670d4'
 
 POSTS = (
     ("posts/*.rst", "posts", "post.tmpl"),
+    ("posts/*.ipynb", "posts", "post.tmpl"),
     ("posts/*.txt", "posts", "post.tmpl"),
 )
 PAGES = (
