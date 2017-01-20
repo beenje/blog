@@ -7,19 +7,23 @@
                         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
  <url>
   <loc>http://beenje.github.io/blog/</loc>
-  <lastmod>2016-05-31T14:43:00Z</lastmod>
+  <lastmod>2017-01-20T20:46:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/2016/</loc>
   <lastmod>2016-01-03T15:17:00Z</lastmod>
  </url>
  <url>
+  <loc>http://beenje.github.io/blog/2017/</loc>
+  <lastmod>2017-01-20T20:46:00Z</lastmod>
+ </url>
+ <url>
   <loc>http://beenje.github.io/blog/archive.html</loc>
-  <lastmod>2016-11-16T21:38:00Z</lastmod>
+  <lastmod>2017-01-20T20:46:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/</loc>
-  <lastmod>2016-11-16T21:38:00Z</lastmod>
+  <lastmod>2017-01-20T22:39:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/ajax/</loc>
@@ -28,6 +32,10 @@
  <url>
   <loc>http://beenje.github.io/blog/categories/ansible/</loc>
   <lastmod>2016-07-19T20:52:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/appletv/</loc>
+  <lastmod>2017-01-20T22:39:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/bash/</loc>
@@ -106,6 +114,10 @@
   <lastmod>2016-01-10T20:57:00Z</lastmod>
  </url>
  <url>
+  <loc>http://beenje.github.io/blog/categories/openwrt/</loc>
+  <lastmod>2017-01-20T22:38:00Z</lastmod>
+ </url>
+ <url>
   <loc>http://beenje.github.io/blog/categories/osx/</loc>
   <lastmod>2016-01-10T20:57:00Z</lastmod>
  </url>
@@ -162,14 +174,6 @@
   <lastmod>2016-01-18T22:06:00Z</lastmod>
  </url>
  <url>
-  <loc>http://beenje.github.io/blog/posts/elasticsearch-ingest-attachment-plugin-and-python/</loc>
-  <lastmod>2016-11-10T21:36:00Z</lastmod>
- </url>
- <url>
-  <loc>http://beenje.github.io/blog/posts/elastisearch-ingest-attachment-processor-plugin/</loc>
-  <lastmod>2016-11-08T21:31:00Z</lastmod>
- </url>
- <url>
   <loc>http://beenje.github.io/blog/posts/gitlab-ci-and-conda/</loc>
   <lastmod>2016-05-31T16:00:00Z</lastmod>
  </url>
@@ -182,6 +186,10 @@
   <lastmod>2016-07-19T20:52:00Z</lastmod>
  </url>
  <url>
+  <loc>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</loc>
+  <lastmod>2017-01-20T20:46:00Z</lastmod>
+ </url>
+ <url>
   <loc>http://beenje.github.io/blog/posts/parsing-and-indexing-pdf-in-python/</loc>
   <lastmod>2016-11-16T21:38:00Z</lastmod>
  </url>
@@ -192,10 +200,6 @@
  <url>
   <loc>http://beenje.github.io/blog/posts/switching-from-git-bigfile-to-git-lfs/</loc>
   <lastmod>2016-01-30T21:32:00Z</lastmod>
- </url>
- <url>
-  <loc>http://beenje.github.io/blog/posts/test/</loc>
-  <lastmod>2016-11-07T21:21:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/uwsgi-send_file-and-python35/</loc>

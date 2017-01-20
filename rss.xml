@@ -1,5 +1,194 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog</title><link>http://beenje.github.io/blog/</link><description>Notes to myself</description><atom:link type="application/rss+xml" rel="self" href="http://beenje.github.io/blog/rss.xml"></atom:link><language>en</language><lastBuildDate>Wed, 16 Nov 2016 22:03:34 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Parsing and indexing PDF in Python</title><link>http://beenje.github.io/blog/posts/parsing-and-indexing-pdf-in-python/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div tabindex="-1" id="notebook" class="border-box-sizing"&gt;
+<?xml-stylesheet type="text/xsl" href="assets/xml/rss.xsl" media="all"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title>Tchut-Tchut Blog</title><link>http://beenje.github.io/blog/</link><description>Notes to myself</description><atom:link type="application/rss+xml" rel="self" href="http://beenje.github.io/blog/rss.xml"></atom:link><language>en</language><lastBuildDate>Fri, 20 Jan 2017 22:45:00 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>OpenVPN source based routing</title><link>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I already spoke about installing OpenVPN on a Raspberry Pi in another blog
+&lt;a class="reference external" href="http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible"&gt;post&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;I only connect to this VPN server to access content that requires a french IP address.
+I use OpenVPN Connect App on my iPad and &lt;a class="reference external" href="https://tunnelblick.net"&gt;Tunnelblick&lt;/a&gt;
+on my mac.
+It works nicely but how to use this VPN on my Apple TV 4?
+There is no VPN client available...&lt;/p&gt;
+&lt;p&gt;End of last year I finally received my &lt;a class="reference external" href="https://omnia.turris.cz/en/"&gt;Turris Omnia&lt;/a&gt; that I supported on Indiegogo.
+It's a nice router running a free operating system based on
+OpenWrt with automatic updates.
+If you haven't heard about it, you should check it out.&lt;/p&gt;
+&lt;div class="section" id="configurating-openvpn-client-on-openwrt"&gt;
+&lt;h2&gt;Configurating OpenVPN client on OpenWrt&lt;/h2&gt;
+&lt;p&gt;Installing an OpenVPN client on OpenWrt is not very difficult.
+Here is a quick summary.&lt;/p&gt;
+&lt;ol class="arabic"&gt;
+&lt;li&gt;&lt;p class="first"&gt;Install &lt;cite&gt;openvpn-openssl&lt;/cite&gt; package (via the
+webinterface or the command line)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p class="first"&gt;I already have a custom client config that I generated with Ansible in
+this &lt;a class="reference external" href="http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible"&gt;post&lt;/a&gt;.
+To use this config, create the file &lt;cite&gt;/etc/config/openvpn&lt;/cite&gt;:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+# cat /etc/config/openvpn
+package openvpn
+
+config openvpn myvpn
+        # Set to 1 to enable this instance:
+        option enabled 1
+        # Include OpenVPN configuration
+        option config /etc/openvpn/myclientconfig.ovpn
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p class="first"&gt;Add a new interface in &lt;cite&gt;/etc/config/network&lt;/cite&gt;:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+config interface 'myvpn'
+       option proto 'none'
+       option ifname 'tun0'
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p class="first"&gt;Add a new zone to &lt;cite&gt;/etc/config/firewall&lt;/cite&gt;:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+config zone
+        option forward 'REJECT'
+        option output 'ACCEPT'
+        option name 'VPN_FW'
+        option input 'REJECT'
+        option masq '1'
+        option network 'myvpn'
+        option mtu_fix '1'
+
+config forwarding
+        option dest 'VPN_FW'
+        option src 'lan'
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p class="first"&gt;An easy way to configure DNS servers is to add fixed DNS for the WAN interface of the router.
+To use Google DNS, add the following two lines to the wan interface in &lt;cite&gt;/etc/config/network&lt;/cite&gt;:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+# diff -u network.save network
+@@ -20,6 +20,8 @@
+ config interface 'wan'
+         option ifname 'eth1'
+         option proto 'dhcp'
++        option peerdns '0'
++        option dns '8.8.8.8 8.8.4.4'
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;If you run &lt;cite&gt;/etc/init.d/openvpn start&lt;/cite&gt; with this config, you should connect successfully!
+All the traffic will go via the VPN. That's nice but it's not what I want.
+I only want my Apple TV traffic to go via the VPN. How to achieve that?&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="source-based-routing"&gt;
+&lt;h2&gt;Source based routing&lt;/h2&gt;
+&lt;p&gt;I quickly found this &lt;a class="reference external" href="https://wiki.openwrt.org/doc/networking/routing"&gt;wiki page&lt;/a&gt; to implement source
+based routing. Exactly what I want. What took me some time to realize is
+that before to do that I had to ignore the routes pushed by the server.&lt;/p&gt;
+&lt;p&gt;With my configuration, when the client connects, the server pushes some
+routes among which a default route that makes all the traffic go via the
+VPN:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+default         10.8.0.21       128.0.0.0       UG    0      0        0 tun0
+...
+&lt;/pre&gt;
+&lt;p&gt;Ignoring the routes pushed by the server can be done with the &lt;cite&gt;--route-noexec&lt;/cite&gt; option.
+I tried to add &lt;cite&gt;option route_noexec 1&lt;/cite&gt; to my &lt;cite&gt;/etc/config/openvpn&lt;/cite&gt; file
+but it had no effect. It looks like that when using a custom config, you
+can't add other options there. You have to set everything in the custom
+config. I added &lt;cite&gt;route-noexec&lt;/cite&gt; to  my &lt;cite&gt;/etc/openvpn/myclientconfig.ovpn&lt;/cite&gt; file and it worked!
+No more route added. No traffic sent via the VPN.&lt;/p&gt;
+&lt;p&gt;We can now apply the changes described in the &lt;a class="reference external" href="https://wiki.openwrt.org/doc/networking/routing"&gt;Routing wiki page&lt;/a&gt;.&lt;/p&gt;
+&lt;ol class="arabic"&gt;
+&lt;li&gt;&lt;p class="first"&gt;Install the &lt;cite&gt;ip&lt;/cite&gt; package&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p class="first"&gt;Add the &lt;cite&gt;10 vpn&lt;/cite&gt; line to &lt;cite&gt;/etc/iproute2/rt_tables&lt;/cite&gt; so that it looks like
+this:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+# cat /etc/iproute2/rt_tables
+#
+# reserved values
+#
+255  local
+254  main
+253  default
+10   vpn
+0    unspec
+#
+# local
+#
+#1  inr.ruhep
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p class="first"&gt;We now need to add a new rule and route when starting the client.
+We can do so using the openvpn &lt;cite&gt;up&lt;/cite&gt; command. Create the &lt;cite&gt;/etc/openvpn/upvpn&lt;/cite&gt; script:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+# cat /etc/openvpn/upvpn
+#!/bin/sh
+
+client=192.168.75.20
+
+tun_dev=$1
+tun_mtu=$2
+link_mtu=$3
+ifconfig_local_ip=$4
+ifconfig_remote_ip=$5
+
+echo "Routing client $client traffic through VPN"
+ip rule add from $client priority 10 table vpn
+ip route add $client dev $tun_dev table vpn
+ip route add default via $ifconfig_remote_ip dev $tun_dev table vpn
+ip route flush cache
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p class="first"&gt;Create the &lt;cite&gt;/etc/openvpn/downvpn&lt;/cite&gt; script to properly remove the rule and route:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+# cat /etc/openvpn/downvpn
+#!/bin/sh
+
+client=192.168.75.20
+
+tun_dev=$1
+tun_mtu=$2
+link_mtu=$3
+ifconfig_local_ip=$4
+ifconfig_remote_ip=$5
+
+echo "Delete client $client traffic routing through VPN"
+ip rule del from $client priority 10 table vpn
+ip route del $client dev $tun_dev table vpn
+ip route del default via $ifconfig_remote_ip dev $tun_dev table vpn
+ip route flush cache
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p class="first"&gt;We now have to add those scripts to the client config.
+Here is everything I added to my &lt;cite&gt;/etc/openvpn/myclientconfig.ovpn&lt;/cite&gt; file:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+# Don't add or remove routes automatically
+# Source based routing for specific client added in up script
+route-noexec
+# script-security 2 needed to run up and down scripts
+script-security 2
+# Script to run after successful TUN/TAP device open
+up /etc/openvpn/upvpn
+# Call down script before to close TUN to properly remove the routing
+down-pre
+down /etc/openvpn/downvpn
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Notice that the machine IP address that we want to route via the VPN is
+hard-coded in the the upvpn and downvpn scripts.
+This IP shall be fixed. You can easily do that by associating it to
+the required MAC address in the DHCP settings.&lt;/p&gt;
+&lt;p&gt;The tunnel remote IP is automatically passed in parameter to the up and
+down scripts by openvpn.&lt;/p&gt;
+&lt;p&gt;If we run &lt;cite&gt;/etc/init.d/openvpn start&lt;/cite&gt; with this config, only the traffic
+from the 192.168.75.20 IP address will go via the VPN!&lt;/p&gt;
+&lt;p&gt;Run &lt;cite&gt;/etc/init.d/openvpn stop&lt;/cite&gt; to close the tunnel.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="conclusion"&gt;
+&lt;h2&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;This is a nice way to route traffic through a VPN based on the source IP
+address.&lt;/p&gt;
+&lt;p&gt;You can of course use the router webinterface to stop and start openvpn.
+In another post, I'll talk about an even more user friendly way to control
+it.&lt;/p&gt;
+&lt;/div&gt;&lt;/div&gt;</description><category>AppleTV</category><category>OpenWrt</category><category>pi</category><category>VPN</category><guid>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</guid><pubDate>Fri, 20 Jan 2017 20:46:16 GMT</pubDate></item><item><title>Parsing and indexing PDF in Python</title><link>http://beenje.github.io/blog/posts/parsing-and-indexing-pdf-in-python/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div tabindex="-1" id="notebook" class="border-box-sizing"&gt;
     &lt;div class="container" id="notebook-container"&gt;
 
 &lt;div class="cell border-box-sizing text_cell rendered"&gt;
