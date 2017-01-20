@@ -22,8 +22,8 @@ It's a nice router running a free operating system based on
 OpenWrt with automatic updates.
 If you haven't heard about it, you should check it out.
 
-Configurating OpenVPN client on OpenWrt
-=======================================
+Configuring OpenVPN client on OpenWrt
+=====================================
 
 Installing an OpenVPN client on OpenWrt is not very difficult.
 Here is a quick summary.

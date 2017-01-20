@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title>Tchut-Tchut Blog (VPN)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link type="application/rss+xml" rel="self" href="http://beenje.github.io/blog/categories/vpn.xml"></atom:link><language>en</language><lastBuildDate>Fri, 20 Jan 2017 22:45:00 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>OpenVPN source based routing</title><link>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I already spoke about installing OpenVPN on a Raspberry Pi in another blog
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>Tchut-Tchut Blog (VPN)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link type="application/rss+xml" href="http://beenje.github.io/blog/categories/vpn.xml" rel="self"></atom:link><language>en</language><lastBuildDate>Fri, 20 Jan 2017 22:53:47 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>OpenVPN source based routing</title><link>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I already spoke about installing OpenVPN on a Raspberry Pi in another blog
 &lt;a class="reference external" href="http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible"&gt;post&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;I only connect to this VPN server to access content that requires a french IP address.
 I use OpenVPN Connect App on my iPad and &lt;a class="reference external" href="https://tunnelblick.net"&gt;Tunnelblick&lt;/a&gt;
@@ -10,8 +10,8 @@ There is no VPN client available...&lt;/p&gt;
 It's a nice router running a free operating system based on
 OpenWrt with automatic updates.
 If you haven't heard about it, you should check it out.&lt;/p&gt;
-&lt;div class="section" id="configurating-openvpn-client-on-openwrt"&gt;
-&lt;h2&gt;Configurating OpenVPN client on OpenWrt&lt;/h2&gt;
+&lt;div class="section" id="configuring-openvpn-client-on-openwrt"&gt;
+&lt;h2&gt;Configuring OpenVPN client on OpenWrt&lt;/h2&gt;
 &lt;p&gt;Installing an OpenVPN client on OpenWrt is not very difficult.
 Here is a quick summary.&lt;/p&gt;
 &lt;ol class="arabic"&gt;
