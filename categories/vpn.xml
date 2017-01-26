@@ -1,5 +1,244 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>Tchut-Tchut Blog (VPN)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link type="application/rss+xml" href="http://beenje.github.io/blog/categories/vpn.xml" rel="self"></atom:link><language>en</language><lastBuildDate>Fri, 20 Jan 2017 22:53:47 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>OpenVPN source based routing</title><link>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I already spoke about installing OpenVPN on a Raspberry Pi in another blog
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (VPN)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link rel="self" type="application/rss+xml" href="http://beenje.github.io/blog/categories/vpn.xml"></atom:link><language>en</language><lastBuildDate>Thu, 26 Jan 2017 21:31:52 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Home Assistant on Turris Omnia via LXC container</title><link>http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In a previous post, I described &lt;a class="reference external" href="http://beenje.github.io/blog/posts/openvpn-source-based-routing"&gt;how to install OpenVPN client on a Turris
+Omnia router&lt;/a&gt;. To start or stop the
+client, I was using the command line and mentioned the LuCi Web User
+Interface.&lt;/p&gt;
+&lt;p&gt;Both ways are not super easy and fast to access.
+A while ago, I wrote a small &lt;a class="reference external" href="http://flask.pocoo.org"&gt;Flask&lt;/a&gt; web
+application to change some settings in my router. The application just
+allowed to click on a button to run a script via ssh on the router.&lt;/p&gt;
+&lt;p&gt;So I could write a small webapp to do just that.
+But I recently read about &lt;a class="reference external" href="https://home-assistant.io"&gt;Home Assistant&lt;/a&gt;. It's
+an open-source home automation platform to track and control your devices
+at home. There are many components available, including &lt;a class="reference external" href="https://home-assistant.io/components/switch.command_line/"&gt;Command Line
+Switch&lt;/a&gt; which
+looks exactly like what I need.&lt;/p&gt;
+&lt;p&gt;The Raspberry Pi is a popular device to install Home Assistant.
+But my &lt;a class="reference external" href="https://omnia.turris.cz/en/"&gt;Turris Omnia&lt;/a&gt; is quite powerful for a router with
+1 GB of RAM and 8 GB of flash. It's time to use some of that power.&lt;/p&gt;
+&lt;p&gt;From what I &lt;a class="reference external" href="https://forum.turris.cz/t/home-automation-home-assistant-upgrade/1037"&gt;read&lt;/a&gt;,
+there is an openWrt package of Home Assistant.
+I couldn't find it in the Turris Omnia available packages.
+Anyway, there is another feature I wanted to try: &lt;a class="reference external" href="https://www.turris.cz/doc/en/howto/lxc"&gt;LXC Containers&lt;/a&gt;. Home Assistant is a Python
+application, so it's easy to install in a linux container and would allow
+to easily keep the version up-to-date.&lt;/p&gt;
+&lt;p&gt;So let's start!&lt;/p&gt;
+&lt;div class="section" id="create-a-lxc-container"&gt;
+&lt;h2&gt;Create a LXC container&lt;/h2&gt;
+&lt;p&gt;As described &lt;a class="reference external" href="https://www.turris.cz/doc/en/howto/lxc"&gt;here&lt;/a&gt;, you can
+create a LXC container via the LuCI web interface or via the command
+line:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+root@turris:~# lxc-create -t download -n homeassistant
+Setting up the GPG keyring
+Downloading the image index
+WARNING: Failed to download the file over HTTPs.
+         The file was instead download over HTTP. A server replay attack may be possible!
+
+ ---
+ DIST  RELEASE  ARCH  VARIANT  BUILD
+ ---
+ Turris_OS  stable  armv7l  default  2017-01-22
+ Turris_OS  stable  ppc  default  2017-01-22
+ Alpine  3.4  armv7l  default  2017-01-22
+ Debian  Jessie  armv7l  default  2017-01-22
+ Gentoo  stable  armv7l  default  2017-01-22
+ openSUSE  13.2  armv7l  default  2017-01-22
+ openSUSE  42.2  armv7l  default  2017-01-22
+ openSUSE  Tumbleweed  armv7l  default  2017-01-22
+ Ubuntu  Xenial  armv7l  default  2017-01-22
+ Ubuntu  Yakkety  armv7l  default  2017-01-22
+ ---
+
+ Distribution: Debian
+ Release: Jessie
+ Architecture: armv7l
+
+ Flushing the cache...
+ Downloading the image index
+ Downloading the rootfs
+ Downloading the metadata
+ The image cache is now ready
+ Unpacking the rootfs
+
+ ---
+ Distribution Debian version Jessie was just installed into your
+ container.
+
+ Content of the tarballs is provided by third party, thus there is
+ no warranty of any kind.
+&lt;/pre&gt;
+&lt;p&gt;As you can see above, I chose a Debian Jessie distribution.&lt;/p&gt;
+&lt;p&gt;Let's start and enter the container:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+root@turris:~# lxc-start -n homeassistant
+root@turris:~# lxc-attach -n homeassistant
+&lt;/pre&gt;
+&lt;p&gt;Now that we are inside the container, we can first set the root password:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+root@LXC_NAME:~# passwd
+Enter new UNIX password:
+Retype new UNIX password:
+passwd: password updated successfully
+&lt;/pre&gt;
+&lt;p&gt;&lt;em&gt;LXC_NAME&lt;/em&gt; is not a super nice hostname. Let's update it:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+root@LXC_NAME:~# hostnamectl set-hostname homeassistant
+Failed to create bus connection: No such file or directory
+&lt;/pre&gt;
+&lt;p&gt;Ok... We have to &lt;a class="reference external" href="http://serverfault.com/questions/685837/how-to-set-the-hostname-for-a-debian-jessie-system"&gt;install dbus&lt;/a&gt;.
+While we are at it, let's install vim because
+we'll need it to edit the homeassistant configuration:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+root@LXC_NAME:~# apt-get update
+root@LXC_NAME:~# apt-get upgrade
+root@LXC_NAME:~# apt-get install -y dbus vim
+&lt;/pre&gt;
+&lt;p&gt;Setting the hostname now works properly:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+root@LXC_NAME:~# hostnamectl set-hostname homeassistant
+&lt;/pre&gt;
+&lt;p&gt;We can exit and enter the container again to see the change:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+root@LXC_NAME:~# exit
+root@turris:~# lxc-attach -n homeassistant
+root@homeassistant:~#
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div class="section" id="install-home-assistant"&gt;
+&lt;h2&gt;Install Home Assistant&lt;/h2&gt;
+&lt;p&gt;Next, we just have to follow the &lt;a class="reference external" href="https://home-assistant.io/getting-started/installation-virtualenv/"&gt;Home Assistant installation instructions&lt;/a&gt;.
+They are well detailed. I'll just quickly repeat them here to make it
+easier to follow but you should refer to the official page for any update:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+root@homeassistant:~# apt-get install python-pip python3-dev
+root@homeassistant:~# pip install --upgrade virtualenv
+root@homeassistant:~# adduser --system homeassistant
+root@homeassistant:~# mkdir /srv/homeassistant
+root@homeassistant:~# chown homeassistant /srv/homeassistant
+root@homeassistant:~# su -s /bin/bash homeassistant
+homeassistant@homeassistant:/root$ virtualenv -p python3 /srv/homeassistant
+homeassistant@homeassistant:/root$ source /srv/homeassistant/bin/activate
+(homeassistant) homeassistant@homeassistant:/root$ pip3 install --upgrade homeassistant
+&lt;/pre&gt;
+&lt;p&gt;Just run &lt;em&gt;hass&lt;/em&gt; to start the application and create the default
+configuration:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+(homeassistant) homeassistant@homeassistant:/root$ hass
+&lt;/pre&gt;
+&lt;p&gt;Press CTRL-C to exit.
+Check the created configuration file:
+&lt;cite&gt;/home/homeassistant/.homeassistant/configuration.yaml&lt;/cite&gt;.&lt;/p&gt;
+&lt;p&gt;You can comment out the &lt;cite&gt;introduction:&lt;/cite&gt; line:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+# Show links to resources in log and frontend
+#introduction:
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div class="section" id="add-a-switch-to-home-assistant"&gt;
+&lt;h2&gt;Add a switch to Home Assistant&lt;/h2&gt;
+&lt;p&gt;To start and stop our VPN we define a &lt;a class="reference external" href="https://home-assistant.io/components/switch.command_line/"&gt;Command Line Switch&lt;/a&gt; that
+triggers the openvpn script on the router.
+Add the following at the end of the file:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+switch:
+  platform: command_line
+  switches:
+        atv_vpn:
+          command_on: 'ssh root@&amp;lt;router IP&amp;gt; "/etc/init.d/openvpn start"'
+          command_off: 'ssh root@&amp;lt;router IP&amp;gt; "/etc/init.d/openvpn stop"'
+          friendly_name: ATV4 VPN
+&lt;/pre&gt;
+&lt;p&gt;The LXC container is just like another computer (a virtual one) on the local network.
+To access the router, we have to ssh to it. For this to work without
+requesting a password, we have to generate a ssh key and add the public
+key to the authorized_keys file on the router:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+homeassistant@homeassistant:~$ ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/homeassistant/.ssh/id_rsa):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/homeassistant/.ssh/id_rsa.
+Your public key has been saved in /home/homeassistant/.ssh/id_rsa.pub.
+&lt;/pre&gt;
+&lt;p&gt;Copy the content of &lt;cite&gt;/home/homeassistant/.ssh/id_rsa.pub&lt;/cite&gt; to
+&lt;cite&gt;/root/.ssh/authorized_keys&lt;/cite&gt; (on the router not inside the container).&lt;/p&gt;
+&lt;p&gt;With this configuration, the switch will always be off when you restart
+Home Assistant. It won't know either if you change the state using the
+command line or LuCI web interface.
+This can be solved by adding the optional &lt;cite&gt;command_state&lt;/cite&gt; line. The
+command shall return a result code &lt;em&gt;0&lt;/em&gt; if the switch is on.
+The openvpn init script on the Turris Omnia doesn't take "status" as
+argument. An easy way to check if openvpn is running is to use pgrep.
+Our new configuration becomes:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+switch:
+  platform: command_line
+  switches:
+        atv_vpn:
+          command_on: 'ssh root@&amp;lt;router IP&amp;gt; "/etc/init.d/openvpn start"'
+          command_off: 'ssh root@&amp;lt;router IP&amp;gt; "/etc/init.d/openvpn stop"'
+          command_state: 'ssh root@&amp;lt;router IP&amp;gt; "pgrep /usr/sbin/openvpn"'
+          friendly_name: ATV4 VPN
+&lt;/pre&gt;
+&lt;p&gt;That's it. The switch state will now properly be updated
+even if the VPN is started or stopped without using the application.&lt;/p&gt;
+&lt;p&gt;If you go to &lt;em&gt;http://&amp;lt;container IP&amp;gt;:8123&lt;/em&gt;, you should see something like
+that:&lt;/p&gt;
+&lt;img alt="/images/hass_home.png" src="http://beenje.github.io/blog/images/hass_home.png"&gt;
+&lt;/div&gt;
+&lt;div class="section" id="automatically-start-home-assistant"&gt;
+&lt;h2&gt;Automatically start Home Assistant&lt;/h2&gt;
+&lt;p&gt;Let's configure &lt;a class="reference external" href="https://home-assistant.io/getting-started/autostart-systemd/"&gt;systemd&lt;/a&gt; to automatically
+start the application.
+Create the file &lt;cite&gt;/etc/systemd/system/home-assistant@homeassistant.service&lt;/cite&gt;:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+root@homeassistant:~# cat &amp;lt;&amp;lt;EOF &amp;gt;&amp;gt; /etc/systemd/system/home-assistant@homeassistant.service
+[Unit]
+Description=Home Assistant
+After=network.target
+
+[Service]
+Type=simple
+User=homeassistant
+ExecStart=/srv/homeassistant/bin/hass -c "/home/homeassistant/.homeassistant"
+
+[Install]
+WantedBy=multi-user.target
+EOF
+&lt;/pre&gt;
+&lt;p&gt;Enable and launch Home Assistant:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+root@homeassistant:~# systemctl --system daemon-reload
+root@homeassistant:~# systemctl enable home-assistant@homeassistant
+Created symlink from /etc/systemd/system/multi-user.target.wants/home-assistant@homeassistant.service to /etc/systemd/system/home-assistant@homeassistant.service.
+root@homeassistant:~# systemctl start home-assistant@homeassistant
+&lt;/pre&gt;
+&lt;p&gt;You can check the logs with:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+root@homeassistant:~# journalctl -f -u home-assistant@homeassistant
+&lt;/pre&gt;
+&lt;p&gt;We just have to make sure the container starts automatically when we
+reboot the router.
+Set the following in &lt;cite&gt;/etc/config/lxc-auto&lt;/cite&gt;:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+root@turris:~# cat /etc/config/lxc-auto
+config container
+  option name homeassistant
+  option timeout 60
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div class="section" id="make-it-easy-to-access-home-assistant"&gt;
+&lt;h2&gt;Make it easy to access Home Assistant&lt;/h2&gt;
+&lt;p&gt;There is one more thing we want to do: assign a fixed IP to the container.
+This can be done like for any machines on the LAN via the &lt;em&gt;DHCP and DNS&lt;/em&gt; settings in LuCI interface.
+In &lt;em&gt;Static Leases&lt;/em&gt;, assign a fixed IP to the container MAC address.&lt;/p&gt;
+&lt;p&gt;Now that the container has a fixed IP, go to &lt;em&gt;http://&amp;lt;container IP&amp;gt;:8123&lt;/em&gt; and
+create a bookmark or add an icon to your phone and tablet home screen.
+This makes it easy for anyone at home to turn the VPN on and off!&lt;/p&gt;
+&lt;img alt="/images/hass_icon.png" src="http://beenje.github.io/blog/images/hass_icon.png"&gt;
+&lt;/div&gt;&lt;/div&gt;</description><category>home-assistant</category><category>LXC</category><category>OpenWrt</category><category>turris</category><category>VPN</category><guid>http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container/</guid><pubDate>Mon, 23 Jan 2017 21:01:30 GMT</pubDate></item><item><title>OpenVPN source based routing</title><link>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I already spoke about installing OpenVPN on a Raspberry Pi in another blog
 &lt;a class="reference external" href="http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible"&gt;post&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;I only connect to this VPN server to access content that requires a french IP address.
 I use OpenVPN Connect App on my iPad and &lt;a class="reference external" href="https://tunnelblick.net"&gt;Tunnelblick&lt;/a&gt;
@@ -186,8 +425,8 @@ from the 192.168.75.20 IP address will go via the VPN!&lt;/p&gt;
 &lt;p&gt;This is a nice way to route traffic through a VPN based on the source IP
 address.&lt;/p&gt;
 &lt;p&gt;You can of course use the router webinterface to stop and start openvpn.
-In another post, I'll talk about an even more user friendly way to control
-it.&lt;/p&gt;
+In &lt;a class="reference external" href="http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container"&gt;another post&lt;/a&gt;,
+I'll talk about an even more user friendly way to control it.&lt;/p&gt;
 &lt;/div&gt;&lt;/div&gt;</description><category>AppleTV</category><category>OpenWrt</category><category>pi</category><category>VPN</category><guid>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</guid><pubDate>Fri, 20 Jan 2017 20:46:16 GMT</pubDate></item><item><title>Installing OpenVPN on a Raspberry Pi with Ansible</title><link>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I have to confess that I initially decided to install a VPN,
 not to secure my connection when using a free Wireless Acces Point in an
 airport or hotel, but to watch Netflix :-)&lt;/p&gt;
