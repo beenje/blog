@@ -1,6 +1,6 @@
 .. title: Home Assistant on Turris Omnia via LXC container
 .. slug: home-assistant-on-turris-omnia-via-lxc-container
-.. date: 2017-01-23 22:01:30 UTC+01:00
+.. date: 2017-01-26 22:01:30 UTC+01:00
 .. tags: LXC,VPN,OpenWrt,turris,home-assistant
 .. category: linux
 .. link: 
