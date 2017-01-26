@@ -199,5 +199,5 @@ This is a nice way to route traffic through a VPN based on the source IP
 address.
 
 You can of course use the router webinterface to stop and start openvpn.
-In another post, I'll talk about an even more user friendly way to control
-it.
+In `another post </posts/home-assistant-on-turris-omnia-via-lxc-container>`_,
+I'll talk about an even more user friendly way to control it.
