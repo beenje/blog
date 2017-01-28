@@ -1,5 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>Tchut-Tchut Blog</title><link>http://beenje.github.io/blog/</link><description>Notes to myself</description><atom:link type="application/rss+xml" rel="self" href="http://beenje.github.io/blog/rss.xml"></atom:link><language>en</language><lastBuildDate>Thu, 26 Jan 2017 21:37:11 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Home Assistant on Turris Omnia via LXC container</title><link>http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In a previous post, I described &lt;a class="reference external" href="http://beenje.github.io/blog/posts/openvpn-source-based-routing"&gt;how to install OpenVPN client on a Turris
+<?xml-stylesheet type="text/xsl" href="assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>Tchut-Tchut Blog</title><link>http://beenje.github.io/blog/</link><description>Notes to myself</description><atom:link rel="self" type="application/rss+xml" href="http://beenje.github.io/blog/rss.xml"></atom:link><language>en</language><lastBuildDate>Sat, 28 Jan 2017 22:50:05 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Docker and conda</title><link>http://beenje.github.io/blog/posts/docker-and-conda/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I just read a blog post about &lt;a class="reference external" href="http://fmgdata.kinja.com/using-docker-with-conda-environments-1790901398"&gt;Using Docker with Conda Environments&lt;/a&gt;.
+I do things slightly differently so I thought I would share an example of
+Dockerfile I use:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+FROM continuumio/miniconda3:latest
+
+# Install extra packages if required
+RUN apt-get update &amp;amp;&amp;amp; apt-get install -y \
+    xxxxxx \
+    &amp;amp;&amp;amp; rm -rf /var/lib/apt/lists/*
+
+# Add the user that will run the app (no need to run as root)
+RUN groupadd -r myuser &amp;amp;&amp;amp; useradd -r -g myuser myuser
+
+WORKDIR /app
+
+# Install myapp requirements
+COPY environment.yml /app/environment.yml
+RUN conda config --add channels conda-forge \
+    &amp;amp;&amp;amp; conda env create -n myapp -f environment.yml \
+    &amp;amp;&amp;amp; rm -rf /opt/conda/pkgs/*
+
+# Install myapp
+COPY . /app/
+RUN chown -R myuser:myuser /app/*
+
+# activate the myapp environment
+ENV PATH /opt/conda/envs/myapp/bin:$PATH
+&lt;/pre&gt;
+&lt;p&gt;I don't run &lt;cite&gt;source activate myapp&lt;/cite&gt; but just use &lt;cite&gt;ENV&lt;/cite&gt; to update the &lt;cite&gt;PATH&lt;/cite&gt;
+variable. There is only one environment in the docker image. No need for the extra
+checks done by the activate script.&lt;/p&gt;
+&lt;p&gt;With this Dockerfile, any command will be run in the &lt;cite&gt;myapp&lt;/cite&gt;
+environment.&lt;/p&gt;
+&lt;p&gt;Just a few additional notes:&lt;/p&gt;
+&lt;ol class="arabic simple"&gt;
+&lt;li&gt;Be sure to only copy the file &lt;cite&gt;environment.yml&lt;/cite&gt; before to copy the full
+current directory. Otherwise any change in the directory would
+invalidate the docker cache.
+We only want to re-create the conda environment if &lt;cite&gt;environment.yml&lt;/cite&gt;
+changes.&lt;/li&gt;
+&lt;li&gt;I always add the &lt;a class="reference external" href="https://conda-forge.github.io"&gt;conda-forge channel&lt;/a&gt;.
+Check this &lt;a class="reference external" href="https://www.continuum.io/blog/developer-blog/community-conda-forge"&gt;post&lt;/a&gt;
+if you haven't heard of it yet.&lt;/li&gt;
+&lt;li&gt;I clean some cache (&lt;em&gt;/var/lib/apt/lists/&lt;/em&gt; and &lt;em&gt;/opt/conda/pkgs/&lt;/em&gt;) to
+make the image a bit smaller.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;I switched from virtualenv to &lt;a class="reference external" href="https://conda.io"&gt;conda&lt;/a&gt; a while ago and I really enjoy it.
+A big thanks to &lt;a class="reference external" href="https://www.continuum.io"&gt;Continuum Analytics&lt;/a&gt;!&lt;/p&gt;&lt;/div&gt;</description><category>conda</category><category>docker</category><category>python</category><guid>http://beenje.github.io/blog/posts/docker-and-conda/</guid><pubDate>Sat, 28 Jan 2017 22:32:56 GMT</pubDate></item><item><title>Home Assistant on Turris Omnia via LXC container</title><link>http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In a previous post, I described &lt;a class="reference external" href="http://beenje.github.io/blog/posts/openvpn-source-based-routing"&gt;how to install OpenVPN client on a Turris
 Omnia router&lt;/a&gt;. To start or stop the
 client, I was using the command line and mentioned the LuCi Web User
 Interface.&lt;/p&gt;
@@ -2496,32 +2544,4 @@ $ rm -rf .git/bigfile
 &lt;/ol&gt;
 &lt;p&gt;Note: to push files larger than 2.1GB to your gitlab server, wait for this
 &lt;a class="reference external" href="https://gitlab.com/gitlab-org/gitlab-ce/issues/12745"&gt;fix&lt;/a&gt;. Hopefully
-it will be in 8.4.3.&lt;/p&gt;&lt;/div&gt;</description><category>git</category><guid>http://beenje.github.io/blog/posts/switching-from-git-bigfile-to-git-lfs/</guid><pubDate>Sat, 30 Jan 2016 20:55:32 GMT</pubDate></item><item><title>crontab and date</title><link>http://beenje.github.io/blog/posts/crontab-and-date/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;The other day, I wanted to add a script to the crontab and to redirect the
-output to a file including the current date. Easy. I have used the
-&lt;cite&gt;date&lt;/cite&gt; command many times in bash script like that:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-current_date=$(date +"%Y%m%dT%H%M")
-&lt;/pre&gt;
-&lt;p&gt;So I added the following to my crontab:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-0 1 * * * /usr/local/bin/foo &amp;gt; /tmp/foo.$(date +%Y%m%dT%H%M).log 2&amp;gt;&amp;amp;1
-&lt;/pre&gt;
-&lt;p&gt;And... it didn't work...&lt;/p&gt;
-&lt;p&gt;I quickly identified that the script was working properly when run from the
-crontab (it's easy to get a script working from the prompt, not running
-from the crontab due to incorrect PATH). The problem was the redirection
-but I couldn't see why.&lt;/p&gt;
-&lt;p&gt;I googled a bit but didn't find anything...&lt;/p&gt;
-&lt;p&gt;I finally looked at the man pages:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-$  man 5 crontab
-
-     ...
-     The  ``sixth''  field  (the  rest of the line) specifies the command to be run.  The entire command portion of the line, up to a
-     newline or % character...
-&lt;/pre&gt;
-&lt;p&gt;Here it was of course! &lt;cite&gt;%&lt;/cite&gt; is a special character. It needs to be escaped:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-0 1 * * * /usr/local/bin/foo &amp;gt; /tmp/foo.$(date +\%Y\%m\%dT\%H\%M).log 2&amp;gt;&amp;amp;1
-&lt;/pre&gt;
-&lt;p&gt;Lesson to remember: check the man pages before to google!&lt;/p&gt;&lt;/div&gt;</description><category>bash</category><category>cron</category><category>linux</category><guid>http://beenje.github.io/blog/posts/crontab-and-date/</guid><pubDate>Mon, 18 Jan 2016 21:42:39 GMT</pubDate></item></channel></rss>
+it will be in 8.4.3.&lt;/p&gt;&lt;/div&gt;</description><category>git</category><guid>http://beenje.github.io/blog/posts/switching-from-git-bigfile-to-git-lfs/</guid><pubDate>Sat, 30 Jan 2016 20:55:32 GMT</pubDate></item></channel></rss>

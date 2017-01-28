@@ -65,7 +65,53 @@
 
     
 <div class="postindex">
-    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/compile-and-install-kodi-on-ipad-without-jailbreak/" class="u-url">Compile and install Kodi on iPad without jailbreak</a></h1>
+    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/crontab-and-date/" class="u-url">crontab and date</a></h1>
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn">
+                Benjamin Bertrand
+            </span></p>
+            <p class="dateline"><a href="posts/crontab-and-date/" rel="bookmark"><time class="published dt-published" datetime="2016-01-18T22:42:39+01:00" title="2016-01-18 22:42">2016-01-18 22:42</time></a></p>
+                <p class="commentline">
+        
+    <a href="posts/crontab-and-date/#disqus_thread" data-disqus-identifier="cache/posts/crontab-and-date.html">Comments</a>
+
+
+        </p>
+</div>
+    </header><div class="e-content entry-content">
+    <div>
+<p>The other day, I wanted to add a script to the crontab and to redirect the
+output to a file including the current date. Easy. I have used the
+<cite>date</cite> command many times in bash script like that:</p>
+<pre class="literal-block">
+current_date=$(date +"%Y%m%dT%H%M")
+</pre>
+<p>So I added the following to my crontab:</p>
+<pre class="literal-block">
+0 1 * * * /usr/local/bin/foo &gt; /tmp/foo.$(date +%Y%m%dT%H%M).log 2&gt;&amp;1
+</pre>
+<p>And... it didn't work...</p>
+<p>I quickly identified that the script was working properly when run from the
+crontab (it's easy to get a script working from the prompt, not running
+from the crontab due to incorrect PATH). The problem was the redirection
+but I couldn't see why.</p>
+<p>I googled a bit but didn't find anything...</p>
+<p>I finally looked at the man pages:</p>
+<pre class="literal-block">
+$  man 5 crontab
+
+     ...
+     The  ``sixth''  field  (the  rest of the line) specifies the command to be run.  The entire command portion of the line, up to a
+     newline or % character...
+</pre>
+<p>Here it was of course! <cite>%</cite> is a special character. It needs to be escaped:</p>
+<pre class="literal-block">
+0 1 * * * /usr/local/bin/foo &gt; /tmp/foo.$(date +\%Y\%m\%dT\%H\%M).log 2&gt;&amp;1
+</pre>
+<p>Lesson to remember: check the man pages before to google!</p>
+</div>
+    </div>
+    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/compile-and-install-kodi-on-ipad-without-jailbreak/" class="u-url">Compile and install Kodi on iPad without jailbreak</a></h1>
         <div class="metadata">
             <p class="byline author vcard"><span class="byline-name fn">
                 Benjamin Bertrand

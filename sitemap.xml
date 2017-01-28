@@ -19,11 +19,11 @@
  </url>
  <url>
   <loc>http://beenje.github.io/blog/archive.html</loc>
-  <lastmod>2017-01-23T21:01:00Z</lastmod>
+  <lastmod>2017-01-28T22:39:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/</loc>
-  <lastmod>2017-01-23T21:02:00Z</lastmod>
+  <lastmod>2017-01-28T22:39:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/ajax/</loc>
@@ -40,6 +40,10 @@
  <url>
   <loc>http://beenje.github.io/blog/categories/bash/</loc>
   <lastmod>2016-01-18T22:06:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/cat_docker/</loc>
+  <lastmod>2017-01-28T22:39:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/cat_git/</loc>
@@ -175,7 +179,7 @@
  </url>
  <url>
   <loc>http://beenje.github.io/blog/index-1.html</loc>
-  <lastmod>2017-01-23T21:01:00Z</lastmod>
+  <lastmod>2017-01-28T22:39:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/listings/</loc>
@@ -188,6 +192,10 @@
  <url>
   <loc>http://beenje.github.io/blog/posts/crontab-and-date/</loc>
   <lastmod>2016-01-18T22:06:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/posts/docker-and-conda/</loc>
+  <lastmod>2017-01-28T22:39:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/gitlab-ci-and-conda/</loc>

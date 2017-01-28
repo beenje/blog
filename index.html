@@ -12,7 +12,7 @@
 <link rel="alternate" type="application/rss+xml" title="RSS" href="rss.xml">
 <link rel="canonical" href="http://beenje.github.io/blog/">
 <link rel="next" href="index-1.html" type="text/html">
-<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/home-assistant-on-turris-omnia-via-lxc-container/" type="text/html">
+<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/docker-and-conda/" type="text/html">
 </head>
 <body>
 <a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
@@ -65,7 +65,73 @@
 
     
 <div class="postindex">
-    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/home-assistant-on-turris-omnia-via-lxc-container/" class="u-url">Home Assistant on Turris Omnia via LXC container</a></h1>
+    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/docker-and-conda/" class="u-url">Docker and conda</a></h1>
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn">
+                Benjamin Bertrand
+            </span></p>
+            <p class="dateline"><a href="posts/docker-and-conda/" rel="bookmark"><time class="published dt-published" datetime="2017-01-28T23:32:56+01:00" title="2017-01-28 23:32">2017-01-28 23:32</time></a></p>
+                <p class="commentline">
+        
+    <a href="posts/docker-and-conda/#disqus_thread" data-disqus-identifier="cache/posts/docker-and-conda.html">Comments</a>
+
+
+        </p>
+</div>
+    </header><div class="e-content entry-content">
+    <div>
+<p>I just read a blog post about <a class="reference external" href="http://fmgdata.kinja.com/using-docker-with-conda-environments-1790901398">Using Docker with Conda Environments</a>.
+I do things slightly differently so I thought I would share an example of
+Dockerfile I use:</p>
+<pre class="literal-block">
+FROM continuumio/miniconda3:latest
+
+# Install extra packages if required
+RUN apt-get update &amp;&amp; apt-get install -y \
+    xxxxxx \
+    &amp;&amp; rm -rf /var/lib/apt/lists/*
+
+# Add the user that will run the app (no need to run as root)
+RUN groupadd -r myuser &amp;&amp; useradd -r -g myuser myuser
+
+WORKDIR /app
+
+# Install myapp requirements
+COPY environment.yml /app/environment.yml
+RUN conda config --add channels conda-forge \
+    &amp;&amp; conda env create -n myapp -f environment.yml \
+    &amp;&amp; rm -rf /opt/conda/pkgs/*
+
+# Install myapp
+COPY . /app/
+RUN chown -R myuser:myuser /app/*
+
+# activate the myapp environment
+ENV PATH /opt/conda/envs/myapp/bin:$PATH
+</pre>
+<p>I don't run <cite>source activate myapp</cite> but just use <cite>ENV</cite> to update the <cite>PATH</cite>
+variable. There is only one environment in the docker image. No need for the extra
+checks done by the activate script.</p>
+<p>With this Dockerfile, any command will be run in the <cite>myapp</cite>
+environment.</p>
+<p>Just a few additional notes:</p>
+<ol class="arabic simple">
+<li>Be sure to only copy the file <cite>environment.yml</cite> before to copy the full
+current directory. Otherwise any change in the directory would
+invalidate the docker cache.
+We only want to re-create the conda environment if <cite>environment.yml</cite>
+changes.</li>
+<li>I always add the <a class="reference external" href="https://conda-forge.github.io">conda-forge channel</a>.
+Check this <a class="reference external" href="https://www.continuum.io/blog/developer-blog/community-conda-forge">post</a>
+if you haven't heard of it yet.</li>
+<li>I clean some cache (<em>/var/lib/apt/lists/</em> and <em>/opt/conda/pkgs/</em>) to
+make the image a bit smaller.</li>
+</ol>
+<p>I switched from virtualenv to <a class="reference external" href="https://conda.io">conda</a> a while ago and I really enjoy it.
+A big thanks to <a class="reference external" href="https://www.continuum.io">Continuum Analytics</a>!</p>
+</div>
+    </div>
+    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/home-assistant-on-turris-omnia-via-lxc-container/" class="u-url">Home Assistant on Turris Omnia via LXC container</a></h1>
         <div class="metadata">
             <p class="byline author vcard"><span class="byline-name fn">
                 Benjamin Bertrand
@@ -2782,52 +2848,6 @@ $ rm -rf .git/bigfile
 <p>Note: to push files larger than 2.1GB to your gitlab server, wait for this
 <a class="reference external" href="https://gitlab.com/gitlab-org/gitlab-ce/issues/12745">fix</a>. Hopefully
 it will be in 8.4.3.</p>
-</div>
-    </div>
-    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/crontab-and-date/" class="u-url">crontab and date</a></h1>
-        <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn">
-                Benjamin Bertrand
-            </span></p>
-            <p class="dateline"><a href="posts/crontab-and-date/" rel="bookmark"><time class="published dt-published" datetime="2016-01-18T22:42:39+01:00" title="2016-01-18 22:42">2016-01-18 22:42</time></a></p>
-                <p class="commentline">
-        
-    <a href="posts/crontab-and-date/#disqus_thread" data-disqus-identifier="cache/posts/crontab-and-date.html">Comments</a>
-
-
-        </p>
-</div>
-    </header><div class="e-content entry-content">
-    <div>
-<p>The other day, I wanted to add a script to the crontab and to redirect the
-output to a file including the current date. Easy. I have used the
-<cite>date</cite> command many times in bash script like that:</p>
-<pre class="literal-block">
-current_date=$(date +"%Y%m%dT%H%M")
-</pre>
-<p>So I added the following to my crontab:</p>
-<pre class="literal-block">
-0 1 * * * /usr/local/bin/foo &gt; /tmp/foo.$(date +%Y%m%dT%H%M).log 2&gt;&amp;1
-</pre>
-<p>And... it didn't work...</p>
-<p>I quickly identified that the script was working properly when run from the
-crontab (it's easy to get a script working from the prompt, not running
-from the crontab due to incorrect PATH). The problem was the redirection
-but I couldn't see why.</p>
-<p>I googled a bit but didn't find anything...</p>
-<p>I finally looked at the man pages:</p>
-<pre class="literal-block">
-$  man 5 crontab
-
-     ...
-     The  ``sixth''  field  (the  rest of the line) specifies the command to be run.  The entire command portion of the line, up to a
-     newline or % character...
-</pre>
-<p>Here it was of course! <cite>%</cite> is a special character. It needs to be escaped:</p>
-<pre class="literal-block">
-0 1 * * * /usr/local/bin/foo &gt; /tmp/foo.$(date +\%Y\%m\%dT\%H\%M).log 2&gt;&amp;1
-</pre>
-<p>Lesson to remember: check the man pages before to google!</p>
 </div>
     </div>
     </article>

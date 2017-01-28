@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article# " lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Docker and conda | Tchut-Tchut Blog</title>
+<link href="../../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/ipython.min.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/nikola_ipython.css" rel="stylesheet" type="text/css">
+<meta content="#5670d4" name="theme-color">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="../../rss.xml">
+<link rel="canonical" href="http://beenje.github.io/blog/posts/docker-and-conda/">
+<!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><meta name="author" content="Benjamin Bertrand">
+<link rel="prev" href="../home-assistant-on-turris-omnia-via-lxc-container/" title="Home Assistant on Turris Omnia via LXC container" type="text/html">
+<meta property="og:site_name" content="Tchut-Tchut Blog">
+<meta property="og:title" content="Docker and conda">
+<meta property="og:url" content="http://beenje.github.io/blog/posts/docker-and-conda/">
+<meta property="og:description" content="I just read a blog post about Using Docker with Conda Environments.
+I do things slightly differently so I thought I would share an example of
+Dockerfile I use:
+
+FROM continuumio/miniconda3:latest
+
+# I">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2017-01-28T23:32:56+01:00">
+<meta property="article:tag" content="conda">
+<meta property="article:tag" content="docker">
+<meta property="article:tag" content="python">
+</head>
+<body>
+<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+
+<!-- Menubar -->
+
+<nav class="navbar navbar-inverse navbar-static-top"><div class="container">
+<!-- This keeps the margins nice -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar" aria-controls="bs-navbar" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://beenje.github.io/blog/">
+
+                <span id="blog-title">Tchut-Tchut Blog</span>
+            </a>
+        </div>
+<!-- /.navbar-header -->
+        <div class="collapse navbar-collapse" id="bs-navbar" aria-expanded="false">
+            <ul class="nav navbar-nav">
+<li>
+<a href="../../archive.html">Archive</a>
+                </li>
+<li>
+<a href="../../categories/">Tags</a>
+                </li>
+<li>
+<a href="../../rss.xml">RSS feed</a>
+                </li>
+<li>
+<a href="../../stories/about/index.html">About</a>
+
+                
+            </li>
+</ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+    <a href="index.rst" id="sourcelink">Source</a>
+    </li>
+
+                
+            </ul>
+</div>
+<!-- /.navbar-collapse -->
+    </div>
+<!-- /.container -->
+</nav><!-- End of Menubar --><div class="container" id="content" role="main">
+    <div class="body-content">
+        <!--Body content-->
+        <div class="row">
+            
+            
+<article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Docker and conda</a></h1>
+
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn">
+                    Benjamin Bertrand
+            </span></p>
+            <p class="dateline"><a href="." rel="bookmark"><time class="published dt-published" datetime="2017-01-28T23:32:56+01:00" itemprop="datePublished" title="2017-01-28 23:32">2017-01-28 23:32</time></a></p>
+                <p class="commentline">
+        
+    <a href="#disqus_thread" data-disqus-identifier="cache/posts/docker-and-conda.html">Comments</a>
+
+
+            
+        </p>
+<p class="sourceline"><a href="index.rst" id="sourcelink">Source</a></p>
+
+        </div>
+        
+
+    </header><div class="e-content entry-content" itemprop="articleBody text">
+    <div>
+<p>I just read a blog post about <a class="reference external" href="http://fmgdata.kinja.com/using-docker-with-conda-environments-1790901398">Using Docker with Conda Environments</a>.
+I do things slightly differently so I thought I would share an example of
+Dockerfile I use:</p>
+<pre class="literal-block">
+FROM continuumio/miniconda3:latest
+
+# Install extra packages if required
+RUN apt-get update &amp;&amp; apt-get install -y \
+    xxxxxx \
+    &amp;&amp; rm -rf /var/lib/apt/lists/*
+
+# Add the user that will run the app (no need to run as root)
+RUN groupadd -r myuser &amp;&amp; useradd -r -g myuser myuser
+
+WORKDIR /app
+
+# Install myapp requirements
+COPY environment.yml /app/environment.yml
+RUN conda config --add channels conda-forge \
+    &amp;&amp; conda env create -n myapp -f environment.yml \
+    &amp;&amp; rm -rf /opt/conda/pkgs/*
+
+# Install myapp
+COPY . /app/
+RUN chown -R myuser:myuser /app/*
+
+# activate the myapp environment
+ENV PATH /opt/conda/envs/myapp/bin:$PATH
+</pre>
+<p>I don't run <cite>source activate myapp</cite> but just use <cite>ENV</cite> to update the <cite>PATH</cite>
+variable. There is only one environment in the docker image. No need for the extra
+checks done by the activate script.</p>
+<p>With this Dockerfile, any command will be run in the <cite>myapp</cite>
+environment.</p>
+<p>Just a few additional notes:</p>
+<ol class="arabic simple">
+<li>Be sure to only copy the file <cite>environment.yml</cite> before to copy the full
+current directory. Otherwise any change in the directory would
+invalidate the docker cache.
+We only want to re-create the conda environment if <cite>environment.yml</cite>
+changes.</li>
+<li>I always add the <a class="reference external" href="https://conda-forge.github.io">conda-forge channel</a>.
+Check this <a class="reference external" href="https://www.continuum.io/blog/developer-blog/community-conda-forge">post</a>
+if you haven't heard of it yet.</li>
+<li>I clean some cache (<em>/var/lib/apt/lists/</em> and <em>/opt/conda/pkgs/</em>) to
+make the image a bit smaller.</li>
+</ol>
+<p>I switched from virtualenv to <a class="reference external" href="https://conda.io">conda</a> a while ago and I really enjoy it.
+A big thanks to <a class="reference external" href="https://www.continuum.io">Continuum Analytics</a>!</p>
+</div>
+    </div>
+    <aside class="postpromonav"><nav><ul itemprop="keywords" class="tags">
+<li><a class="tag p-category" href="../../categories/conda/" rel="tag">conda</a></li>
+            <li><a class="tag p-category" href="../../categories/docker/" rel="tag">docker</a></li>
+            <li><a class="tag p-category" href="../../categories/python/" rel="tag">python</a></li>
+        </ul>
+<ul class="pager hidden-print">
+<li class="previous">
+                <a href="../home-assistant-on-turris-omnia-via-lxc-container/" rel="prev" title="Home Assistant on Turris Omnia via LXC container">Previous post</a>
+            </li>
+        </ul></nav></aside><section class="comments hidden-print"><h2>Comments</h2>
+        
+        
+        <div id="disqus_thread"></div>
+        <script>
+        var disqus_shortname ="tchutchut",
+            disqus_url="http://beenje.github.io/blog/posts/docker-and-conda/",
+        disqus_title="Docker and conda",
+        disqus_identifier="cache/posts/docker-and-conda.html",
+        disqus_config = function () {
+            this.language = "en";
+        };
+        (function() {
+            var dsq = document.createElement('script'); dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script><noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a>
+</noscript>
+    <a href="https://disqus.com" class="dsq-brlink" rel="nofollow">Comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+        </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script>
+</div>
+        <!--End of body content-->
+
+        <footer id="footer">
+            Contents © 2017         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
+        </footer>
+</div>
+</div>
+
+
+            <script src="../../assets/js/all-nocdn.js"></script><script>$('a.image-reference:not(.islink) img:not(.islink)').parent().colorbox({rel:"gal",maxWidth:"100%",maxHeight:"100%",scalePhotos:true});</script><!-- fancy dates --><script>
+    moment.locale("en");
+    fancydates(0, "YYYY-MM-DD HH:mm");
+    </script><!-- end fancy dates -->
+</body>
+</html>
