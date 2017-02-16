@@ -1,8 +1,8 @@
 .. title: Control your accessories from Home Assistant with Siri and HomeKit
 .. slug: control-your-accessories-from-home-assistant-with-siri-and-homekit
-.. date: 2017-02-05 21:55:56 UTC+01:00
-.. tags: 
-.. category: 
+.. date: 2017-02-16 22:58:56 UTC+01:00
+.. tags: LXC,turris,home-assistant,iOS
+.. category: linux
 .. link: 
 .. description: 
 .. type: text

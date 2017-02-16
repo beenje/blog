@@ -1,5 +1,134 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>Tchut-Tchut Blog (linux)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link type="application/rss+xml" rel="self" href="http://beenje.github.io/blog/categories/cat_linux.xml"></atom:link><language>en</language><lastBuildDate>Thu, 26 Jan 2017 21:37:11 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Home Assistant on Turris Omnia via LXC container</title><link>http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In a previous post, I described &lt;a class="reference external" href="http://beenje.github.io/blog/posts/openvpn-source-based-routing"&gt;how to install OpenVPN client on a Turris
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title>Tchut-Tchut Blog (linux)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link type="application/rss+xml" rel="self" href="http://beenje.github.io/blog/categories/cat_linux.xml"></atom:link><language>en</language><lastBuildDate>Thu, 16 Feb 2017 21:59:48 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Control your accessories from Home Assistant with Siri and HomeKit</title><link>http://beenje.github.io/blog/posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;While reading more about &lt;a class="reference external" href="https://home-assistant.io"&gt;Home Assistant&lt;/a&gt;, I
+discovered it was possible to control your accessories from Home Assistant
+with Siri and HomeKit. I decided to give that a try.&lt;/p&gt;
+&lt;p&gt;This requires to install &lt;a class="reference external" href="https://github.com/nfarina/homebridge"&gt;Homebridge&lt;/a&gt; and
+the &lt;a class="reference external" href="https://github.com/home-assistant/homebridge-homeassistant"&gt;homebridge-homeassitant plugin&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="section" id="install-homebridge"&gt;
+&lt;h2&gt;Install Homebridge&lt;/h2&gt;
+&lt;p&gt;Homebridge is a lightweight NodeJS server that emulates the iOS HomeKit
+API. Let's install it in the same &lt;a class="reference external" href="http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container"&gt;LXC container as Home Assistant&lt;/a&gt;:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+root@turris:~# lxc-attach -n homeassistant
+&lt;/pre&gt;
+&lt;p&gt;I followed the &lt;a class="reference external" href="https://github.com/nfarina/homebridge/wiki/Running-HomeBridge-on-a-Raspberry-Pi"&gt;Running HomeBridge on a Raspberry Pi page&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;We need curl and git:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+root@homeassistant:~# apt-get install -y curl git
+&lt;/pre&gt;
+&lt;p&gt;Install Node:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+root@homeassistant:~# curl -sL https://deb.nodesource.com/setup_6.x | bash -
+## Installing the NodeSource Node.js v6.x repo...
+
+## Populating apt-get cache...
+
+root@homeassistant:~# apt-get install -y nodejs
+&lt;/pre&gt;
+&lt;p&gt;Install avahi and other dependencies:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+root@homeassistant:~# apt-get install -y libavahi-compat-libdnssd-dev
+&lt;/pre&gt;
+&lt;p&gt;Install Homebridge and dependencies still following this &lt;a class="reference external" href="https://github.com/nfarina/homebridge/wiki/Running-HomeBridge-on-a-Raspberry-Pi#install-homebridge-and-dependencies"&gt;page&lt;/a&gt;.
+Note that I had a strange problem here. The &lt;em&gt;npm&lt;/em&gt; command didn't produce
+any output. I found the same issue on &lt;a class="reference external" href="http://stackoverflow.com/questions/40755598/containers-lxc-attach-and-npm-no-output"&gt;stackoverflow&lt;/a&gt;
+and even an &lt;a class="reference external" href="https://github.com/npm/npm/issues/15681"&gt;issue on github&lt;/a&gt;.
+The workaround is just to open a new terminal...&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+root@homeassistant:~# npm install -g --unsafe-perm homebridge hap-nodejs node-gyp
+root@homeassistant:~# cd /usr/lib/node_modules/homebridge/
+root@homeassistant:/usr/lib/node_modules/homebridge# npm install --unsafe-perm bignum
+root@homeassistant:/usr/lib/node_modules/homebridge# cd ../hap-nodejs/node_modules/mdns/
+root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# node-gyp BUILDTYPE=Release rebuild
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div class="section" id="install-and-configure-homebridge-homeassistant-plugin"&gt;
+&lt;h2&gt;Install and configure homebridge-homeassistant plugin&lt;/h2&gt;
+&lt;pre class="literal-block"&gt;
+root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# cd
+root@homeassistant:~# npm install -g --unsafe-perm homebridge-homeassistant
+&lt;/pre&gt;
+&lt;p&gt;Try to start Homebridge:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+root@homeassistant:~# su -s /bin/bash homeassistant
+homeassistant@homeassistant:~$ homebridge
+&lt;/pre&gt;
+&lt;p&gt;Homebridge won't do anything until you've created a configuration file.
+So press CTRL-C and create the file &lt;cite&gt;~/.homebridge/config.json&lt;/cite&gt;:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+homeassistant@homeassistant:~$ cat &amp;lt;&amp;lt;EOF &amp;gt;&amp;gt; ~/.homebridge/config.json
+{
+  "bridge": {
+    "name": "Homebridge",
+    "username": "CC:22:3D:E3:CE:30",
+    "port": 51826,
+    "pin": "031-45-154"
+  },
+
+  "platforms": [
+    {
+      "platform": "HomeAssistant",
+      "name": "HomeAssistant",
+      "host": "http://localhost:8123",
+      "logging": false
+    }
+ ]
+}
+EOF
+&lt;/pre&gt;
+&lt;p&gt;Note that you can change the username and pin code.
+You will need the PIN code to add the Homebridge accessory to HomeKit.&lt;/p&gt;
+&lt;p&gt;Check the &lt;a class="reference external" href="https://github.com/home-assistant/homebridge-homeassistant#configuration"&gt;Home Assistant plugin page&lt;/a&gt;
+for more information on how to configure the plugin.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="automatically-start-homebridge"&gt;
+&lt;h2&gt;Automatically start Homebridge&lt;/h2&gt;
+&lt;p&gt;Let's configure systemd.
+Create the file &lt;cite&gt;/etc/systemd/system/home-assistant@homebridge.service&lt;/cite&gt;:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+root@homeassistant:~# cat &amp;lt;&amp;lt;EOF &amp;gt;&amp;gt; /etc/systemd/system/home-assistant@homebridge.service
+[Unit]
+Description=Node.js HomeKit Server
+After=syslog.target network-online.target
+
+[Service]
+Type=simple
+User=homeassistant
+ExecStart=/usr/bin/homebridge -U /home/homeassistant/.homebridge
+Restart=on-failure
+RestartSec=10
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
+EOF
+&lt;/pre&gt;
+&lt;p&gt;Enable and launch Homebridge:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+root@homeassistant:~# systemctl --system daemon-reload
+root@homeassistant:~# systemctl enable home-assistant@homebridge
+Created symlink from /etc/systemd/system/multi-user.target.wants/home-assistant@homebridge.service to /etc/systemd/system/home-assistant@homebridge.service.
+root@homeassistant:~# systemctl start home-assistant@homebridge
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div class="section" id="adding-homebridge-to-ios"&gt;
+&lt;h2&gt;Adding Homebridge to iOS&lt;/h2&gt;
+&lt;p&gt;Homebridge and the Home Assistant plugin are now running.
+Using the Home app on your iOS device, you should be able to add the accessory "Homebridge".
+See &lt;a class="reference external" href="https://github.com/nfarina/homebridge#adding-homebridge-to-ios"&gt;Homebridge README&lt;/a&gt; for
+more information. You will need to enter the &lt;em&gt;PIN code&lt;/em&gt; defined in your
+&lt;cite&gt;config.json&lt;/cite&gt; file.&lt;/p&gt;
+&lt;p&gt;You should then see the Homebridge bridge on your device:&lt;/p&gt;
+&lt;img alt="/images/homebridge.png" src="http://beenje.github.io/blog/images/homebridge.png"&gt;
+&lt;p&gt;And it will automatically add all the accessories defined in Home Assistant!&lt;/p&gt;
+&lt;img alt="/images/home_accessories.png" src="http://beenje.github.io/blog/images/home_accessories.png"&gt;
+&lt;p&gt;You can now even use Siri to control your devices, like turning ON or OFF the TV VPN.&lt;/p&gt;
+&lt;img alt="/images/siri_tv_vpn_off.png" src="http://beenje.github.io/blog/images/siri_tv_vpn_off.png"&gt;
+&lt;p&gt;Note that I renamed the original switch to make it easier to pronounce.
+As described in the &lt;a class="reference external" href="https://github.com/nfarina/homebridge#interacting-with-your-devices"&gt;README&lt;/a&gt;,
+avoid names usually used by Siri like "Radio" or "Sonos".&lt;/p&gt;
+&lt;p&gt;That's it! Homebridge is really a nice addition to Home Assistant if you have some iOS devices at home.&lt;/p&gt;
+&lt;/div&gt;&lt;/div&gt;</description><category>home-assistant</category><category>iOS</category><category>LXC</category><category>turris</category><guid>http://beenje.github.io/blog/posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/</guid><pubDate>Thu, 16 Feb 2017 21:58:56 GMT</pubDate></item><item><title>Home Assistant on Turris Omnia via LXC container</title><link>http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In a previous post, I described &lt;a class="reference external" href="http://beenje.github.io/blog/posts/openvpn-source-based-routing"&gt;how to install OpenVPN client on a Turris
 Omnia router&lt;/a&gt;. To start or stop the
 client, I was using the command line and mentioned the LuCi Web User
 Interface.&lt;/p&gt;
