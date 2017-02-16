@@ -19,7 +19,7 @@
  </url>
  <url>
   <loc>http://beenje.github.io/blog/archive.html</loc>
-  <lastmod>2017-01-28T22:39:00Z</lastmod>
+  <lastmod>2017-02-15T20:56:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/</loc>
@@ -179,7 +179,7 @@
  </url>
  <url>
   <loc>http://beenje.github.io/blog/index-1.html</loc>
-  <lastmod>2017-01-28T22:39:00Z</lastmod>
+  <lastmod>2017-02-15T20:56:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/listings/</loc>
@@ -188,6 +188,10 @@
  <url>
   <loc>http://beenje.github.io/blog/posts/compile-and-install-kodi-on-ipad-without-jailbreak/</loc>
   <lastmod>2016-01-09T22:51:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/</loc>
+  <lastmod>2017-02-15T20:56:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/crontab-and-date/</loc>
