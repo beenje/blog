@@ -12,7 +12,7 @@
 <link rel="alternate" type="application/rss+xml" title="RSS" href="rss.xml">
 <link rel="canonical" href="http://beenje.github.io/blog/">
 <link rel="next" href="index-1.html" type="text/html">
-<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/" type="text/html">
+<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/dockerfile-anti-patterns-and-best-practices/" type="text/html">
 </head>
 <body>
 <a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
@@ -65,7 +65,179 @@
 
     
 <div class="postindex">
-    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/" class="u-url">Control your accessories from Home Assistant with Siri and HomeKit</a></h1>
+    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/dockerfile-anti-patterns-and-best-practices/" class="u-url">Dockerfile anti-patterns and best practices</a></h1>
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn">
+                Benjamin Bertrand
+            </span></p>
+            <p class="dateline"><a href="posts/dockerfile-anti-patterns-and-best-practices/" rel="bookmark"><time class="published dt-published" datetime="2017-03-16T22:10:49+01:00" title="2017-03-16 22:10">2017-03-16 22:10</time></a></p>
+                <p class="commentline">
+        
+    <a href="posts/dockerfile-anti-patterns-and-best-practices/#disqus_thread" data-disqus-identifier="cache/posts/dockerfile-anti-patterns-and-best-practices.html">Comments</a>
+
+
+        </p>
+</div>
+    </header><div class="e-content entry-content">
+    <div>
+<p>I've been using <a class="reference external" href="https://www.docker.com">Docker</a> for some time now.
+There is already a lot of documentation available online but I recently
+saw the same "anti-patterns" several times, so I thought it was worth writing a post about
+it.</p>
+<p>I won't repeat all the <a class="reference external" href="https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/">Best practices for writing Dockerfiles</a> here.
+You should definitively read that page.</p>
+<p>I want to emphasize some things that took me some time to understand.</p>
+<div class="section" id="avoid-invalidating-the-cache">
+<h2>Avoid invalidating the cache</h2>
+<p>Let's take a simple example with a Python application:</p>
+<pre class="literal-block">
+FROM python:3.6
+
+COPY . /app
+WORKDIR /app
+
+RUN pip install -r requirements.txt
+
+ENTRYPOINT ["python"]
+CMD ["ap.py"]
+</pre>
+<p>It's actually an example I have seen several times online.
+This looks fine, right?</p>
+<p>The problem is that the <em>COPY . /app</em> command will invalidate the cache as
+soon as any file in the current directory is updated.
+Let's say you just change the <em>README</em> file and run <em>docker build</em> again.
+Docker will have to re-install all the requirements because the
+<em>RUN pip</em> command is run after the <em>COPY</em> that invalidated the cache.</p>
+<p>The requirements should only be re-installed if the <em>requirements.txt</em>
+file changes:</p>
+<pre class="literal-block">
+FROM python:3.6
+
+WORKDIR /app
+
+COPY requirements.txt /app/requirements.txt
+RUN pip install -r requirements.txt
+
+COPY . /app
+
+ENTRYPOINT ["python"]
+CMD ["ap.py"]
+</pre>
+<p>With this Dockerfile, the <em>RUN pip</em> command will only be re-run when the
+<em>requirements.txt</em> file changes. It will use the cache otherwise.</p>
+<p>This is much more efficient and will save you quite some time if you have
+many requirements to install.</p>
+</div>
+<div class="section" id="minimize-the-number-of-layers">
+<h2>Minimize the number of layers</h2>
+<p>What does that really mean?</p>
+<p>Each <a class="reference external" href="https://www.docker.com">Docker</a> image references a list of read-only layers that represent
+filesystem differences. Every command in your Dockerfile will create a new
+layer.</p>
+<p>Let's use the following Dockerfile:</p>
+<pre class="literal-block">
+FROM centos:7
+
+RUN yum update -y
+RUN yum install -y sudo
+RUN yum install -y git
+RUN yum clean all
+</pre>
+<p>Build the docker image and check the layers created with the <em>docker history</em> command:</p>
+<pre class="literal-block">
+$ docker build -t centos-test .
+...
+$ docker images
+REPOSITORY                       TAG                 IMAGE ID            CREATED              SIZE
+centos-test                      latest              1fae366a2613        About a minute ago   470 MB
+centos                           7                   98d35105a391        24 hours ago         193 MB
+$ docker history centos-test
+IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+1fae366a2613        2 minutes ago       /bin/sh -c yum clean all                        1.67 MB
+999e7c7c0e14        2 minutes ago       /bin/sh -c yum install -y git                   133 MB
+c97b66528792        3 minutes ago       /bin/sh -c yum install -y sudo                  81 MB
+e0c7b450b7a8        3 minutes ago       /bin/sh -c yum update -y                        62.5 MB
+98d35105a391        24 hours ago        /bin/sh -c #(nop)  CMD ["/bin/bash"]            0 B
+&lt;missing&gt;           24 hours ago        /bin/sh -c #(nop)  LABEL name=CentOS Base ...   0 B
+&lt;missing&gt;           24 hours ago        /bin/sh -c #(nop) ADD file:29f66b8b4bafd0f...   193 MB
+&lt;missing&gt;           6 months ago        /bin/sh -c #(nop)  MAINTAINER https://gith...   0 B
+</pre>
+<p>There are two problems with this Dockerfile:</p>
+<ol class="arabic simple">
+<li>We added too many layers for nothing.</li>
+<li>The <em>yum clean all</em> command is meant to reduce the size of the image but it
+actually does the opposite by adding a new layer!</li>
+</ol>
+<p>Let's check that by removing the latest command and running the build
+again:</p>
+<pre class="literal-block">
+FROM centos:7
+
+RUN yum update -y
+RUN yum install -y sudo
+RUN yum install -y git
+# RUN yum clean all
+</pre>
+<pre class="literal-block">
+$ docker build -t centos-test .
+...
+$ docker images
+REPOSITORY                       TAG                 IMAGE ID            CREATED             SIZE
+centos-test                      latest              999e7c7c0e14        11 minutes ago      469 MB
+centos                           7                   98d35105a391        24 hours ago        193 MB
+</pre>
+<p>The new image without the <em>yum clean all</em> command is indeed smaller than the previous image (1.67 MB smaller)!</p>
+<p>If you want to remove files, it's important to do that in the same RUN command that created those files.
+Otherwise there is no point.</p>
+<p>Here is the proper way to do it:</p>
+<pre class="literal-block">
+FROM centos:7
+
+RUN yum update -y \
+  &amp;&amp; yum install -y \
+  sudo \
+  git \
+  &amp;&amp; yum clean all
+</pre>
+<p>Let's build this new image:</p>
+<pre class="literal-block">
+$ docker build -t centos-test .
+...
+$ docker images
+REPOSITORY                       TAG                 IMAGE ID            CREATED             SIZE
+centos-test                      latest              54a328ef7efd        21 seconds ago      265 MB
+centos                           7                   98d35105a391        24 hours ago        193 MB
+$ docker history centos-test
+IMAGE               CREATED              CREATED BY                                      SIZE                COMMENT
+54a328ef7efd        About a minute ago   /bin/sh -c yum update -y   &amp;&amp; yum install ...   72.8 MB
+98d35105a391        24 hours ago         /bin/sh -c #(nop)  CMD ["/bin/bash"]            0 B
+&lt;missing&gt;           24 hours ago         /bin/sh -c #(nop)  LABEL name=CentOS Base ...   0 B
+&lt;missing&gt;           24 hours ago         /bin/sh -c #(nop) ADD file:29f66b8b4bafd0f...   193 MB
+&lt;missing&gt;           6 months ago         /bin/sh -c #(nop)  MAINTAINER https://gith...   0 B
+</pre>
+<p>The new image is only 265 MB compared to the 470 MB of the original image.
+There isn't much more to say :-)</p>
+<p>If you want to know more about images and layers, you should read the
+documentation: <a class="reference external" href="https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/">Understand images, containers, and storage drivers</a>.</p>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion</h2>
+<p>Avoid invalidating the cache:</p>
+<ul class="simple">
+<li>start your Dockerfile with commands that should not change often</li>
+<li>put commands that can often invalidate the cache (like COPY .) as
+late as possible</li>
+<li>only add the needed files (use a .dockerignore file)</li>
+</ul>
+<p>Minimize the number of layers:</p>
+<ul class="simple">
+<li>put related commands in the same RUN instruction</li>
+<li>remove files in the same RUN command that created them</li>
+</ul>
+</div>
+</div>
+    </div>
+    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/" class="u-url">Control your accessories from Home Assistant with Siri and HomeKit</a></h1>
         <div class="metadata">
             <p class="byline author vcard"><span class="byline-name fn">
                 Benjamin Bertrand
@@ -2795,122 +2967,6 @@ wsgi-disable-file-wrapper = true
 <p>When searching in <a class="reference external" href="http://uwsgi-docs.readthedocs.io/en/latest/">uWSGI</a> documentation, I only found one match in <a class="reference external" href="http://uwsgi-docs.readthedocs.io/en/latest/Changelog-2.0.12.html?highlight=wsgi-disable-file-wrapper">uWSGI 2.0.12 release notes</a>.</p>
 <p>A problem/option that should be better documented. Probably a pull request to open :-)</p>
 <p>UPDATE (2016-07-13): pull request <a class="reference external" href="https://github.com/unbit/uwsgi-docs/pull/317">merged</a></p>
-</div>
-    </div>
-    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/gitlab-ci-and-conda/" class="u-url">GitLab CI and conda</a></h1>
-        <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn">
-                Benjamin Bertrand
-            </span></p>
-            <p class="dateline"><a href="posts/gitlab-ci-and-conda/" rel="bookmark"><time class="published dt-published" datetime="2016-05-31T16:48:23+02:00" title="2016-05-31 16:48">2016-05-31 16:48</time></a></p>
-                <p class="commentline">
-        
-    <a href="posts/gitlab-ci-and-conda/#disqus_thread" data-disqus-identifier="cache/posts/gitlab-ci-and-conda.html">Comments</a>
-
-
-        </p>
-</div>
-    </header><div class="e-content entry-content">
-    <div>
-<p>I setup GitLab to host several projects at work and I have been quite
-pleased with it. I read that setting GitLab CI for test and deployment was
-easy so I decided to try it to automatically run the test suite and the
-sphinx documentation.</p>
-<p>I found the official <a class="reference external" href="http://docs.gitlab.com/ce/ci/quick_start/README.html">documentation</a> to be quite good
-to setup a runner so I won't go into details here. I chose the <a class="reference external" href="https://gitlab.com/gitlab-org/gitlab-ci-multi-runner/blob/master/docs/executors/docker.md">Docker
-executor</a>.</p>
-<p>Here is my first <cite>.gitlab-ci.yml</cite> test:</p>
-<pre class="literal-block">
-image: python:3.4
-
-before_script:
-  - pip install -r requirements.txt
-
-tests:
-  stage: test
-  script:
-    - python -m unittest discover -v
-</pre>
-<p>Success, it works! Nice. But... 8 minutes 33 seconds build time for a test suite that
-runs in less than 1 second... that's a bit long.</p>
-<p>Let's try using some caching to avoid having to download all the pip
-requirements every time. After googling, I found this <a class="reference external" href="https://fleschenberg.net/gitlab-pip-cache/">post</a> explaining that the cache
-path must be inside the build directory:</p>
-<pre class="literal-block">
-image: python:3.4
-
-before_script:
-  - export PIP_CACHE_DIR="pip-cache"
-  - pip install -r requirements.txt
-
-cache:
-  paths:
-    - pip-cache
-
-tests:
-  stage: test
-  script:
-    - python -m unittest discover -v
-</pre>
-<p>With the pip cache, the build time went down to about 6 minutes. A bit
-better, but far from acceptable.</p>
-<p>Of course I knew the problem was not the download, but the
-installation of the pip requirements. I use <a class="reference external" href="http://pandas.pydata.org">pandas</a>
-which explains why it takes a while to compile.</p>
-<p>So how do you install <a class="reference external" href="http://pandas.pydata.org">pandas</a> easily? With <a class="reference external" href="http://conda.pydata.org/docs/">conda</a> of course!
-There are even some nice <a class="reference external" href="https://github.com/ContinuumIO/docker-images">docker images</a>  created by Continuum Analytics ready to be used.</p>
-<p>So let's try again:</p>
-<pre class="literal-block">
-image: continuumio/miniconda3:latest
-
-before_script:
-  - conda env create -f environment.yml
-  - source activate koopa
-
-tests:
-  stage: test
-  script:
-    - python -m unittest discover -v
-</pre>
-<p>Build time: 2 minutes 55 seconds. Nice but we need some cache to avoid
-downloading all the packages everytime.
-The first problem is that the cache path has to be in the build directory.
-Conda packages are saved in <cite>/opt/conda/pkgs</cite> by default. A solution is to
-replace that directory with a link to a local directory. It works but the
-problem is that Gitlab makes a compressed archive to save and restore the
-cache which takes quite some time in this case...</p>
-<p>How to get a fast cache? Let's use a docker volume!
-I modified my <cite>/etc/gitlab-runner/config.toml</cite> to add two volumes:</p>
-<pre class="literal-block">
-[runners.docker]
-  tls_verify = false
-  image = "continuumio/miniconda3:latest"
-  privileged = false
-  disable_cache = false
-  volumes = ["/cache", "/opt/cache/conda/pkgs:/opt/conda/pkgs:rw", "/opt/cache/pip:/opt/cache/pip:rw"]
-</pre>
-<p>One volume for <a class="reference external" href="http://conda.pydata.org/docs/">conda</a> packages and one for <cite>pip</cite>.
-My new <cite>.gitlab-ci.yml</cite>:</p>
-<pre class="literal-block">
-image: continuumio/miniconda3:latest
-
-before_script:
-  - export PIP_CACHE_DIR="/opt/cache/pip"
-  - conda env create -f environment.yml
-  - source activate koopa
-
-tests:
-  stage: test
-  script:
-    - python -m unittest discover -v
-</pre>
-<p>The build time is about 10 seconds!</p>
-<p>Just a few days after my tests, GitLab announced <a class="reference external" href="https://about.gitlab.com/2016/05/23/gitlab-container-registry/">GitLab Container
-Registry</a>.
-I already thought about building my own docker image and this new feature
-would make it even easier than before. But I would have to remember to update
-my image if I change my requirements. Which I don't have to think about with the
-current solution.</p>
 </div>
     </div>
     </article>

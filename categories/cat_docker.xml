@@ -1,5 +1,159 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>Tchut-Tchut Blog (docker)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link rel="self" type="application/rss+xml" href="http://beenje.github.io/blog/categories/cat_docker.xml"></atom:link><language>en</language><lastBuildDate>Sat, 28 Jan 2017 22:50:05 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Docker and conda</title><link>http://beenje.github.io/blog/posts/docker-and-conda/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I just read a blog post about &lt;a class="reference external" href="http://fmgdata.kinja.com/using-docker-with-conda-environments-1790901398"&gt;Using Docker with Conda Environments&lt;/a&gt;.
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (docker)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link type="application/rss+xml" href="http://beenje.github.io/blog/categories/cat_docker.xml" rel="self"></atom:link><language>en</language><lastBuildDate>Fri, 17 Mar 2017 21:11:22 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Dockerfile anti-patterns and best practices</title><link>http://beenje.github.io/blog/posts/dockerfile-anti-patterns-and-best-practices/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I've been using &lt;a class="reference external" href="https://www.docker.com"&gt;Docker&lt;/a&gt; for some time now.
+There is already a lot of documentation available online but I recently
+saw the same "anti-patterns" several times, so I thought it was worth writing a post about
+it.&lt;/p&gt;
+&lt;p&gt;I won't repeat all the &lt;a class="reference external" href="https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/"&gt;Best practices for writing Dockerfiles&lt;/a&gt; here.
+You should definitively read that page.&lt;/p&gt;
+&lt;p&gt;I want to emphasize some things that took me some time to understand.&lt;/p&gt;
+&lt;div class="section" id="avoid-invalidating-the-cache"&gt;
+&lt;h2&gt;Avoid invalidating the cache&lt;/h2&gt;
+&lt;p&gt;Let's take a simple example with a Python application:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+FROM python:3.6
+
+COPY . /app
+WORKDIR /app
+
+RUN pip install -r requirements.txt
+
+ENTRYPOINT ["python"]
+CMD ["ap.py"]
+&lt;/pre&gt;
+&lt;p&gt;It's actually an example I have seen several times online.
+This looks fine, right?&lt;/p&gt;
+&lt;p&gt;The problem is that the &lt;em&gt;COPY . /app&lt;/em&gt; command will invalidate the cache as
+soon as any file in the current directory is updated.
+Let's say you just change the &lt;em&gt;README&lt;/em&gt; file and run &lt;em&gt;docker build&lt;/em&gt; again.
+Docker will have to re-install all the requirements because the
+&lt;em&gt;RUN pip&lt;/em&gt; command is run after the &lt;em&gt;COPY&lt;/em&gt; that invalidated the cache.&lt;/p&gt;
+&lt;p&gt;The requirements should only be re-installed if the &lt;em&gt;requirements.txt&lt;/em&gt;
+file changes:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+FROM python:3.6
+
+WORKDIR /app
+
+COPY requirements.txt /app/requirements.txt
+RUN pip install -r requirements.txt
+
+COPY . /app
+
+ENTRYPOINT ["python"]
+CMD ["ap.py"]
+&lt;/pre&gt;
+&lt;p&gt;With this Dockerfile, the &lt;em&gt;RUN pip&lt;/em&gt; command will only be re-run when the
+&lt;em&gt;requirements.txt&lt;/em&gt; file changes. It will use the cache otherwise.&lt;/p&gt;
+&lt;p&gt;This is much more efficient and will save you quite some time if you have
+many requirements to install.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="minimize-the-number-of-layers"&gt;
+&lt;h2&gt;Minimize the number of layers&lt;/h2&gt;
+&lt;p&gt;What does that really mean?&lt;/p&gt;
+&lt;p&gt;Each &lt;a class="reference external" href="https://www.docker.com"&gt;Docker&lt;/a&gt; image references a list of read-only layers that represent
+filesystem differences. Every command in your Dockerfile will create a new
+layer.&lt;/p&gt;
+&lt;p&gt;Let's use the following Dockerfile:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+FROM centos:7
+
+RUN yum update -y
+RUN yum install -y sudo
+RUN yum install -y git
+RUN yum clean all
+&lt;/pre&gt;
+&lt;p&gt;Build the docker image and check the layers created with the &lt;em&gt;docker history&lt;/em&gt; command:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ docker build -t centos-test .
+...
+$ docker images
+REPOSITORY                       TAG                 IMAGE ID            CREATED              SIZE
+centos-test                      latest              1fae366a2613        About a minute ago   470 MB
+centos                           7                   98d35105a391        24 hours ago         193 MB
+$ docker history centos-test
+IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+1fae366a2613        2 minutes ago       /bin/sh -c yum clean all                        1.67 MB
+999e7c7c0e14        2 minutes ago       /bin/sh -c yum install -y git                   133 MB
+c97b66528792        3 minutes ago       /bin/sh -c yum install -y sudo                  81 MB
+e0c7b450b7a8        3 minutes ago       /bin/sh -c yum update -y                        62.5 MB
+98d35105a391        24 hours ago        /bin/sh -c #(nop)  CMD ["/bin/bash"]            0 B
+&amp;lt;missing&amp;gt;           24 hours ago        /bin/sh -c #(nop)  LABEL name=CentOS Base ...   0 B
+&amp;lt;missing&amp;gt;           24 hours ago        /bin/sh -c #(nop) ADD file:29f66b8b4bafd0f...   193 MB
+&amp;lt;missing&amp;gt;           6 months ago        /bin/sh -c #(nop)  MAINTAINER https://gith...   0 B
+&lt;/pre&gt;
+&lt;p&gt;There are two problems with this Dockerfile:&lt;/p&gt;
+&lt;ol class="arabic simple"&gt;
+&lt;li&gt;We added too many layers for nothing.&lt;/li&gt;
+&lt;li&gt;The &lt;em&gt;yum clean all&lt;/em&gt; command is meant to reduce the size of the image but it
+actually does the opposite by adding a new layer!&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Let's check that by removing the latest command and running the build
+again:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+FROM centos:7
+
+RUN yum update -y
+RUN yum install -y sudo
+RUN yum install -y git
+# RUN yum clean all
+&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;
+$ docker build -t centos-test .
+...
+$ docker images
+REPOSITORY                       TAG                 IMAGE ID            CREATED             SIZE
+centos-test                      latest              999e7c7c0e14        11 minutes ago      469 MB
+centos                           7                   98d35105a391        24 hours ago        193 MB
+&lt;/pre&gt;
+&lt;p&gt;The new image without the &lt;em&gt;yum clean all&lt;/em&gt; command is indeed smaller than the previous image (1.67 MB smaller)!&lt;/p&gt;
+&lt;p&gt;If you want to remove files, it's important to do that in the same RUN command that created those files.
+Otherwise there is no point.&lt;/p&gt;
+&lt;p&gt;Here is the proper way to do it:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+FROM centos:7
+
+RUN yum update -y \
+  &amp;amp;&amp;amp; yum install -y \
+  sudo \
+  git \
+  &amp;amp;&amp;amp; yum clean all
+&lt;/pre&gt;
+&lt;p&gt;Let's build this new image:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ docker build -t centos-test .
+...
+$ docker images
+REPOSITORY                       TAG                 IMAGE ID            CREATED             SIZE
+centos-test                      latest              54a328ef7efd        21 seconds ago      265 MB
+centos                           7                   98d35105a391        24 hours ago        193 MB
+$ docker history centos-test
+IMAGE               CREATED              CREATED BY                                      SIZE                COMMENT
+54a328ef7efd        About a minute ago   /bin/sh -c yum update -y   &amp;amp;&amp;amp; yum install ...   72.8 MB
+98d35105a391        24 hours ago         /bin/sh -c #(nop)  CMD ["/bin/bash"]            0 B
+&amp;lt;missing&amp;gt;           24 hours ago         /bin/sh -c #(nop)  LABEL name=CentOS Base ...   0 B
+&amp;lt;missing&amp;gt;           24 hours ago         /bin/sh -c #(nop) ADD file:29f66b8b4bafd0f...   193 MB
+&amp;lt;missing&amp;gt;           6 months ago         /bin/sh -c #(nop)  MAINTAINER https://gith...   0 B
+&lt;/pre&gt;
+&lt;p&gt;The new image is only 265 MB compared to the 470 MB of the original image.
+There isn't much more to say :-)&lt;/p&gt;
+&lt;p&gt;If you want to know more about images and layers, you should read the
+documentation: &lt;a class="reference external" href="https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/"&gt;Understand images, containers, and storage drivers&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="conclusion"&gt;
+&lt;h2&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;Avoid invalidating the cache:&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;start your Dockerfile with commands that should not change often&lt;/li&gt;
+&lt;li&gt;put commands that can often invalidate the cache (like COPY .) as
+late as possible&lt;/li&gt;
+&lt;li&gt;only add the needed files (use a .dockerignore file)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Minimize the number of layers:&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;put related commands in the same RUN instruction&lt;/li&gt;
+&lt;li&gt;remove files in the same RUN command that created them&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;&lt;/div&gt;</description><category>docker</category><guid>http://beenje.github.io/blog/posts/dockerfile-anti-patterns-and-best-practices/</guid><pubDate>Thu, 16 Mar 2017 21:10:49 GMT</pubDate></item><item><title>Docker and conda</title><link>http://beenje.github.io/blog/posts/docker-and-conda/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I just read a blog post about &lt;a class="reference external" href="http://fmgdata.kinja.com/using-docker-with-conda-environments-1790901398"&gt;Using Docker with Conda Environments&lt;/a&gt;.
 I do things slightly differently so I thought I would share an example of
 Dockerfile I use:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;

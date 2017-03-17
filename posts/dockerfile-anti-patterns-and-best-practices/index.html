@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article# " lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dockerfile anti-patterns and best practices | Tchut-Tchut Blog</title>
+<link href="../../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/ipython.min.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/nikola_ipython.css" rel="stylesheet" type="text/css">
+<meta content="#5670d4" name="theme-color">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="../../rss.xml">
+<link rel="canonical" href="http://beenje.github.io/blog/posts/dockerfile-anti-patterns-and-best-practices/">
+<!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><meta name="author" content="Benjamin Bertrand">
+<link rel="prev" href="../control-your-accessories-from-home-assistant-with-siri-and-homekit/" title="Control your accessories from Home Assistant with Siri and HomeKit" type="text/html">
+<meta property="og:site_name" content="Tchut-Tchut Blog">
+<meta property="og:title" content="Dockerfile anti-patterns and best practices">
+<meta property="og:url" content="http://beenje.github.io/blog/posts/dockerfile-anti-patterns-and-best-practices/">
+<meta property="og:description" content="I've been using Docker for some time now.
+There is already a lot of documentation available online but I recently
+saw the same &quot;anti-patterns&quot; several times, so I thought it was worth writing a post a">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2017-03-16T22:10:49+01:00">
+<meta property="article:tag" content="docker">
+</head>
+<body>
+<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+
+<!-- Menubar -->
+
+<nav class="navbar navbar-inverse navbar-static-top"><div class="container">
+<!-- This keeps the margins nice -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar" aria-controls="bs-navbar" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://beenje.github.io/blog/">
+
+                <span id="blog-title">Tchut-Tchut Blog</span>
+            </a>
+        </div>
+<!-- /.navbar-header -->
+        <div class="collapse navbar-collapse" id="bs-navbar" aria-expanded="false">
+            <ul class="nav navbar-nav">
+<li>
+<a href="../../archive.html">Archive</a>
+                </li>
+<li>
+<a href="../../categories/">Tags</a>
+                </li>
+<li>
+<a href="../../rss.xml">RSS feed</a>
+                </li>
+<li>
+<a href="../../stories/about/index.html">About</a>
+
+                
+            </li>
+</ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+    <a href="index.rst" id="sourcelink">Source</a>
+    </li>
+
+                
+            </ul>
+</div>
+<!-- /.navbar-collapse -->
+    </div>
+<!-- /.container -->
+</nav><!-- End of Menubar --><div class="container" id="content" role="main">
+    <div class="body-content">
+        <!--Body content-->
+        <div class="row">
+            
+            
+<article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Dockerfile anti-patterns and best practices</a></h1>
+
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn">
+                    Benjamin Bertrand
+            </span></p>
+            <p class="dateline"><a href="." rel="bookmark"><time class="published dt-published" datetime="2017-03-16T22:10:49+01:00" itemprop="datePublished" title="2017-03-16 22:10">2017-03-16 22:10</time></a></p>
+                <p class="commentline">
+        
+    <a href="#disqus_thread" data-disqus-identifier="cache/posts/dockerfile-anti-patterns-and-best-practices.html">Comments</a>
+
+
+            
+        </p>
+<p class="sourceline"><a href="index.rst" id="sourcelink">Source</a></p>
+
+        </div>
+        
+
+    </header><div class="e-content entry-content" itemprop="articleBody text">
+    <div>
+<p>I've been using <a class="reference external" href="https://www.docker.com">Docker</a> for some time now.
+There is already a lot of documentation available online but I recently
+saw the same "anti-patterns" several times, so I thought it was worth writing a post about
+it.</p>
+<p>I won't repeat all the <a class="reference external" href="https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/">Best practices for writing Dockerfiles</a> here.
+You should definitively read that page.</p>
+<p>I want to emphasize some things that took me some time to understand.</p>
+<div class="section" id="avoid-invalidating-the-cache">
+<h2>Avoid invalidating the cache</h2>
+<p>Let's take a simple example with a Python application:</p>
+<pre class="literal-block">
+FROM python:3.6
+
+COPY . /app
+WORKDIR /app
+
+RUN pip install -r requirements.txt
+
+ENTRYPOINT ["python"]
+CMD ["ap.py"]
+</pre>
+<p>It's actually an example I have seen several times online.
+This looks fine, right?</p>
+<p>The problem is that the <em>COPY . /app</em> command will invalidate the cache as
+soon as any file in the current directory is updated.
+Let's say you just change the <em>README</em> file and run <em>docker build</em> again.
+Docker will have to re-install all the requirements because the
+<em>RUN pip</em> command is run after the <em>COPY</em> that invalidated the cache.</p>
+<p>The requirements should only be re-installed if the <em>requirements.txt</em>
+file changes:</p>
+<pre class="literal-block">
+FROM python:3.6
+
+WORKDIR /app
+
+COPY requirements.txt /app/requirements.txt
+RUN pip install -r requirements.txt
+
+COPY . /app
+
+ENTRYPOINT ["python"]
+CMD ["ap.py"]
+</pre>
+<p>With this Dockerfile, the <em>RUN pip</em> command will only be re-run when the
+<em>requirements.txt</em> file changes. It will use the cache otherwise.</p>
+<p>This is much more efficient and will save you quite some time if you have
+many requirements to install.</p>
+</div>
+<div class="section" id="minimize-the-number-of-layers">
+<h2>Minimize the number of layers</h2>
+<p>What does that really mean?</p>
+<p>Each <a class="reference external" href="https://www.docker.com">Docker</a> image references a list of read-only layers that represent
+filesystem differences. Every command in your Dockerfile will create a new
+layer.</p>
+<p>Let's use the following Dockerfile:</p>
+<pre class="literal-block">
+FROM centos:7
+
+RUN yum update -y
+RUN yum install -y sudo
+RUN yum install -y git
+RUN yum clean all
+</pre>
+<p>Build the docker image and check the layers created with the <em>docker history</em> command:</p>
+<pre class="literal-block">
+$ docker build -t centos-test .
+...
+$ docker images
+REPOSITORY                       TAG                 IMAGE ID            CREATED              SIZE
+centos-test                      latest              1fae366a2613        About a minute ago   470 MB
+centos                           7                   98d35105a391        24 hours ago         193 MB
+$ docker history centos-test
+IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
+1fae366a2613        2 minutes ago       /bin/sh -c yum clean all                        1.67 MB
+999e7c7c0e14        2 minutes ago       /bin/sh -c yum install -y git                   133 MB
+c97b66528792        3 minutes ago       /bin/sh -c yum install -y sudo                  81 MB
+e0c7b450b7a8        3 minutes ago       /bin/sh -c yum update -y                        62.5 MB
+98d35105a391        24 hours ago        /bin/sh -c #(nop)  CMD ["/bin/bash"]            0 B
+&lt;missing&gt;           24 hours ago        /bin/sh -c #(nop)  LABEL name=CentOS Base ...   0 B
+&lt;missing&gt;           24 hours ago        /bin/sh -c #(nop) ADD file:29f66b8b4bafd0f...   193 MB
+&lt;missing&gt;           6 months ago        /bin/sh -c #(nop)  MAINTAINER https://gith...   0 B
+</pre>
+<p>There are two problems with this Dockerfile:</p>
+<ol class="arabic simple">
+<li>We added too many layers for nothing.</li>
+<li>The <em>yum clean all</em> command is meant to reduce the size of the image but it
+actually does the opposite by adding a new layer!</li>
+</ol>
+<p>Let's check that by removing the latest command and running the build
+again:</p>
+<pre class="literal-block">
+FROM centos:7
+
+RUN yum update -y
+RUN yum install -y sudo
+RUN yum install -y git
+# RUN yum clean all
+</pre>
+<pre class="literal-block">
+$ docker build -t centos-test .
+...
+$ docker images
+REPOSITORY                       TAG                 IMAGE ID            CREATED             SIZE
+centos-test                      latest              999e7c7c0e14        11 minutes ago      469 MB
+centos                           7                   98d35105a391        24 hours ago        193 MB
+</pre>
+<p>The new image without the <em>yum clean all</em> command is indeed smaller than the previous image (1.67 MB smaller)!</p>
+<p>If you want to remove files, it's important to do that in the same RUN command that created those files.
+Otherwise there is no point.</p>
+<p>Here is the proper way to do it:</p>
+<pre class="literal-block">
+FROM centos:7
+
+RUN yum update -y \
+  &amp;&amp; yum install -y \
+  sudo \
+  git \
+  &amp;&amp; yum clean all
+</pre>
+<p>Let's build this new image:</p>
+<pre class="literal-block">
+$ docker build -t centos-test .
+...
+$ docker images
+REPOSITORY                       TAG                 IMAGE ID            CREATED             SIZE
+centos-test                      latest              54a328ef7efd        21 seconds ago      265 MB
+centos                           7                   98d35105a391        24 hours ago        193 MB
+$ docker history centos-test
+IMAGE               CREATED              CREATED BY                                      SIZE                COMMENT
+54a328ef7efd        About a minute ago   /bin/sh -c yum update -y   &amp;&amp; yum install ...   72.8 MB
+98d35105a391        24 hours ago         /bin/sh -c #(nop)  CMD ["/bin/bash"]            0 B
+&lt;missing&gt;           24 hours ago         /bin/sh -c #(nop)  LABEL name=CentOS Base ...   0 B
+&lt;missing&gt;           24 hours ago         /bin/sh -c #(nop) ADD file:29f66b8b4bafd0f...   193 MB
+&lt;missing&gt;           6 months ago         /bin/sh -c #(nop)  MAINTAINER https://gith...   0 B
+</pre>
+<p>The new image is only 265 MB compared to the 470 MB of the original image.
+There isn't much more to say :-)</p>
+<p>If you want to know more about images and layers, you should read the
+documentation: <a class="reference external" href="https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/">Understand images, containers, and storage drivers</a>.</p>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion</h2>
+<p>Avoid invalidating the cache:</p>
+<ul class="simple">
+<li>start your Dockerfile with commands that should not change often</li>
+<li>put commands that can often invalidate the cache (like COPY .) as
+late as possible</li>
+<li>only add the needed files (use a .dockerignore file)</li>
+</ul>
+<p>Minimize the number of layers:</p>
+<ul class="simple">
+<li>put related commands in the same RUN instruction</li>
+<li>remove files in the same RUN command that created them</li>
+</ul>
+</div>
+</div>
+    </div>
+    <aside class="postpromonav"><nav><ul itemprop="keywords" class="tags">
+<li><a class="tag p-category" href="../../categories/docker/" rel="tag">docker</a></li>
+        </ul>
+<ul class="pager hidden-print">
+<li class="previous">
+                <a href="../control-your-accessories-from-home-assistant-with-siri-and-homekit/" rel="prev" title="Control your accessories from Home Assistant with Siri and HomeKit">Previous post</a>
+            </li>
+        </ul></nav></aside><section class="comments hidden-print"><h2>Comments</h2>
+        
+        
+        <div id="disqus_thread"></div>
+        <script>
+        var disqus_shortname ="tchutchut",
+            disqus_url="http://beenje.github.io/blog/posts/dockerfile-anti-patterns-and-best-practices/",
+        disqus_title="Dockerfile anti-patterns and best practices",
+        disqus_identifier="cache/posts/dockerfile-anti-patterns-and-best-practices.html",
+        disqus_config = function () {
+            this.language = "en";
+        };
+        (function() {
+            var dsq = document.createElement('script'); dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script><noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a>
+</noscript>
+    <a href="https://disqus.com" class="dsq-brlink" rel="nofollow">Comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+        </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script>
+</div>
+        <!--End of body content-->
+
+        <footer id="footer">
+            Contents © 2017         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
+        </footer>
+</div>
+</div>
+
+
+            <script src="../../assets/js/all-nocdn.js"></script><script>$('a.image-reference:not(.islink) img:not(.islink)').parent().colorbox({rel:"gal",maxWidth:"100%",maxHeight:"100%",scalePhotos:true});</script><!-- fancy dates --><script>
+    moment.locale("en");
+    fancydates(0, "YYYY-MM-DD HH:mm");
+    </script><!-- end fancy dates -->
+</body>
+</html>
