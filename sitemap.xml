@@ -19,11 +19,11 @@
  </url>
  <url>
   <loc>http://beenje.github.io/blog/archive.html</loc>
-  <lastmod>2017-03-16T21:55:00Z</lastmod>
+  <lastmod>2017-05-24T20:18:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/</loc>
-  <lastmod>2017-01-28T22:39:00Z</lastmod>
+  <lastmod>2017-05-23T20:41:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/ajax/</loc>
@@ -56,6 +56,10 @@
  <url>
   <loc>http://beenje.github.io/blog/categories/cat_linux/</loc>
   <lastmod>2016-01-18T22:06:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/cat_pi/</loc>
+  <lastmod>2017-05-23T20:41:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/cat_python/</loc>
@@ -112,6 +116,10 @@
  <url>
   <loc>http://beenje.github.io/blog/categories/kodi/</loc>
   <lastmod>2016-01-09T22:51:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/lego/</loc>
+  <lastmod>2017-05-23T20:41:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/linux/</loc>
@@ -179,7 +187,7 @@
  </url>
  <url>
   <loc>http://beenje.github.io/blog/index-1.html</loc>
-  <lastmod>2017-03-16T21:55:00Z</lastmod>
+  <lastmod>2017-05-24T20:18:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/listings/</loc>
@@ -202,10 +210,6 @@
   <lastmod>2017-01-28T22:39:00Z</lastmod>
  </url>
  <url>
-  <loc>http://beenje.github.io/blog/posts/docker-common-mistakes-and-best-practices/</loc>
-  <lastmod>2017-03-16T21:55:00Z</lastmod>
- </url>
- <url>
   <loc>http://beenje.github.io/blog/posts/dockerfile-anti-patterns-and-best-practices/</loc>
   <lastmod>2017-03-17T20:54:00Z</lastmod>
  </url>
@@ -224,6 +228,10 @@
  <url>
   <loc>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</loc>
   <lastmod>2016-07-19T20:52:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/</loc>
+  <lastmod>2017-05-23T20:39:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</loc>
