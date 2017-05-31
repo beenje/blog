@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Mac)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/mac.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Wed, 31 May 2017 21:44:50 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>My LEGO Macintosh Classic with Raspberry Pi and e-paper display</title><link>http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;Beginning of April I read an inspiring blog post from Jannis Hermanns
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (pi)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/cat_pi.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Wed, 31 May 2017 21:44:50 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>My LEGO Macintosh Classic with Raspberry Pi and e-paper display</title><link>http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;Beginning of April I read an inspiring blog post from Jannis Hermanns
 about a &lt;a class="reference external" href="https://jann.is/lego-macintosh-classic/"&gt;LEGO Machintosh Classic with e-paper display&lt;/a&gt;.  It was a really nice and cool article.&lt;/p&gt;
 &lt;p&gt;I've been playing with some Raspberry Pis before but only with
 &lt;a class="reference external" href="http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible"&gt;software&lt;/a&gt;.
@@ -229,44 +229,4 @@ Thanks again to @mkennedy for the stickers!&lt;/p&gt;
 &lt;p&gt;I didn't build this LEGO Macintosh to use it as a simple clock :-)
 I have a few ideas. I'll start with a small web server so that I can receive and display messages.
 That will be the subject of another blog post!&lt;/p&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>lego</category><category>Mac</category><category>pi</category><category>python</category><guid>http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/</guid><pubDate>Tue, 23 May 2017 20:39:12 GMT</pubDate></item><item><title>Compile and install Kodi on iPad without jailbreak</title><link>http://beenje.github.io/blog/posts/compile-and-install-kodi-on-ipad-without-jailbreak/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;With iOS 9 and Xcode 7 it's finally possible to compile and deploy apps on
-your iPhone/iPad with a free Apple developer account (no paid membership
-required).&lt;/p&gt;
-&lt;p&gt;I compiled XBMC/Kodi many times on my mac but had never signed an app with
-Xcode before and it took me some time to get it right.
-So here are my notes:&lt;/p&gt;
-&lt;p&gt;First thanks to memphiz for the &lt;a class="reference external" href="http://forum.kodi.tv/showthread.php?tid=239610"&gt;iOS9 support&lt;/a&gt;!&lt;/p&gt;
-&lt;p&gt;I compiled from his ios9_workaround branch, but it has been &lt;a class="reference external" href="https://github.com/xbmc/xbmc/pull/8250"&gt;merged&lt;/a&gt; to
-master since:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-$ git clone https://github.com/xbmc/xbmc.git Kodi
-$ cd Kodi
-$ git remote add memphiz https://github.com/Memphiz/xbmc.git
-$ git fetch memphiz
-$ git checkout -b ios9_workaround memphiz/ios9_workaround
-&lt;/pre&gt;
-&lt;p&gt;Follow the instructions from the README.ios file:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-$ git submodule update --init addons/skin.re-touched
-$ cd tools/depends
-$ ./bootstrap
-$ ./configure --host=arm-apple-darwin
-$ make -j4
-$ make -j4 -C target/binary-addons
-$ cd ../..
-$ make -j4 -C tools/depends/target/xbmc
-$ make clean
-$ make -j4 xcode_depends
-&lt;/pre&gt;
-&lt;p&gt;Start Xcode and open the Kodi project.
-Open the Preferences, and add your Apple ID if not already
-done:&lt;/p&gt;
-&lt;img alt="/images/add_account.png" src="http://beenje.github.io/blog/images/add_account.png"&gt;
-&lt;p&gt;Select the Kodi-iOS target:&lt;/p&gt;
-&lt;img alt="/images/kodi_ios_target.png" src="http://beenje.github.io/blog/images/kodi_ios_target.png"&gt;
-&lt;p&gt;Change the bundle identifier to something unique and click on &lt;em&gt;Fix Issue&lt;/em&gt;
-to create a provisioning profile.&lt;/p&gt;
-&lt;img alt="/images/bundle_identifier.png" src="http://beenje.github.io/blog/images/bundle_identifier.png"&gt;
-&lt;p&gt;Connect your device to your mac and select it:&lt;/p&gt;
-&lt;img alt="/images/device.png" src="http://beenje.github.io/blog/images/device.png"&gt;
-&lt;p&gt;Click on &lt;em&gt;Run&lt;/em&gt; to compile and install Kodi on your device!&lt;/p&gt;&lt;/div&gt;</description><category>iOS</category><category>iPad</category><category>iPhone</category><category>kodi</category><category>Mac</category><category>OSX</category><category>Xcode</category><guid>http://beenje.github.io/blog/posts/compile-and-install-kodi-on-ipad-without-jailbreak/</guid><pubDate>Sun, 10 Jan 2016 21:10:42 GMT</pubDate></item></channel></rss>
+&lt;/div&gt;&lt;/div&gt;</description><category>lego</category><category>Mac</category><category>pi</category><category>python</category><guid>http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/</guid><pubDate>Tue, 23 May 2017 20:39:12 GMT</pubDate></item></channel></rss>

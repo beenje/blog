@@ -39,7 +39,7 @@
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/cat_pi.xml</loc>
-  <lastmod>2017-05-23T21:39:00Z</lastmod>
+  <lastmod>2017-05-28T21:08:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/cat_python.xml</loc>
@@ -99,7 +99,7 @@
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/lego.xml</loc>
-  <lastmod>2017-05-23T21:39:00Z</lastmod>
+  <lastmod>2017-05-28T21:08:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/linux.xml</loc>
@@ -111,7 +111,7 @@
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/mac.xml</loc>
-  <lastmod>2017-05-24T20:18:00Z</lastmod>
+  <lastmod>2017-05-28T21:08:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/openwrt.xml</loc>
@@ -123,11 +123,11 @@
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/pi.xml</loc>
-  <lastmod>2017-05-24T20:18:00Z</lastmod>
+  <lastmod>2017-05-28T21:08:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/python.xml</loc>
-  <lastmod>2017-05-24T20:18:00Z</lastmod>
+  <lastmod>2017-05-28T21:08:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/redis.xml</loc>
@@ -167,10 +167,10 @@
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/rss.xml</loc>
-  <lastmod>2017-05-24T20:18:00Z</lastmod>
+  <lastmod>2017-05-28T21:08:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/sitemap.xml</loc>
-  <lastmod>2017-05-24T20:18:00Z</lastmod>
+  <lastmod>2017-05-28T21:08:00Z</lastmod>
  </sitemap>
 </sitemapindex>
