@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (https)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/https.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Fri, 09 Jun 2017 21:17:54 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Running your application over HTTPS with traefik</title><link>http://beenje.github.io/blog/posts/running-your-application-over-https-with-traefik/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I just read another very clear article from Miguel Grinberg about &lt;a class="reference external" href="https://blog.miguelgrinberg.com/post/running-your-flask-application-over-https"&gt;Running Your Flask
+Application Over HTTPS&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;As the title suggests, it describes different ways to run a flask application over HTTPS.
+I have been using &lt;a class="reference external" href="http://flask.pocoo.org"&gt;flask&lt;/a&gt; for quite some time, but I didn't even know about
+the &lt;cite&gt;ssl_context&lt;/cite&gt; argument. You should definitively check his article!&lt;/p&gt;
+&lt;p&gt;Using &lt;a class="reference external" href="https://nginx.org/en/"&gt;nginx&lt;/a&gt; as a reverse proxy with a self-signed certificate or &lt;a class="reference external" href="https://letsencrypt.org"&gt;Let’s
+Encrypt&lt;/a&gt; are two options I have been using in the
+past.&lt;/p&gt;
+&lt;p&gt;If your app is available on the internet, you should definitively use
+Let's Encrypt. But if your app is only supposed to be used internally
+on a private network, a self-signed certificate is an option.&lt;/p&gt;
+&lt;div class="section" id="traefik"&gt;
+&lt;h2&gt;Traefik&lt;/h2&gt;
+&lt;p&gt;I now often use &lt;a class="reference external" href="https://www.docker.com"&gt;docker&lt;/a&gt; to deploy my applications.
+I was looking for a way to automatically configure Let's Encrypt.
+I initially found &lt;a class="reference external" href="https://github.com/jwilder/nginx-proxy"&gt;nginx-proxy&lt;/a&gt;
+and &lt;a class="reference external" href="https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion"&gt;docker-letsencrypt-nginx-proxy-companion&lt;/a&gt;. This
+was interesting but wasn't that straight forward to setup.&lt;/p&gt;
+&lt;p&gt;I then discovered &lt;a class="reference external" href="https://traefik.iotremoteaddorigin"&gt;traefik&lt;/a&gt;: "a modern HTTP reverse proxy
+and load balancer made to deploy microservices with ease". And that's
+really the case! I've used it to deploy several applications and I
+was impressed. It's written in go, so single binary. There is also a tiny docker
+image that makes it easy to deploy. It includes Let's Encrypt support (with automatic renewal),
+websocket support (no specific setup required)... And many other features.&lt;/p&gt;
+&lt;p&gt;Here is a &lt;cite&gt;traefik.toml&lt;/cite&gt; configuration example:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+defaultEntryPoints = ["http", "https"]
+
+[web]
+# Port for the status page
+address = ":8080"
+
+# Entrypoints, http and https
+[entryPoints]
+  # http should be redirected to https
+  [entryPoints.http]
+  address = ":80"
+    [entryPoints.http.redirect]
+    entryPoint = "https"
+  # https is the default
+  [entryPoints.https]
+  address = ":443"
+    [entryPoints.https.tls]
+
+# Enable ACME (Let's Encrypt): automatic SSL
+[acme]
+# Email address used for registration
+email = "test@traefik.io"
+storageFile = "/etc/traefik/acme/acme.json"
+entryPoint = "https"
+onDemand = false
+OnHostRule = true
+
+# Enable Docker configuration backend
+[docker]
+endpoint = "unix:///var/run/docker.sock"
+domain = "example.com"
+watch = true
+exposedbydefault = false
+&lt;/pre&gt;
+&lt;p&gt;With this simple configuration, you get:&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;HTTP redirect on HTTPS&lt;/li&gt;
+&lt;li&gt;Let's Encrypt support&lt;/li&gt;
+&lt;li&gt;Docker backend support&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;div class="section" id="a-simple-example"&gt;
+&lt;h2&gt;A simple example&lt;/h2&gt;
+&lt;p&gt;I created a dummy example just to show how to run a flask application over
+HTTPS with traefik and Let's Encrypt.
+Note that traefik is made to dynamically discover backends. So you usually
+don't run it with your app in the same docker-compose.yml file. It usually
+runs separately. But to make it easier, I put both in the same file:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+version: '2'
+services:
+  flask:
+    build: ./flask
+    image: flask
+    command: uwsgi --http-socket 0.0.0.0:5000 --wsgi-file app.py --callable app
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=flask"
+      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE}"
+  traefik:
+    image: traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.toml:/etc/traefik/traefik.toml:ro
+      - ./traefik/acme:/etc/traefik/acme
+    ports:
+     - "80:80"
+     - "443:443"
+     - "8080:8080"
+&lt;/pre&gt;
+&lt;p&gt;Traefik requires access to the docker socket to listen for changes in the
+backends. It can thus automatically discover when you start and stop
+containers. You can ovverride default behaviour by using labels in your
+container.&lt;/p&gt;
+&lt;p&gt;Supposing you own the myhost.example.com domain and have access to ports 80 and 443
+(you can setup port forwarding if you run that on your machine behind a
+router at home), you can run:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ git clone https://github.com/beenje/flask_traefik_letsencrypt.git
+$ cd flask_traefik_letsencrypt
+$ export TRAEFIK_FRONTEND_RULE=Host:myhost.example.com
+$ docker-compose up
+&lt;/pre&gt;
+&lt;p&gt;Voilà! Our flask app is available over HTTPS with a real SSL certificate!&lt;/p&gt;
+&lt;img alt="/images/flask_traefik/hello_world.png" src="http://beenje.github.io/blog/images/flask_traefik/hello_world.png"&gt;
+&lt;p&gt;Traefik discovered the flask docker container and requested a certificate for our domain.
+All that automatically!&lt;/p&gt;
+&lt;p&gt;Traefik even comes with a nice dashboard:&lt;/p&gt;
+&lt;img alt="/images/flask_traefik/traefik_dashboard.png" src="http://beenje.github.io/blog/images/flask_traefik/traefik_dashboard.png"&gt;
+&lt;p&gt;With this simple configuration, &lt;a class="reference external" href="https://www.ssllabs.com/index.html"&gt;Qualys SSL Labs&lt;/a&gt;
+gave me an A rating :-)&lt;/p&gt;
+&lt;img alt="/images/flask_traefik/traefik_ssl_report.png" src="http://beenje.github.io/blog/images/flask_traefik/traefik_ssl_report.png"&gt;
+&lt;p&gt;Not as good as the A+ for Miguel's site, but not that bad!
+Especially considering there isn't any specific SSL setup.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="a-more-realistic-deployment"&gt;
+&lt;h2&gt;A more realistic deployment&lt;/h2&gt;
+&lt;p&gt;As I already mentioned, traefik is made to automatically discover backends (docker containers in my case).
+So you usually run it by itself.&lt;/p&gt;
+&lt;p&gt;Here is an example how it can be deployed using &lt;a class="reference external" href="http://docs.ansible.com/ansible/"&gt;Ansible&lt;/a&gt;:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+---
+- name: create traefik directories
+  file:
+    path: /etc/traefik/acme
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: create traefik.toml
+  template:
+    src: traefik.toml.j2
+    dest: /etc/traefik/traefik.toml
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart traefik
+
+- name: create traefik network
+  docker_network:
+    name: "{{traefik_network}}"
+    state: present
+
+- name: launch traefik container with letsencrypt support
+  docker_container:
+    name: traefik_proxy
+    image: "traefik:{{traefik_version}}"
+    state: started
+    restart_policy: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "{{traefik_dashboard_port}}:8080"
+    volumes:
+      - /etc/traefik/traefik.toml:/etc/traefik/traefik.toml:ro
+      - /etc/traefik/acme:/etc/traefik/acme:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    # purge networks so that the container is only part of
+    # {{traefik_network}} (and not the default bridge network)
+    purge_networks: yes
+    networks:
+      - name: "{{traefik_network}}"
+
+- name: force all notified handlers to run
+  meta: flush_handlers
+&lt;/pre&gt;
+&lt;p&gt;Nothing strange here. It's quite similar to what we had in our docker-compose.yml file.
+We created a specific &lt;cite&gt;traefik_network&lt;/cite&gt;. Our docker containers will have to be on that same network.&lt;/p&gt;
+&lt;p&gt;Here is how we could deploy a flask application on the same server using another ansible role:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+- name: launch flask container
+  docker_container:
+    name: flask
+    image: flask
+    command: uwsgi --http-socket 0.0.0.0:5000 --wsgi-file app.py --callable app
+    state: started
+    restart_policy: always
+    purge_networks: yes
+    networks:
+      - name: "{{traefik_network}}"
+    labels:
+      traefik.enable: "true"
+      traefik.backend: "flask"
+      traefik.frontend.rule: "Host:myhost.example.com"
+      traefik.port: "5000"
+&lt;/pre&gt;
+&lt;p&gt;We make sure the container is on the same network as the traefik proxy.
+Note that the &lt;cite&gt;traefik.port&lt;/cite&gt; label is only required if the container exposes multiple ports.
+It's thus not needed in our example.&lt;/p&gt;
+&lt;p&gt;That's basically it. As you can see, &lt;a class="reference external" href="https://www.docker.com"&gt;docker&lt;/a&gt; and &lt;a class="reference external" href="http://docs.ansible.com/ansible/"&gt;Ansible&lt;/a&gt; make the deployment easy.
+And &lt;a class="reference external" href="https://traefik.iotremoteaddorigin"&gt;traefik&lt;/a&gt; takes care of the Let's Encrypt certificate.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="conclusion"&gt;
+&lt;h2&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;Traefik comes with many other features and is well &lt;a class="reference external" href="https://docs.traefik.io"&gt;documented&lt;/a&gt;.
+You should check &lt;a class="reference external" href="https://docs.traefik.io/#docker"&gt;this Docker example&lt;/a&gt; that demonstrates load-balancing.
+Really cool.&lt;/p&gt;
+&lt;p&gt;If you use &lt;a class="reference external" href="https://www.docker.com"&gt;docker&lt;/a&gt;, you should really give &lt;a class="reference external" href="https://traefik.iotremoteaddorigin"&gt;traefik&lt;/a&gt; a try!&lt;/p&gt;
+&lt;/div&gt;&lt;/div&gt;</description><category>flask</category><category>https</category><category>python</category><category>traefik</category><guid>http://beenje.github.io/blog/posts/running-your-application-over-https-with-traefik/</guid><pubDate>Thu, 08 Jun 2017 19:49:46 GMT</pubDate></item></channel></rss>

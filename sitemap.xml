@@ -7,7 +7,7 @@
                         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
  <url>
   <loc>http://beenje.github.io/blog/</loc>
-  <lastmod>2017-05-28T20:59:00Z</lastmod>
+  <lastmod>2017-05-31T21:49:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/2016/</loc>
@@ -19,11 +19,11 @@
  </url>
  <url>
   <loc>http://beenje.github.io/blog/archive.html</loc>
-  <lastmod>2017-05-28T20:56:00Z</lastmod>
+  <lastmod>2017-06-08T19:49:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/</loc>
-  <lastmod>2017-05-28T20:56:00Z</lastmod>
+  <lastmod>2017-06-08T19:50:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/ajax/</loc>
@@ -102,6 +102,10 @@
   <lastmod>2017-01-23T21:02:00Z</lastmod>
  </url>
  <url>
+  <loc>http://beenje.github.io/blog/categories/https/</loc>
+  <lastmod>2017-06-08T19:50:00Z</lastmod>
+ </url>
+ <url>
   <loc>http://beenje.github.io/blog/categories/ios/</loc>
   <lastmod>2016-01-09T22:51:00Z</lastmod>
  </url>
@@ -166,6 +170,10 @@
   <lastmod>2016-11-16T21:38:00Z</lastmod>
  </url>
  <url>
+  <loc>http://beenje.github.io/blog/categories/traefik/</loc>
+  <lastmod>2017-06-08T19:50:00Z</lastmod>
+ </url>
+ <url>
   <loc>http://beenje.github.io/blog/categories/turris/</loc>
   <lastmod>2017-01-23T21:02:00Z</lastmod>
  </url>
@@ -187,7 +195,7 @@
  </url>
  <url>
   <loc>http://beenje.github.io/blog/index-1.html</loc>
-  <lastmod>2017-05-28T20:56:00Z</lastmod>
+  <lastmod>2017-06-08T19:49:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/listings/</loc>
@@ -244,6 +252,10 @@
  <url>
   <loc>http://beenje.github.io/blog/posts/running-background-tasks-with-flask-and-rq/</loc>
   <lastmod>2016-08-14T19:51:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/posts/running-your-application-over-https-with-traefik/</loc>
+  <lastmod>2017-06-08T19:49:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/switching-from-git-bigfile-to-git-lfs/</loc>

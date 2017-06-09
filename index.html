@@ -12,7 +12,7 @@
 <link rel="alternate" type="application/rss+xml" title="RSS" href="rss.xml">
 <link rel="canonical" href="http://beenje.github.io/blog/">
 <link rel="next" href="index-1.html" type="text/html">
-<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/" type="text/html">
+<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/running-your-application-over-https-with-traefik/" type="text/html">
 </head>
 <body>
 <a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
@@ -65,7 +65,228 @@
 
     
 <div class="postindex">
-    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/" class="u-url">My LEGO Macintosh Classic with Raspberry Pi and e-paper display</a></h1>
+    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/running-your-application-over-https-with-traefik/" class="u-url">Running your application over HTTPS with traefik</a></h1>
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn">
+                Benjamin Bertrand
+            </span></p>
+            <p class="dateline"><a href="posts/running-your-application-over-https-with-traefik/" rel="bookmark"><time class="published dt-published" datetime="2017-06-08T21:49:46+02:00" title="2017-06-08 21:49">2017-06-08 21:49</time></a></p>
+                <p class="commentline">
+        
+    <a href="posts/running-your-application-over-https-with-traefik/#disqus_thread" data-disqus-identifier="cache/posts/running-your-application-over-https-with-traefik.html">Comments</a>
+
+
+        </p>
+</div>
+    </header><div class="e-content entry-content">
+    <div>
+<p>I just read another very clear article from Miguel Grinberg about <a class="reference external" href="https://blog.miguelgrinberg.com/post/running-your-flask-application-over-https">Running Your Flask
+Application Over HTTPS</a>.</p>
+<p>As the title suggests, it describes different ways to run a flask application over HTTPS.
+I have been using <a class="reference external" href="http://flask.pocoo.org">flask</a> for quite some time, but I didn't even know about
+the <cite>ssl_context</cite> argument. You should definitively check his article!</p>
+<p>Using <a class="reference external" href="https://nginx.org/en/">nginx</a> as a reverse proxy with a self-signed certificate or <a class="reference external" href="https://letsencrypt.org">Let’s
+Encrypt</a> are two options I have been using in the
+past.</p>
+<p>If your app is available on the internet, you should definitively use
+Let's Encrypt. But if your app is only supposed to be used internally
+on a private network, a self-signed certificate is an option.</p>
+<div class="section" id="traefik">
+<h2>Traefik</h2>
+<p>I now often use <a class="reference external" href="https://www.docker.com">docker</a> to deploy my applications.
+I was looking for a way to automatically configure Let's Encrypt.
+I initially found <a class="reference external" href="https://github.com/jwilder/nginx-proxy">nginx-proxy</a>
+and <a class="reference external" href="https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion">docker-letsencrypt-nginx-proxy-companion</a>. This
+was interesting but wasn't that straight forward to setup.</p>
+<p>I then discovered <a class="reference external" href="https://traefik.iotremoteaddorigin">traefik</a>: "a modern HTTP reverse proxy
+and load balancer made to deploy microservices with ease". And that's
+really the case! I've used it to deploy several applications and I
+was impressed. It's written in go, so single binary. There is also a tiny docker
+image that makes it easy to deploy. It includes Let's Encrypt support (with automatic renewal),
+websocket support (no specific setup required)... And many other features.</p>
+<p>Here is a <cite>traefik.toml</cite> configuration example:</p>
+<pre class="literal-block">
+defaultEntryPoints = ["http", "https"]
+
+[web]
+# Port for the status page
+address = ":8080"
+
+# Entrypoints, http and https
+[entryPoints]
+  # http should be redirected to https
+  [entryPoints.http]
+  address = ":80"
+    [entryPoints.http.redirect]
+    entryPoint = "https"
+  # https is the default
+  [entryPoints.https]
+  address = ":443"
+    [entryPoints.https.tls]
+
+# Enable ACME (Let's Encrypt): automatic SSL
+[acme]
+# Email address used for registration
+email = "test@traefik.io"
+storageFile = "/etc/traefik/acme/acme.json"
+entryPoint = "https"
+onDemand = false
+OnHostRule = true
+
+# Enable Docker configuration backend
+[docker]
+endpoint = "unix:///var/run/docker.sock"
+domain = "example.com"
+watch = true
+exposedbydefault = false
+</pre>
+<p>With this simple configuration, you get:</p>
+<ul class="simple">
+<li>HTTP redirect on HTTPS</li>
+<li>Let's Encrypt support</li>
+<li>Docker backend support</li>
+</ul>
+</div>
+<div class="section" id="a-simple-example">
+<h2>A simple example</h2>
+<p>I created a dummy example just to show how to run a flask application over
+HTTPS with traefik and Let's Encrypt.
+Note that traefik is made to dynamically discover backends. So you usually
+don't run it with your app in the same docker-compose.yml file. It usually
+runs separately. But to make it easier, I put both in the same file:</p>
+<pre class="literal-block">
+version: '2'
+services:
+  flask:
+    build: ./flask
+    image: flask
+    command: uwsgi --http-socket 0.0.0.0:5000 --wsgi-file app.py --callable app
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=flask"
+      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE}"
+  traefik:
+    image: traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.toml:/etc/traefik/traefik.toml:ro
+      - ./traefik/acme:/etc/traefik/acme
+    ports:
+     - "80:80"
+     - "443:443"
+     - "8080:8080"
+</pre>
+<p>Traefik requires access to the docker socket to listen for changes in the
+backends. It can thus automatically discover when you start and stop
+containers. You can ovverride default behaviour by using labels in your
+container.</p>
+<p>Supposing you own the myhost.example.com domain and have access to ports 80 and 443
+(you can setup port forwarding if you run that on your machine behind a
+router at home), you can run:</p>
+<pre class="literal-block">
+$ git clone https://github.com/beenje/flask_traefik_letsencrypt.git
+$ cd flask_traefik_letsencrypt
+$ export TRAEFIK_FRONTEND_RULE=Host:myhost.example.com
+$ docker-compose up
+</pre>
+<p>Voilà! Our flask app is available over HTTPS with a real SSL certificate!</p>
+<img alt="/images/flask_traefik/hello_world.png" src="images/flask_traefik/hello_world.png"><p>Traefik discovered the flask docker container and requested a certificate for our domain.
+All that automatically!</p>
+<p>Traefik even comes with a nice dashboard:</p>
+<img alt="/images/flask_traefik/traefik_dashboard.png" src="images/flask_traefik/traefik_dashboard.png"><p>With this simple configuration, <a class="reference external" href="https://www.ssllabs.com/index.html">Qualys SSL Labs</a>
+gave me an A rating :-)</p>
+<img alt="/images/flask_traefik/traefik_ssl_report.png" src="images/flask_traefik/traefik_ssl_report.png"><p>Not as good as the A+ for Miguel's site, but not that bad!
+Especially considering there isn't any specific SSL setup.</p>
+</div>
+<div class="section" id="a-more-realistic-deployment">
+<h2>A more realistic deployment</h2>
+<p>As I already mentioned, traefik is made to automatically discover backends (docker containers in my case).
+So you usually run it by itself.</p>
+<p>Here is an example how it can be deployed using <a class="reference external" href="http://docs.ansible.com/ansible/">Ansible</a>:</p>
+<pre class="literal-block">
+---
+- name: create traefik directories
+  file:
+    path: /etc/traefik/acme
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: create traefik.toml
+  template:
+    src: traefik.toml.j2
+    dest: /etc/traefik/traefik.toml
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart traefik
+
+- name: create traefik network
+  docker_network:
+    name: "{{traefik_network}}"
+    state: present
+
+- name: launch traefik container with letsencrypt support
+  docker_container:
+    name: traefik_proxy
+    image: "traefik:{{traefik_version}}"
+    state: started
+    restart_policy: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "{{traefik_dashboard_port}}:8080"
+    volumes:
+      - /etc/traefik/traefik.toml:/etc/traefik/traefik.toml:ro
+      - /etc/traefik/acme:/etc/traefik/acme:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    # purge networks so that the container is only part of
+    # {{traefik_network}} (and not the default bridge network)
+    purge_networks: yes
+    networks:
+      - name: "{{traefik_network}}"
+
+- name: force all notified handlers to run
+  meta: flush_handlers
+</pre>
+<p>Nothing strange here. It's quite similar to what we had in our docker-compose.yml file.
+We created a specific <cite>traefik_network</cite>. Our docker containers will have to be on that same network.</p>
+<p>Here is how we could deploy a flask application on the same server using another ansible role:</p>
+<pre class="literal-block">
+- name: launch flask container
+  docker_container:
+    name: flask
+    image: flask
+    command: uwsgi --http-socket 0.0.0.0:5000 --wsgi-file app.py --callable app
+    state: started
+    restart_policy: always
+    purge_networks: yes
+    networks:
+      - name: "{{traefik_network}}"
+    labels:
+      traefik.enable: "true"
+      traefik.backend: "flask"
+      traefik.frontend.rule: "Host:myhost.example.com"
+      traefik.port: "5000"
+</pre>
+<p>We make sure the container is on the same network as the traefik proxy.
+Note that the <cite>traefik.port</cite> label is only required if the container exposes multiple ports.
+It's thus not needed in our example.</p>
+<p>That's basically it. As you can see, <a class="reference external" href="https://www.docker.com">docker</a> and <a class="reference external" href="http://docs.ansible.com/ansible/">Ansible</a> make the deployment easy.
+And <a class="reference external" href="https://traefik.iotremoteaddorigin">traefik</a> takes care of the Let's Encrypt certificate.</p>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion</h2>
+<p>Traefik comes with many other features and is well <a class="reference external" href="https://docs.traefik.io">documented</a>.
+You should check <a class="reference external" href="https://docs.traefik.io/#docker">this Docker example</a> that demonstrates load-balancing.
+Really cool.</p>
+<p>If you use <a class="reference external" href="https://www.docker.com">docker</a>, you should really give <a class="reference external" href="https://traefik.iotremoteaddorigin">traefik</a> a try!</p>
+</div>
+</div>
+    </div>
+    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/" class="u-url">My LEGO Macintosh Classic with Raspberry Pi and e-paper display</a></h1>
         <div class="metadata">
             <p class="byline author vcard"><span class="byline-name fn">
                 Benjamin Bertrand
@@ -2982,187 +3203,6 @@ so I'll keep that for another time.</p>
 <p>Thanks again to <a class="reference external" href="http://blog.miguelgrinberg.com/">Miguel Grinberg</a>
 and all his posts about Flask!</p>
 </div>
-</div>
-    </div>
-    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/installing-openvpn-on-a-raspberry-pi-with-ansible/" class="u-url">Installing OpenVPN on a Raspberry Pi with Ansible</a></h1>
-        <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn">
-                Benjamin Bertrand
-            </span></p>
-            <p class="dateline"><a href="posts/installing-openvpn-on-a-raspberry-pi-with-ansible/" rel="bookmark"><time class="published dt-published" datetime="2016-07-18T22:26:28+02:00" title="2016-07-18 22:26">2016-07-18 22:26</time></a></p>
-                <p class="commentline">
-        
-    <a href="posts/installing-openvpn-on-a-raspberry-pi-with-ansible/#disqus_thread" data-disqus-identifier="cache/posts/installing-openvpn-on-a-raspberry-pi-with-ansible.html">Comments</a>
-
-
-        </p>
-</div>
-    </header><div class="e-content entry-content">
-    <div>
-<p>I have to confess that I initially decided to install a VPN,
-not to secure my connection when using a free Wireless Acces Point in an
-airport or hotel, but to watch Netflix :-)</p>
-<p>I had a VPS in France where I installed sniproxy to access Netflix.
-Not that I find the french catalogue so great, but as a French guy living
-in Sweden, it was a good way for my kids to watch some french programs.
-But Netflix started to block VPS providers...</p>
-<p>I have a brother in France who has a Fiber Optic Internet access.
-That was a good opportunity to setup a private VPN and I bought him a Raspberry Pi.</p>
-<p>There are many resources on the web about <a class="reference external" href="https://openvpn.net/index.php/open-source/documentation/howto.html">OpenVPN</a>.
-A paper worth mentioning is: <a class="reference external" href="https://www.sans.org/reading-room/whitepapers/networkdevs/soho-remote-access-vpn-easy-pie-raspberry-pi-34427">SOHO Remote Access VPN. Easy as Pie, Raspberry Pi...</a>
-It's from end of 2013 and describes Esay-RSA 2.0 (that used to be installed with
-OpenVPN), but it's still an interesting read.</p>
-<p>Anyway, most resources describe all the commands to run.
-I don't really like installing softwares by running a bunch of commands. Propably due
-to my professional experience, I like things to be reproducible.
-That's why I love to automate things. I wrote a lot of shell scripts over
-the years. About two years ago, I discovered <a class="reference external" href="http://docs.ansible.com/ansible/index.html">Ansible</a> and it quickly became my
-favorite tool to deploy software.</p>
-<p>So let's write a small Ansible playbook to install OpenVPN on a Raspberry Pi.</p>
-<p>First the firewall configuration. I like to use <a class="reference external" href="https://help.ubuntu.com/community/UFW">ufw</a> which is quite easy to
-setup:</p>
-<pre class="literal-block">
-- name: install dependencies
-  apt: name=ufw state=present update_cache=yes cache_valid_time=3600
-
-- name: update ufw default forward policy
-  lineinfile: dest=/etc/default/ufw regexp=^DEFAULT_FORWARD_POLICY line=DEFAULT_FORWARD_POLICY="ACCEPT"
-  notify: reload ufw
-
-- name: enable ufw ip forward
-  lineinfile: dest=/etc/ufw/sysctl.conf regexp=^net/ipv4/ip_forward line=net/ipv4/ip_forward=1
-  notify: reload ufw
-
-- name: add NAT rules to ufw
-  blockinfile:
-    dest: /etc/ufw/before.rules
-    insertbefore: BOF
-    block: |
-      # Nat table
-      *nat
-      :POSTROUTING ACCEPT [0:0]
-
-      # Nat rules
-      -F
-      -A POSTROUTING -s 10.8.0.0/24 -o eth0 -j SNAT --to-source {{ansible_eth0.ipv4.address}}
-
-      # don't delete the 'COMMIT' line or these nat rules won't be processed
-      COMMIT
-  notify: reload ufw
-
-- name: allow ssh
-  ufw: rule=limit port=ssh proto=tcp
-
-- name: allow openvpn
-  ufw: rule=allow port={{openvpn_port}} proto={{openvpn_protocol}}
-
-- name: enable ufw
-  ufw: logging=on state=enabled
-</pre>
-<p>This enables IP forwarding, adds the required NAT rules and allows ssh and
-openvpn.</p>
-<p>The rest of the playbook installs OpenVPN and generates all the keys automatically,
-except the Diffie-Hellman one that should be generated locally.
-This is just because it takes for ever on the Pi :-)</p>
-<pre class="literal-block">
-- name: install openvpn
-  apt: name=openvpn state=present
-
-- name: create /etc/openvpn
-  file: path=/etc/openvpn state=directory mode=0755 owner=root group=root
-
-- name: create /etc/openvpn/keys
-  file: path=/etc/openvpn/keys state=directory mode=0700 owner=root group=root
-
-- name: create clientside and serverside directories
-  file: path="{{item}}" state=directory mode=0755
-  with_items:
-      - "{{clientside}}/keys"
-      - "{{serverside}}"
-  become: true
-  become_user: "{{user}}"
-
-- name: create openvpn base client.conf
-  template: src=client.conf.j2 dest={{clientside}}/client.conf owner=root group=root mode=0644
-
-- name: download EasyRSA
-  get_url: url={{easyrsa_url}} dest=/home/{{user}}/openvpn
-  become: true
-  become_user: "{{user}}"
-
-- name: create scripts
-  template: src={{item}}.j2 dest=/home/{{user}}/openvpn/{{item}} owner=root group=root mode=0755
-  with_items:
-    - create_serverside
-    - create_clientside
-  tags: client
-
-- name: run serverside script
-  command: ./create_serverside
-  args:
-    chdir: /home/{{user}}/openvpn
-    creates: "{{easyrsa_server}}/ta.key"
-  become: true
-  become_user: "{{user}}"
-
-- name: run clientside script
-  command: ./create_clientside {{item}}
-  args:
-    chdir: /home/{{user}}/openvpn
-    creates: "{{clientside}}/files/{{item}}.ovpn"
-  become: true
-  become_user: "{{user}}"
-  with_items: "{{openvpn_clients}}"
-  tags: client
-
-- name: install all server keys
-  command: install -o root -g root -m 600 {{item.name}} /etc/openvpn/keys/
-  args:
-    chdir: "{{item.path}}"
-    creates: /etc/openvpn/keys/{{item.name}}
-  with_items:
-    - { name: 'ca.crt', path: "{{easyrsa_server}}/pki" }
-    - { name: '{{ansible_hostname}}.crt', path: "{{easyrsa_server}}/pki/issued" }
-    - { name: '{{ansible_hostname}}.key', path: "{{easyrsa_server}}/pki/private" }
-    - { name: 'ta.key', path: "{{easyrsa_server}}" }
-
-- name: copy Diffie-Hellman key
-  copy: src="{{openvpn_dh}}" dest=/etc/openvpn/keys/dh.pem owner=root group=root mode=0600
-
-- name: create openvpn server.conf
-  template: src=server.conf.j2 dest=/etc/openvpn/server.conf owner=root group=root mode=0644
-  notify: restart openvpn
-
-- name: start openvpn
-  service: name=openvpn state=started
-</pre>
-<p>The <em>create_clientside</em> script generates all the required client keys and creates an ovpn file
-that includes them.  It makes it very easy to install on any device: just one file to
-drop.</p>
-<p>One thing I stumbled upon is the <em>ns-cert-type server</em> option that I
-initially used in the server configuration. This prevented the client to
-connect. As explained <a class="reference external" href="https://community.openvpn.net/openvpn/wiki/EasyRSA3-OpenVPN-Howto">here</a>,
-this option is a deprecated "Netscape" cert attribute. It's not enabled by
-default with Easy-RSA 3.</p>
-<p>Fortunately, the mentioned <a class="reference external" href="https://community.openvpn.net/openvpn/wiki/EasyRSA3-OpenVPN-Howto">howto</a> and
-the <a class="reference external" href="https://github.com/OpenVPN/easy-rsa">Easy-RSA github</a> page are good references
-for Easy-RSA 3.</p>
-<p>One important thing to note is that I create all the keys with no password.
-That's obviously not the most secure and recommended way.
-Anyone accessing the CA could sign new requests. But it can be stored offline on an USB stick.
-I actually think that for my use case it's not even worth keeping the CA.
-Sure it means I can't easily add a new client or revoke a certificate.
-But with the playbook, it's super easy to throw all the keys and regenerate everything.
-That forces to replace all clients configuration but with 2 or 3
-clients, this is not a problem.</p>
-<p>For sure don't leave all the generated keys on the Pi!
-After copying the clients ovpn files, remove the /home/pi/openvpn
-directory (save it somewhere safe if you want to add new clients or revoke
-a certificate without regenerating everything).</p>
-<p>The full playbook can be found on <a class="reference external" href="https://github.com/beenje/pi_openvpn">github</a>.
-The README includes some quick instructions.</p>
-<p>I now have a private VPN in France and one at home that I can use to
-securely access my NAS from anywhere!</p>
 </div>
     </div>
     </article>
