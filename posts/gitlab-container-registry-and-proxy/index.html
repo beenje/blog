@@ -7,7 +7,8 @@
 <link href="../../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
 <link href="../../assets/css/ipython.min.css" rel="stylesheet" type="text/css">
 <link href="../../assets/css/nikola_ipython.css" rel="stylesheet" type="text/css">
-<meta content="#5670d4" name="theme-color">
+<meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
 <link rel="alternate" type="application/rss+xml" title="RSS" href="../../rss.xml">
 <link rel="canonical" href="http://beenje.github.io/blog/posts/gitlab-container-registry-and-proxy/">
 <!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><meta name="author" content="Benjamin Bertrand">
@@ -85,7 +86,7 @@ Official GitLab Community Edition docker images are ">
 <article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">GitLab Container Registry and proxy</a></h1>
 
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
                     Benjamin Bertrand
             </span></p>
             <p class="dateline"><a href="." rel="bookmark"><time class="published dt-published" datetime="2016-09-21T22:10:06+02:00" itemprop="datePublished" title="2016-09-21 22:10">2016-09-21 22:10</time></a></p>
@@ -96,7 +97,7 @@ Official GitLab Community Edition docker images are ">
 
             
         </p>
-<p class="sourceline"><a href="index.rst" id="sourcelink">Source</a></p>
+<p class="sourceline"><a href="index.rst" class="sourcelink">Source</a></p>
 
         </div>
         
@@ -113,16 +114,16 @@ The documentation to use the image is quite clear and can be found <a class="ref
 I wanted to access GitLab using HTTPS, so I disabled port 443 in nginx
 configuration. To do that I had to modify the template
 <cite>/usr/syno/share/nginx/WWWService.mustache</cite> and reboot the NAS:</p>
-<pre class="code diff"><a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-1"></a><span class="gd">--- WWWService.mustache.org 2016-08-16 23:25:06.000000000 +0100</span>
-<a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-2"></a><span class="gi">+++ WWWService.mustache 2016-09-19 13:53:45.256735700 +0100</span>
-<a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-3"></a><span class="gu">@@ -1,8 +1,6 @@</span>
-<a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-4"></a> server {
-<a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-5"></a>     listen 80 default_server{{#reuseport}} reuseport{{/reuseport}};
-<a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-6"></a>     listen [::]:80 default_server{{#reuseport}} reuseport{{/reuseport}};
-<a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-7"></a><span class="gd">-    listen 443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
-<a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-8"></a><span class="gd">-    listen [::]:443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
-<a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-9"></a>
-<a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-10"></a>     server_name _;
+<pre class="code diff"><a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-1"></a><span class="gd">--- WWWService.mustache.org 2016-08-16 23:25:06.000000000 +0100</span>
+<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-2"></a><span class="gi">+++ WWWService.mustache 2016-09-19 13:53:45.256735700 +0100</span>
+<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-3"></a><span class="gu">@@ -1,8 +1,6 @@</span>
+<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-4"></a> server {
+<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-5"></a>     listen 80 default_server{{#reuseport}} reuseport{{/reuseport}};
+<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-6"></a>     listen [::]:80 default_server{{#reuseport}} reuseport{{/reuseport}};
+<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-7"></a><span class="gd">-    listen 443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
+<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-8"></a><span class="gd">-    listen [::]:443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
+<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-9"></a>
+<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-10"></a>     server_name _;
 </pre>
 <p>The port 22 is also already used by the ssh daemon so I decided to use
 the port 2222. I created the directory <cite>/volume1/docker/gitlab</cite> to store

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Mac)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/mac.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Wed, 31 May 2017 21:44:50 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>My LEGO Macintosh Classic with Raspberry Pi and e-paper display</title><link>http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;Beginning of April I read an inspiring blog post from Jannis Hermanns
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>Tchut-Tchut Blog (Posts about Mac)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/mac.xml" type="application/rss+xml" rel="self"></atom:link><language>en</language><lastBuildDate>Tue, 18 Jul 2017 21:48:33 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>My LEGO Macintosh Classic with Raspberry Pi and e-paper display</title><link>http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;Beginning of April I read an inspiring blog post from Jannis Hermanns
 about a &lt;a class="reference external" href="https://jann.is/lego-macintosh-classic/"&gt;LEGO Machintosh Classic with e-paper display&lt;/a&gt;.  It was a really nice and cool article.&lt;/p&gt;
 &lt;p&gt;I've been playing with some Raspberry Pis before but only with
 &lt;a class="reference external" href="http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible"&gt;software&lt;/a&gt;.
@@ -179,7 +179,7 @@ $ cd
 &lt;pre class="literal-block"&gt;
 $ git clone https://github.com/beenje/legomac.git
 $ cd legomac
-$ ansible-playbook -i hosts -k playbook.yml
+$ ansible-playbook -i hosts -k epd-demo.yml
 &lt;/pre&gt;
 &lt;p&gt;That's it!&lt;/p&gt;
 &lt;p&gt;Of course don't forget to change the default password on your Pi.&lt;/p&gt;
@@ -196,17 +196,17 @@ Thanks again to @mkennedy for the stickers!&lt;/p&gt;
 &lt;a class="reference external image-reference" href="http://beenje.github.io/blog/images/legomac/talkpythontome.jpg"&gt;&lt;img alt="/images/legomac/talkpythontome.thumbnail.jpg" src="http://beenje.github.io/blog/images/legomac/talkpythontome.thumbnail.jpg"&gt;&lt;/a&gt;
 &lt;p&gt;Below are a few pictures. You can see more on &lt;a class="reference external" href="https://flic.kr/s/aHskVAadfo"&gt;flickr&lt;/a&gt;.&lt;/p&gt;
 
-&lt;div id="slides_03b42f43ff5f47da95e9f7bfd77d73a4" class="carousel slide"&gt;
+&lt;div id="slides_d04d6efa25424750910a67594a0bb78b" class="carousel slide"&gt;
     &lt;ol class="carousel-indicators"&gt;
-            &lt;li data-target="#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide-to="0" class="active"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide-to="1"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide-to="2"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide-to="3"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide-to="4"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide-to="5"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide-to="6"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide-to="7"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide-to="8"&gt;
+            &lt;li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="0" class="active"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="1"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="2"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="3"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="4"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="5"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="6"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="7"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="8"&gt;
     &lt;/li&gt;&lt;/ol&gt;
     &lt;div class="carousel-inner"&gt;
                 &lt;div class="item active"&gt;&lt;img src="http://beenje.github.io/blog/images/legomac/legomac.jpg" alt="" style="margin: 0 auto 0 auto;"&gt;&lt;/div&gt;
@@ -219,8 +219,8 @@ Thanks again to @mkennedy for the stickers!&lt;/p&gt;
                 &lt;div class="item"&gt;&lt;img src="http://beenje.github.io/blog/images/legomac/button_front.jpg" alt="" style="margin: 0 auto 0 auto;"&gt;&lt;/div&gt;
                 &lt;div class="item"&gt;&lt;img src="http://beenje.github.io/blog/images/legomac/button_top.jpg" alt="" style="margin: 0 auto 0 auto;"&gt;&lt;/div&gt;
     &lt;/div&gt;
-    &lt;a class="left carousel-control" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide="prev"&gt;&lt;span class="icon-prev"&gt;&lt;/span&gt;&lt;/a&gt;
-    &lt;a class="right carousel-control" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide="next"&gt;&lt;span class="icon-next"&gt;&lt;/span&gt;&lt;/a&gt;
+    &lt;a class="left carousel-control" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_d04d6efa25424750910a67594a0bb78b" data-slide="prev"&gt;&lt;span class="icon-prev"&gt;&lt;/span&gt;&lt;/a&gt;
+    &lt;a class="right carousel-control" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_d04d6efa25424750910a67594a0bb78b" data-slide="next"&gt;&lt;span class="icon-next"&gt;&lt;/span&gt;&lt;/a&gt;
 &lt;/div&gt;
 
 &lt;/div&gt;
@@ -228,7 +228,7 @@ Thanks again to @mkennedy for the stickers!&lt;/p&gt;
 &lt;h2&gt;Next&lt;/h2&gt;
 &lt;p&gt;I didn't build this LEGO Macintosh to use it as a simple clock :-)
 I have a few ideas. I'll start with a small web server so that I can receive and display messages.
-That will be the subject of another blog post!&lt;/p&gt;
+That will be the subject of another &lt;a class="reference external" href="http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi"&gt;blog post&lt;/a&gt;!&lt;/p&gt;
 &lt;/div&gt;&lt;/div&gt;</description><category>lego</category><category>Mac</category><category>pi</category><category>python</category><guid>http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/</guid><pubDate>Tue, 23 May 2017 20:39:12 GMT</pubDate></item><item><title>Compile and install Kodi on iPad without jailbreak</title><link>http://beenje.github.io/blog/posts/compile-and-install-kodi-on-ipad-without-jailbreak/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;With iOS 9 and Xcode 7 it's finally possible to compile and deploy apps on
 your iPhone/iPad with a free Apple developer account (no paid membership
 required).&lt;/p&gt;

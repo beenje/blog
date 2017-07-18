@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>Tchut-Tchut Blog (gitlab)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link rel="self" type="application/rss+xml" href="http://beenje.github.io/blog/categories/gitlab.xml"></atom:link><language>en</language><lastBuildDate>Mon, 07 Nov 2016 21:20:23 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>GitLab Container Registry and proxy</title><link>http://beenje.github.io/blog/posts/gitlab-container-registry-and-proxy/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;div class="section" id="gitlab-on-synology"&gt;
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>Tchut-Tchut Blog (Posts about gitlab)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link rel="self" type="application/rss+xml" href="http://beenje.github.io/blog/categories/gitlab.xml"></atom:link><language>en</language><lastBuildDate>Tue, 18 Jul 2017 19:40:20 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>GitLab Container Registry and proxy</title><link>http://beenje.github.io/blog/posts/gitlab-container-registry-and-proxy/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;div class="section" id="gitlab-on-synology"&gt;
 &lt;h2&gt;GitLab on Synology&lt;/h2&gt;
 &lt;p&gt;I installed GitLab CE on a Synology RackStation RS815+ at work.
 It has an Intel Atom C2538 that allows to run &lt;a class="reference external" href="https://www.docker.com"&gt;Docker&lt;/a&gt; on the NAS.&lt;/p&gt;
@@ -9,16 +9,16 @@ The documentation to use the image is quite clear and can be found &lt;a class="
 I wanted to access GitLab using HTTPS, so I disabled port 443 in nginx
 configuration. To do that I had to modify the template
 &lt;cite&gt;/usr/syno/share/nginx/WWWService.mustache&lt;/cite&gt; and reboot the NAS:&lt;/p&gt;
-&lt;pre class="code diff"&gt;&lt;a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-1"&gt;&lt;/a&gt;&lt;span class="gd"&gt;--- WWWService.mustache.org 2016-08-16 23:25:06.000000000 +0100&lt;/span&gt;
-&lt;a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-2"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+++ WWWService.mustache 2016-09-19 13:53:45.256735700 +0100&lt;/span&gt;
-&lt;a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-3"&gt;&lt;/a&gt;&lt;span class="gu"&gt;@@ -1,8 +1,6 @@&lt;/span&gt;
-&lt;a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-4"&gt;&lt;/a&gt; server {
-&lt;a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-5"&gt;&lt;/a&gt;     listen 80 default_server{{#reuseport}} reuseport{{/reuseport}};
-&lt;a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-6"&gt;&lt;/a&gt;     listen [::]:80 default_server{{#reuseport}} reuseport{{/reuseport}};
-&lt;a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-7"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    listen 443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};&lt;/span&gt;
-&lt;a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-8"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    listen [::]:443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};&lt;/span&gt;
-&lt;a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-9"&gt;&lt;/a&gt;
-&lt;a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-10"&gt;&lt;/a&gt;     server_name _;
+&lt;pre class="code diff"&gt;&lt;a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-1"&gt;&lt;/a&gt;&lt;span class="gd"&gt;--- WWWService.mustache.org 2016-08-16 23:25:06.000000000 +0100&lt;/span&gt;
+&lt;a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-2"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+++ WWWService.mustache 2016-09-19 13:53:45.256735700 +0100&lt;/span&gt;
+&lt;a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-3"&gt;&lt;/a&gt;&lt;span class="gu"&gt;@@ -1,8 +1,6 @@&lt;/span&gt;
+&lt;a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-4"&gt;&lt;/a&gt; server {
+&lt;a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-5"&gt;&lt;/a&gt;     listen 80 default_server{{#reuseport}} reuseport{{/reuseport}};
+&lt;a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-6"&gt;&lt;/a&gt;     listen [::]:80 default_server{{#reuseport}} reuseport{{/reuseport}};
+&lt;a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-7"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    listen 443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};&lt;/span&gt;
+&lt;a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-8"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    listen [::]:443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};&lt;/span&gt;
+&lt;a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-9"&gt;&lt;/a&gt;
+&lt;a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-10"&gt;&lt;/a&gt;     server_name _;
 &lt;/pre&gt;&lt;p&gt;The port 22 is also already used by the ssh daemon so I decided to use
 the port 2222. I created the directory &lt;cite&gt;/volume1/docker/gitlab&lt;/cite&gt; to store
 all GitLab data. Here are the required variables in the

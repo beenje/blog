@@ -1,5 +1,582 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>Tchut-Tchut Blog (Ansible)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link rel="self" type="application/rss+xml" href="http://beenje.github.io/blog/categories/ansible.xml"></atom:link><language>en</language><lastBuildDate>Mon, 07 Nov 2016 21:20:23 GMT</lastBuildDate><generator>https://getnikola.com/</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Installing OpenVPN on a Raspberry Pi with Ansible</title><link>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I have to confess that I initially decided to install a VPN,
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about Ansible)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link type="application/rss+xml" href="http://beenje.github.io/blog/categories/ansible.xml" rel="self"></atom:link><language>en</language><lastBuildDate>Tue, 18 Jul 2017 21:47:20 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Experimenting with asyncio on a Raspberry Pi</title><link>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In a previous post, I described how I built a &lt;a class="reference external" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display"&gt;LEGO Macintosh Classic with
+a Raspberry Pi and e-paper display&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;For testing purpose I installed the clock demo which is part of the
+&lt;a class="reference external" href="https://github.com/embeddedartists/gratis"&gt;Embedded Artists repository&lt;/a&gt;.
+Of course I wanted to do more than displaying the time on this little box.
+I also wanted to take advantage of the button I had integrated.&lt;/p&gt;
+&lt;p&gt;One idea was to create a small web server so that I could receive and display
+messages. The application would basically:&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;display the time (every minute)&lt;/li&gt;
+&lt;li&gt;when receiving a message, stop the clock and display the message&lt;/li&gt;
+&lt;li&gt;when the button is pressed, start the clock again&lt;/li&gt;
+&lt;/ul&gt;
+&lt;img alt="/images/legomac/press_button.gif" src="http://beenje.github.io/blog/images/legomac/press_button.gif"&gt;
+&lt;p&gt;I don't know about you, but this really makes me think &lt;strong&gt;event loop&lt;/strong&gt;!
+I learnt asynchronous programming with &lt;a class="reference external" href="http://krondo.com/an-introduction-to-asynchronous-programming-and-twisted/"&gt;Dave Peticolas Twisted Introduction&lt;/a&gt;
+a few years ago. If you are not familiar with asynchronous programming, I really recommend
+it. I wrote a few applications using &lt;a class="reference external" href="https://twistedmatrix.com"&gt;Twisted&lt;/a&gt; but I haven't had
+the opportunity to use asyncio yet. Here is a very good occasion!&lt;/p&gt;
+&lt;div class="section" id="asyncio"&gt;
+&lt;h2&gt;asyncio&lt;/h2&gt;
+&lt;div class="section" id="rest-api-using-aiohttp"&gt;
+&lt;h3&gt;REST API using aiohttp&lt;/h3&gt;
+&lt;p&gt;There are already several asyncio web frameworks to build an HTTP server.
+I decided to go with &lt;a class="reference external" href="http://aiohttp.readthedocs.io/en/stable/"&gt;aiohttp&lt;/a&gt;
+which is kind of the default one.&lt;/p&gt;
+&lt;p&gt;Using this &lt;a class="reference external" href="http://steelkiwi.com/blog/jwt-authorization-python-part-1-practise/"&gt;tutorial&lt;/a&gt; I
+wrote a simple REST API using aiohttp. It uses JSON Web Tokens which is
+something else I have been wanted to try.&lt;/p&gt;
+&lt;p&gt;The API has only 3 endpoints:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+def setup_routes(app):
+    app.router.add_get('/', index)
+    app.router.add_post('/login', login)
+    app.router.add_post('/messages', post_message)
+&lt;/pre&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;&lt;cite&gt;/&lt;/cite&gt; to check that our token is valid&lt;/li&gt;
+&lt;li&gt;&lt;cite&gt;/login&lt;/cite&gt; to login&lt;/li&gt;
+&lt;li&gt;&lt;cite&gt;/messages&lt;/cite&gt; to post messages&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre class="literal-block"&gt;
+async def login(request):
+    config = request.app['config']
+    data = await request.json()
+    try:
+        user = data['username']
+        passwd = data['password']
+    except KeyError:
+        return web.HTTPBadRequest(reason='Invalid arguments')
+    # We have only one user hard-coded in the config file...
+    if user != config['username'] or passwd != config['password']:
+        return web.HTTPBadRequest(reason='Invalid credentials')
+    payload = {
+        'user_id': 1,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=config['jwt_exp_delta_seconds'])
+    }
+    jwt_token = jwt.encode(payload, config['jwt_secret'], config['jwt_algorithm'])
+    logger.debug(f'JWT token created for {user}')
+    return web.json_response({'token': jwt_token.decode('utf-8')})
+
+
+@login_required
+async def post_message(request):
+    if request.content_type != 'application/json':
+        return web.HTTPBadRequest()
+    data = await request.json()
+    try:
+        message = data['message']
+    except KeyError:
+        return web.HTTPBadRequest()
+    logger.debug(f'Message received from {request.user}: {message}')
+    return web.json_response({'message': message}, status=201)
+
+
+@login_required
+async def index(request):
+    return web.json_response({'message': 'Welcome to LegoMac {}!'.format(request.user)})
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div class="section" id="raspberry-pi-gpio-and-asyncio"&gt;
+&lt;h3&gt;Raspberry Pi GPIO and asyncio&lt;/h3&gt;
+&lt;p&gt;The default Python package to control the Raspberry Pi GPIO seems to be
+&lt;a class="reference external" href="https://pypi.python.org/pypi/RPi.GPIO"&gt;RPi.GPIO&lt;/a&gt;.
+That's at least what is used in the &lt;a class="reference external" href="https://github.com/embeddedartists/gratis/blob/master/PlatformWithOS/demo/ImageDemoButton.py"&gt;ImageDemoButton.py from Embedded Artists&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;An alternative is the &lt;a class="reference external" href="http://abyz.co.uk/rpi/pigpio/index.html"&gt;pigpio library&lt;/a&gt;
+which provides a daemon to access the Raspberry Pi GPIO via a pipe or socket interface.
+And someone (Pierre Rust) already created an aysncio based Python client
+for the pigpio daemon: &lt;a class="reference external" href="https://github.com/PierreRust/apigpio"&gt;apigpio&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Exactly what I needed!
+It's basically a (incomplete) port of the original Python client provided
+with pigpio, but far sufficient for my need. I just want to get a
+notification when pressing the button on top of the screen.&lt;/p&gt;
+&lt;p&gt;There is an example how to achieve that: &lt;a class="reference external" href="https://github.com/PierreRust/apigpio/blob/master/samples/gpio_notification.py"&gt;gpio_notification.py&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="e-paper-display-and-asyncio"&gt;
+&lt;h3&gt;E-paper display and asyncio&lt;/h3&gt;
+&lt;p&gt;The last remaining piece is to make the e-paper display play nicely with
+asyncio.&lt;/p&gt;
+&lt;p&gt;The EPD driver uses the fuse library. It allows the display to be
+represented as a virtual directory of files. So sending a command
+consists of writing to a file.&lt;/p&gt;
+&lt;p&gt;There is a library to add file support to asyncio: &lt;a class="reference external" href="https://github.com/Tinche/aiofiles"&gt;aiofiles&lt;/a&gt;.
+The only thing I had to do was basically to wrap the file IO in &lt;a class="reference external" href="https://github.com/embeddedartists/gratis/blob/master/PlatformWithOS/demo/EPD.py"&gt;EPD.py&lt;/a&gt;
+with aiofiles:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+async def _command(self, c):
+    async with aiofiles.open(os.path.join(self._epd_path, 'command'), 'wb') as f:
+        await f.write(c)
+&lt;/pre&gt;
+&lt;p&gt;You can't use &lt;cite&gt;await&lt;/cite&gt; in a class &lt;cite&gt;__init__&lt;/cite&gt; method. So following some recommendations
+from &lt;a class="reference external" href="https://stackoverflow.com/questions/33128325/how-to-set-class-attribute-with-await-in-init"&gt;stackoverflow&lt;/a&gt;,
+I used the factory pattern and moved the actions requiring some IO to a classmethod:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+@classmethod
+async def create(cls, *args, **kwargs):
+    self = EPD(*args, **kwargs)
+    async with aiofiles.open(os.path.join(self._epd_path, 'version')) as f:
+        version = await f.readline()
+        self._version = version.rstrip('\n')
+    async with aiofiles.open(os.path.join(self._epd_path, 'panel')) as f:
+        line = await f.readline()
+        m = self.PANEL_RE.match(line.rstrip('\n'))
+        if m is None:
+            raise EPDError('invalid panel string')
+        ...
+&lt;/pre&gt;
+&lt;p&gt;To create an instance of the EPD class, use:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+epd = await EPD.create([path='/path/to/epd'], [auto=boolean])
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="putting-everything-together-with-aiohttp"&gt;
+&lt;h2&gt;Putting everything together with aiohttp&lt;/h2&gt;
+&lt;div class="section" id="running-the-clock-as-a-background-task"&gt;
+&lt;h3&gt;Running the clock as a background task&lt;/h3&gt;
+&lt;p&gt;For the clock, I adapted the &lt;a class="reference external" href="https://github.com/embeddedartists/gratis/blob/master/PlatformWithOS/demo/Clock27.py"&gt;clock demo&lt;/a&gt;
+from Embedded Artists repository.&lt;/p&gt;
+&lt;p&gt;As described in aiohttp documentation I created a &lt;a class="reference external" href="http://aiohttp.readthedocs.io/en/stable/web.html#background-tasks"&gt;background task&lt;/a&gt; to display the clock
+every minute:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+async def display_clock(app):
+    """Background task to display clock every minute"""
+    clock = Clock(app['epd'])
+    first_start = True
+    try:
+        while True:
+            while True:
+                now = datetime.datetime.today()
+                if now.second == 0 or first_start:
+                    first_start = False
+                    break
+                await asyncio.sleep(0.5)
+            logger.debug('display clock')
+            await clock.display(now)
+    except asyncio.CancelledError:
+        logger.debug('display clock cancel')
+
+
+async def start_background_tasks(app):
+     app['epd'] = await EPD.create(auto=True)
+     app['clock'] = app.loop.create_task(display_clock(app))
+
+
+async def cleanup_background_tasks(app):
+    app['clock'].cancel()
+    await app['clock']
+
+
+def init_app():
+    """Create and return the aiohttp Application object"""
+    app = web.Application()
+    app.on_startup.append(start_background_tasks)
+    app.on_cleanup.append(cleanup_background_tasks)
+    ...
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div class="section" id="stop-the-clock-and-display-a-message"&gt;
+&lt;h3&gt;Stop the clock and display a message&lt;/h3&gt;
+&lt;p&gt;When receiving a message, I first cancel the clock background task and
+send the messages to the e-paper display using &lt;cite&gt;ensure_future&lt;/cite&gt; so that
+I can return a json response without having to wait for the message to be
+displayed as it takes about 5 seconds:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+@login_required
+async def post_message(request):
+    if request.content_type != 'application/json':
+        return web.HTTPBadRequest()
+    data = await request.json()
+    try:
+        message = data['message']
+    except KeyError:
+        return web.HTTPBadRequest()
+    # cancel the display clock
+    request.app['clock'].cancel()
+    logger.debug(f'Message received from {request.user}: {message}')
+    now = datetime.datetime.now(request.app['timezone'])
+    helpers.ensure_future(request.app['epd'].display_message(message, request.user, now))
+    return web.json_response({'message': message}, status=201)
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div class="section" id="start-the-clock-when-pressing-the-button"&gt;
+&lt;h3&gt;Start the clock when pressing the button&lt;/h3&gt;
+&lt;p&gt;To be able to restart the clock when pressing the button, I connect to the
+pigpiod when starting the app (in &lt;cite&gt;start_background_tasks&lt;/cite&gt;) and register
+the &lt;cite&gt;on_input&lt;/cite&gt; callback:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+async def start_background_tasks(app):
+    app['pi'] = apigpio.Pi(app.loop)
+    address = (app['config']['pigpiod_host'], app['config']['pigpiod_port'])
+    await app['pi'].connect(address)
+    await app['pi'].set_mode(BUTTON_GPIO, apigpio.INPUT)
+    app['cb'] = await app['pi'].add_callback(
+            BUTTON_GPIO,
+            edge=apigpio.RISING_EDGE,
+            func=functools.partial(on_input, app))
+    ...
+&lt;/pre&gt;
+&lt;p&gt;In the &lt;cite&gt;on_input&lt;/cite&gt; callback, I re-create the clock background task but only if the previous
+task is done:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+def on_input(app, gpio, level, tick):
+    """Callback called when pressing the button on the e-paper display"""
+    logger.info('on_input {} {} {}'.format(gpio, level, tick))
+    if app['clock'].done():
+        logger.info('restart clock')
+        app['clock'] = app.loop.create_task(display_clock(app))
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="running-on-the-pi"&gt;
+&lt;h2&gt;Running on the Pi&lt;/h2&gt;
+&lt;p&gt;You might have noticed that I used some syntax that is Python 3.6 only.
+I don't really see myself using something else when starting a new project
+today :-)
+There are so many new things (like f-strings) that make your programs look
+cleaner.&lt;/p&gt;
+&lt;p&gt;On raspbian, if you install Python 3, you get 3.4... So how do you get Python 3.6 on
+a Raspberry Pi?&lt;/p&gt;
+&lt;p&gt;On desktop/server I usually use &lt;a class="reference external" href="https://conda.io/miniconda.html"&gt;conda&lt;/a&gt;. It makes it so easy to install
+the Python version you want and many dependencies.
+There are no official installer for the armv6 architecture but I
+found &lt;a class="reference external" href="https://github.com/jjhelmus/berryconda"&gt;berryconda&lt;/a&gt; which is a
+conda based distribution for the Raspberry Pi! Really nice!&lt;/p&gt;
+&lt;p&gt;Another alternative is to use &lt;a class="reference external" href="https://www.docker.com"&gt;docker&lt;/a&gt;.
+There are official &lt;a class="reference external" href="https://hub.docker.com/u/arm32v6/python"&gt;arm32v6 images&lt;/a&gt;
+based on alpine and some from &lt;a class="reference external" href="https://hub.docker.com/r/resin/raspberry-pi-python/"&gt;resin.io&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;I could have gone with berryconda, but there's one thing I wanted as well.
+I'll have to open the HTTP server to the outside world meaning I need
+HTTPS. As mentionned in another &lt;a class="reference external" href="http://beenje.github.io/blog/post/running-your-application-over-https-with-traefik"&gt;post&lt;/a&gt;, &lt;a class="reference external" href="https://traefik.io"&gt;traefik&lt;/a&gt; makes
+that very easy if you use docker. So that's what I chose.&lt;/p&gt;
+&lt;p&gt;I created 3 containers:&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;traefik&lt;/li&gt;
+&lt;li&gt;pigpiod&lt;/li&gt;
+&lt;li&gt;aiolegomac&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="section" id="traefik"&gt;
+&lt;h3&gt;traefik&lt;/h3&gt;
+&lt;p&gt;There are no official Traefik docker images for arm yet, but an &lt;a class="reference external" href="https://github.com/containous/traefik/issues/1665"&gt;issue&lt;/a&gt; is currently opened.
+So it should arrive soon!&lt;/p&gt;
+&lt;p&gt;In the meantime I created my own:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+FROM arm32v6/alpine:3.6
+
+RUN apk --update upgrade \
+  &amp;amp;&amp;amp; apk --no-cache --no-progress add ca-certificates \
+  &amp;amp;&amp;amp; apk add openssl \
+  &amp;amp;&amp;amp; rm -rf /var/cache/apk/*
+
+RUN wget -O /usr/local/bin/traefik https://github.com/containous/traefik/releases/download/v1.3.3/traefik_linux-arm \
+  &amp;amp;&amp;amp; chmod a+x /usr/local/bin/traefik
+
+ENTRYPOINT ["/usr/local/bin/traefik"]
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div class="section" id="pigpiod"&gt;
+&lt;h3&gt;pigpiod&lt;/h3&gt;
+&lt;p&gt;For pigpiod, I first created an image based on &lt;cite&gt;arm32v6/alpine&lt;/cite&gt; but I noticed I couldn't send
+a SIGTERM to the daemon to stop it properly... I'm not sure why. Alpine being based on &lt;cite&gt;musl&lt;/cite&gt; instead
+of &lt;cite&gt;glibc&lt;/cite&gt; might be the problem. Here is the Dockerfile I tried:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+FROM arm32v6/alpine:3.6
+
+RUN apk add --no-cache --virtual .build-deps \
+  gcc \
+  make \
+  musl-dev \
+  tar \
+  &amp;amp;&amp;amp; wget -O /tmp/pigpio.tar abyz.co.uk/rpi/pigpio/pigpio.tar \
+  &amp;amp;&amp;amp; tar -xf /tmp/pigpio.tar -C /tmp \
+  &amp;amp;&amp;amp; sed -i "/ldconfig/d" /tmp/PIGPIO/Makefile \
+  &amp;amp;&amp;amp; make -C /tmp/PIGPIO \
+  &amp;amp;&amp;amp; make -C /tmp/PIGPIO install \
+  &amp;amp;&amp;amp; rm -rf /tmp/PIGPIO /tmp/pigpio.tar \
+  &amp;amp;&amp;amp; apk del .build-deps
+
+EXPOSE 8888
+
+ENTRYPOINT ["/usr/local/bin/pigpiod", "-g"]
+&lt;/pre&gt;
+&lt;p&gt;I even tried using &lt;a class="reference external" href="https://github.com/krallin/tini"&gt;tini&lt;/a&gt; as entrypoint without luck.
+So if someone as the explanation, please share it in the comments.&lt;/p&gt;
+&lt;p&gt;I tried with &lt;cite&gt;resin/rpi-raspbian&lt;/cite&gt; image and I got it working properly right away:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+FROM resin/rpi-raspbian:jessie
+
+RUN apt-get update \
+  &amp;amp;&amp;amp; apt-get install -y \
+     make \
+     gcc \
+     libc6-dev \
+  &amp;amp;&amp;amp; apt-get clean \
+  &amp;amp;&amp;amp; rm -rf /var/lib/apt/lists/*
+
+RUN curl -o /tmp/pigpio.tar abyz.co.uk/rpi/pigpio/pigpio.tar \
+  &amp;amp;&amp;amp; tar -xf /tmp/pigpio.tar -C /tmp \
+  &amp;amp;&amp;amp; make -C /tmp/PIGPIO \
+  &amp;amp;&amp;amp; make -C /tmp/PIGPIO install \
+  &amp;amp;&amp;amp; rm -rf /tmp/pigpio.tar /tmp/PIGPIO
+
+EXPOSE 8888
+
+ENTRYPOINT ["/usr/local/bin/pigpiod", "-g"]
+&lt;/pre&gt;
+&lt;p&gt;Note that the container has to run in privileged mode to access the GPIO.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="aiolegomac"&gt;
+&lt;h3&gt;aiolegomac&lt;/h3&gt;
+&lt;p&gt;For the main application, the Dockerfile is quite standard for a Python application:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+FROM resin/raspberry-pi-python:3.6
+
+RUN apt-get update \
+  &amp;amp;&amp;amp; apt-get install -y \
+     fonts-liberation \
+     fonts-dejavu  \
+     libjpeg-dev \
+     libfreetype6-dev \
+     libtiff5-dev \
+     liblcms2-dev \
+     libwebp-dev \
+     zlib1g-dev \
+     libyaml-0-2 \
+  &amp;amp;&amp;amp; apt-get autoremove \
+  &amp;amp;&amp;amp; apt-get clean \
+  &amp;amp;&amp;amp; rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY requirements.txt /app/requirements.txt
+RUN python -m venv /opt/legomac \
+  &amp;amp;&amp;amp; /opt/legomac/bin/pip install -r requirements.txt
+
+COPY . /app
+
+ENTRYPOINT ["/opt/legomac/bin/python"]
+CMD ["run.py"]
+&lt;/pre&gt;
+&lt;p&gt;What about the EPD driver?
+As it uses libfuse to represent the e-paper display as a virtual directory of files,
+the easiest was to install it on the host and to mount it as a volume inside the docker
+container.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="deployment"&gt;
+&lt;h2&gt;Deployment&lt;/h2&gt;
+&lt;p&gt;To install all that on the Pi, I wrote a small &lt;a class="reference external" href="https://www.ansible.com"&gt;Ansible&lt;/a&gt; playbook.&lt;/p&gt;
+&lt;ol class="arabic"&gt;
+&lt;li&gt;&lt;p class="first"&gt;Configure the Pi as described in my &lt;a class="reference external" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display"&gt;previous post&lt;/a&gt;.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p class="first"&gt;Clone the playbook:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ git clone https://github.com/beenje/legomac.git
+$ cd legomac
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p class="first"&gt;Create a file &lt;cite&gt;host_vars/legomac&lt;/cite&gt; with your variables (assuming the hostname of the Pi is legomac):&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+aiolegomac_hostname: myhost.example.com
+aiolegomac_username: john
+aiolegomac_password: mypassword
+aiolegomac_jwt_secret: secret
+traefik_letsencrypt_email: youremail@example.com
+traefik_letsencrypt_production: true
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p class="first"&gt;Run the playbook:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ ansible-playbook -i hosts -k playbook.yml
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;This will install docker and the EPD driver, download the &lt;a class="reference external" href="https://github.com/beenje/aiolegomac"&gt;aiolegomac repository&lt;/a&gt;, build the 3 docker images
+and start everything.&lt;/p&gt;
+&lt;p&gt;Building the main application docker image on a Raspberry Pi Zero takes quite some time.
+So be patient :-) Just go and do something else.&lt;/p&gt;
+&lt;p&gt;When the full playbook is complete (it took about 55 minutes for me),
+you'll have a server with HTTPS support (thanks to Let's Encrypt) running on the Pi. It's displaying
+the clock every minute and you can send messages to it!&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="client"&gt;
+&lt;h2&gt;Client&lt;/h2&gt;
+&lt;div class="section" id="httpie"&gt;
+&lt;h3&gt;HTTPie&lt;/h3&gt;
+&lt;p&gt;To test the server you can of course use &lt;a class="reference external" href="https://curl.haxx.se"&gt;curl&lt;/a&gt;
+but I really like &lt;a class="reference external" href="https://httpie.org"&gt;HTTPie&lt;/a&gt;. It's much more user
+friendly.&lt;/p&gt;
+&lt;p&gt;Let's try to access our new server:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ http GET https://myhost.example.com
+HTTP/1.1 401 Unauthorized
+Content-Length: 25
+Content-Type: application/json; charset=utf-8
+Date: Sun, 16 Jul 2017 06:22:42 GMT
+Server: Python/3.6 aiohttp/2.2.3
+
+{
+    "error": "Unauthorized"
+}
+&lt;/pre&gt;
+&lt;p&gt;Good, we need to login:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ http POST https://myhost.example.com/login username=john password=foo
+HTTP/1.1 400 Bad Request
+Content-Length: 32
+Content-Type: application/json; charset=utf-8
+Date: Sun, 16 Jul 2017 06:18:39 GMT
+Server: Python/3.6 aiohttp/2.2.3
+
+{
+    "error": "Invalid credentials"
+}
+&lt;/pre&gt;
+&lt;p&gt;Oops, wrong password:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ http POST https://myhost.example.com/login username=john password='mypassword'
+HTTP/1.1 200 OK
+Content-Length: 134
+Content-Type: application/json; charset=utf-8
+Date: Sun, 16 Jul 2017 06:21:14 GMT
+Server: Python/3.6 aiohttp/2.2.3
+
+{
+    "token": "eyK0eXAiOiJRV5QiLCJhbGciOiJIUzI1NiJ9.eyJ1c3VyX2lkIjoxLCJleHAiOjE1MDB5MTIwOTh9.hECnj4u2mxvZ2r8IEC-db1T-eKTplM4kWJKZoHhtLxQ"
+}
+&lt;/pre&gt;
+&lt;p&gt;We got a token that we can use:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ http GET https://myhost.example.com 'Authorization: eyK0eXAiOiJRV5QiLCJhbGciOiJIUzI1NiJ9.eyJ1c3VyX2lkIjoxLCJleHAiOjE1MDB5MTIwOTh9.hECnj4u2mxvZ2r8IEC-db1T-eKTplM4kWJKZoHhtLxQ'
+HTTP/1.1 200 OK
+Content-Length: 43
+Content-Type: application/json; charset=utf-8
+Date: Sun, 16 Jul 2017 06:22:25 GMT
+Server: Python/3.6 aiohttp/2.2.3
+
+{
+    "message": "Welcome to LegoMac john!"
+}
+&lt;/pre&gt;
+&lt;p&gt;Authentication is working, so we can send a message:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ http POST https://myhost.example.com/messages message='Hello World!' 'Authorization: eyK0eXAiOiJRV5QiLCJhbGciOiJIUzI1NiJ9.eyJ1c3VyX2lkIjoxLCJleHAiOjE1MDB5MTIwOTh9.hECnj4u2mxvZ2r8IEC-db1T-eKTplM4kWJKZoHhtLxQ'
+HTTP/1.1 201 Created
+Content-Length: 27
+Content-Type: application/json; charset=utf-8
+Date: Sun, 16 Jul 2017 06:23:46 GMT
+Server: Python/3.6 aiohttp/2.2.3
+
+{
+    "message": "Hello World!"
+}
+&lt;/pre&gt;
+&lt;p&gt;Message sent!
+HTTPie is nice for testing, but we can make a small script to easily send messages from the command line.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="requests"&gt;
+&lt;h3&gt;requests&lt;/h3&gt;
+&lt;p&gt;&lt;a class="reference external" href="http://docs.python-requests.org"&gt;requests&lt;/a&gt; is of course the HTTP library to use in Python.&lt;/p&gt;
+&lt;p&gt;So let's write a small script to send messages to our server.
+We'll store the server url and username to use in a small yaml configuration file.
+If we don't have a token yet or if the saved one is no longer valid,
+the script will retrieve one after prompting us for a password.
+The token is saved in the configuration file for later use.&lt;/p&gt;
+&lt;p&gt;The following script could be improved with some nicer error messages
+by catching exceptions. But it does the job:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+import os
+import click
+import requests
+import yaml
+
+
+def get_config(filename):
+    with open(filename) as f:
+        config = yaml.load(f)
+    return config
+
+
+def save_config(filename, config):
+    with open(filename, 'w') as f:
+        yaml.dump(config, f, default_flow_style=False)
+
+
+def get_token(url, username):
+    password = click.prompt('Password', hide_input=True)
+    payload = {'username': username, 'password': password}
+    r = requests.post(url + '/login', json=payload)
+    r.raise_for_status()
+    return r.json()['token']
+
+
+def send_message(url, token, message):
+    payload = {'message': message}
+    headers = {'Authorization': token}
+    r = requests.post(url + '/messages', json=payload, headers=headers)
+    r.raise_for_status()
+
+
+@click.command()
+@click.option('--conf', '-c', default='~/.pylegomac.yml',
+              help='Configuration file [default: "~/.pylegomac.yml"]')
+@click.argument('message')
+@click.version_option()
+def pylegomac(message, conf):
+    """Send message to aiolegomac server"""
+    filename = os.path.expanduser(conf)
+    config = get_config(filename)
+    url = config['url']
+    username = config['username']
+    if 'token' in config:
+        try:
+            send_message(url, config['token'], message)
+        except requests.exceptions.HTTPError as err:
+            # Token no more valid
+            pass
+        else:
+            click.echo('Message sent')
+            return
+    token = get_token(url, username)
+    send_message(url, token, message)
+    config['token'] = token
+    save_config(filename, config)
+
+
+if __name__ == '__main__':
+    pylegomac()
+&lt;/pre&gt;
+&lt;p&gt;Let's first create a configuration file:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ cat ~/.pylegomac.yml
+url: https://myhost.example.com
+username: john
+&lt;/pre&gt;
+&lt;p&gt;Send a message:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+$ python pylegomac.py 'Beautiful is better than ugly. Explicit is better than implicit. Simple is better than complex. Complex is better than complicated.'
+Password:
+Message sent
+&lt;/pre&gt;
+&lt;img alt="/images/legomac/zen_of_python.jpg" src="http://beenje.github.io/blog/images/legomac/zen_of_python.jpg"&gt;
+&lt;p&gt;Sending a new message won't request the password as the token was saved in the config file.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="conclusion"&gt;
+&lt;h2&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;I have a nice little aiohttp server running on my Raspberry Pi that can receive and display messages.
+asyncio is quite pleasant to work with. I really like the async/await syntax.&lt;/p&gt;
+&lt;p&gt;All the code is on github:&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;&lt;a class="reference external" href="https://github.com/beenje/aiolegomac"&gt;aiolegomac&lt;/a&gt; (the server and client script)&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference external" href="https://github.com/beenje/legomac"&gt;legomac&lt;/a&gt; (the Ansible playbook to deploy the server)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Why did I only write a command line script to send messages and no web interface?
+Don't worry, that's planned! I could have used Jinja2. But I'd like to try a javascript framework.
+So that will be the subject of another post.&lt;/p&gt;
+&lt;/div&gt;&lt;/div&gt;</description><category>Ansible</category><category>docker</category><category>lego</category><category>pi</category><category>python</category><guid>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</guid><pubDate>Tue, 18 Jul 2017 20:46:17 GMT</pubDate></item><item><title>Installing OpenVPN on a Raspberry Pi with Ansible</title><link>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I have to confess that I initially decided to install a VPN,
 not to secure my connection when using a free Wireless Acces Point in an
 airport or hotel, but to watch Netflix :-)&lt;/p&gt;
 &lt;p&gt;I had a VPS in France where I installed sniproxy to access Netflix.

@@ -8,11 +8,12 @@
 <link href="assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
 <link href="assets/css/ipython.min.css" rel="stylesheet" type="text/css">
 <link href="assets/css/nikola_ipython.css" rel="stylesheet" type="text/css">
-<meta content="#5670d4" name="theme-color">
+<meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
 <link rel="alternate" type="application/rss+xml" title="RSS" href="rss.xml">
 <link rel="canonical" href="http://beenje.github.io/blog/">
 <link rel="next" href="index-1.html" type="text/html">
-<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/running-your-application-over-https-with-traefik/" type="text/html">
+<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/experimenting-with-asyncio-on-a-raspberry-pi/" type="text/html">
 </head>
 <body>
 <a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
@@ -64,10 +65,615 @@
             
 
     
+
+
+    
 <div class="postindex">
-    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/running-your-application-over-https-with-traefik/" class="u-url">Running your application over HTTPS with traefik</a></h1>
+    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/experimenting-with-asyncio-on-a-raspberry-pi/" class="u-url">Experimenting with asyncio on a Raspberry Pi</a></h1>
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                Benjamin Bertrand
+            </span></p>
+            <p class="dateline"><a href="posts/experimenting-with-asyncio-on-a-raspberry-pi/" rel="bookmark"><time class="published dt-published" datetime="2017-07-18T22:46:17+02:00" title="2017-07-18 22:46">2017-07-18 22:46</time></a></p>
+                <p class="commentline">
+        
+    <a href="posts/experimenting-with-asyncio-on-a-raspberry-pi/#disqus_thread" data-disqus-identifier="cache/posts/experimenting-with-asyncio-on-a-raspberry-pi.html">Comments</a>
+
+
+        </p>
+</div>
+    </header><div class="e-content entry-content">
+    <div>
+<p>In a previous post, I described how I built a <a class="reference external" href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display">LEGO Macintosh Classic with
+a Raspberry Pi and e-paper display</a>.</p>
+<p>For testing purpose I installed the clock demo which is part of the
+<a class="reference external" href="https://github.com/embeddedartists/gratis">Embedded Artists repository</a>.
+Of course I wanted to do more than displaying the time on this little box.
+I also wanted to take advantage of the button I had integrated.</p>
+<p>One idea was to create a small web server so that I could receive and display
+messages. The application would basically:</p>
+<ul class="simple">
+<li>display the time (every minute)</li>
+<li>when receiving a message, stop the clock and display the message</li>
+<li>when the button is pressed, start the clock again</li>
+</ul>
+<img alt="/images/legomac/press_button.gif" src="images/legomac/press_button.gif"><p>I don't know about you, but this really makes me think <strong>event loop</strong>!
+I learnt asynchronous programming with <a class="reference external" href="http://krondo.com/an-introduction-to-asynchronous-programming-and-twisted/">Dave Peticolas Twisted Introduction</a>
+a few years ago. If you are not familiar with asynchronous programming, I really recommend
+it. I wrote a few applications using <a class="reference external" href="https://twistedmatrix.com">Twisted</a> but I haven't had
+the opportunity to use asyncio yet. Here is a very good occasion!</p>
+<div class="section" id="asyncio">
+<h2>asyncio</h2>
+<div class="section" id="rest-api-using-aiohttp">
+<h3>REST API using aiohttp</h3>
+<p>There are already several asyncio web frameworks to build an HTTP server.
+I decided to go with <a class="reference external" href="http://aiohttp.readthedocs.io/en/stable/">aiohttp</a>
+which is kind of the default one.</p>
+<p>Using this <a class="reference external" href="http://steelkiwi.com/blog/jwt-authorization-python-part-1-practise/">tutorial</a> I
+wrote a simple REST API using aiohttp. It uses JSON Web Tokens which is
+something else I have been wanted to try.</p>
+<p>The API has only 3 endpoints:</p>
+<pre class="literal-block">
+def setup_routes(app):
+    app.router.add_get('/', index)
+    app.router.add_post('/login', login)
+    app.router.add_post('/messages', post_message)
+</pre>
+<ul class="simple">
+<li>
+<cite>/</cite> to check that our token is valid</li>
+<li>
+<cite>/login</cite> to login</li>
+<li>
+<cite>/messages</cite> to post messages</li>
+</ul>
+<pre class="literal-block">
+async def login(request):
+    config = request.app['config']
+    data = await request.json()
+    try:
+        user = data['username']
+        passwd = data['password']
+    except KeyError:
+        return web.HTTPBadRequest(reason='Invalid arguments')
+    # We have only one user hard-coded in the config file...
+    if user != config['username'] or passwd != config['password']:
+        return web.HTTPBadRequest(reason='Invalid credentials')
+    payload = {
+        'user_id': 1,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=config['jwt_exp_delta_seconds'])
+    }
+    jwt_token = jwt.encode(payload, config['jwt_secret'], config['jwt_algorithm'])
+    logger.debug(f'JWT token created for {user}')
+    return web.json_response({'token': jwt_token.decode('utf-8')})
+
+
+@login_required
+async def post_message(request):
+    if request.content_type != 'application/json':
+        return web.HTTPBadRequest()
+    data = await request.json()
+    try:
+        message = data['message']
+    except KeyError:
+        return web.HTTPBadRequest()
+    logger.debug(f'Message received from {request.user}: {message}')
+    return web.json_response({'message': message}, status=201)
+
+
+@login_required
+async def index(request):
+    return web.json_response({'message': 'Welcome to LegoMac {}!'.format(request.user)})
+</pre>
+</div>
+<div class="section" id="raspberry-pi-gpio-and-asyncio">
+<h3>Raspberry Pi GPIO and asyncio</h3>
+<p>The default Python package to control the Raspberry Pi GPIO seems to be
+<a class="reference external" href="https://pypi.python.org/pypi/RPi.GPIO">RPi.GPIO</a>.
+That's at least what is used in the <a class="reference external" href="https://github.com/embeddedartists/gratis/blob/master/PlatformWithOS/demo/ImageDemoButton.py">ImageDemoButton.py from Embedded Artists</a>.</p>
+<p>An alternative is the <a class="reference external" href="http://abyz.co.uk/rpi/pigpio/index.html">pigpio library</a>
+which provides a daemon to access the Raspberry Pi GPIO via a pipe or socket interface.
+And someone (Pierre Rust) already created an aysncio based Python client
+for the pigpio daemon: <a class="reference external" href="https://github.com/PierreRust/apigpio">apigpio</a>.</p>
+<p>Exactly what I needed!
+It's basically a (incomplete) port of the original Python client provided
+with pigpio, but far sufficient for my need. I just want to get a
+notification when pressing the button on top of the screen.</p>
+<p>There is an example how to achieve that: <a class="reference external" href="https://github.com/PierreRust/apigpio/blob/master/samples/gpio_notification.py">gpio_notification.py</a>.</p>
+</div>
+<div class="section" id="e-paper-display-and-asyncio">
+<h3>E-paper display and asyncio</h3>
+<p>The last remaining piece is to make the e-paper display play nicely with
+asyncio.</p>
+<p>The EPD driver uses the fuse library. It allows the display to be
+represented as a virtual directory of files. So sending a command
+consists of writing to a file.</p>
+<p>There is a library to add file support to asyncio: <a class="reference external" href="https://github.com/Tinche/aiofiles">aiofiles</a>.
+The only thing I had to do was basically to wrap the file IO in <a class="reference external" href="https://github.com/embeddedartists/gratis/blob/master/PlatformWithOS/demo/EPD.py">EPD.py</a>
+with aiofiles:</p>
+<pre class="literal-block">
+async def _command(self, c):
+    async with aiofiles.open(os.path.join(self._epd_path, 'command'), 'wb') as f:
+        await f.write(c)
+</pre>
+<p>You can't use <cite>await</cite> in a class <cite>__init__</cite> method. So following some recommendations
+from <a class="reference external" href="https://stackoverflow.com/questions/33128325/how-to-set-class-attribute-with-await-in-init">stackoverflow</a>,
+I used the factory pattern and moved the actions requiring some IO to a classmethod:</p>
+<pre class="literal-block">
+@classmethod
+async def create(cls, *args, **kwargs):
+    self = EPD(*args, **kwargs)
+    async with aiofiles.open(os.path.join(self._epd_path, 'version')) as f:
+        version = await f.readline()
+        self._version = version.rstrip('\n')
+    async with aiofiles.open(os.path.join(self._epd_path, 'panel')) as f:
+        line = await f.readline()
+        m = self.PANEL_RE.match(line.rstrip('\n'))
+        if m is None:
+            raise EPDError('invalid panel string')
+        ...
+</pre>
+<p>To create an instance of the EPD class, use:</p>
+<pre class="literal-block">
+epd = await EPD.create([path='/path/to/epd'], [auto=boolean])
+</pre>
+</div>
+</div>
+<div class="section" id="putting-everything-together-with-aiohttp">
+<h2>Putting everything together with aiohttp</h2>
+<div class="section" id="running-the-clock-as-a-background-task">
+<h3>Running the clock as a background task</h3>
+<p>For the clock, I adapted the <a class="reference external" href="https://github.com/embeddedartists/gratis/blob/master/PlatformWithOS/demo/Clock27.py">clock demo</a>
+from Embedded Artists repository.</p>
+<p>As described in aiohttp documentation I created a <a class="reference external" href="http://aiohttp.readthedocs.io/en/stable/web.html#background-tasks">background task</a> to display the clock
+every minute:</p>
+<pre class="literal-block">
+async def display_clock(app):
+    """Background task to display clock every minute"""
+    clock = Clock(app['epd'])
+    first_start = True
+    try:
+        while True:
+            while True:
+                now = datetime.datetime.today()
+                if now.second == 0 or first_start:
+                    first_start = False
+                    break
+                await asyncio.sleep(0.5)
+            logger.debug('display clock')
+            await clock.display(now)
+    except asyncio.CancelledError:
+        logger.debug('display clock cancel')
+
+
+async def start_background_tasks(app):
+     app['epd'] = await EPD.create(auto=True)
+     app['clock'] = app.loop.create_task(display_clock(app))
+
+
+async def cleanup_background_tasks(app):
+    app['clock'].cancel()
+    await app['clock']
+
+
+def init_app():
+    """Create and return the aiohttp Application object"""
+    app = web.Application()
+    app.on_startup.append(start_background_tasks)
+    app.on_cleanup.append(cleanup_background_tasks)
+    ...
+</pre>
+</div>
+<div class="section" id="stop-the-clock-and-display-a-message">
+<h3>Stop the clock and display a message</h3>
+<p>When receiving a message, I first cancel the clock background task and
+send the messages to the e-paper display using <cite>ensure_future</cite> so that
+I can return a json response without having to wait for the message to be
+displayed as it takes about 5 seconds:</p>
+<pre class="literal-block">
+@login_required
+async def post_message(request):
+    if request.content_type != 'application/json':
+        return web.HTTPBadRequest()
+    data = await request.json()
+    try:
+        message = data['message']
+    except KeyError:
+        return web.HTTPBadRequest()
+    # cancel the display clock
+    request.app['clock'].cancel()
+    logger.debug(f'Message received from {request.user}: {message}')
+    now = datetime.datetime.now(request.app['timezone'])
+    helpers.ensure_future(request.app['epd'].display_message(message, request.user, now))
+    return web.json_response({'message': message}, status=201)
+</pre>
+</div>
+<div class="section" id="start-the-clock-when-pressing-the-button">
+<h3>Start the clock when pressing the button</h3>
+<p>To be able to restart the clock when pressing the button, I connect to the
+pigpiod when starting the app (in <cite>start_background_tasks</cite>) and register
+the <cite>on_input</cite> callback:</p>
+<pre class="literal-block">
+async def start_background_tasks(app):
+    app['pi'] = apigpio.Pi(app.loop)
+    address = (app['config']['pigpiod_host'], app['config']['pigpiod_port'])
+    await app['pi'].connect(address)
+    await app['pi'].set_mode(BUTTON_GPIO, apigpio.INPUT)
+    app['cb'] = await app['pi'].add_callback(
+            BUTTON_GPIO,
+            edge=apigpio.RISING_EDGE,
+            func=functools.partial(on_input, app))
+    ...
+</pre>
+<p>In the <cite>on_input</cite> callback, I re-create the clock background task but only if the previous
+task is done:</p>
+<pre class="literal-block">
+def on_input(app, gpio, level, tick):
+    """Callback called when pressing the button on the e-paper display"""
+    logger.info('on_input {} {} {}'.format(gpio, level, tick))
+    if app['clock'].done():
+        logger.info('restart clock')
+        app['clock'] = app.loop.create_task(display_clock(app))
+</pre>
+</div>
+</div>
+<div class="section" id="running-on-the-pi">
+<h2>Running on the Pi</h2>
+<p>You might have noticed that I used some syntax that is Python 3.6 only.
+I don't really see myself using something else when starting a new project
+today :-)
+There are so many new things (like f-strings) that make your programs look
+cleaner.</p>
+<p>On raspbian, if you install Python 3, you get 3.4... So how do you get Python 3.6 on
+a Raspberry Pi?</p>
+<p>On desktop/server I usually use <a class="reference external" href="https://conda.io/miniconda.html">conda</a>. It makes it so easy to install
+the Python version you want and many dependencies.
+There are no official installer for the armv6 architecture but I
+found <a class="reference external" href="https://github.com/jjhelmus/berryconda">berryconda</a> which is a
+conda based distribution for the Raspberry Pi! Really nice!</p>
+<p>Another alternative is to use <a class="reference external" href="https://www.docker.com">docker</a>.
+There are official <a class="reference external" href="https://hub.docker.com/u/arm32v6/python">arm32v6 images</a>
+based on alpine and some from <a class="reference external" href="https://hub.docker.com/r/resin/raspberry-pi-python/">resin.io</a>.</p>
+<p>I could have gone with berryconda, but there's one thing I wanted as well.
+I'll have to open the HTTP server to the outside world meaning I need
+HTTPS. As mentionned in another <a class="reference external" href="post/running-your-application-over-https-with-traefik">post</a>, <a class="reference external" href="https://traefik.io">traefik</a> makes
+that very easy if you use docker. So that's what I chose.</p>
+<p>I created 3 containers:</p>
+<ul class="simple">
+<li>traefik</li>
+<li>pigpiod</li>
+<li>aiolegomac</li>
+</ul>
+<div class="section" id="traefik">
+<h3>traefik</h3>
+<p>There are no official Traefik docker images for arm yet, but an <a class="reference external" href="https://github.com/containous/traefik/issues/1665">issue</a> is currently opened.
+So it should arrive soon!</p>
+<p>In the meantime I created my own:</p>
+<pre class="literal-block">
+FROM arm32v6/alpine:3.6
+
+RUN apk --update upgrade \
+  &amp;&amp; apk --no-cache --no-progress add ca-certificates \
+  &amp;&amp; apk add openssl \
+  &amp;&amp; rm -rf /var/cache/apk/*
+
+RUN wget -O /usr/local/bin/traefik https://github.com/containous/traefik/releases/download/v1.3.3/traefik_linux-arm \
+  &amp;&amp; chmod a+x /usr/local/bin/traefik
+
+ENTRYPOINT ["/usr/local/bin/traefik"]
+</pre>
+</div>
+<div class="section" id="pigpiod">
+<h3>pigpiod</h3>
+<p>For pigpiod, I first created an image based on <cite>arm32v6/alpine</cite> but I noticed I couldn't send
+a SIGTERM to the daemon to stop it properly... I'm not sure why. Alpine being based on <cite>musl</cite> instead
+of <cite>glibc</cite> might be the problem. Here is the Dockerfile I tried:</p>
+<pre class="literal-block">
+FROM arm32v6/alpine:3.6
+
+RUN apk add --no-cache --virtual .build-deps \
+  gcc \
+  make \
+  musl-dev \
+  tar \
+  &amp;&amp; wget -O /tmp/pigpio.tar abyz.co.uk/rpi/pigpio/pigpio.tar \
+  &amp;&amp; tar -xf /tmp/pigpio.tar -C /tmp \
+  &amp;&amp; sed -i "/ldconfig/d" /tmp/PIGPIO/Makefile \
+  &amp;&amp; make -C /tmp/PIGPIO \
+  &amp;&amp; make -C /tmp/PIGPIO install \
+  &amp;&amp; rm -rf /tmp/PIGPIO /tmp/pigpio.tar \
+  &amp;&amp; apk del .build-deps
+
+EXPOSE 8888
+
+ENTRYPOINT ["/usr/local/bin/pigpiod", "-g"]
+</pre>
+<p>I even tried using <a class="reference external" href="https://github.com/krallin/tini">tini</a> as entrypoint without luck.
+So if someone as the explanation, please share it in the comments.</p>
+<p>I tried with <cite>resin/rpi-raspbian</cite> image and I got it working properly right away:</p>
+<pre class="literal-block">
+FROM resin/rpi-raspbian:jessie
+
+RUN apt-get update \
+  &amp;&amp; apt-get install -y \
+     make \
+     gcc \
+     libc6-dev \
+  &amp;&amp; apt-get clean \
+  &amp;&amp; rm -rf /var/lib/apt/lists/*
+
+RUN curl -o /tmp/pigpio.tar abyz.co.uk/rpi/pigpio/pigpio.tar \
+  &amp;&amp; tar -xf /tmp/pigpio.tar -C /tmp \
+  &amp;&amp; make -C /tmp/PIGPIO \
+  &amp;&amp; make -C /tmp/PIGPIO install \
+  &amp;&amp; rm -rf /tmp/pigpio.tar /tmp/PIGPIO
+
+EXPOSE 8888
+
+ENTRYPOINT ["/usr/local/bin/pigpiod", "-g"]
+</pre>
+<p>Note that the container has to run in privileged mode to access the GPIO.</p>
+</div>
+<div class="section" id="aiolegomac">
+<h3>aiolegomac</h3>
+<p>For the main application, the Dockerfile is quite standard for a Python application:</p>
+<pre class="literal-block">
+FROM resin/raspberry-pi-python:3.6
+
+RUN apt-get update \
+  &amp;&amp; apt-get install -y \
+     fonts-liberation \
+     fonts-dejavu  \
+     libjpeg-dev \
+     libfreetype6-dev \
+     libtiff5-dev \
+     liblcms2-dev \
+     libwebp-dev \
+     zlib1g-dev \
+     libyaml-0-2 \
+  &amp;&amp; apt-get autoremove \
+  &amp;&amp; apt-get clean \
+  &amp;&amp; rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY requirements.txt /app/requirements.txt
+RUN python -m venv /opt/legomac \
+  &amp;&amp; /opt/legomac/bin/pip install -r requirements.txt
+
+COPY . /app
+
+ENTRYPOINT ["/opt/legomac/bin/python"]
+CMD ["run.py"]
+</pre>
+<p>What about the EPD driver?
+As it uses libfuse to represent the e-paper display as a virtual directory of files,
+the easiest was to install it on the host and to mount it as a volume inside the docker
+container.</p>
+</div>
+</div>
+<div class="section" id="deployment">
+<h2>Deployment</h2>
+<p>To install all that on the Pi, I wrote a small <a class="reference external" href="https://www.ansible.com">Ansible</a> playbook.</p>
+<ol class="arabic">
+<li>
+<p class="first">Configure the Pi as described in my <a class="reference external" href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display">previous post</a>.</p>
+</li>
+<li>
+<p class="first">Clone the playbook:</p>
+<pre class="literal-block">
+$ git clone https://github.com/beenje/legomac.git
+$ cd legomac
+</pre>
+</li>
+<li>
+<p class="first">Create a file <cite>host_vars/legomac</cite> with your variables (assuming the hostname of the Pi is legomac):</p>
+<pre class="literal-block">
+aiolegomac_hostname: myhost.example.com
+aiolegomac_username: john
+aiolegomac_password: mypassword
+aiolegomac_jwt_secret: secret
+traefik_letsencrypt_email: youremail@example.com
+traefik_letsencrypt_production: true
+</pre>
+</li>
+<li>
+<p class="first">Run the playbook:</p>
+<pre class="literal-block">
+$ ansible-playbook -i hosts -k playbook.yml
+</pre>
+</li>
+</ol>
+<p>This will install docker and the EPD driver, download the <a class="reference external" href="https://github.com/beenje/aiolegomac">aiolegomac repository</a>, build the 3 docker images
+and start everything.</p>
+<p>Building the main application docker image on a Raspberry Pi Zero takes quite some time.
+So be patient :-) Just go and do something else.</p>
+<p>When the full playbook is complete (it took about 55 minutes for me),
+you'll have a server with HTTPS support (thanks to Let's Encrypt) running on the Pi. It's displaying
+the clock every minute and you can send messages to it!</p>
+</div>
+<div class="section" id="client">
+<h2>Client</h2>
+<div class="section" id="httpie">
+<h3>HTTPie</h3>
+<p>To test the server you can of course use <a class="reference external" href="https://curl.haxx.se">curl</a>
+but I really like <a class="reference external" href="https://httpie.org">HTTPie</a>. It's much more user
+friendly.</p>
+<p>Let's try to access our new server:</p>
+<pre class="literal-block">
+$ http GET https://myhost.example.com
+HTTP/1.1 401 Unauthorized
+Content-Length: 25
+Content-Type: application/json; charset=utf-8
+Date: Sun, 16 Jul 2017 06:22:42 GMT
+Server: Python/3.6 aiohttp/2.2.3
+
+{
+    "error": "Unauthorized"
+}
+</pre>
+<p>Good, we need to login:</p>
+<pre class="literal-block">
+$ http POST https://myhost.example.com/login username=john password=foo
+HTTP/1.1 400 Bad Request
+Content-Length: 32
+Content-Type: application/json; charset=utf-8
+Date: Sun, 16 Jul 2017 06:18:39 GMT
+Server: Python/3.6 aiohttp/2.2.3
+
+{
+    "error": "Invalid credentials"
+}
+</pre>
+<p>Oops, wrong password:</p>
+<pre class="literal-block">
+$ http POST https://myhost.example.com/login username=john password='mypassword'
+HTTP/1.1 200 OK
+Content-Length: 134
+Content-Type: application/json; charset=utf-8
+Date: Sun, 16 Jul 2017 06:21:14 GMT
+Server: Python/3.6 aiohttp/2.2.3
+
+{
+    "token": "eyK0eXAiOiJRV5QiLCJhbGciOiJIUzI1NiJ9.eyJ1c3VyX2lkIjoxLCJleHAiOjE1MDB5MTIwOTh9.hECnj4u2mxvZ2r8IEC-db1T-eKTplM4kWJKZoHhtLxQ"
+}
+</pre>
+<p>We got a token that we can use:</p>
+<pre class="literal-block">
+$ http GET https://myhost.example.com 'Authorization: eyK0eXAiOiJRV5QiLCJhbGciOiJIUzI1NiJ9.eyJ1c3VyX2lkIjoxLCJleHAiOjE1MDB5MTIwOTh9.hECnj4u2mxvZ2r8IEC-db1T-eKTplM4kWJKZoHhtLxQ'
+HTTP/1.1 200 OK
+Content-Length: 43
+Content-Type: application/json; charset=utf-8
+Date: Sun, 16 Jul 2017 06:22:25 GMT
+Server: Python/3.6 aiohttp/2.2.3
+
+{
+    "message": "Welcome to LegoMac john!"
+}
+</pre>
+<p>Authentication is working, so we can send a message:</p>
+<pre class="literal-block">
+$ http POST https://myhost.example.com/messages message='Hello World!' 'Authorization: eyK0eXAiOiJRV5QiLCJhbGciOiJIUzI1NiJ9.eyJ1c3VyX2lkIjoxLCJleHAiOjE1MDB5MTIwOTh9.hECnj4u2mxvZ2r8IEC-db1T-eKTplM4kWJKZoHhtLxQ'
+HTTP/1.1 201 Created
+Content-Length: 27
+Content-Type: application/json; charset=utf-8
+Date: Sun, 16 Jul 2017 06:23:46 GMT
+Server: Python/3.6 aiohttp/2.2.3
+
+{
+    "message": "Hello World!"
+}
+</pre>
+<p>Message sent!
+HTTPie is nice for testing, but we can make a small script to easily send messages from the command line.</p>
+</div>
+<div class="section" id="requests">
+<h3>requests</h3>
+<p><a class="reference external" href="http://docs.python-requests.org">requests</a> is of course the HTTP library to use in Python.</p>
+<p>So let's write a small script to send messages to our server.
+We'll store the server url and username to use in a small yaml configuration file.
+If we don't have a token yet or if the saved one is no longer valid,
+the script will retrieve one after prompting us for a password.
+The token is saved in the configuration file for later use.</p>
+<p>The following script could be improved with some nicer error messages
+by catching exceptions. But it does the job:</p>
+<pre class="literal-block">
+import os
+import click
+import requests
+import yaml
+
+
+def get_config(filename):
+    with open(filename) as f:
+        config = yaml.load(f)
+    return config
+
+
+def save_config(filename, config):
+    with open(filename, 'w') as f:
+        yaml.dump(config, f, default_flow_style=False)
+
+
+def get_token(url, username):
+    password = click.prompt('Password', hide_input=True)
+    payload = {'username': username, 'password': password}
+    r = requests.post(url + '/login', json=payload)
+    r.raise_for_status()
+    return r.json()['token']
+
+
+def send_message(url, token, message):
+    payload = {'message': message}
+    headers = {'Authorization': token}
+    r = requests.post(url + '/messages', json=payload, headers=headers)
+    r.raise_for_status()
+
+
+@click.command()
+@click.option('--conf', '-c', default='~/.pylegomac.yml',
+              help='Configuration file [default: "~/.pylegomac.yml"]')
+@click.argument('message')
+@click.version_option()
+def pylegomac(message, conf):
+    """Send message to aiolegomac server"""
+    filename = os.path.expanduser(conf)
+    config = get_config(filename)
+    url = config['url']
+    username = config['username']
+    if 'token' in config:
+        try:
+            send_message(url, config['token'], message)
+        except requests.exceptions.HTTPError as err:
+            # Token no more valid
+            pass
+        else:
+            click.echo('Message sent')
+            return
+    token = get_token(url, username)
+    send_message(url, token, message)
+    config['token'] = token
+    save_config(filename, config)
+
+
+if __name__ == '__main__':
+    pylegomac()
+</pre>
+<p>Let's first create a configuration file:</p>
+<pre class="literal-block">
+$ cat ~/.pylegomac.yml
+url: https://myhost.example.com
+username: john
+</pre>
+<p>Send a message:</p>
+<pre class="literal-block">
+$ python pylegomac.py 'Beautiful is better than ugly. Explicit is better than implicit. Simple is better than complex. Complex is better than complicated.'
+Password:
+Message sent
+</pre>
+<img alt="/images/legomac/zen_of_python.jpg" src="images/legomac/zen_of_python.jpg"><p>Sending a new message won't request the password as the token was saved in the config file.</p>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion</h2>
+<p>I have a nice little aiohttp server running on my Raspberry Pi that can receive and display messages.
+asyncio is quite pleasant to work with. I really like the async/await syntax.</p>
+<p>All the code is on github:</p>
+<ul class="simple">
+<li>
+<a class="reference external" href="https://github.com/beenje/aiolegomac">aiolegomac</a> (the server and client script)</li>
+<li>
+<a class="reference external" href="https://github.com/beenje/legomac">legomac</a> (the Ansible playbook to deploy the server)</li>
+</ul>
+<p>Why did I only write a command line script to send messages and no web interface?
+Don't worry, that's planned! I could have used Jinja2. But I'd like to try a javascript framework.
+So that will be the subject of another post.</p>
+</div>
+</div>
+    </div>
+    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/running-your-application-over-https-with-traefik/" class="u-url">Running your application over HTTPS with traefik</a></h1>
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
                 Benjamin Bertrand
             </span></p>
             <p class="dateline"><a href="posts/running-your-application-over-https-with-traefik/" rel="bookmark"><time class="published dt-published" datetime="2017-06-08T21:49:46+02:00" title="2017-06-08 21:49">2017-06-08 21:49</time></a></p>
@@ -288,7 +894,7 @@ Really cool.</p>
     </div>
     </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/" class="u-url">My LEGO Macintosh Classic with Raspberry Pi and e-paper display</a></h1>
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
                 Benjamin Bertrand
             </span></p>
             <p class="dateline"><a href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/" rel="bookmark"><time class="published dt-published" datetime="2017-05-23T22:39:12+02:00" title="2017-05-23 22:39">2017-05-23 22:39</time></a></p>
@@ -484,7 +1090,7 @@ $ cd
 <pre class="literal-block">
 $ git clone https://github.com/beenje/legomac.git
 $ cd legomac
-$ ansible-playbook -i hosts -k playbook.yml
+$ ansible-playbook -i hosts -k epd-demo.yml
 </pre>
 <p>That's it!</p>
 <p>Of course don't forget to change the default password on your Pi.</p>
@@ -501,25 +1107,25 @@ Thanks again to @mkennedy for the stickers!</p>
 <a class="reference external image-reference" href="images/legomac/talkpythontome.jpg"><img alt="/images/legomac/talkpythontome.thumbnail.jpg" src="images/legomac/talkpythontome.thumbnail.jpg"></a>
 <p>Below are a few pictures. You can see more on <a class="reference external" href="https://flic.kr/s/aHskVAadfo">flickr</a>.</p>
 
-<div id="slides_03b42f43ff5f47da95e9f7bfd77d73a4" class="carousel slide">
+<div id="slides_d04d6efa25424750910a67594a0bb78b" class="carousel slide">
     <ol class="carousel-indicators">
-<li data-target="#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide-to="0" class="active">
+<li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="0" class="active">
             </li>
-<li data-target="#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide-to="1">
+<li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="1">
             </li>
-<li data-target="#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide-to="2">
+<li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="2">
             </li>
-<li data-target="#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide-to="3">
+<li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="3">
             </li>
-<li data-target="#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide-to="4">
+<li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="4">
             </li>
-<li data-target="#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide-to="5">
+<li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="5">
             </li>
-<li data-target="#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide-to="6">
+<li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="6">
             </li>
-<li data-target="#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide-to="7">
+<li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="7">
             </li>
-<li data-target="#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide-to="8">
+<li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="8">
     </li>
 </ol>
 <div class="carousel-inner">
@@ -533,8 +1139,8 @@ Thanks again to @mkennedy for the stickers!</p>
                 <div class="item"><img src="images/legomac/button_front.jpg" alt="" style="margin: 0 auto 0 auto;"></div>
                 <div class="item"><img src="images/legomac/button_top.jpg" alt="" style="margin: 0 auto 0 auto;"></div>
     </div>
-    <a class="left carousel-control" href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide="prev"><span class="icon-prev"></span></a>
-    <a class="right carousel-control" href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_03b42f43ff5f47da95e9f7bfd77d73a4" data-slide="next"><span class="icon-next"></span></a>
+    <a class="left carousel-control" href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_d04d6efa25424750910a67594a0bb78b" data-slide="prev"><span class="icon-prev"></span></a>
+    <a class="right carousel-control" href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_d04d6efa25424750910a67594a0bb78b" data-slide="next"><span class="icon-next"></span></a>
 </div>
 
 </div>
@@ -542,13 +1148,13 @@ Thanks again to @mkennedy for the stickers!</p>
 <h2>Next</h2>
 <p>I didn't build this LEGO Macintosh to use it as a simple clock :-)
 I have a few ideas. I'll start with a small web server so that I can receive and display messages.
-That will be the subject of another blog post!</p>
+That will be the subject of another <a class="reference external" href="posts/experimenting-with-asyncio-on-a-raspberry-pi">blog post</a>!</p>
 </div>
 </div>
     </div>
     </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/dockerfile-anti-patterns-and-best-practices/" class="u-url">Dockerfile anti-patterns and best practices</a></h1>
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
                 Benjamin Bertrand
             </span></p>
             <p class="dateline"><a href="posts/dockerfile-anti-patterns-and-best-practices/" rel="bookmark"><time class="published dt-published" datetime="2017-03-16T22:10:49+01:00" title="2017-03-16 22:10">2017-03-16 22:10</time></a></p>
@@ -720,7 +1326,7 @@ late as possible</li>
     </div>
     </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/" class="u-url">Control your accessories from Home Assistant with Siri and HomeKit</a></h1>
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
                 Benjamin Bertrand
             </span></p>
             <p class="dateline"><a href="posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/" rel="bookmark"><time class="published dt-published" datetime="2017-02-16T22:58:56+01:00" title="2017-02-16 22:58">2017-02-16 22:58</time></a></p>
@@ -864,7 +1470,7 @@ avoid names usually used by Siri like "Radio" or "Sonos".</p>
     </div>
     </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/docker-and-conda/" class="u-url">Docker and conda</a></h1>
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
                 Benjamin Bertrand
             </span></p>
             <p class="dateline"><a href="posts/docker-and-conda/" rel="bookmark"><time class="published dt-published" datetime="2017-01-28T23:32:56+01:00" title="2017-01-28 23:32">2017-01-28 23:32</time></a></p>
@@ -930,7 +1536,7 @@ A big thanks to <a class="reference external" href="https://www.continuum.io">Co
     </div>
     </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/home-assistant-on-turris-omnia-via-lxc-container/" class="u-url">Home Assistant on Turris Omnia via LXC container</a></h1>
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
                 Benjamin Bertrand
             </span></p>
             <p class="dateline"><a href="posts/home-assistant-on-turris-omnia-via-lxc-container/" rel="bookmark"><time class="published dt-published" datetime="2017-01-26T22:01:30+01:00" title="2017-01-26 22:01">2017-01-26 22:01</time></a></p>
@@ -1187,7 +1793,7 @@ This makes it easy for anyone at home to turn the VPN on and off!</p>
     </div>
     </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/openvpn-source-based-routing/" class="u-url">OpenVPN source based routing</a></h1>
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
                 Benjamin Bertrand
             </span></p>
             <p class="dateline"><a href="posts/openvpn-source-based-routing/" rel="bookmark"><time class="published dt-published" datetime="2017-01-20T21:46:16+01:00" title="2017-01-20 21:46">2017-01-20 21:46</time></a></p>
@@ -1404,7 +2010,7 @@ I'll talk about an even more user friendly way to control it.</p>
     </div>
     </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/parsing-and-indexing-pdf-in-python/" class="u-url">Parsing and indexing PDF in Python</a></h1>
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
                 Benjamin Bertrand
             </span></p>
             <p class="dateline"><a href="posts/parsing-and-indexing-pdf-in-python/" rel="bookmark"><time class="published dt-published" datetime="2016-11-16T21:59:23+01:00" title="2016-11-16 21:59">2016-11-16 21:59</time></a></p>
@@ -2492,7 +3098,7 @@ You can let the library starts the server or use Docker to start your own.</p>
     </div>
     </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/gitlab-container-registry-and-proxy/" class="u-url">GitLab Container Registry and proxy</a></h1>
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
                 Benjamin Bertrand
             </span></p>
             <p class="dateline"><a href="posts/gitlab-container-registry-and-proxy/" rel="bookmark"><time class="published dt-published" datetime="2016-09-21T22:10:06+02:00" title="2016-09-21 22:10">2016-09-21 22:10</time></a></p>
@@ -2515,16 +3121,16 @@ The documentation to use the image is quite clear and can be found <a class="ref
 I wanted to access GitLab using HTTPS, so I disabled port 443 in nginx
 configuration. To do that I had to modify the template
 <cite>/usr/syno/share/nginx/WWWService.mustache</cite> and reboot the NAS:</p>
-<pre class="code diff"><a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-1"></a><span class="gd">--- WWWService.mustache.org 2016-08-16 23:25:06.000000000 +0100</span>
-<a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-2"></a><span class="gi">+++ WWWService.mustache 2016-09-19 13:53:45.256735700 +0100</span>
-<a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-3"></a><span class="gu">@@ -1,8 +1,6 @@</span>
-<a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-4"></a> server {
-<a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-5"></a>     listen 80 default_server{{#reuseport}} reuseport{{/reuseport}};
-<a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-6"></a>     listen [::]:80 default_server{{#reuseport}} reuseport{{/reuseport}};
-<a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-7"></a><span class="gd">-    listen 443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
-<a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-8"></a><span class="gd">-    listen [::]:443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
-<a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-9"></a>
-<a name="rest_code_cff8ddd8ef394a489bfa0ff9a3761efd-10"></a>     server_name _;
+<pre class="code diff"><a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-1"></a><span class="gd">--- WWWService.mustache.org 2016-08-16 23:25:06.000000000 +0100</span>
+<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-2"></a><span class="gi">+++ WWWService.mustache 2016-09-19 13:53:45.256735700 +0100</span>
+<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-3"></a><span class="gu">@@ -1,8 +1,6 @@</span>
+<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-4"></a> server {
+<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-5"></a>     listen 80 default_server{{#reuseport}} reuseport{{/reuseport}};
+<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-6"></a>     listen [::]:80 default_server{{#reuseport}} reuseport{{/reuseport}};
+<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-7"></a><span class="gd">-    listen 443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
+<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-8"></a><span class="gd">-    listen [::]:443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
+<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-9"></a>
+<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-10"></a>     server_name _;
 </pre>
 <p>The port 22 is also already used by the ssh daemon so I decided to use
 the port 2222. I created the directory <cite>/volume1/docker/gitlab</cite> to store
@@ -2687,524 +3293,6 @@ Error response from daemon: Get https://foo/v1/users/: dial tcp: lookup foo on x
 </div>
 </div>
     </div>
-    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/running-background-tasks-with-flask-and-rq/" class="u-url">Running background tasks with Flask and RQ</a></h1>
-        <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn">
-                Benjamin Bertrand
-            </span></p>
-            <p class="dateline"><a href="posts/running-background-tasks-with-flask-and-rq/" rel="bookmark"><time class="published dt-published" datetime="2016-08-20T23:32:16+02:00" title="2016-08-20 23:32">2016-08-20 23:32</time></a></p>
-                <p class="commentline">
-        
-    <a href="posts/running-background-tasks-with-flask-and-rq/#disqus_thread" data-disqus-identifier="cache/posts/running-background-tasks-with-flask-and-rq.html">Comments</a>
-
-
-        </p>
-</div>
-    </header><div class="e-content entry-content">
-    <div>
-<p>I wrote several webapps but it took me a while to understand how to run a
-long task and get the result back (without blocking the server).
-Of course, you should use a task queue like <a class="reference external" href="http://www.celeryproject.org">Celery</a> or <a class="reference external" href="http://python-rq.org">RQ</a>.
-It's easy to find examples how to send a task to a queue and... forget
-about it. But how do you get the result?</p>
-<p>I found a great blog post from Miguel Grinberg:
-<a class="reference external" href="http://blog.miguelgrinberg.com/post/using-celery-with-flask">Using Celery With Flask</a>.
-It explains how to use ajax to poll the server for status updates.
-And I finally got it!
-As Miguel's post already detailed <a class="reference external" href="http://www.celeryproject.org">Celery</a>, I wanted to investigate
-<a class="reference external" href="http://python-rq.org">RQ</a> (Redis Queue), a simple library to queue job.</p>
-<p>As a side note, Miguel's blog is really great. I learned Flask following the <a class="reference external" href="http://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world">The Flask Mega-Tutorial</a>.
-If you are starting with Flask, I highly recommend it, as well as the
-<a class="reference external" href="http://flaskbook.com">Flask book</a>.</p>
-<p>We'll make a simple app with a form to run some actions.</p>
-<div class="section" id="first-version-send-a-post-to-the-server-and-wait-for-the-response">
-<h2>First version: send a post to the server and wait for the response</h2>
-<p>Let's start with some boilerplate code. This is gonna be a very
-simple example, but I'll organize it like I use to for a real application
-using <a class="reference external" href="http://flask.pocoo.org/docs/0.11/blueprints/">Blueprints</a>, an
-<a class="reference external" href="http://flask.pocoo.org/docs/0.11/patterns/appfactories/">application factory</a>
-and some extensions (<a class="reference external" href="https://pythonhosted.org/Flask-Bootstrap/">Flask-Bootstrap</a>, <a class="reference external" href="https://flask-script.readthedocs.io/en/latest/">Flask-Script</a> and <a class="reference external" href="http://flask-wtf.readthedocs.io/en/latest/">Flask-WTF</a>):</p>
-<pre class="literal-block">
-├── Dockerfile
-├── LICENSE
-├── README.rst
-├── app
-│   ├── __init__.py
-│   ├── extensions.py
-│   ├── factory.py
-│   ├── main
-│   │   ├── __init__.py
-│   │   ├── forms.py
-│   │   └── views.py
-│   ├── settings.py
-│   ├── static
-│   │   └── css
-│   │       └── main.css
-│   ├── tasks.py
-│   └── templates
-│       ├── base.html
-│       └── index.html
-├── docker-compose.yml
-├── environment.yml
-├── manage.py
-└── uwsgi.py
-</pre>
-<p>I define all the used extensions in <cite>app/extensions.py</cite>, my application factory in <cite>app/factory.py</cite> and
-my default settings in <cite>app/settings.py</cite>. Nothing strange in there. You can refer to the
-<a class="reference external" href="https://github.com/beenje/flask-rq-example">GitHub repository</a>.</p>
-<p>Here is our main <cite>app/main/views.py</cite>:</p>
-<pre class="code python"><a name="rest_code_ec965f0f20b7430198981fdab669c825-1"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">url_for</span><span class="p">,</span> <span class="n">flash</span><span class="p">,</span> <span class="n">redirect</span>
-<a name="rest_code_ec965f0f20b7430198981fdab669c825-2"></a><span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">tasks</span>
-<a name="rest_code_ec965f0f20b7430198981fdab669c825-3"></a><span class="kn">from</span> <span class="nn">.forms</span> <span class="kn">import</span> <span class="n">TaskForm</span>
-<a name="rest_code_ec965f0f20b7430198981fdab669c825-4"></a>
-<a name="rest_code_ec965f0f20b7430198981fdab669c825-5"></a><span class="n">bp</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s">'main'</span><span class="p">,</span> <span class="n">__name__</span><span class="p">)</span>
-<a name="rest_code_ec965f0f20b7430198981fdab669c825-6"></a>
-<a name="rest_code_ec965f0f20b7430198981fdab669c825-7"></a>
-<a name="rest_code_ec965f0f20b7430198981fdab669c825-8"></a><span class="nd">@bp.route</span><span class="p">(</span><span class="s">'/'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s">'GET'</span><span class="p">,</span> <span class="s">'POST'</span><span class="p">])</span>
-<a name="rest_code_ec965f0f20b7430198981fdab669c825-9"></a><span class="k">def</span> <span class="nf">index</span><span class="p">():</span>
-<a name="rest_code_ec965f0f20b7430198981fdab669c825-10"></a>    <span class="n">form</span> <span class="o">=</span> <span class="n">TaskForm</span><span class="p">()</span>
-<a name="rest_code_ec965f0f20b7430198981fdab669c825-11"></a>    <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">validate_on_submit</span><span class="p">():</span>
-<a name="rest_code_ec965f0f20b7430198981fdab669c825-12"></a>        <span class="n">task</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">data</span>
-<a name="rest_code_ec965f0f20b7430198981fdab669c825-13"></a>        <span class="k">try</span><span class="p">:</span>
-<a name="rest_code_ec965f0f20b7430198981fdab669c825-14"></a>            <span class="n">result</span> <span class="o">=</span> <span class="n">tasks</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
-<a name="rest_code_ec965f0f20b7430198981fdab669c825-15"></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a name="rest_code_ec965f0f20b7430198981fdab669c825-16"></a>            <span class="n">flash</span><span class="p">(</span><span class="s">'Task failed: {}'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="s">'danger'</span><span class="p">)</span>
-<a name="rest_code_ec965f0f20b7430198981fdab669c825-17"></a>        <span class="k">else</span><span class="p">:</span>
-<a name="rest_code_ec965f0f20b7430198981fdab669c825-18"></a>            <span class="n">flash</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s">'success'</span><span class="p">)</span>
-<a name="rest_code_ec965f0f20b7430198981fdab669c825-19"></a>        <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">url_for</span><span class="p">(</span><span class="s">'main.index'</span><span class="p">))</span>
-<a name="rest_code_ec965f0f20b7430198981fdab669c825-20"></a>    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s">'index.html'</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">)</span>
-</pre>
-<p>As said previously, we create a form. On submit, we run the task and send the response back.</p>
-<p>The form is defined in <cite>app/main/forms.py</cite>:</p>
-<pre class="code python"><a name="rest_code_8cc6739fd94746a593a5c00352718761-1"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">current_app</span>
-<a name="rest_code_8cc6739fd94746a593a5c00352718761-2"></a><span class="kn">from</span> <span class="nn">flask_wtf</span> <span class="kn">import</span> <span class="n">Form</span>
-<a name="rest_code_8cc6739fd94746a593a5c00352718761-3"></a><span class="kn">from</span> <span class="nn">wtforms</span> <span class="kn">import</span> <span class="n">SelectField</span>
-<a name="rest_code_8cc6739fd94746a593a5c00352718761-4"></a>
-<a name="rest_code_8cc6739fd94746a593a5c00352718761-5"></a>
-<a name="rest_code_8cc6739fd94746a593a5c00352718761-6"></a><span class="k">class</span> <span class="nc">TaskForm</span><span class="p">(</span><span class="n">Form</span><span class="p">):</span>
-<a name="rest_code_8cc6739fd94746a593a5c00352718761-7"></a>    <span class="n">task</span> <span class="o">=</span> <span class="n">SelectField</span><span class="p">(</span><span class="s">'Task'</span><span class="p">)</span>
-<a name="rest_code_8cc6739fd94746a593a5c00352718761-8"></a>
-<a name="rest_code_8cc6739fd94746a593a5c00352718761-9"></a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<a name="rest_code_8cc6739fd94746a593a5c00352718761-10"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-<a name="rest_code_8cc6739fd94746a593a5c00352718761-11"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="p">[(</span><span class="n">task</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span> <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">'TASKS'</span><span class="p">]]</span>
-</pre>
-<p>In <cite>app/tasks.py</cite>, we have our <cite>run</cite> function to start a dummy task:</p>
-<pre class="code python"><a name="rest_code_655a586d1944498b88ebb1a2dbedd109-1"></a><span class="kn">import</span> <span class="nn">random</span>
-<a name="rest_code_655a586d1944498b88ebb1a2dbedd109-2"></a><span class="kn">import</span> <span class="nn">time</span>
-<a name="rest_code_655a586d1944498b88ebb1a2dbedd109-3"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">current_app</span>
-<a name="rest_code_655a586d1944498b88ebb1a2dbedd109-4"></a>
-<a name="rest_code_655a586d1944498b88ebb1a2dbedd109-5"></a>
-<a name="rest_code_655a586d1944498b88ebb1a2dbedd109-6"></a><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">task</span><span class="p">):</span>
-<a name="rest_code_655a586d1944498b88ebb1a2dbedd109-7"></a>    <span class="k">if</span> <span class="s">'error'</span> <span class="ow">in</span> <span class="n">task</span><span class="p">:</span>
-<a name="rest_code_655a586d1944498b88ebb1a2dbedd109-8"></a>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
-<a name="rest_code_655a586d1944498b88ebb1a2dbedd109-9"></a>        <span class="mi">1</span> <span class="o">/</span> <span class="mi">0</span>
-<a name="rest_code_655a586d1944498b88ebb1a2dbedd109-10"></a>    <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">'Short'</span><span class="p">):</span>
-<a name="rest_code_655a586d1944498b88ebb1a2dbedd109-11"></a>        <span class="n">seconds</span> <span class="o">=</span> <span class="mi">1</span>
-<a name="rest_code_655a586d1944498b88ebb1a2dbedd109-12"></a>    <span class="k">else</span><span class="p">:</span>
-<a name="rest_code_655a586d1944498b88ebb1a2dbedd109-13"></a>        <span class="n">seconds</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">'MAX_TIME_TO_WAIT'</span><span class="p">])</span>
-<a name="rest_code_655a586d1944498b88ebb1a2dbedd109-14"></a>    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">seconds</span><span class="p">)</span>
-<a name="rest_code_655a586d1944498b88ebb1a2dbedd109-15"></a>    <span class="k">return</span> <span class="s">'{} performed in {} second(s)'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">seconds</span><span class="p">)</span>
-</pre>
-<p>In <cite>app/templates/base.html</cite>, we define a fixed to top navbar and
-a container to show flash messages and our main code. Note that we take advantage of
-<a class="reference external" href="https://pythonhosted.org/Flask-Bootstrap/">Flask-Bootstrap</a>.</p>
-<pre class="code html"><a name="rest_code_fa9c151cb92b456aa01b836005c296b8-1"></a>{%- extends "bootstrap/base.html" %}
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-2"></a>{% import "bootstrap/utils.html" as utils %}
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-3"></a>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-4"></a>{% block head %}
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-5"></a>  <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">"utf-8"</span><span class="nt">&gt;</span>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-6"></a>  <span class="nt">&lt;meta</span> <span class="na">http-equiv=</span><span class="s">"X-UA-Compatible"</span> <span class="na">content=</span><span class="s">"IE=edge"</span><span class="nt">&gt;</span>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-7"></a>  {{super()}}
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-8"></a>{% endblock %}
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-9"></a>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-10"></a>{% block styles %}
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-11"></a>  {{super()}}
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-12"></a>  <span class="nt">&lt;link</span> <span class="na">href=</span><span class="s">"{{ url_for('static', filename='css/main.css') }}"</span> <span class="na">rel=</span><span class="s">"stylesheet"</span><span class="nt">&gt;</span>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-13"></a>{% endblock %}
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-14"></a>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-15"></a>{% block title %}My App{% endblock %}
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-16"></a>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-17"></a>{% block navbar %}
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-18"></a>  <span class="c">&lt;!-- Fixed navbar --&gt;</span>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-19"></a>  <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"navbar navbar-default navbar-fixed-top"</span> <span class="na">role=</span><span class="s">"navigation"</span><span class="nt">&gt;</span>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-20"></a>    <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"container"</span><span class="nt">&gt;</span>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-21"></a>      <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"navbar-header"</span><span class="nt">&gt;</span>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-22"></a>        <span class="nt">&lt;button</span> <span class="na">type=</span><span class="s">"button"</span> <span class="na">class=</span><span class="s">"navbar-toggle"</span> <span class="na">data-toggle=</span><span class="s">"collapse"</span> <span class="na">data-target=</span><span class="s">".navbar-collapse"</span><span class="nt">&gt;</span>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-23"></a>          <span class="nt">&lt;span</span> <span class="na">class=</span><span class="s">"sr-only"</span><span class="nt">&gt;</span>Toggle navigation<span class="nt">&lt;/span&gt;</span>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-24"></a>          <span class="nt">&lt;span</span> <span class="na">class=</span><span class="s">"icon-bar"</span><span class="nt">&gt;&lt;/span&gt;</span>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-25"></a>          <span class="nt">&lt;span</span> <span class="na">class=</span><span class="s">"icon-bar"</span><span class="nt">&gt;&lt;/span&gt;</span>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-26"></a>          <span class="nt">&lt;span</span> <span class="na">class=</span><span class="s">"icon-bar"</span><span class="nt">&gt;&lt;/span&gt;</span>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-27"></a>        <span class="nt">&lt;/button&gt;</span>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-28"></a>        <span class="c">&lt;!--img class="navbar-brand" src="../../static/logo.png"--&gt;</span>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-29"></a>        <span class="nt">&lt;a</span> <span class="na">class=</span><span class="s">"navbar-brand"</span> <span class="na">href=</span><span class="s">"{{ url_for('main.index') }}"</span><span class="nt">&gt;</span>My App<span class="nt">&lt;/a&gt;</span>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-30"></a>      <span class="nt">&lt;/div&gt;</span>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-31"></a>    <span class="nt">&lt;/div&gt;</span>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-32"></a>  <span class="nt">&lt;/div&gt;</span>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-33"></a>{% endblock %}
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-34"></a>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-35"></a>{% block content %}
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-36"></a>  <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"container"</span> <span class="na">id=</span><span class="s">"mainContent"</span><span class="nt">&gt;</span>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-37"></a>    {{utils.flashed_messages(container=False, dismissible=True)}}
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-38"></a>    {% block main %}{% endblock %}
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-39"></a>  <span class="nt">&lt;/div&gt;</span>
-<a name="rest_code_fa9c151cb92b456aa01b836005c296b8-40"></a>{% endblock %}
-</pre>
-<p>The html code for our view is in <cite>app/templates/index.html</cite>:</p>
-<pre class="code html"><a name="rest_code_8f05c92515134d53b4373a29b0a72a8d-1"></a>{%- extends "base.html" %}
-<a name="rest_code_8f05c92515134d53b4373a29b0a72a8d-2"></a>{% import "bootstrap/wtf.html" as wtf %}
-<a name="rest_code_8f05c92515134d53b4373a29b0a72a8d-3"></a>
-<a name="rest_code_8f05c92515134d53b4373a29b0a72a8d-4"></a>{% block main %}
-<a name="rest_code_8f05c92515134d53b4373a29b0a72a8d-5"></a>      <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"panel panel-default"</span><span class="nt">&gt;</span>
-<a name="rest_code_8f05c92515134d53b4373a29b0a72a8d-6"></a>        <span class="c">&lt;!-- Default panel contents --&gt;</span>
-<a name="rest_code_8f05c92515134d53b4373a29b0a72a8d-7"></a>        <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"panel-heading"</span><span class="nt">&gt;</span>Select task to run<span class="nt">&lt;/div&gt;</span>
-<a name="rest_code_8f05c92515134d53b4373a29b0a72a8d-8"></a>        <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"panel-body"</span><span class="nt">&gt;</span>
-<a name="rest_code_8f05c92515134d53b4373a29b0a72a8d-9"></a>          <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"col-md-3"</span><span class="nt">&gt;</span>
-<a name="rest_code_8f05c92515134d53b4373a29b0a72a8d-10"></a>            <span class="nt">&lt;form</span> <span class="na">class=</span><span class="s">"form"</span> <span class="na">id=</span><span class="s">"taskForm"</span> <span class="na">method=</span><span class="s">"POST"</span><span class="nt">&gt;</span>
-<a name="rest_code_8f05c92515134d53b4373a29b0a72a8d-11"></a>              {{ form.hidden_tag() }}
-<a name="rest_code_8f05c92515134d53b4373a29b0a72a8d-12"></a>              {{ wtf.form_field(form.task) }}
-<a name="rest_code_8f05c92515134d53b4373a29b0a72a8d-13"></a>              <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"form-group"</span><span class="nt">&gt;</span>
-<a name="rest_code_8f05c92515134d53b4373a29b0a72a8d-14"></a>                <span class="nt">&lt;button</span> <span class="na">type=</span><span class="s">"submit"</span> <span class="na">class=</span><span class="s">"btn btn-default"</span> <span class="na">id=</span><span class="s">"submit"</span><span class="nt">&gt;</span>Run<span class="nt">&lt;/button&gt;</span>
-<a name="rest_code_8f05c92515134d53b4373a29b0a72a8d-15"></a>              <span class="nt">&lt;/div&gt;</span>
-<a name="rest_code_8f05c92515134d53b4373a29b0a72a8d-16"></a>            <span class="nt">&lt;/form&gt;</span>
-<a name="rest_code_8f05c92515134d53b4373a29b0a72a8d-17"></a>          <span class="nt">&lt;/div&gt;</span>
-<a name="rest_code_8f05c92515134d53b4373a29b0a72a8d-18"></a>        <span class="nt">&lt;/div&gt;</span>
-<a name="rest_code_8f05c92515134d53b4373a29b0a72a8d-19"></a>      <span class="nt">&lt;/div&gt;</span>
-<a name="rest_code_8f05c92515134d53b4373a29b0a72a8d-20"></a>{% endblock %}
-</pre>
-<p>Let's run this first example. We could just create a virtual environment using <a class="reference external" href="https://virtualenv.pypa.io/en/stable/">virtualenv</a>
-or <a class="reference external" href="http://conda.pydata.org/docs/intro.html">conda</a>. As we'll soon need <a class="reference external" href="http://redis.io">Redis</a>, let's directly go for <a class="reference external" href="https://www.docker.com">Docker</a>:</p>
-<pre class="literal-block">
-$ git clone https://github.com/beenje/flask-rq-example.git
-$ cd flask-rq-example
-$ git checkout faa61009dbe3bafe49aae473f0fa19ab05a3ab90
-$ docker-compose build
-$ docker-compose up
-</pre>
-<p>Go to <a class="reference external" href="http://localhost:5000">http://localhost:5000</a>. You should see the following window:</p>
-<img alt="/images/flask-rq-example.png" src="images/flask-rq-example.png"><p>Choose a task and press run. See how The UI is stuck while waiting for the server?
-Not very nice...
-Let' improve that a little by using some JavaScript.</p>
-</div>
-<div class="section" id="second-version-use-ajax-to-submit-the-form">
-<h2>Second version: use Ajax to submit the form</h2>
-<p>Let's write some javascript. Here is the <cite>app/static/js/main.js</cite>:</p>
-<pre class="code javascript"><a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-1"></a><span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">ready</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-2"></a>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-3"></a>  <span class="c1">// flash an alert</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-4"></a>  <span class="c1">// remove previous alerts by default</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-5"></a>  <span class="c1">// set clean to false to keep old alerts</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-6"></a>  <span class="kd">function</span> <span class="nx">flash_alert</span><span class="p">(</span><span class="nx">message</span><span class="p">,</span> <span class="nx">category</span><span class="p">,</span> <span class="nx">clean</span><span class="p">)</span> <span class="p">{</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-7"></a>    <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span><span class="p">(</span><span class="nx">clean</span><span class="p">)</span> <span class="o">===</span> <span class="s2">"undefined"</span><span class="p">)</span> <span class="nx">clean</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-8"></a>    <span class="k">if</span><span class="p">(</span><span class="nx">clean</span><span class="p">)</span> <span class="p">{</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-9"></a>      <span class="nx">remove_alerts</span><span class="p">();</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-10"></a>    <span class="p">}</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-11"></a>    <span class="kd">var</span> <span class="nx">htmlString</span> <span class="o">=</span> <span class="s1">'&lt;div class="alert alert-'</span> <span class="o">+</span> <span class="nx">category</span> <span class="o">+</span> <span class="s1">' alert-dismissible" role="alert"&gt;'</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-12"></a>    <span class="nx">htmlString</span> <span class="o">+=</span> <span class="s1">'&lt;button type="button" class="close" data-dismiss="alert" aria-label="Close"&gt;'</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-13"></a>    <span class="nx">htmlString</span> <span class="o">+=</span> <span class="s1">'&lt;span aria-hidden="true"&gt;&amp;times;&lt;/span&gt;&lt;/button&gt;'</span> <span class="o">+</span> <span class="nx">message</span> <span class="o">+</span> <span class="s1">'&lt;/div&gt;'</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-14"></a>    <span class="nx">$</span><span class="p">(</span><span class="nx">htmlString</span><span class="p">).</span><span class="nx">prependTo</span><span class="p">(</span><span class="s2">"#mainContent"</span><span class="p">).</span><span class="nx">hide</span><span class="p">().</span><span class="nx">slideDown</span><span class="p">();</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-15"></a>  <span class="p">}</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-16"></a>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-17"></a>  <span class="kd">function</span> <span class="nx">remove_alerts</span><span class="p">()</span> <span class="p">{</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-18"></a>    <span class="nx">$</span><span class="p">(</span><span class="s2">".alert"</span><span class="p">).</span><span class="nx">slideUp</span><span class="p">(</span><span class="s2">"normal"</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-19"></a>      <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">remove</span><span class="p">();</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-20"></a>    <span class="p">});</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-21"></a>  <span class="p">}</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-22"></a>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-23"></a>  <span class="c1">// submit form</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-24"></a>  <span class="nx">$</span><span class="p">(</span><span class="s2">"#submit"</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">'click'</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-25"></a>    <span class="nx">flash_alert</span><span class="p">(</span><span class="s2">"Running "</span> <span class="o">+</span> <span class="nx">$</span><span class="p">(</span><span class="s2">"#task"</span><span class="p">).</span><span class="nx">val</span><span class="p">()</span> <span class="o">+</span> <span class="s2">"..."</span><span class="p">,</span> <span class="s2">"info"</span><span class="p">);</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-26"></a>    <span class="nx">$</span><span class="p">.</span><span class="nx">ajax</span><span class="p">({</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-27"></a>      <span class="nx">url</span><span class="o">:</span> <span class="nx">$SCRIPT_ROOT</span> <span class="o">+</span> <span class="s2">"/_run_task"</span><span class="p">,</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-28"></a>      <span class="nx">data</span><span class="o">:</span> <span class="nx">$</span><span class="p">(</span><span class="s2">"#taskForm"</span><span class="p">).</span><span class="nx">serialize</span><span class="p">(),</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-29"></a>      <span class="nx">method</span><span class="o">:</span> <span class="s2">"POST"</span><span class="p">,</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-30"></a>      <span class="nx">dataType</span><span class="o">:</span> <span class="s2">"json"</span><span class="p">,</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-31"></a>      <span class="nx">success</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-32"></a>        <span class="nx">flash_alert</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">result</span><span class="p">,</span> <span class="s2">"success"</span><span class="p">);</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-33"></a>      <span class="p">},</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-34"></a>      <span class="nx">error</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">jqXHR</span><span class="p">,</span> <span class="nx">textStatus</span><span class="p">,</span> <span class="nx">errorThrown</span><span class="p">)</span> <span class="p">{</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-35"></a>        <span class="nx">flash_alert</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">jqXHR</span><span class="p">.</span><span class="nx">responseText</span><span class="p">).</span><span class="nx">message</span><span class="p">,</span> <span class="s2">"danger"</span><span class="p">);</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-36"></a>      <span class="p">}</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-37"></a>    <span class="p">});</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-38"></a>  <span class="p">});</span>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-39"></a>
-<a name="rest_code_b1174de64191406d824f3d63f2dbe5d7-40"></a><span class="p">});</span>
-</pre>
-<p>To include this file in our html, we add the following block to <cite>app/templates/base.html</cite>:</p>
-<pre class="code html"><a name="rest_code_a7aeddcb475e4b6a8648623dd2eec004-1"></a>{% block scripts %}
-<a name="rest_code_a7aeddcb475e4b6a8648623dd2eec004-2"></a>  {{super()}}
-<a name="rest_code_a7aeddcb475e4b6a8648623dd2eec004-3"></a>  <span class="nt">&lt;script </span><span class="na">type=</span><span class="s">text/javascript</span><span class="nt">&gt;</span>
-<a name="rest_code_a7aeddcb475e4b6a8648623dd2eec004-4"></a>    <span class="nx">$SCRIPT_ROOT</span> <span class="o">=</span> <span class="p">{{</span> <span class="nx">request</span><span class="p">.</span><span class="nx">script_root</span><span class="o">|</span><span class="nx">tojson</span><span class="o">|</span><span class="nx">safe</span> <span class="p">}};</span>
-<a name="rest_code_a7aeddcb475e4b6a8648623dd2eec004-5"></a>  <span class="nt">&lt;/script&gt;</span>
-<a name="rest_code_a7aeddcb475e4b6a8648623dd2eec004-6"></a>  {% block app_scripts %}{% endblock %}
-<a name="rest_code_a7aeddcb475e4b6a8648623dd2eec004-7"></a>{% endblock %}
-</pre>
-<p>And here is a diff for our <cite>app/templates/index.html</cite>:</p>
-<pre class="code diff"><a name="rest_code_3c426416962143e0bcf72f40cbe86601-1"></a>               {{ form.hidden_tag() }}
-<a name="rest_code_3c426416962143e0bcf72f40cbe86601-2"></a>               {{ wtf.form_field(form.task) }}
-<a name="rest_code_3c426416962143e0bcf72f40cbe86601-3"></a>               &lt;div class="form-group"&gt;
-<a name="rest_code_3c426416962143e0bcf72f40cbe86601-4"></a><span class="gd">-                &lt;button type="submit" class="btn btn-default" id="submit"&gt;Run&lt;/button&gt;</span>
-<a name="rest_code_3c426416962143e0bcf72f40cbe86601-5"></a><span class="gi">+                &lt;button type="button" class="btn btn-default" id="submit"&gt;Run&lt;/button&gt;</span>
-<a name="rest_code_3c426416962143e0bcf72f40cbe86601-6"></a>               &lt;/div&gt;
-<a name="rest_code_3c426416962143e0bcf72f40cbe86601-7"></a>             &lt;/form&gt;
-<a name="rest_code_3c426416962143e0bcf72f40cbe86601-8"></a>           &lt;/div&gt;
-<a name="rest_code_3c426416962143e0bcf72f40cbe86601-9"></a>         &lt;/div&gt;
-<a name="rest_code_3c426416962143e0bcf72f40cbe86601-10"></a>       &lt;/div&gt;
-<a name="rest_code_3c426416962143e0bcf72f40cbe86601-11"></a> {% endblock %}
-<a name="rest_code_3c426416962143e0bcf72f40cbe86601-12"></a><span class="gi">+</span>
-<a name="rest_code_3c426416962143e0bcf72f40cbe86601-13"></a><span class="gi">+{% block app_scripts %}</span>
-<a name="rest_code_3c426416962143e0bcf72f40cbe86601-14"></a><span class="gi">+  &lt;script src="{{ url_for('static', filename='js/main.js') }}"&gt;&lt;/script&gt;</span>
-<a name="rest_code_3c426416962143e0bcf72f40cbe86601-15"></a><span class="gi">+{% endblock %}</span>
-</pre>
-<p>We change the <cite>button</cite> type from <cite>submit</cite> to <cite>button</cite> so that it doesn't send a POST when clicked.
-We send an Ajax query to <cite>$SCRIPT_ROOT/_run_task</cite> instead.</p>
-<p>This is our new <cite>app/main/views.py</cite>:</p>
-<pre class="code python"><a name="rest_code_c1ffc99470d54516a4cb836190bbd83c-1"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
-<a name="rest_code_c1ffc99470d54516a4cb836190bbd83c-2"></a><span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">tasks</span>
-<a name="rest_code_c1ffc99470d54516a4cb836190bbd83c-3"></a><span class="kn">from</span> <span class="nn">.forms</span> <span class="kn">import</span> <span class="n">TaskForm</span>
-<a name="rest_code_c1ffc99470d54516a4cb836190bbd83c-4"></a>
-<a name="rest_code_c1ffc99470d54516a4cb836190bbd83c-5"></a><span class="n">bp</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s">'main'</span><span class="p">,</span> <span class="n">__name__</span><span class="p">)</span>
-<a name="rest_code_c1ffc99470d54516a4cb836190bbd83c-6"></a>
-<a name="rest_code_c1ffc99470d54516a4cb836190bbd83c-7"></a>
-<a name="rest_code_c1ffc99470d54516a4cb836190bbd83c-8"></a><span class="nd">@bp.route</span><span class="p">(</span><span class="s">'/_run_task'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s">'POST'</span><span class="p">])</span>
-<a name="rest_code_c1ffc99470d54516a4cb836190bbd83c-9"></a><span class="k">def</span> <span class="nf">run_task</span><span class="p">():</span>
-<a name="rest_code_c1ffc99470d54516a4cb836190bbd83c-10"></a>    <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'task'</span><span class="p">)</span>
-<a name="rest_code_c1ffc99470d54516a4cb836190bbd83c-11"></a>    <span class="k">try</span><span class="p">:</span>
-<a name="rest_code_c1ffc99470d54516a4cb836190bbd83c-12"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">tasks</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
-<a name="rest_code_c1ffc99470d54516a4cb836190bbd83c-13"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a name="rest_code_c1ffc99470d54516a4cb836190bbd83c-14"></a>        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s">'message'</span><span class="p">:</span> <span class="s">'Task failed: {}'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">)}),</span> <span class="mi">500</span>
-<a name="rest_code_c1ffc99470d54516a4cb836190bbd83c-15"></a>    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s">'result'</span><span class="p">:</span> <span class="n">result</span><span class="p">})</span>
-<a name="rest_code_c1ffc99470d54516a4cb836190bbd83c-16"></a>
-<a name="rest_code_c1ffc99470d54516a4cb836190bbd83c-17"></a>
-<a name="rest_code_c1ffc99470d54516a4cb836190bbd83c-18"></a><span class="nd">@bp.route</span><span class="p">(</span><span class="s">'/'</span><span class="p">)</span>
-<a name="rest_code_c1ffc99470d54516a4cb836190bbd83c-19"></a><span class="k">def</span> <span class="nf">index</span><span class="p">():</span>
-<a name="rest_code_c1ffc99470d54516a4cb836190bbd83c-20"></a>    <span class="n">form</span> <span class="o">=</span> <span class="n">TaskForm</span><span class="p">()</span>
-<a name="rest_code_c1ffc99470d54516a4cb836190bbd83c-21"></a>    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s">'index.html'</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">)</span>
-</pre>
-<p>Let's run this new example:</p>
-<pre class="literal-block">
-$ git checkout c1ccfe8b3a39079ab80f813b5733b324c8b65c6f
-$ docker rm flaskrqexample_web
-$ docker-compose up
-</pre>
-<p>This time we immediately get some feedback when clicking on <em>Run</em>. There is no reload.
-That's better, but the server is still busy during the processing. If you try to open a new page, you won't get any answer until the task is done...</p>
-<p>To avoid blocking the server, we'll use a task queue.</p>
-</div>
-<div class="section" id="third-version-setup-rq">
-<h2>Third version: setup RQ</h2>
-<p>As its name indicates, <a class="reference external" href="http://python-rq.org">RQ</a> (Redis Queue) is backed by <a class="reference external" href="http://redis.io">Redis</a>.
-It is designed to have a low barrier entry.
-What do we need to integrate <a class="reference external" href="http://python-rq.org">RQ</a> in our <a class="reference external" href="http://flask.pocoo.org">Flask</a> web app?</p>
-<p>Let's first add some variables in <cite>app/settings.py</cite>:</p>
-<pre class="code python"><a name="rest_code_9865db4d489f4a7ea111ec669602860e-1"></a><span class="c"># The Redis database to use</span>
-<a name="rest_code_9865db4d489f4a7ea111ec669602860e-2"></a><span class="n">REDIS_URL</span> <span class="o">=</span> <span class="s">'redis://redis:6379/0'</span>
-<a name="rest_code_9865db4d489f4a7ea111ec669602860e-3"></a><span class="c"># The queues to listen on</span>
-<a name="rest_code_9865db4d489f4a7ea111ec669602860e-4"></a><span class="n">QUEUES</span> <span class="o">=</span> <span class="p">[</span><span class="s">'default'</span><span class="p">]</span>
-</pre>
-<p>To execute a background job, we need a worker.
-<a class="reference external" href="http://python-rq.org">RQ</a> comes with the <cite>rq worker</cite> command to start a worker. To integrate it
-better with our Flask app, we are going to write a simple <a class="reference external" href="https://flask-script.readthedocs.io/en/latest/">Flask-Script</a>
-command. We add the following to our <cite>manage.py</cite>:</p>
-<pre class="code python"><a name="rest_code_fbac572feb81420c91c76d17a8cb3196-1"></a><span class="kn">from</span> <span class="nn">rq</span> <span class="kn">import</span> <span class="n">Connection</span><span class="p">,</span> <span class="n">Worker</span>
-<a name="rest_code_fbac572feb81420c91c76d17a8cb3196-2"></a>
-<a name="rest_code_fbac572feb81420c91c76d17a8cb3196-3"></a><span class="nd">@manager.command</span>
-<a name="rest_code_fbac572feb81420c91c76d17a8cb3196-4"></a><span class="k">def</span> <span class="nf">runworker</span><span class="p">():</span>
-<a name="rest_code_fbac572feb81420c91c76d17a8cb3196-5"></a>    <span class="n">redis_url</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">'REDIS_URL'</span><span class="p">]</span>
-<a name="rest_code_fbac572feb81420c91c76d17a8cb3196-6"></a>    <span class="n">redis_connection</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">from_url</span><span class="p">(</span><span class="n">redis_url</span><span class="p">)</span>
-<a name="rest_code_fbac572feb81420c91c76d17a8cb3196-7"></a>    <span class="k">with</span> <span class="n">Connection</span><span class="p">(</span><span class="n">redis_connection</span><span class="p">):</span>
-<a name="rest_code_fbac572feb81420c91c76d17a8cb3196-8"></a>        <span class="n">worker</span> <span class="o">=</span> <span class="n">Worker</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">'QUEUES'</span><span class="p">])</span>
-<a name="rest_code_fbac572feb81420c91c76d17a8cb3196-9"></a>        <span class="n">worker</span><span class="o">.</span><span class="n">work</span><span class="p">()</span>
-</pre>
-<p>The Manager runs the command inside a Flask test context, meaning we can
-access the app config from within the worker.
-This is nice because both our web application and
-workers (and thus the jobs run on the worker) have access to the same
-configuration variables. No separate config file. No discrepancy.
-Everything is in <cite>app/settings.py</cite> and can be overwritten by <em>LOCAL_SETTINGS</em>.</p>
-<p>To put a job in a Queue, you just create a <em>RQ Queue</em> and enqueue it.
-One way to do that is to pass the connection when creating the <em>Queue</em>. This is a bit tedious.
-<a class="reference external" href="http://python-rq.org">RQ</a> has the notion of <a class="reference external" href="http://python-rq.org/docs/connections/">connection context</a>. We take advantage of that
-and register a function to push the connection and pop it before and after a request (<cite>app/main/views.py</cite>):</p>
-<pre class="code python"><a name="rest_code_421630cff8134a96b6b6bb91762392f9-1"></a><span class="kn">import</span> <span class="nn">redis</span>
-<a name="rest_code_421630cff8134a96b6b6bb91762392f9-2"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">current_app</span><span class="p">,</span> <span class="n">g</span>
-<a name="rest_code_421630cff8134a96b6b6bb91762392f9-3"></a><span class="kn">from</span> <span class="nn">rq</span> <span class="kn">import</span> <span class="n">push_connection</span><span class="p">,</span> <span class="n">pop_connection</span><span class="p">,</span> <span class="n">Queue</span>
-<a name="rest_code_421630cff8134a96b6b6bb91762392f9-4"></a>
-<a name="rest_code_421630cff8134a96b6b6bb91762392f9-5"></a>
-<a name="rest_code_421630cff8134a96b6b6bb91762392f9-6"></a><span class="k">def</span> <span class="nf">get_redis_connection</span><span class="p">():</span>
-<a name="rest_code_421630cff8134a96b6b6bb91762392f9-7"></a>    <span class="n">redis_connection</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="s">'_redis_connection'</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
-<a name="rest_code_421630cff8134a96b6b6bb91762392f9-8"></a>    <span class="k">if</span> <span class="n">redis_connection</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-<a name="rest_code_421630cff8134a96b6b6bb91762392f9-9"></a>        <span class="n">redis_url</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s">'REDIS_URL'</span><span class="p">]</span>
-<a name="rest_code_421630cff8134a96b6b6bb91762392f9-10"></a>        <span class="n">redis_connection</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">_redis_connection</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">from_url</span><span class="p">(</span><span class="n">redis_url</span><span class="p">)</span>
-<a name="rest_code_421630cff8134a96b6b6bb91762392f9-11"></a>    <span class="k">return</span> <span class="n">redis_connection</span>
-<a name="rest_code_421630cff8134a96b6b6bb91762392f9-12"></a>
-<a name="rest_code_421630cff8134a96b6b6bb91762392f9-13"></a>
-<a name="rest_code_421630cff8134a96b6b6bb91762392f9-14"></a><span class="nd">@bp.before_request</span>
-<a name="rest_code_421630cff8134a96b6b6bb91762392f9-15"></a><span class="k">def</span> <span class="nf">push_rq_connection</span><span class="p">():</span>
-<a name="rest_code_421630cff8134a96b6b6bb91762392f9-16"></a>    <span class="n">push_connection</span><span class="p">(</span><span class="n">get_redis_connection</span><span class="p">())</span>
-<a name="rest_code_421630cff8134a96b6b6bb91762392f9-17"></a>
-<a name="rest_code_421630cff8134a96b6b6bb91762392f9-18"></a>
-<a name="rest_code_421630cff8134a96b6b6bb91762392f9-19"></a><span class="nd">@bp.teardown_request</span>
-<a name="rest_code_421630cff8134a96b6b6bb91762392f9-20"></a><span class="k">def</span> <span class="nf">pop_rq_connection</span><span class="p">(</span><span class="n">exception</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-<a name="rest_code_421630cff8134a96b6b6bb91762392f9-21"></a>    <span class="n">pop_connection</span><span class="p">()</span>
-</pre>
-<p>This makes it easy to create a <em>Queue</em> in a request or application context.</p>
-<p>The <cite>get_redis_connection</cite> function gets the Redis connection and stores it in the <em>flask.g</em> object.
-This is the same as what is explained for SQLite <a class="reference external" href="http://flask.pocoo.org/docs/0.11/patterns/sqlite3/">here</a>.</p>
-<p>With that in place, it's easy to enqueue a job. Here are the changes to the <em>run_task</em> function:</p>
-<pre class="code diff"><a name="rest_code_f4c3d55b47f3448e996acf57be7eb3fe-1"></a> @bp.route('/_run_task', methods=['POST'])
-<a name="rest_code_f4c3d55b47f3448e996acf57be7eb3fe-2"></a> def run_task():
-<a name="rest_code_f4c3d55b47f3448e996acf57be7eb3fe-3"></a>     task = request.form.get('task')
-<a name="rest_code_f4c3d55b47f3448e996acf57be7eb3fe-4"></a><span class="gd">-    try:</span>
-<a name="rest_code_f4c3d55b47f3448e996acf57be7eb3fe-5"></a><span class="gd">-        result = tasks.run(task)</span>
-<a name="rest_code_f4c3d55b47f3448e996acf57be7eb3fe-6"></a><span class="gd">-    except Exception as e:</span>
-<a name="rest_code_f4c3d55b47f3448e996acf57be7eb3fe-7"></a><span class="gd">-        return jsonify({'message': 'Task failed: {}'.format(e)}), 500</span>
-<a name="rest_code_f4c3d55b47f3448e996acf57be7eb3fe-8"></a><span class="gd">-    return jsonify({'result': result})</span>
-<a name="rest_code_f4c3d55b47f3448e996acf57be7eb3fe-9"></a><span class="gi">+    q = Queue()</span>
-<a name="rest_code_f4c3d55b47f3448e996acf57be7eb3fe-10"></a><span class="gi">+    job = q.enqueue(tasks.run, task)</span>
-<a name="rest_code_f4c3d55b47f3448e996acf57be7eb3fe-11"></a><span class="gi">+    return jsonify({'job_id': job.get_id()})</span>
-</pre>
-<p>We enqeue our task and just return the job id for now.</p>
-<p>Docker and <cite>docker-compose</cite> are now gonna come in handy to start eveything
-(Redis, our web app and a worker). We just have to add the following to our
-<cite>docker-compose.yml</cite> file:</p>
-<pre class="code diff"><a name="rest_code_4cb4fbd51594485fb8793287b1c1a09e-1"></a> - "5000:5000"
-<a name="rest_code_4cb4fbd51594485fb8793287b1c1a09e-2"></a> volumes:
-<a name="rest_code_4cb4fbd51594485fb8793287b1c1a09e-3"></a> - .:/app
-<a name="rest_code_4cb4fbd51594485fb8793287b1c1a09e-4"></a><span class="gi">+    depends_on:</span>
-<a name="rest_code_4cb4fbd51594485fb8793287b1c1a09e-5"></a><span class="gi">+    - redis</span>
-<a name="rest_code_4cb4fbd51594485fb8793287b1c1a09e-6"></a><span class="gi">+  worker:</span>
-<a name="rest_code_4cb4fbd51594485fb8793287b1c1a09e-7"></a><span class="gi">+    image: flaskrqexample</span>
-<a name="rest_code_4cb4fbd51594485fb8793287b1c1a09e-8"></a><span class="gi">+    container_name: flaskrqexample_worker</span>
-<a name="rest_code_4cb4fbd51594485fb8793287b1c1a09e-9"></a><span class="gi">+    environment:</span>
-<a name="rest_code_4cb4fbd51594485fb8793287b1c1a09e-10"></a><span class="gi">+      LOCAL_SETTINGS: /app/settings.cfg</span>
-<a name="rest_code_4cb4fbd51594485fb8793287b1c1a09e-11"></a><span class="gi">+    command: python manage.py runworker</span>
-<a name="rest_code_4cb4fbd51594485fb8793287b1c1a09e-12"></a><span class="gi">+    volumes:</span>
-<a name="rest_code_4cb4fbd51594485fb8793287b1c1a09e-13"></a><span class="gi">+    - .:/app</span>
-<a name="rest_code_4cb4fbd51594485fb8793287b1c1a09e-14"></a><span class="gi">+    depends_on:</span>
-<a name="rest_code_4cb4fbd51594485fb8793287b1c1a09e-15"></a><span class="gi">+    - redis</span>
-<a name="rest_code_4cb4fbd51594485fb8793287b1c1a09e-16"></a><span class="gi">+  redis:</span>
-<a name="rest_code_4cb4fbd51594485fb8793287b1c1a09e-17"></a><span class="gi">+    image: redis:3.2</span>
-</pre>
-<p>Don't forget to add <em>redis</em> and <em>rq</em> to your <cite>environment.yml</cite> file!</p>
-<pre class="code diff"><a name="rest_code_98587ef2bae149c2abb443d251a26903-1"></a>   - dominate==2.2.1
-<a name="rest_code_98587ef2bae149c2abb443d251a26903-2"></a>   - flask-bootstrap==3.3.6.0
-<a name="rest_code_98587ef2bae149c2abb443d251a26903-3"></a>   - flask-script==2.0.5
-<a name="rest_code_98587ef2bae149c2abb443d251a26903-4"></a><span class="gi">+  - redis==2.10.5</span>
-<a name="rest_code_98587ef2bae149c2abb443d251a26903-5"></a><span class="gi">+  - rq==0.6.0</span>
-<a name="rest_code_98587ef2bae149c2abb443d251a26903-6"></a>   - visitor==0.1.3
-</pre>
-<p>Rebuild the docker image and start the app:</p>
-<pre class="literal-block">
-$ git checkout 437e710df3df0dd4b153f20027f5f00270b2e1a3
-$ docker rm flaskrqexample_web
-$ docker-compose build
-$ docker-compose up
-</pre>
-<p>OK, nice, we started a job in the background! This is fine to run a task
-and forget about it (like sending an e-mail). But how do we get the result back?</p>
-</div>
-<div class="section" id="fourth-version-poll-job-status-and-get-the-result">
-<h2>Fourth version: poll job status and get the result</h2>
-<p>This is the part I have been missing for some time. But, as often, it's not difficult when you have seen it.
-When launching the job, we return an url to check the status of the job.
-The trick is to periodically call back the same function until the job is finished or failed.</p>
-<p>On the server side, the <cite>job_status</cite> endpoint uses the job_id to retrieve
-the job and to get its status and result.</p>
-<pre class="code python"><a name="rest_code_3ffa05066a23423193fc66827e1334df-1"></a><span class="nd">@bp.route</span><span class="p">(</span><span class="s">'/status/&lt;job_id&gt;'</span><span class="p">)</span>
-<a name="rest_code_3ffa05066a23423193fc66827e1334df-2"></a><span class="k">def</span> <span class="nf">job_status</span><span class="p">(</span><span class="n">job_id</span><span class="p">):</span>
-<a name="rest_code_3ffa05066a23423193fc66827e1334df-3"></a>    <span class="n">q</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
-<a name="rest_code_3ffa05066a23423193fc66827e1334df-4"></a>    <span class="n">job</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">fetch_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
-<a name="rest_code_3ffa05066a23423193fc66827e1334df-5"></a>    <span class="k">if</span> <span class="n">job</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-<a name="rest_code_3ffa05066a23423193fc66827e1334df-6"></a>        <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s">'status'</span><span class="p">:</span> <span class="s">'unknown'</span><span class="p">}</span>
-<a name="rest_code_3ffa05066a23423193fc66827e1334df-7"></a>    <span class="k">else</span><span class="p">:</span>
-<a name="rest_code_3ffa05066a23423193fc66827e1334df-8"></a>        <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
-<a name="rest_code_3ffa05066a23423193fc66827e1334df-9"></a>            <span class="s">'status'</span><span class="p">:</span> <span class="n">job</span><span class="o">.</span><span class="n">get_status</span><span class="p">(),</span>
-<a name="rest_code_3ffa05066a23423193fc66827e1334df-10"></a>            <span class="s">'result'</span><span class="p">:</span> <span class="n">job</span><span class="o">.</span><span class="n">result</span><span class="p">,</span>
-<a name="rest_code_3ffa05066a23423193fc66827e1334df-11"></a>        <span class="p">}</span>
-<a name="rest_code_3ffa05066a23423193fc66827e1334df-12"></a>        <span class="k">if</span> <span class="n">job</span><span class="o">.</span><span class="n">is_failed</span><span class="p">:</span>
-<a name="rest_code_3ffa05066a23423193fc66827e1334df-13"></a>            <span class="n">response</span><span class="p">[</span><span class="s">'message'</span><span class="p">]</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">exc_info</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">'</span><span class="se">\n</span><span class="s">'</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<a name="rest_code_3ffa05066a23423193fc66827e1334df-14"></a>    <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-<a name="rest_code_3ffa05066a23423193fc66827e1334df-15"></a>
-<a name="rest_code_3ffa05066a23423193fc66827e1334df-16"></a>
-<a name="rest_code_3ffa05066a23423193fc66827e1334df-17"></a><span class="nd">@bp.route</span><span class="p">(</span><span class="s">'/_run_task'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s">'POST'</span><span class="p">])</span>
-<a name="rest_code_3ffa05066a23423193fc66827e1334df-18"></a><span class="k">def</span> <span class="nf">run_task</span><span class="p">():</span>
-<a name="rest_code_3ffa05066a23423193fc66827e1334df-19"></a>    <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">'task'</span><span class="p">)</span>
-<a name="rest_code_3ffa05066a23423193fc66827e1334df-20"></a>    <span class="n">q</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
-<a name="rest_code_3ffa05066a23423193fc66827e1334df-21"></a>    <span class="n">job</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">tasks</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
-<a name="rest_code_3ffa05066a23423193fc66827e1334df-22"></a>    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({}),</span> <span class="mi">202</span><span class="p">,</span> <span class="p">{</span><span class="s">'Location'</span><span class="p">:</span> <span class="n">url_for</span><span class="p">(</span><span class="s">'main.job_status'</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">job</span><span class="o">.</span><span class="n">get_id</span><span class="p">())}</span>
-</pre>
-<p>The <cite>run_task</cite> function returns an empty response with the <a class="reference external" href="https://httpstatuses.com/202">202</a> status
-code. We use the <em>Location</em> response-header field to pass the <cite>job_status</cite> URL to the
-client.</p>
-<p>On the client side, we retrieve the URL from the header and call the new
-<cite>check_job_status</cite> function.</p>
-<pre class="code diff"><a name="rest_code_41e5ebfa9b9640248584c110e124241c-1"></a><span class="gu">@@ -28,8 +53,11 @@ $(document).ready(function() {</span>
-<a name="rest_code_41e5ebfa9b9640248584c110e124241c-2"></a>       data: $("#taskForm").serialize(),
-<a name="rest_code_41e5ebfa9b9640248584c110e124241c-3"></a>       method: "POST",
-<a name="rest_code_41e5ebfa9b9640248584c110e124241c-4"></a>       dataType: "json",
-<a name="rest_code_41e5ebfa9b9640248584c110e124241c-5"></a><span class="gd">-      success: function(data) {</span>
-<a name="rest_code_41e5ebfa9b9640248584c110e124241c-6"></a><span class="gd">-        flash_alert("Job " + data.job_id + " started...", "info", false);</span>
-<a name="rest_code_41e5ebfa9b9640248584c110e124241c-7"></a><span class="gi">+      success: function(data, status, request) {</span>
-<a name="rest_code_41e5ebfa9b9640248584c110e124241c-8"></a><span class="gi">+        $("#submit").attr("disabled", "disabled");</span>
-<a name="rest_code_41e5ebfa9b9640248584c110e124241c-9"></a><span class="gi">+        flash_alert("Running " + task + "...", "info");</span>
-<a name="rest_code_41e5ebfa9b9640248584c110e124241c-10"></a><span class="gi">+        var status_url = request.getResponseHeader('Location');</span>
-<a name="rest_code_41e5ebfa9b9640248584c110e124241c-11"></a><span class="gi">+        check_job_status(status_url);</span>
-<a name="rest_code_41e5ebfa9b9640248584c110e124241c-12"></a>       },
-<a name="rest_code_41e5ebfa9b9640248584c110e124241c-13"></a>       error: function(jqXHR, textStatus, errorThrown) {
-<a name="rest_code_41e5ebfa9b9640248584c110e124241c-14"></a>         flash_alert("Failed to start " + task, "danger");
-</pre>
-<p>We use <cite>setTimeout</cite> to call back the same function until the job is done (finished
-or failed).</p>
-<pre class="code javascript"><a name="rest_code_c7b395efc6774b26972f681db9bd3ece-1"></a><span class="kd">function</span> <span class="nx">check_job_status</span><span class="p">(</span><span class="nx">status_url</span><span class="p">)</span> <span class="p">{</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-2"></a>  <span class="nx">$</span><span class="p">.</span><span class="nx">getJSON</span><span class="p">(</span><span class="nx">status_url</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-3"></a>    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-4"></a>    <span class="k">switch</span> <span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">status</span><span class="p">)</span> <span class="p">{</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-5"></a>      <span class="k">case</span> <span class="s2">"unknown"</span><span class="o">:</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-6"></a>          <span class="nx">flash_alert</span><span class="p">(</span><span class="s2">"Unknown job id"</span><span class="p">,</span> <span class="s2">"danger"</span><span class="p">);</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-7"></a>          <span class="nx">$</span><span class="p">(</span><span class="s2">"#submit"</span><span class="p">).</span><span class="nx">removeAttr</span><span class="p">(</span><span class="s2">"disabled"</span><span class="p">);</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-8"></a>          <span class="k">break</span><span class="p">;</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-9"></a>      <span class="k">case</span> <span class="s2">"finished"</span><span class="o">:</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-10"></a>          <span class="nx">flash_alert</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">result</span><span class="p">,</span> <span class="s2">"success"</span><span class="p">);</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-11"></a>          <span class="nx">$</span><span class="p">(</span><span class="s2">"#submit"</span><span class="p">).</span><span class="nx">removeAttr</span><span class="p">(</span><span class="s2">"disabled"</span><span class="p">);</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-12"></a>          <span class="k">break</span><span class="p">;</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-13"></a>      <span class="k">case</span> <span class="s2">"failed"</span><span class="o">:</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-14"></a>          <span class="nx">flash_alert</span><span class="p">(</span><span class="s2">"Job failed: "</span> <span class="o">+</span> <span class="nx">data</span><span class="p">.</span><span class="nx">message</span><span class="p">,</span> <span class="s2">"danger"</span><span class="p">);</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-15"></a>          <span class="nx">$</span><span class="p">(</span><span class="s2">"#submit"</span><span class="p">).</span><span class="nx">removeAttr</span><span class="p">(</span><span class="s2">"disabled"</span><span class="p">);</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-16"></a>          <span class="k">break</span><span class="p">;</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-17"></a>      <span class="k">default</span><span class="o">:</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-18"></a>        <span class="c1">// queued/started/deferred</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-19"></a>        <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-20"></a>          <span class="nx">check_job_status</span><span class="p">(</span><span class="nx">status_url</span><span class="p">);</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-21"></a>        <span class="p">},</span> <span class="mi">500</span><span class="p">);</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-22"></a>    <span class="p">}</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-23"></a>  <span class="p">});</span>
-<a name="rest_code_c7b395efc6774b26972f681db9bd3ece-24"></a><span class="p">}</span>
-</pre>
-<p>Let's checkout this commit and run our app again:</p>
-<pre class="literal-block">
-$ git checkout da8360aefb222afc17417a518ac25029566071d6
-$ docker rm flaskrqexample_web
-$ docker rm flaskrqexample_worker
-$ docker-compose up
-</pre>
-<p>Try submitting some tasks. This time you can open another window and the
-server will answer even when a task is running :-)
-You can open a console in your browser to see the polling and the response
-from the <cite>job_status</cite> function.
-Note that we only have one worker, so if you start a second task, it will be enqueued
-and run only when the first one is done.</p>
-</div>
-<div class="section" id="conclusion">
-<h2>Conclusion</h2>
-<p>Using <a class="reference external" href="http://python-rq.org">RQ</a> with <a class="reference external" href="http://flask.pocoo.org">Flask</a> isn't that difficult. So no need to block the server to
-get the result of a long task.
-There are a few more things to say, but this post starts to be a bit long,
-so I'll keep that for another time.</p>
-<p>Thanks again to <a class="reference external" href="http://blog.miguelgrinberg.com/">Miguel Grinberg</a>
-and all his posts about Flask!</p>
-</div>
-</div>
-    </div>
     </article>
 </div>
 
@@ -3212,9 +3300,9 @@ and all his posts about Flask!</p>
 <li class="next">
                 <a href="index-1.html" rel="next">Older posts</a>
             </li>
-        </ul></nav><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> </script><script type="text/x-mathjax-config">
-            MathJax.Hub.Config({tex2jax: {inlineMath: [['$latex ','$'], ['\\(','\\)']]}});
-            </script>
+        </ul></nav><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity="sha256-SDRP1VVYu+tgAGKhddBSl5+ezofHKZeI+OzxakbIe/Y=" crossorigin="anonymous"></script><script type="text/x-mathjax-config">
+        MathJax.Hub.Config({tex2jax: {inlineMath: [['$latex ','$'], ['\\(','\\)']]}});
+        </script>
 </div>
         <!--End of body content-->
 

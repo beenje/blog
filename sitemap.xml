@@ -19,7 +19,7 @@
  </url>
  <url>
   <loc>http://beenje.github.io/blog/archive.html</loc>
-  <lastmod>2017-06-08T19:49:00Z</lastmod>
+  <lastmod>2017-07-18T20:48:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/</loc>
@@ -195,7 +195,7 @@
  </url>
  <url>
   <loc>http://beenje.github.io/blog/index-1.html</loc>
-  <lastmod>2017-06-08T19:49:00Z</lastmod>
+  <lastmod>2017-07-18T20:48:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/listings/</loc>
@@ -220,6 +220,10 @@
  <url>
   <loc>http://beenje.github.io/blog/posts/dockerfile-anti-patterns-and-best-practices/</loc>
   <lastmod>2017-03-17T20:54:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</loc>
+  <lastmod>2017-07-14T20:46:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/gitlab-ci-and-conda/</loc>
