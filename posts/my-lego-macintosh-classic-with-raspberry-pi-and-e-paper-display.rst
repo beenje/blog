@@ -223,7 +223,7 @@ To run the playbook, clone the repository https://github.com/beenje/legomac::
 
     $ git clone https://github.com/beenje/legomac.git
     $ cd legomac
-    $ ansible-playbook -i hosts -k playbook.yml
+    $ ansible-playbook -i hosts -k epd-demo.yml
 
 That's it!
 
@@ -262,6 +262,7 @@ Next
 
 I didn't build this LEGO Macintosh to use it as a simple clock :-)
 I have a few ideas. I'll start with a small web server so that I can receive and display messages.
-That will be the subject of another blog post!
+That will be the subject of another `blog post
+</posts/experimenting-with-asyncio-on-a-raspberry-pi>`_!
 
 .. _Etcher: https://etcher.io
