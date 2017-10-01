@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>Tchut-Tchut Blog (Posts about python)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/python.xml" type="application/rss+xml" rel="self"></atom:link><language>en</language><lastBuildDate>Tue, 18 Jul 2017 21:48:32 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Experimenting with asyncio on a Raspberry Pi</title><link>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In a previous post, I described how I built a &lt;a class="reference external" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display"&gt;LEGO Macintosh Classic with
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>Tchut-Tchut Blog (Posts about python)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link rel="self" href="http://beenje.github.io/blog/categories/python.xml" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Sun, 01 Oct 2017 05:48:30 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Experimenting with asyncio on a Raspberry Pi</title><link>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In a previous post, I described how I built a &lt;a class="reference external" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display"&gt;LEGO Macintosh Classic with
 a Raspberry Pi and e-paper display&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;For testing purpose I installed the clock demo which is part of the
 &lt;a class="reference external" href="https://github.com/embeddedartists/gratis"&gt;Embedded Artists repository&lt;/a&gt;.
@@ -873,7 +873,7 @@ I'm more a command line guy and I have used &lt;cite&gt;dd&lt;/cite&gt; many tim
 It's easy to install and use.&lt;/p&gt;
 &lt;ol class="arabic simple"&gt;
 &lt;li&gt;Download and install &lt;a class="reference external" href="https://etcher.io"&gt;Etcher&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Download &lt;a class="reference external" href="https://www.raspberrypi.org/downloads/raspbian/"&gt;Raspbian Jessie Lite image&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Download &lt;a class="reference external" href="https://www.raspberrypi.org/downloads/raspbian/"&gt;Raspbian Strecth Lite image&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Flash the SD card using Etcher&lt;/li&gt;
 &lt;li&gt;Mount the SD card to configure it:&lt;/li&gt;
 &lt;/ol&gt;
@@ -886,7 +886,10 @@ $ cd /Volumes/boot
 $ touch ssh
 
 # Create the file wpa_supplicant.conf with your wifi settings
+# Note that for Raspbian Stretch, you need the first line
+# (ctrl_interface...)! This was not the case for Jessie.
 $  cat &amp;lt;&amp;lt; EOF &amp;gt; wpa_supplicant.conf
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 network={
     ssid="MyWifiNetwork"
     psk="password"
@@ -979,17 +982,17 @@ Thanks again to @mkennedy for the stickers!&lt;/p&gt;
 &lt;a class="reference external image-reference" href="http://beenje.github.io/blog/images/legomac/talkpythontome.jpg"&gt;&lt;img alt="/images/legomac/talkpythontome.thumbnail.jpg" src="http://beenje.github.io/blog/images/legomac/talkpythontome.thumbnail.jpg"&gt;&lt;/a&gt;
 &lt;p&gt;Below are a few pictures. You can see more on &lt;a class="reference external" href="https://flic.kr/s/aHskVAadfo"&gt;flickr&lt;/a&gt;.&lt;/p&gt;
 
-&lt;div id="slides_d04d6efa25424750910a67594a0bb78b" class="carousel slide"&gt;
+&lt;div id="slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" class="carousel slide"&gt;
     &lt;ol class="carousel-indicators"&gt;
-            &lt;li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="0" class="active"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="1"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="2"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="3"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="4"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="5"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="6"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="7"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="8"&gt;
+            &lt;li data-target="#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide-to="0" class="active"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide-to="1"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide-to="2"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide-to="3"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide-to="4"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide-to="5"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide-to="6"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide-to="7"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide-to="8"&gt;
     &lt;/li&gt;&lt;/ol&gt;
     &lt;div class="carousel-inner"&gt;
                 &lt;div class="item active"&gt;&lt;img src="http://beenje.github.io/blog/images/legomac/legomac.jpg" alt="" style="margin: 0 auto 0 auto;"&gt;&lt;/div&gt;
@@ -1002,8 +1005,8 @@ Thanks again to @mkennedy for the stickers!&lt;/p&gt;
                 &lt;div class="item"&gt;&lt;img src="http://beenje.github.io/blog/images/legomac/button_front.jpg" alt="" style="margin: 0 auto 0 auto;"&gt;&lt;/div&gt;
                 &lt;div class="item"&gt;&lt;img src="http://beenje.github.io/blog/images/legomac/button_top.jpg" alt="" style="margin: 0 auto 0 auto;"&gt;&lt;/div&gt;
     &lt;/div&gt;
-    &lt;a class="left carousel-control" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_d04d6efa25424750910a67594a0bb78b" data-slide="prev"&gt;&lt;span class="icon-prev"&gt;&lt;/span&gt;&lt;/a&gt;
-    &lt;a class="right carousel-control" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_d04d6efa25424750910a67594a0bb78b" data-slide="next"&gt;&lt;span class="icon-next"&gt;&lt;/span&gt;&lt;/a&gt;
+    &lt;a class="left carousel-control" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide="prev"&gt;&lt;span class="icon-prev"&gt;&lt;/span&gt;&lt;/a&gt;
+    &lt;a class="right carousel-control" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide="next"&gt;&lt;span class="icon-next"&gt;&lt;/span&gt;&lt;/a&gt;
 &lt;/div&gt;
 
 &lt;/div&gt;

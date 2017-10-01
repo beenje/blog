@@ -134,7 +134,7 @@ I'm more a command line guy and I have used `dd` many times. But I was pleasantl
 It's easy to install and use.
 
 1. Download and install Etcher_
-2. Download `Raspbian Jessie Lite image <https://www.raspberrypi.org/downloads/raspbian/>`_
+2. Download `Raspbian Strecth Lite image <https://www.raspberrypi.org/downloads/raspbian/>`_
 3. Flash the SD card using Etcher
 4. Mount the SD card to configure it:
 
@@ -148,7 +148,10 @@ It's easy to install and use.
     $ touch ssh
 
     # Create the file wpa_supplicant.conf with your wifi settings
+    # Note that for Raspbian Stretch, you need the first line
+    # (ctrl_interface...)! This was not the case for Jessie.
     $  cat << EOF > wpa_supplicant.conf
+    ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
     network={
         ssid="MyWifiNetwork"
         psk="password"

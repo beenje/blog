@@ -1000,7 +1000,7 @@ It's easy to install and use.</p>
 <ol class="arabic simple">
 <li>Download and install <a class="reference external" href="https://etcher.io">Etcher</a>
 </li>
-<li>Download <a class="reference external" href="https://www.raspberrypi.org/downloads/raspbian/">Raspbian Jessie Lite image</a>
+<li>Download <a class="reference external" href="https://www.raspberrypi.org/downloads/raspbian/">Raspbian Strecth Lite image</a>
 </li>
 <li>Flash the SD card using Etcher</li>
 <li>Mount the SD card to configure it:</li>
@@ -1014,7 +1014,10 @@ $ cd /Volumes/boot
 $ touch ssh
 
 # Create the file wpa_supplicant.conf with your wifi settings
+# Note that for Raspbian Stretch, you need the first line
+# (ctrl_interface...)! This was not the case for Jessie.
 $  cat &lt;&lt; EOF &gt; wpa_supplicant.conf
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
 network={
     ssid="MyWifiNetwork"
     psk="password"
@@ -1107,25 +1110,25 @@ Thanks again to @mkennedy for the stickers!</p>
 <a class="reference external image-reference" href="images/legomac/talkpythontome.jpg"><img alt="/images/legomac/talkpythontome.thumbnail.jpg" src="images/legomac/talkpythontome.thumbnail.jpg"></a>
 <p>Below are a few pictures. You can see more on <a class="reference external" href="https://flic.kr/s/aHskVAadfo">flickr</a>.</p>
 
-<div id="slides_d04d6efa25424750910a67594a0bb78b" class="carousel slide">
+<div id="slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" class="carousel slide">
     <ol class="carousel-indicators">
-<li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="0" class="active">
+<li data-target="#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide-to="0" class="active">
             </li>
-<li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="1">
+<li data-target="#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide-to="1">
             </li>
-<li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="2">
+<li data-target="#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide-to="2">
             </li>
-<li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="3">
+<li data-target="#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide-to="3">
             </li>
-<li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="4">
+<li data-target="#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide-to="4">
             </li>
-<li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="5">
+<li data-target="#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide-to="5">
             </li>
-<li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="6">
+<li data-target="#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide-to="6">
             </li>
-<li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="7">
+<li data-target="#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide-to="7">
             </li>
-<li data-target="#slides_d04d6efa25424750910a67594a0bb78b" data-slide-to="8">
+<li data-target="#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide-to="8">
     </li>
 </ol>
 <div class="carousel-inner">
@@ -1139,8 +1142,8 @@ Thanks again to @mkennedy for the stickers!</p>
                 <div class="item"><img src="images/legomac/button_front.jpg" alt="" style="margin: 0 auto 0 auto;"></div>
                 <div class="item"><img src="images/legomac/button_top.jpg" alt="" style="margin: 0 auto 0 auto;"></div>
     </div>
-    <a class="left carousel-control" href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_d04d6efa25424750910a67594a0bb78b" data-slide="prev"><span class="icon-prev"></span></a>
-    <a class="right carousel-control" href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_d04d6efa25424750910a67594a0bb78b" data-slide="next"><span class="icon-next"></span></a>
+    <a class="left carousel-control" href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide="prev"><span class="icon-prev"></span></a>
+    <a class="right carousel-control" href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_f2d6b44ba75b4ba09eb37689e4ae5e3e" data-slide="next"><span class="icon-next"></span></a>
 </div>
 
 </div>
