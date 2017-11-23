@@ -241,5 +241,5 @@ If you use docker_, you should really give traefik_ a try!
 .. _flask: http://flask.pocoo.org
 .. _nginx: https://nginx.org/en/
 .. _docker: https://www.docker.com
-.. _traefik: https://traefik.iot remote add origin
+.. _traefik: https://traefik.io
 .. _Ansible: http://docs.ansible.com/ansible/

@@ -121,7 +121,7 @@ I was looking for a way to automatically configure Let's Encrypt.
 I initially found <a class="reference external" href="https://github.com/jwilder/nginx-proxy">nginx-proxy</a>
 and <a class="reference external" href="https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion">docker-letsencrypt-nginx-proxy-companion</a>. This
 was interesting but wasn't that straight forward to setup.</p>
-<p>I then discovered <a class="reference external" href="https://traefik.iotremoteaddorigin">traefik</a>: "a modern HTTP reverse proxy
+<p>I then discovered <a class="reference external" href="https://traefik.io">traefik</a>: "a modern HTTP reverse proxy
 and load balancer made to deploy microservices with ease". And that's
 really the case! I've used it to deploy several applications and I
 was impressed. It's written in go, so single binary. There is also a tiny docker
@@ -298,14 +298,14 @@ We created a specific <cite>traefik_network</cite>. Our docker containers will h
 Note that the <cite>traefik.port</cite> label is only required if the container exposes multiple ports.
 It's thus not needed in our example.</p>
 <p>That's basically it. As you can see, <a class="reference external" href="https://www.docker.com">docker</a> and <a class="reference external" href="http://docs.ansible.com/ansible/">Ansible</a> make the deployment easy.
-And <a class="reference external" href="https://traefik.iotremoteaddorigin">traefik</a> takes care of the Let's Encrypt certificate.</p>
+And <a class="reference external" href="https://traefik.io">traefik</a> takes care of the Let's Encrypt certificate.</p>
 </div>
 <div class="section" id="conclusion">
 <h2>Conclusion</h2>
 <p>Traefik comes with many other features and is well <a class="reference external" href="https://docs.traefik.io">documented</a>.
 You should check <a class="reference external" href="https://docs.traefik.io/#docker">this Docker example</a> that demonstrates load-balancing.
 Really cool.</p>
-<p>If you use <a class="reference external" href="https://www.docker.com">docker</a>, you should really give <a class="reference external" href="https://traefik.iotremoteaddorigin">traefik</a> a try!</p>
+<p>If you use <a class="reference external" href="https://www.docker.com">docker</a>, you should really give <a class="reference external" href="https://traefik.io">traefik</a> a try!</p>
 </div>
 </div>
     </div>
