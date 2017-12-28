@@ -13,7 +13,7 @@
 <link rel="alternate" type="application/rss+xml" title="RSS" href="rss.xml">
 <link rel="canonical" href="http://beenje.github.io/blog/">
 <link rel="next" href="index-1.html" type="text/html">
-<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/experimenting-with-asyncio-on-a-raspberry-pi/" type="text/html">
+<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/logging-to-a-tkinter-scrolledtext-widget/" type="text/html">
 </head>
 <body>
 <a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
@@ -69,7 +69,275 @@
 
     
 <div class="postindex">
-    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/experimenting-with-asyncio-on-a-raspberry-pi/" class="u-url">Experimenting with asyncio on a Raspberry Pi</a></h1>
+    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/logging-to-a-tkinter-scrolledtext-widget/" class="u-url">Logging to a Tkinter ScrolledText Widget</a></h1>
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                Benjamin Bertrand
+            </span></p>
+            <p class="dateline"><a href="posts/logging-to-a-tkinter-scrolledtext-widget/" rel="bookmark"><time class="published dt-published" datetime="2017-12-28T21:31:25+01:00" title="2017-12-28 21:31">2017-12-28 21:31</time></a></p>
+                <p class="commentline">
+        
+    <a href="posts/logging-to-a-tkinter-scrolledtext-widget/#disqus_thread" data-disqus-identifier="cache/posts/logging-to-a-tkinter-scrolledtext-widget.html">Comments</a>
+
+
+        </p>
+</div>
+    </header><div class="e-content entry-content">
+    <div>
+<p>I've been programming in Python for almost 10 years.
+I did many CLI tools, some web applications (mainly using <a class="reference external" href="http://flask.pocoo.org">Flask</a>),
+but I had never built a GUI.</p>
+<p><a class="reference external" href="https://riverbankcomputing.com/software/pyqt/intro">PyQt</a> seems to be one of the most popular framework. I had a look at it but I was not hooked.
+It looks like you really need to embrace the Qt world. You shouldn't try to use
+<a class="reference external" href="https://docs.python.org/3/library/threading.html#threading.Thread">Python Thread</a> but use QtThread instead.
+Need <a class="reference external" href="http://pyserial.readthedocs.io/en/latest/">pySerial</a>? Wait there is QtSerial. I guess this can be a pro or con
+depending on your background.</p>
+<p>I looked more in <a class="reference external" href="https://docs.python.org/3.6/library/tkinter.html">tkinter</a>. I must say that in my mind it was a bit old and wasn't looking very modern.
+I didn't know that <a class="reference external" href="http://www.tkdocs.com">Tk 8.5</a> came with an entirely new themed widget set to address the dated appearance.
+The <a class="reference external" href="http://www.tkdocs.com/tutorial/index.html">official tutorial</a> is quite nice and comes with code examples in different languages (including Python).</p>
+<p>The GUI I needed to write wasn't very advanced.
+I wanted to have a kind of console where to display log messages.</p>
+<div class="section" id="texthandler">
+<h2>TextHandler</h2>
+<p>I quickly found an <a class="reference external" href="https://gist.github.com/moshekaplan/c425f861de7bbf28ef06">example</a> on
+<a class="reference external" href="https://stackoverflow.com/questions/13318742/python-logging-to-tkinter-text-widget">StackOverflow</a>
+to send Python logging to a tkinter Text widget:</p>
+<pre class="literal-block">
+class TextHandler(logging.Handler):
+    """This class allows you to log to a Tkinter Text or ScrolledText widget"""
+
+    def __init__(self, text):
+        # run the regular Handler __init__
+        logging.Handler.__init__(self)
+        # Store a reference to the Text it will log to
+        self.text = text
+
+    def emit(self, record):
+        msg = self.format(record)
+
+        def append():
+            self.text.configure(state='normal')
+            self.text.insert(tk.END, msg + '\n')
+            self.text.configure(state='disabled')
+            # Autoscroll to the bottom
+            self.text.yview(tk.END)
+        # This is necessary because we can't modify the Text from other threads
+        self.text.after(0, append)
+</pre>
+<p>This looks nice but doesn't work if you try to send a log message from another thread
+(despite the comment)...
+because we are passing the text widget with the logging handler to the other thread.
+And you can only write to a tkinter widget from the main thread.</p>
+<p>This is explained in <a class="reference external" href="https://stackoverflow.com/questions/43909849/tkinter-python-crashes-on-new-thread-trying-to-log-on-main-thread">another StackOverflow question</a>
+but I didn't like the proposed solution.
+If you implement specific methods as explained (<cite>put_line_to_queue</cite>), you lose the advantage of just calling the log function from different parts of the program.</p>
+</div>
+<div class="section" id="queuehandler">
+<h2>QueueHandler</h2>
+<p>Using a <a class="reference external" href="https://docs.python.org/3/library/queue.html">Queue</a> is indeed the way to share data between threads.
+So I implemented a simple QueueHandler:</p>
+<pre class="literal-block">
+class QueueHandler(logging.Handler):
+    """Class to send logging records to a queue
+
+    It can be used from different threads
+    """
+
+    def __init__(self, log_queue):
+        super().__init__()
+        self.log_queue = log_queue
+
+    def emit(self, record):
+        self.log_queue.put(record)
+</pre>
+<p>The handler only puts the message in a queue.
+I created a <cite>ConsoleUi</cite> class to poll the messages from the queue and display them in a scrolled
+text widget:</p>
+<pre class="literal-block">
+logger = logging.getLogger(__name__)
+
+
+class ConsoleUi:
+    """Poll messages from a logging queue and display them in a scrolled text widget"""
+
+    def __init__(self, frame):
+        self.frame = frame
+        # Create a ScrolledText wdiget
+        self.scrolled_text = ScrolledText(frame, state='disabled', height=12)
+        self.scrolled_text.grid(row=0, column=0, sticky=(N, S, W, E))
+        self.scrolled_text.configure(font='TkFixedFont')
+        self.scrolled_text.tag_config('INFO', foreground='black')
+        self.scrolled_text.tag_config('DEBUG', foreground='gray')
+        self.scrolled_text.tag_config('WARNING', foreground='orange')
+        self.scrolled_text.tag_config('ERROR', foreground='red')
+        self.scrolled_text.tag_config('CRITICAL', foreground='red', underline=1)
+        # Create a logging handler using a queue
+        self.log_queue = queue.Queue()
+        self.queue_handler = QueueHandler(self.log_queue)
+        formatter = logging.Formatter('%(asctime)s: %(message)s')
+        self.queue_handler.setFormatter(formatter)
+        logger.addHandler(self.queue_handler)
+        # Start polling messages from the queue
+        self.frame.after(100, self.poll_log_queue)
+
+    def display(self, record):
+        msg = self.queue_handler.format(record)
+        self.scrolled_text.configure(state='normal')
+        self.scrolled_text.insert(tk.END, msg + '\n', record.levelname)
+        self.scrolled_text.configure(state='disabled')
+        # Autoscroll to the bottom
+        self.scrolled_text.yview(tk.END)
+
+    def poll_log_queue(self):
+        # Check every 100ms if there is a new message in the queue to display
+        while True:
+            try:
+                record = self.log_queue.get(block=False)
+            except queue.Empty:
+                break
+            else:
+                self.display(record)
+        self.frame.after(100, self.poll_log_queue)
+</pre>
+<p>I can safely use the logger from different threads because only a queue is passed with the handler, no tkinter widget.</p>
+<p>To demonstrate that, I created a separate thread to display the time every seconds:</p>
+<pre class="literal-block">
+class Clock(threading.Thread):
+    """Class to display the time every seconds
+
+    Every 5 seconds, the time is displayed using the logging.ERROR level
+    to show that different colors are associated to the log levels
+    """
+
+    def __init__(self):
+        super().__init__()
+        self._stop_event = threading.Event()
+
+    def run(self):
+        logger.debug('Clock started')
+        previous = -1
+        while not self._stop_event.is_set():
+            now = datetime.datetime.now()
+        while not self._stop_event.is_set():
+            now = datetime.datetime.now()
+            if previous != now.second:
+                previous = now.second
+                if now.second % 5 == 0:
+                    level = logging.ERROR
+                else:
+                    level = logging.INFO
+                logger.log(level, now)
+            time.sleep(0.2)
+
+    def stop(self):
+        self._stop_event.set()
+</pre>
+<p>The full code is available on <a class="reference external" href="https://github.com/beenje/tkinter-logging-text-widget">github</a>.
+If you checkout the version v0.1.0 and run it, you'll see something like that:</p>
+<img alt="/images/tkinter/logging_handler.png" src="images/tkinter/logging_handler.png">
+</div>
+<div class="section" id="pane-layout">
+<h2>3-pane layout</h2>
+<p>The <cite>ConsoleUi</cite> class takes a frame as argument. It makes it easy to
+integrate in another layout. Let's see an example with a <a class="reference external" href="http://www.tkdocs.com/tutorial/complex.html#panedwindow">Paned Window
+widget</a> to
+implement the common 3-pane layout.</p>
+<p>Let's first create two new classes. The first one will be used to display
+a simple form to send a message via logging. The user can select the
+desired logging level:</p>
+<pre class="literal-block">
+class FormUi:
+
+    def __init__(self, frame):
+        self.frame = frame
+        # Create a combobbox to select the logging level
+        values = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
+        self.level = tk.StringVar()
+        ttk.Label(self.frame, text='Level:').grid(column=0, row=0, sticky=W)
+        self.combobox = ttk.Combobox(
+            self.frame,
+            textvariable=self.level,
+            width=25,
+            state='readonly',
+            values=values
+        )
+        self.combobox.current(0)
+        self.combobox.grid(column=1, row=0, sticky=(W, E))
+        # Create a text field to enter a message
+        self.message = tk.StringVar()
+        ttk.Label(self.frame, text='Message:').grid(column=0, row=1, sticky=W)
+        ttk.Entry(self.frame, textvariable=self.message, width=25).grid(column=1, row=1, sticky=(W, E))
+        # Add a button to log the message
+        self.button = ttk.Button(self.frame, text='Submit', command=self.submit_message)
+        self.button.grid(column=1, row=2, sticky=W)
+
+    def submit_message(self):
+        # Get the logging level numeric value
+        lvl = getattr(logging, self.level.get())
+        logger.log(lvl, self.message.get())
+</pre>
+<p>The other class is a dummy one to show the 3-pane layout:</p>
+<pre class="literal-block">
+class ThirdUi:
+
+    def __init__(self, frame):
+        self.frame = frame
+        ttk.Label(self.frame, text='This is just an example of a third frame').grid(column=0, row=1, sticky=W)
+        ttk.Label(self.frame, text='With another line here!').grid(column=0, row=4, sticky=W)
+</pre>
+<p>With those new classes, the only change required is in the <cite>App</cite> class to
+create a vertical and horizontal <cite>ttk.PanedWindow</cite>.
+The horizontal pane is splitted in two frames (the form and console):</p>
+<pre class="literal-block">
+ class App:
+
+     def __init__(self, root):
+@@ -109,11 +148,24 @@ class App:
+         root.title('Logging Handler')
+         root.columnconfigure(0, weight=1)
+         root.rowconfigure(0, weight=1)
+-        console_frame = ttk.Frame(root)
+-        console_frame.grid(column=0, row=0, sticky=(N, W, E, S))
++        # Create the panes and frames
++        vertical_pane = ttk.PanedWindow(self.root, orient=VERTICAL)
++        vertical_pane.grid(row=0, column=0, sticky="nsew")
++        horizontal_pane = ttk.PanedWindow(vertical_pane, orient=HORIZONTAL)
++        vertical_pane.add(horizontal_pane)
++        form_frame = ttk.Labelframe(horizontal_pane, text="MyForm")
++        form_frame.columnconfigure(1, weight=1)
++        horizontal_pane.add(form_frame, weight=1)
++        console_frame = ttk.Labelframe(horizontal_pane, text="Console")
+         console_frame.columnconfigure(0, weight=1)
+         console_frame.rowconfigure(0, weight=1)
++        horizontal_pane.add(console_frame, weight=1)
++        third_frame = ttk.Labelframe(vertical_pane, text="Third Frame")
++        vertical_pane.add(third_frame, weight=1)
++        # Initialize all frames
++        self.form = FormUi(form_frame)
+         self.console = ConsoleUi(console_frame)
++        self.third = ThirdUi(third_frame)
+         self.clock = Clock()
+         self.clock.start()
+         self.root.protocol('WM_DELETE_WINDOW', self.quit)
+</pre>
+<p>Note that the <cite>Clock</cite> and <cite>ConsoleUi</cite> classes were left untouched.
+We just pass a <cite>ttk.LabelFrame</cite> instead of a <cite>ttk.Frame</cite> to the <cite>ConsoleUi</cite>
+class.</p>
+<p>This looks more like what could be a real application:</p>
+<img alt="/images/tkinter/paned_window.png" src="images/tkinter/paned_window.png"><p>The main window and the different panes can be resized nicely:</p>
+<img alt="/images/tkinter/paned_window_resized.png" src="images/tkinter/paned_window_resized.png"><p>As already mentioned, the full example is available on <a class="reference external" href="https://github.com/beenje/tkinter-logging-text-widget">github</a>.
+You can checkout the version v0.2.0 to see the 3-pane layout.</p>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion</h2>
+<p>I want to give some credit to <a class="reference external" href="https://docs.python.org/3.6/library/tkinter.html">tkinter</a>. It doesn't have a steep learning curve and allows to easily create some nice GUI.
+You can continue using what you know in Python (Queue, Threads, modules like <a class="reference external" href="http://pyserial.readthedocs.io/en/latest/">pySerial</a>).
+I can only recomment it if you are familiar with Python and want to create a simple GUI.
+That being said, I'll probably try to dive more in <a class="reference external" href="https://riverbankcomputing.com/software/pyqt/intro">PyQt</a> when I have more time.</p>
+</div>
+</div>
+    </div>
+    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/experimenting-with-asyncio-on-a-raspberry-pi/" class="u-url">Experimenting with asyncio on a Raspberry Pi</a></h1>
         <div class="metadata">
             <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
                 Benjamin Bertrand
@@ -3098,203 +3366,6 @@ You can let the library starts the server or use Docker to start your own.</p>
     </div>
   </div>
 
-    </div>
-    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/gitlab-container-registry-and-proxy/" class="u-url">GitLab Container Registry and proxy</a></h1>
-        <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
-                Benjamin Bertrand
-            </span></p>
-            <p class="dateline"><a href="posts/gitlab-container-registry-and-proxy/" rel="bookmark"><time class="published dt-published" datetime="2016-09-21T22:10:06+02:00" title="2016-09-21 22:10">2016-09-21 22:10</time></a></p>
-                <p class="commentline">
-        
-    <a href="posts/gitlab-container-registry-and-proxy/#disqus_thread" data-disqus-identifier="cache/posts/gitlab-container-registry-and-proxy.html">Comments</a>
-
-
-        </p>
-</div>
-    </header><div class="e-content entry-content">
-    <div>
-<div class="section" id="gitlab-on-synology">
-<h2>GitLab on Synology</h2>
-<p>I installed GitLab CE on a Synology RackStation RS815+ at work.
-It has an Intel Atom C2538 that allows to run <a class="reference external" href="https://www.docker.com">Docker</a> on the NAS.</p>
-<p>Official GitLab Community Edition docker images are available on <a class="reference external" href="https://hub.docker.com/r/gitlab/gitlab-ce/">Docker Hub</a>.
-The documentation to use the image is quite clear and can be found <a class="reference external" href="https://docs.gitlab.com/omnibus/docker/">here</a>.</p>
-<p>The ports 80 and 443 are already used by nginx that comes with <a class="reference external" href="https://www.synology.com/en-global/dsm/6.0">DSM</a>.
-I wanted to access GitLab using HTTPS, so I disabled port 443 in nginx
-configuration. To do that I had to modify the template
-<cite>/usr/syno/share/nginx/WWWService.mustache</cite> and reboot the NAS:</p>
-<pre class="code diff"><a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-1"></a><span class="gd">--- WWWService.mustache.org 2016-08-16 23:25:06.000000000 +0100</span>
-<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-2"></a><span class="gi">+++ WWWService.mustache 2016-09-19 13:53:45.256735700 +0100</span>
-<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-3"></a><span class="gu">@@ -1,8 +1,6 @@</span>
-<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-4"></a> server {
-<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-5"></a>     listen 80 default_server{{#reuseport}} reuseport{{/reuseport}};
-<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-6"></a>     listen [::]:80 default_server{{#reuseport}} reuseport{{/reuseport}};
-<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-7"></a><span class="gd">-    listen 443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
-<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-8"></a><span class="gd">-    listen [::]:443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
-<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-9"></a>
-<a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-10"></a>     server_name _;
-</pre>
-<p>The port 22 is also already used by the ssh daemon so I decided to use
-the port 2222. I created the directory <cite>/volume1/docker/gitlab</cite> to store
-all GitLab data. Here are the required variables in the
-<cite>/volume1/docker/gitlab/config/gitlab.rb</cite> config file:</p>
-<pre class="literal-block">
-external_url "https://mygitlab.example.com"
-
-## GitLab Shell settings for GitLab
-gitlab_rails['gitlab_shell_ssh_port'] = 2222
-
-nginx['enable'] = true
-nginx['redirect_http_to_https'] = true
-</pre>
-<p>And this is how I run the image:</p>
-<pre class="literal-block">
-docker run --detach \
-    --hostname mygitlab.example.com \
-    --publish 443:443 --publish 8080:80 --publish 2222:22 \
-    --name gitlab \
-    --restart always \
-    --volume /volume1/docker/gitlab/config:/etc/gitlab \
-    --volume /volume1/docker/gitlab/logs:/var/log/gitlab \
-    --volume /volume1/docker/gitlab/data:/var/opt/gitlab \
-    gitlab/gitlab-ce:latest
-</pre>
-<p>This has been working fine. Since I heard about <a class="reference external" href="https://about.gitlab.com/2016/05/23/gitlab-container-registry/">GitLab Container Registry</a>,
-I've been wanted to give it a try.</p>
-</div>
-<div class="section" id="id1">
-<h2>GitLab Container Registry</h2>
-<p>To enable it, I just added to my <cite>gitlab.rb</cite> file the registry url:</p>
-<pre class="literal-block">
-registry_external_url 'https://mygitlab.example.com:4567'
-</pre>
-<p>I use the existing GitLab domain and use the port 4567 for the registry.
-The TLS certificate and key are in the default path, so no need to specify them.</p>
-<p>So let's restart GitLab. Don't forget to publish the new port 4567!</p>
-<pre class="literal-block">
-$ docker stop gitlab
-$ docker rm gitlab
-$ docker run --detach \
-    --hostname mygitlab.example.com \
-    --publish 443:443 --publish 8080:80 --publish 2222:22 \
-    --publish 4567:4567 \
-    --name gitlab \
-    --restart always \
-    --volume /volume1/docker/gitlab/config:/etc/gitlab \
-    --volume /volume1/docker/gitlab/logs:/var/log/gitlab \
-    --volume /volume1/docker/gitlab/data:/var/opt/gitlab \
-    gitlab/gitlab-ce:latest
-</pre>
-<p>Easy! Let's test our new docker registry!</p>
-<pre class="literal-block">
-$ docker login mygitlab.example.com:4567
-Username: user
-Password:
-Error response from daemon: Get https://mygitlab.example.com:4567/v1/users/: Service Unavailable
-</pre>
-<p>Hmm... Not super useful error...
-I thought about publishing port 4567 in docker, so what is happening?
-After looking through the logs, I found <cite>/volume1/docker/gitlab/logs/nginx/gitlab_registry_access.logi</cite>. It's empty...
-Let's try curl:</p>
-<pre class="literal-block">
-$ curl https://mygitlab.example.com:4567/v1/users/
-
-curl: (60) Peer certificate cannot be authenticated with known CA certificates
-More details here: http://curl.haxx.se/docs/sslcerts.html
-
-curl performs SSL certificate verification by default, using a "bundle"
- of Certificate Authority (CA) public keys (CA certs). If the default
- bundle file isn't adequate, you can specify an alternate file
- using the --cacert option.
-If this HTTPS server uses a certificate signed by a CA represented in
- the bundle, the certificate verification probably failed due to a
- problem with the certificate (it might be expired, or the name might
- not match the domain name in the URL).
-If you'd like to turn off curl's verification of the certificate, use
- the -k (or --insecure) option.
-</pre>
-<p>OK, I have a self-signed certificate. So let's try with <cite>--insecure</cite>:</p>
-<pre class="literal-block">
-$ curl --insecure https://mygitlab.example.com:4567/v1/users/
-404 page not found
-</pre>
-<p>At least I get an entry in my log file:</p>
-<pre class="literal-block">
-$ cd /volume1/docker/gitlab
-$ cat logs/nginx/gitlab_registry_access.log
-xxx.xx.x.x - - [21/Sep/2016:14:24:57 +0000] "GET /v1/users/ HTTP/1.1" 404 19 "-" "curl/7.43.0"
-</pre>
-<p>So, docker and nginx seem to be configured properly...
-It looks like <cite>docker login</cite> is not even trying to access my host...</p>
-<p>Let's try with a dummy host:</p>
-<pre class="literal-block">
-$ docker login foo
-Username: user
-Password:
-Error response from daemon: Get https://mygitlab.example.com:4567/v1/users/: Service Unavailable
-</pre>
-<p>Same error!
-Why is that? I can ping <cite>mygitlab.example.com</cite> and even access nginx on port 4567 (using curl)
-inside the docker container...
-My machine is on the same network. It can't be a proxy problem. Wait. Proxy?</p>
-<p>That's when I remembered I had configured my docker daemon to use a proxy to access the internet!
-I created the file <cite>/etc/systemd/system/docker.service.d/http-proxy.conf</cite> with:</p>
-<pre class="literal-block">
-[Service]
-Environment="HTTP_PROXY=http://proxy.example.com:8080/"
-</pre>
-<p>Reading the <a class="reference external" href="https://docs.docker.com/engine/admin/systemd/">docker documentation</a>, it's very clear:
-<strong>If you have internal Docker registries that you need to contact without proxying you can specify them via the NO_PROXY environment variable</strong></p>
-<p>Let's add the NO_PROXY variable:</p>
-<pre class="literal-block">
-[Service]
-Environment="HTTP_PROXY=http://proxy.example.com:8080/" "NO_PROXY=localhost,127.0.0.1,mygitlab.example.com"
-</pre>
-<p>Flush the changes and restart the docker daemon:</p>
-<pre class="literal-block">
-$ sudo systemctl daemon-reload
-$ sudo systemctl restart docker
-</pre>
-<p>Now let's try to login again:</p>
-<pre class="literal-block">
-$ docker login mygitlab.example.com:4567
-Username: user
-Password:
-Error response from daemon: Get https://mygitlab.example.com:4567/v1/users/: x509: certificate signed by unknown authority
-</pre>
-<p>This error is easy to fix (after googling). I have to add the self-signed certificate at the OS level.
-On my Ubuntu machine:</p>
-<pre class="literal-block">
-$ sudo cp mygitlab.example.com.crt /usr/local/share/ca-certificates/
-$ sudo update-ca-certificates
-$ sudo systemctl restart docker
-
-$ docker login mygitlab.example.com:4567
-Username: user
-Password:
-Login Succeeded
-</pre>
-<p>Yes! :-)</p>
-<p>I can now push docker images to my GitLab Container Registry!</p>
-</div>
-<div class="section" id="conclusion">
-<h2>Conclusion</h2>
-<p>Setting GitLab Container Registry should have been easy but my proxy
-settings made me lost quite some time... The proxy environment variables (HTTP_PROXY, NO_PROXY...)
-are not taken into account by the docker commands. The docker daemon has to be configured
-specifically. Something to remember!</p>
-<p>Note that this was with docker 1.11.2. When trying the same command on my Mac with docker 1.12.1, I got a nicer error message:</p>
-<pre class="literal-block">
-$ docker --version
-Docker version 1.12.1, build 6f9534c
-$ docker login foo
-Username: user
-Password:
-Error response from daemon: Get https://foo/v1/users/: dial tcp: lookup foo on xxx.xxx.xx.x:53: no such host
-</pre>
-</div>
-</div>
     </div>
     </article>
 </div>
