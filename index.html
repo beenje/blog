@@ -13,7 +13,7 @@
 <link rel="alternate" type="application/rss+xml" title="RSS" href="rss.xml">
 <link rel="canonical" href="http://beenje.github.io/blog/">
 <link rel="next" href="index-1.html" type="text/html">
-<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/logging-to-a-tkinter-scrolledtext-widget/" type="text/html">
+<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/parsing-html-tables-in-python-with-pandas/" type="text/html">
 </head>
 <body>
 <a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
@@ -69,7 +69,2765 @@
 
     
 <div class="postindex">
-    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/logging-to-a-tkinter-scrolledtext-widget/" class="u-url">Logging to a Tkinter ScrolledText Widget</a></h1>
+    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/parsing-html-tables-in-python-with-pandas/" class="u-url">Parsing HTML Tables in Python with pandas</a></h1>
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                Benjamin Bertrand
+            </span></p>
+            <p class="dateline"><a href="posts/parsing-html-tables-in-python-with-pandas/" rel="bookmark"><time class="published dt-published" datetime="2018-03-27T22:31:12+02:00" title="2018-03-27 22:31">2018-03-27 22:31</time></a></p>
+                <p class="commentline">
+        
+    <a href="posts/parsing-html-tables-in-python-with-pandas/#disqus_thread" data-disqus-identifier="cache/posts/parsing-html-tables-in-python-with-pandas.html">Comments</a>
+
+
+        </p>
+</div>
+    </header><div class="e-content entry-content">
+    <div tabindex="-1" id="notebook" class="border-box-sizing">
+    <div class="container" id="notebook-container">
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Not long ago, I needed to parse some HTML tables from our confluence website at work. I first thought: I'm gonna need <a href="http://docs.python-requests.org/en/master/">requests</a> and <a href="https://www.crummy.com/software/BeautifulSoup/bs4/doc/">BeautifulSoup</a>. As HTML tables are well defined, I did some quick googling to see if there was some recipe or lib to parse them and I found a link to <a href="https://pandas.pydata.org">pandas</a>. What? Can pandas do that too?</p>
+<p>I have been using pandas for quite some time and have used read_csv, read_excel, even read_sql, but I had missed read_html!</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Reading-excel-file-with-pandas">Reading excel file with pandas<a class="anchor-link" href="posts/parsing-html-tables-in-python-with-pandas/#Reading-excel-file-with-pandas">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Before to look at HTML tables, I want to show a quick example on how to read an excel file with pandas. The API is really nice. If I have to look at some excel data, I go directly to pandas.</p>
+<p>So let's download a sample file file:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">zipfile</span> <span class="k">import</span> <span class="n">ZipFile</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'http://www.contextures.com/SampleData.zip'</span><span class="p">)</span>
+<span class="n">ZipFile</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">content</span><span class="p">))</span><span class="o">.</span><span class="n">extractall</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This created the <em>SampleData.xlsx</em> file that includes four sheets: Instructions, SalesOrders, SampleNumbers and MyLinks. Only the <em>SalesOrders</em> sheet includes tabular data:
+<img src="images/read_html/sample_data_xlsx.png" alt="SampleData">
+So let's read it.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="s1">'SampleData.xlsx'</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="s1">'SalesOrders'</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[4]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead><tr style="text-align: right;">
+<th></th>
+      <th>OrderDate</th>
+      <th>Region</th>
+      <th>Rep</th>
+      <th>Item</th>
+      <th>Units</th>
+      <th>Unit Cost</th>
+      <th>Total</th>
+    </tr></thead>
+<tbody>
+<tr>
+<th>0</th>
+      <td>2016-01-06</td>
+      <td>East</td>
+      <td>Jones</td>
+      <td>Pencil</td>
+      <td>95</td>
+      <td>1.99</td>
+      <td>189.05</td>
+    </tr>
+<tr>
+<th>1</th>
+      <td>2016-01-23</td>
+      <td>Central</td>
+      <td>Kivell</td>
+      <td>Binder</td>
+      <td>50</td>
+      <td>19.99</td>
+      <td>999.50</td>
+    </tr>
+<tr>
+<th>2</th>
+      <td>2016-02-09</td>
+      <td>Central</td>
+      <td>Jardine</td>
+      <td>Pencil</td>
+      <td>36</td>
+      <td>4.99</td>
+      <td>179.64</td>
+    </tr>
+<tr>
+<th>3</th>
+      <td>2016-02-26</td>
+      <td>Central</td>
+      <td>Gill</td>
+      <td>Pen</td>
+      <td>27</td>
+      <td>19.99</td>
+      <td>539.73</td>
+    </tr>
+<tr>
+<th>4</th>
+      <td>2016-03-15</td>
+      <td>West</td>
+      <td>Sorvino</td>
+      <td>Pencil</td>
+      <td>56</td>
+      <td>2.99</td>
+      <td>167.44</td>
+    </tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>That's it. One line and you have your data in a DataFrame that you can easily manipulate, filter, convert and display in a jupyter notebook. Can it be easier than that?</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Parsing-HTML-Tables">Parsing HTML Tables<a class="anchor-link" href="posts/parsing-html-tables-in-python-with-pandas/#Parsing-HTML-Tables">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>So let's go back to HTML tables and look at <a href="https://pandas.pydata.org/pandas-docs/stable/generated/pandas.read_html.html">pandas.read_html</a>.</p>
+<p>The function accepts:</p>
+<blockquote>
+<p>A URL, a file-like object, or a raw string containing HTML.</p>
+</blockquote>
+<p>Let's start with a basic HTML table in a raw string.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Parsing-raw-string">Parsing raw string<a class="anchor-link" href="posts/parsing-html-tables-in-python-with-pandas/#Parsing-raw-string">¶</a>
+</h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">html_string</span> <span class="o">=</span> <span class="s2">"""</span>
+<span class="s2">&lt;table&gt;</span>
+<span class="s2">  &lt;thead&gt;</span>
+<span class="s2">    &lt;tr&gt;</span>
+<span class="s2">      &lt;th&gt;Programming Language&lt;/th&gt;</span>
+<span class="s2">      &lt;th&gt;Creator&lt;/th&gt; </span>
+<span class="s2">      &lt;th&gt;Year&lt;/th&gt;</span>
+<span class="s2">    &lt;/tr&gt;</span>
+<span class="s2">  &lt;/thead&gt;</span>
+<span class="s2">  &lt;tbody&gt;</span>
+<span class="s2">    &lt;tr&gt;</span>
+<span class="s2">      &lt;td&gt;C&lt;/td&gt;</span>
+<span class="s2">      &lt;td&gt;Dennis Ritchie&lt;/td&gt; </span>
+<span class="s2">      &lt;td&gt;1972&lt;/td&gt;</span>
+<span class="s2">    &lt;/tr&gt;</span>
+<span class="s2">    &lt;tr&gt;</span>
+<span class="s2">      &lt;td&gt;Python&lt;/td&gt;</span>
+<span class="s2">      &lt;td&gt;Guido Van Rossum&lt;/td&gt; </span>
+<span class="s2">      &lt;td&gt;1989&lt;/td&gt;</span>
+<span class="s2">    &lt;/tr&gt;</span>
+<span class="s2">    &lt;tr&gt;</span>
+<span class="s2">      &lt;td&gt;Ruby&lt;/td&gt;</span>
+<span class="s2">      &lt;td&gt;Yukihiro Matsumoto&lt;/td&gt; </span>
+<span class="s2">      &lt;td&gt;1995&lt;/td&gt;</span>
+<span class="s2">    &lt;/tr&gt;</span>
+<span class="s2">  &lt;/tbody&gt;</span>
+<span class="s2">&lt;/table&gt;</span>
+<span class="s2">"""</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can render the table using IPython <a href="http://ipython.readthedocs.io/en/stable/api/generated/IPython.display.html#IPython.display.display_html">display_html</a> function:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="k">import</span> <span class="n">display_html</span>
+<span class="n">display_html</span><span class="p">(</span><span class="n">html_string</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+
+<div class="output_html rendered_html output_subarea ">
+
+<table>
+<thead><tr>
+<th>Programming Language</th>
+      <th>Creator</th> 
+      <th>Year</th>
+    </tr></thead>
+<tbody>
+<tr>
+<td>C</td>
+      <td>Dennis Ritchie</td> 
+      <td>1972</td>
+    </tr>
+<tr>
+<td>Python</td>
+      <td>Guido Van Rossum</td> 
+      <td>1989</td>
+    </tr>
+<tr>
+<td>Ruby</td>
+      <td>Yukihiro Matsumoto</td> 
+      <td>1995</td>
+    </tr>
+</tbody>
+</table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's import this HTML table in a DataFrame. Note that the function <code>read_html</code> always returns a list of DataFrame objects:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dfs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="n">html_string</span><span class="p">)</span>
+<span class="n">dfs</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[7]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[  Programming Language             Creator  Year
+ 0                    C      Dennis Ritchie  1972
+ 1               Python    Guido Van Rossum  1989
+ 2                 Ruby  Yukihiro Matsumoto  1995]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">dfs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">df</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[8]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead><tr style="text-align: right;">
+<th></th>
+      <th>Programming Language</th>
+      <th>Creator</th>
+      <th>Year</th>
+    </tr></thead>
+<tbody>
+<tr>
+<th>0</th>
+      <td>C</td>
+      <td>Dennis Ritchie</td>
+      <td>1972</td>
+    </tr>
+<tr>
+<th>1</th>
+      <td>Python</td>
+      <td>Guido Van Rossum</td>
+      <td>1989</td>
+    </tr>
+<tr>
+<th>2</th>
+      <td>Ruby</td>
+      <td>Yukihiro Matsumoto</td>
+      <td>1995</td>
+    </tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This looks quite similar to the raw string we rendered above, but we are printing a pandas DataFrame object here! We can apply any operation we want.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">Year</span> <span class="o">&gt;</span> <span class="mi">1975</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[9]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead><tr style="text-align: right;">
+<th></th>
+      <th>Programming Language</th>
+      <th>Creator</th>
+      <th>Year</th>
+    </tr></thead>
+<tbody>
+<tr>
+<th>1</th>
+      <td>Python</td>
+      <td>Guido Van Rossum</td>
+      <td>1989</td>
+    </tr>
+<tr>
+<th>2</th>
+      <td>Ruby</td>
+      <td>Yukihiro Matsumoto</td>
+      <td>1995</td>
+    </tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Pandas automatically found the header to use thanks to the <code>&lt;thead&gt;</code> tag. It is not mandatory to define a table and is actually often missing on the web. So what happens if it's not present?</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">html_string</span> <span class="o">=</span> <span class="s2">"""</span>
+<span class="s2">&lt;table&gt;</span>
+<span class="s2">  &lt;tr&gt;</span>
+<span class="s2">    &lt;th&gt;Programming Language&lt;/th&gt;</span>
+<span class="s2">    &lt;th&gt;Creator&lt;/th&gt; </span>
+<span class="s2">    &lt;th&gt;Year&lt;/th&gt;</span>
+<span class="s2">  &lt;/tr&gt;</span>
+<span class="s2">  &lt;tr&gt;</span>
+<span class="s2">    &lt;td&gt;C&lt;/td&gt;</span>
+<span class="s2">    &lt;td&gt;Dennis Ritchie&lt;/td&gt; </span>
+<span class="s2">    &lt;td&gt;1972&lt;/td&gt;</span>
+<span class="s2">  &lt;/tr&gt;</span>
+<span class="s2">  &lt;tr&gt;</span>
+<span class="s2">    &lt;td&gt;Python&lt;/td&gt;</span>
+<span class="s2">    &lt;td&gt;Guido Van Rossum&lt;/td&gt; </span>
+<span class="s2">    &lt;td&gt;1989&lt;/td&gt;</span>
+<span class="s2">  &lt;/tr&gt;</span>
+<span class="s2">  &lt;tr&gt;</span>
+<span class="s2">    &lt;td&gt;Ruby&lt;/td&gt;</span>
+<span class="s2">    &lt;td&gt;Yukihiro Matsumoto&lt;/td&gt; </span>
+<span class="s2">    &lt;td&gt;1995&lt;/td&gt;</span>
+<span class="s2">  &lt;/tr&gt;</span>
+<span class="s2">&lt;/table&gt;</span>
+<span class="s2">"""</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="n">html_string</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[11]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead><tr style="text-align: right;">
+<th></th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+    </tr></thead>
+<tbody>
+<tr>
+<th>0</th>
+      <td>Programming Language</td>
+      <td>Creator</td>
+      <td>Year</td>
+    </tr>
+<tr>
+<th>1</th>
+      <td>C</td>
+      <td>Dennis Ritchie</td>
+      <td>1972</td>
+    </tr>
+<tr>
+<th>2</th>
+      <td>Python</td>
+      <td>Guido Van Rossum</td>
+      <td>1989</td>
+    </tr>
+<tr>
+<th>3</th>
+      <td>Ruby</td>
+      <td>Yukihiro Matsumoto</td>
+      <td>1995</td>
+    </tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>In this case, we need to pass the row number to use as header.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [12]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="n">html_string</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[12]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead><tr style="text-align: right;">
+<th></th>
+      <th>Programming Language</th>
+      <th>Creator</th>
+      <th>Year</th>
+    </tr></thead>
+<tbody>
+<tr>
+<th>0</th>
+      <td>C</td>
+      <td>Dennis Ritchie</td>
+      <td>1972</td>
+    </tr>
+<tr>
+<th>1</th>
+      <td>Python</td>
+      <td>Guido Van Rossum</td>
+      <td>1989</td>
+    </tr>
+<tr>
+<th>2</th>
+      <td>Ruby</td>
+      <td>Yukihiro Matsumoto</td>
+      <td>1995</td>
+    </tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Parsing-a-http-URL">Parsing a http URL<a class="anchor-link" href="posts/parsing-html-tables-in-python-with-pandas/#Parsing-a-http-URL">¶</a>
+</h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The same data we read in our excel file is available in a table at the following address: <a href="http://www.contextures.com/xlSampleData01.html">http://www.contextures.com/xlSampleData01.html</a></p>
+<p>Let's pass this url to <code>read_html</code>:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dfs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="s1">'http://www.contextures.com/xlSampleData01.html'</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dfs</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[14]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[             0        1         2        3      4         5        6
+ 0    OrderDate   Region       Rep     Item  Units  UnitCost    Total
+ 1     1/6/2016     East     Jones   Pencil     95      1.99   189.05
+ 2    1/23/2016  Central    Kivell   Binder     50     19.99   999.50
+ 3     2/9/2016  Central   Jardine   Pencil     36      4.99   179.64
+ 4    2/26/2016  Central      Gill      Pen     27     19.99   539.73
+ 5    3/15/2016     West   Sorvino   Pencil     56      2.99   167.44
+ 6     4/1/2016     East     Jones   Binder     60      4.99   299.40
+ 7    4/18/2016  Central   Andrews   Pencil     75      1.99   149.25
+ 8     5/5/2016  Central   Jardine   Pencil     90      4.99   449.10
+ 9    5/22/2016     West  Thompson   Pencil     32      1.99    63.68
+ 10    6/8/2016     East     Jones   Binder     60      8.99   539.40
+ 11   6/25/2016  Central    Morgan   Pencil     90      4.99   449.10
+ 12   7/12/2016     East    Howard   Binder     29      1.99    57.71
+ 13   7/29/2016     East    Parent   Binder     81     19.99  1619.19
+ 14   8/15/2016     East     Jones   Pencil     35      4.99   174.65
+ 15    9/1/2016  Central     Smith     Desk      2    125.00   250.00
+ 16   9/18/2016     East     Jones  Pen Set     16     15.99   255.84
+ 17   10/5/2016  Central    Morgan   Binder     28      8.99   251.72
+ 18  10/22/2016     East     Jones      Pen     64      8.99   575.36
+ 19   11/8/2016     East    Parent      Pen     15     19.99   299.85
+ 20  11/25/2016  Central    Kivell  Pen Set     96      4.99   479.04
+ 21  12/12/2016  Central     Smith   Pencil     67      1.29    86.43
+ 22  12/29/2016     East    Parent  Pen Set     74     15.99  1183.26
+ 23   1/15/2017  Central      Gill   Binder     46      8.99   413.54
+ 24    2/1/2017  Central     Smith   Binder     87     15.00  1305.00
+ 25   2/18/2017     East     Jones   Binder      4      4.99    19.96
+ 26    3/7/2017     West   Sorvino   Binder      7     19.99   139.93
+ 27   3/24/2017  Central   Jardine  Pen Set     50      4.99   249.50
+ 28   4/10/2017  Central   Andrews   Pencil     66      1.99   131.34
+ 29   4/27/2017     East    Howard      Pen     96      4.99   479.04
+ 30   5/14/2017  Central      Gill   Pencil     53      1.29    68.37
+ 31   5/31/2017  Central      Gill   Binder     80      8.99   719.20
+ 32   6/17/2017  Central    Kivell     Desk      5    125.00   625.00
+ 33    7/4/2017     East     Jones  Pen Set     62      4.99   309.38
+ 34   7/21/2017  Central    Morgan  Pen Set     55     12.49   686.95
+ 35    8/7/2017  Central    Kivell  Pen Set     42     23.95  1005.90
+ 36   8/24/2017     West   Sorvino     Desk      3    275.00   825.00
+ 37   9/10/2017  Central      Gill   Pencil      7      1.29     9.03
+ 38   9/27/2017     West   Sorvino      Pen     76      1.99   151.24
+ 39  10/14/2017     West  Thompson   Binder     57     19.99  1139.43
+ 40  10/31/2017  Central   Andrews   Pencil     14      1.29    18.06
+ 41  11/17/2017  Central   Jardine   Binder     11      4.99    54.89
+ 42   12/4/2017  Central   Jardine   Binder     94     19.99  1879.06
+ 43  12/21/2017  Central   Andrews   Binder     28      4.99   139.72]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We have one table and can see that we need to pass the row number to use as header (because <code>&lt;thead&gt;</code> is not present).</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [15]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dfs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="s1">'http://www.contextures.com/xlSampleData01.html'</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">dfs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[15]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead><tr style="text-align: right;">
+<th></th>
+      <th>OrderDate</th>
+      <th>Region</th>
+      <th>Rep</th>
+      <th>Item</th>
+      <th>Units</th>
+      <th>UnitCost</th>
+      <th>Total</th>
+    </tr></thead>
+<tbody>
+<tr>
+<th>0</th>
+      <td>1/6/2016</td>
+      <td>East</td>
+      <td>Jones</td>
+      <td>Pencil</td>
+      <td>95</td>
+      <td>1.99</td>
+      <td>189.05</td>
+    </tr>
+<tr>
+<th>1</th>
+      <td>1/23/2016</td>
+      <td>Central</td>
+      <td>Kivell</td>
+      <td>Binder</td>
+      <td>50</td>
+      <td>19.99</td>
+      <td>999.50</td>
+    </tr>
+<tr>
+<th>2</th>
+      <td>2/9/2016</td>
+      <td>Central</td>
+      <td>Jardine</td>
+      <td>Pencil</td>
+      <td>36</td>
+      <td>4.99</td>
+      <td>179.64</td>
+    </tr>
+<tr>
+<th>3</th>
+      <td>2/26/2016</td>
+      <td>Central</td>
+      <td>Gill</td>
+      <td>Pen</td>
+      <td>27</td>
+      <td>19.99</td>
+      <td>539.73</td>
+    </tr>
+<tr>
+<th>4</th>
+      <td>3/15/2016</td>
+      <td>West</td>
+      <td>Sorvino</td>
+      <td>Pencil</td>
+      <td>56</td>
+      <td>2.99</td>
+      <td>167.44</td>
+    </tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Nice!</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Parsing-a-https-URL">Parsing a https URL<a class="anchor-link" href="posts/parsing-html-tables-in-python-with-pandas/#Parsing-a-https-URL">¶</a>
+</h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The documentation states that:</p>
+<blockquote>
+<p>Note that lxml only accepts the http, ftp and file url protocols. If you have a URL that starts with 'https' you might try removing the 's'.</p>
+</blockquote>
+<p>This is true, but <em>bs4 + html5lib</em> are used as a fallback when <em>lxml</em> fails. I guess this is why passing a <code>https</code> url does work. We can confirm that with a wikipedia page.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [16]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="s1">'https://en.wikipedia.org/wiki/Python_(programming_language)'</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[16]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead><tr style="text-align: right;">
+<th></th>
+      <th>Type</th>
+      <th>mutable</th>
+      <th>Description</th>
+      <th>Syntax example</th>
+    </tr></thead>
+<tbody>
+<tr>
+<th>0</th>
+      <td>bool</td>
+      <td>immutable</td>
+      <td>Boolean value</td>
+      <td>True False</td>
+    </tr>
+<tr>
+<th>1</th>
+      <td>bytearray</td>
+      <td>mutable</td>
+      <td>Sequence of bytes</td>
+      <td>bytearray(b'Some ASCII') bytearray(b"Some ASCI...</td>
+    </tr>
+<tr>
+<th>2</th>
+      <td>bytes</td>
+      <td>immutable</td>
+      <td>Sequence of bytes</td>
+      <td>b'Some ASCII' b"Some ASCII" bytes([119, 105, 1...</td>
+    </tr>
+<tr>
+<th>3</th>
+      <td>complex</td>
+      <td>immutable</td>
+      <td>Complex number with real and imaginary parts</td>
+      <td>3+2.7j</td>
+    </tr>
+<tr>
+<th>4</th>
+      <td>dict</td>
+      <td>mutable</td>
+      <td>Associative array (or dictionary) of key and v...</td>
+      <td>{'key1': 1.0, 3: False}</td>
+    </tr>
+<tr>
+<th>5</th>
+      <td>ellipsis</td>
+      <td>NaN</td>
+      <td>An ellipsis placeholder to be used as an index...</td>
+      <td>...</td>
+    </tr>
+<tr>
+<th>6</th>
+      <td>float</td>
+      <td>immutable</td>
+      <td>Floating point number, system-defined precision</td>
+      <td>3.1415927</td>
+    </tr>
+<tr>
+<th>7</th>
+      <td>frozenset</td>
+      <td>immutable</td>
+      <td>Unordered set, contains no duplicates; can con...</td>
+      <td>frozenset([4.0, 'string', True])</td>
+    </tr>
+<tr>
+<th>8</th>
+      <td>int</td>
+      <td>immutable</td>
+      <td>Integer of unlimited magnitude[76]</td>
+      <td>42</td>
+    </tr>
+<tr>
+<th>9</th>
+      <td>list</td>
+      <td>mutable</td>
+      <td>List, can contain mixed types</td>
+      <td>[4.0, 'string', True]</td>
+    </tr>
+<tr>
+<th>10</th>
+      <td>set</td>
+      <td>mutable</td>
+      <td>Unordered set, contains no duplicates; can con...</td>
+      <td>{4.0, 'string', True}</td>
+    </tr>
+<tr>
+<th>11</th>
+      <td>str</td>
+      <td>immutable</td>
+      <td>A character string: sequence of Unicode codepo...</td>
+      <td>'Wikipedia' "Wikipedia" """Spanning multiple l...</td>
+    </tr>
+<tr>
+<th>12</th>
+      <td>tuple</td>
+      <td>immutable</td>
+      <td>Can contain mixed types</td>
+      <td>(4.0, 'string', True)But we can append element...</td>
+    </tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>But what if the url requires authentiation?</p>
+<p>In that case we can use <a href="http://docs.python-requests.org/en/master/">requests</a> to get the HTML and pass the string to pandas!</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>To demonstrate authentication, we can use <a href="http://httpbin.org">http://httpbin.org</a></p>
+<p>We can first confirm that passing a url that requires authentication raises a 401</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [17]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="s1">'https://httpbin.org/basic-auth/myuser/mypasswd'</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">HTTPError</span>                                 Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-17-7e6b50c9f1f3&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>pd<span class="ansi-blue-fg">.</span>read_html<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">'https://httpbin.org/basic-auth/myuser/mypasswd'</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/miniconda3/envs/jupyter/lib/python3.6/site-packages/pandas/io/html.py</span> in <span class="ansi-cyan-fg">read_html</span><span class="ansi-blue-fg">(io, match, flavor, header, index_col, skiprows, attrs, parse_dates, tupleize_cols, thousands, encoding, decimal, converters, na_values, keep_default_na)</span>
+<span class="ansi-green-intense-fg ansi-bold">    913</span>                   thousands<span class="ansi-blue-fg">=</span>thousands<span class="ansi-blue-fg">,</span> attrs<span class="ansi-blue-fg">=</span>attrs<span class="ansi-blue-fg">,</span> encoding<span class="ansi-blue-fg">=</span>encoding<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    914</span>                   decimal<span class="ansi-blue-fg">=</span>decimal<span class="ansi-blue-fg">,</span> converters<span class="ansi-blue-fg">=</span>converters<span class="ansi-blue-fg">,</span> na_values<span class="ansi-blue-fg">=</span>na_values<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg">--&gt; 915</span><span class="ansi-red-fg">                   keep_default_na=keep_default_na)
+</span>
+<span class="ansi-green-fg">~/miniconda3/envs/jupyter/lib/python3.6/site-packages/pandas/io/html.py</span> in <span class="ansi-cyan-fg">_parse</span><span class="ansi-blue-fg">(flavor, io, match, attrs, encoding, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">    747</span>             <span class="ansi-green-fg">break</span>
+<span class="ansi-green-intense-fg ansi-bold">    748</span>     <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 749</span><span class="ansi-red-fg">         </span>raise_with_traceback<span class="ansi-blue-fg">(</span>retained<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    750</span> 
+<span class="ansi-green-intense-fg ansi-bold">    751</span>     ret <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">]</span>
+
+<span class="ansi-green-fg">~/miniconda3/envs/jupyter/lib/python3.6/site-packages/pandas/compat/__init__.py</span> in <span class="ansi-cyan-fg">raise_with_traceback</span><span class="ansi-blue-fg">(exc, traceback)</span>
+<span class="ansi-green-intense-fg ansi-bold">    383</span>         <span class="ansi-green-fg">if</span> traceback <span class="ansi-blue-fg">==</span> Ellipsis<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    384</span>             _<span class="ansi-blue-fg">,</span> _<span class="ansi-blue-fg">,</span> traceback <span class="ansi-blue-fg">=</span> sys<span class="ansi-blue-fg">.</span>exc_info<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">--&gt; 385</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">raise</span> exc<span class="ansi-blue-fg">.</span>with_traceback<span class="ansi-blue-fg">(</span>traceback<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    386</span> <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    387</span>     <span class="ansi-red-fg"># this version of raise is a syntax error in Python 3</span>
+
+<span class="ansi-red-fg">HTTPError</span>: HTTP Error 401: UNAUTHORIZED</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [ ]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'https://httpbin.org/basic-auth/myuser/mypasswd'</span><span class="p">)</span>
+<span class="n">r</span><span class="o">.</span><span class="n">status_code</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Yes, as expected. Let's pass the username and password with requests.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [ ]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'https://httpbin.org/basic-auth/myuser/mypasswd'</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="s1">'myuser'</span><span class="p">,</span> <span class="s1">'mypasswd'</span><span class="p">))</span>
+<span class="n">r</span><span class="o">.</span><span class="n">status_code</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We could now pass <code>r.text</code> to pandas. <a href="http://httpbin.org">http://httpbin.org</a> was used to demonstrate authentication but it only returns JSON-encoded responses and no HTML. It's a testing service. So it doesn't make sense here.</p>
+<p>The following example shows how to combine requests and pandas.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [18]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'https://en.wikipedia.org/wiki/Python_(programming_language)'</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[18]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead><tr style="text-align: right;">
+<th></th>
+      <th>Type</th>
+      <th>mutable</th>
+      <th>Description</th>
+      <th>Syntax example</th>
+    </tr></thead>
+<tbody>
+<tr>
+<th>0</th>
+      <td>bool</td>
+      <td>immutable</td>
+      <td>Boolean value</td>
+      <td>True False</td>
+    </tr>
+<tr>
+<th>1</th>
+      <td>bytearray</td>
+      <td>mutable</td>
+      <td>Sequence of bytes</td>
+      <td>bytearray(b'Some ASCII') bytearray(b"Some ASCI...</td>
+    </tr>
+<tr>
+<th>2</th>
+      <td>bytes</td>
+      <td>immutable</td>
+      <td>Sequence of bytes</td>
+      <td>b'Some ASCII' b"Some ASCII" bytes([119, 105, 1...</td>
+    </tr>
+<tr>
+<th>3</th>
+      <td>complex</td>
+      <td>immutable</td>
+      <td>Complex number with real and imaginary parts</td>
+      <td>3+2.7j</td>
+    </tr>
+<tr>
+<th>4</th>
+      <td>dict</td>
+      <td>mutable</td>
+      <td>Associative array (or dictionary) of key and v...</td>
+      <td>{'key1': 1.0, 3: False}</td>
+    </tr>
+<tr>
+<th>5</th>
+      <td>ellipsis</td>
+      <td>NaN</td>
+      <td>An ellipsis placeholder to be used as an index...</td>
+      <td>...</td>
+    </tr>
+<tr>
+<th>6</th>
+      <td>float</td>
+      <td>immutable</td>
+      <td>Floating point number, system-defined precision</td>
+      <td>3.1415927</td>
+    </tr>
+<tr>
+<th>7</th>
+      <td>frozenset</td>
+      <td>immutable</td>
+      <td>Unordered set, contains no duplicates; can con...</td>
+      <td>frozenset([4.0, 'string', True])</td>
+    </tr>
+<tr>
+<th>8</th>
+      <td>int</td>
+      <td>immutable</td>
+      <td>Integer of unlimited magnitude[76]</td>
+      <td>42</td>
+    </tr>
+<tr>
+<th>9</th>
+      <td>list</td>
+      <td>mutable</td>
+      <td>List, can contain mixed types</td>
+      <td>[4.0, 'string', True]</td>
+    </tr>
+<tr>
+<th>10</th>
+      <td>set</td>
+      <td>mutable</td>
+      <td>Unordered set, contains no duplicates; can con...</td>
+      <td>{4.0, 'string', True}</td>
+    </tr>
+<tr>
+<th>11</th>
+      <td>str</td>
+      <td>immutable</td>
+      <td>A character string: sequence of Unicode codepo...</td>
+      <td>'Wikipedia' "Wikipedia" """Spanning multiple l...</td>
+    </tr>
+<tr>
+<th>12</th>
+      <td>tuple</td>
+      <td>immutable</td>
+      <td>Can contain mixed types</td>
+      <td>(4.0, 'string', True)But we can append element...</td>
+    </tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="A-more-complex-example">A more complex example<a class="anchor-link" href="posts/parsing-html-tables-in-python-with-pandas/#A-more-complex-example">¶</a>
+</h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We looked at some quite simple examples so far. So let's try a page with several tables: <a href="https://en.wikipedia.org/wiki/Timeline_of_programming_languages">https://en.wikipedia.org/wiki/Timeline_of_programming_languages</a></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [19]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dfs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="s1">'https://en.wikipedia.org/wiki/Timeline_of_programming_languages'</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [20]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">len</span><span class="p">(</span><span class="n">dfs</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[20]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>13</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>If we look at the page we have 8 tables (one per decade). Looking at our <code>dfs</code> list, we can see that the first interesting table is the fifth one and that we need to pass the row to use as header.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [21]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dfs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="s1">'https://en.wikipedia.org/wiki/Timeline_of_programming_languages'</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">dfs</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[21]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead><tr style="text-align: right;">
+<th></th>
+      <th>Year</th>
+      <th>Name</th>
+      <th>Chief developer, company</th>
+      <th>Predecessor(s)</th>
+    </tr></thead>
+<tbody>
+<tr>
+<th>0</th>
+      <td>1943–45</td>
+      <td>Plankalkül (concept)</td>
+      <td>Konrad Zuse</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>1</th>
+      <td>1943–46</td>
+      <td>ENIAC coding system</td>
+      <td>John von Neumann, John Mauchly, J. Presper Eck...</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>2</th>
+      <td>1946</td>
+      <td>ENIAC Short Code</td>
+      <td>Richard Clippinger, John von Neumann after Ala...</td>
+      <td>ENIAC coding system</td>
+    </tr>
+<tr>
+<th>3</th>
+      <td>1946</td>
+      <td>Von Neumann and Goldstine graphing system (Not...</td>
+      <td>John von Neumann and Herman Goldstine</td>
+      <td>ENIAC coding system</td>
+    </tr>
+<tr>
+<th>4</th>
+      <td>1947</td>
+      <td>ARC Assembly</td>
+      <td>Kathleen Booth[1][2]</td>
+      <td>ENIAC coding system</td>
+    </tr>
+<tr>
+<th>5</th>
+      <td>1948</td>
+      <td>CPC Coding scheme</td>
+      <td>Howard H. Aiken</td>
+      <td>Analytical Engine order code</td>
+    </tr>
+<tr>
+<th>6</th>
+      <td>1948</td>
+      <td>Curry notation system</td>
+      <td>Haskell Curry</td>
+      <td>ENIAC coding system</td>
+    </tr>
+<tr>
+<th>7</th>
+      <td>1948</td>
+      <td>Plankalkül (concept published)</td>
+      <td>Konrad Zuse</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>8</th>
+      <td>1949</td>
+      <td>Short Code</td>
+      <td>John Mauchly and William F. Schmitt</td>
+      <td>ENIAC Short Code</td>
+    </tr>
+<tr>
+<th>9</th>
+      <td>Year</td>
+      <td>Name</td>
+      <td>Chief developer, company</td>
+      <td>Predecessor(s)</td>
+    </tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Notice that the header was repeated in the last row (to make the table easier to read on the HTML page). We can filter that after concatenating together the 8 tables to get one DataFrame.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [22]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dfs</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">12</span><span class="p">])</span>
+<span class="n">df</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[22]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead><tr style="text-align: right;">
+<th></th>
+      <th>Year</th>
+      <th>Name</th>
+      <th>Chief developer, company</th>
+      <th>Predecessor(s)</th>
+    </tr></thead>
+<tbody>
+<tr>
+<th>0</th>
+      <td>1943–45</td>
+      <td>Plankalkül (concept)</td>
+      <td>Konrad Zuse</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>1</th>
+      <td>1943–46</td>
+      <td>ENIAC coding system</td>
+      <td>John von Neumann, John Mauchly, J. Presper Eck...</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>2</th>
+      <td>1946</td>
+      <td>ENIAC Short Code</td>
+      <td>Richard Clippinger, John von Neumann after Ala...</td>
+      <td>ENIAC coding system</td>
+    </tr>
+<tr>
+<th>3</th>
+      <td>1946</td>
+      <td>Von Neumann and Goldstine graphing system (Not...</td>
+      <td>John von Neumann and Herman Goldstine</td>
+      <td>ENIAC coding system</td>
+    </tr>
+<tr>
+<th>4</th>
+      <td>1947</td>
+      <td>ARC Assembly</td>
+      <td>Kathleen Booth[1][2]</td>
+      <td>ENIAC coding system</td>
+    </tr>
+<tr>
+<th>5</th>
+      <td>1948</td>
+      <td>CPC Coding scheme</td>
+      <td>Howard H. Aiken</td>
+      <td>Analytical Engine order code</td>
+    </tr>
+<tr>
+<th>6</th>
+      <td>1948</td>
+      <td>Curry notation system</td>
+      <td>Haskell Curry</td>
+      <td>ENIAC coding system</td>
+    </tr>
+<tr>
+<th>7</th>
+      <td>1948</td>
+      <td>Plankalkül (concept published)</td>
+      <td>Konrad Zuse</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>8</th>
+      <td>1949</td>
+      <td>Short Code</td>
+      <td>John Mauchly and William F. Schmitt</td>
+      <td>ENIAC Short Code</td>
+    </tr>
+<tr>
+<th>9</th>
+      <td>Year</td>
+      <td>Name</td>
+      <td>Chief developer, company</td>
+      <td>Predecessor(s)</td>
+    </tr>
+<tr>
+<th>0</th>
+      <td>1950</td>
+      <td>Short Code</td>
+      <td>William F Schmidt, Albert B. Tonik,[3] J.R. Logan</td>
+      <td>Brief Code</td>
+    </tr>
+<tr>
+<th>1</th>
+      <td>1950</td>
+      <td>Birkbeck Assembler</td>
+      <td>Kathleen Booth</td>
+      <td>ARC</td>
+    </tr>
+<tr>
+<th>2</th>
+      <td>1951</td>
+      <td>Superplan</td>
+      <td>Heinz Rutishauser</td>
+      <td>Plankalkül</td>
+    </tr>
+<tr>
+<th>3</th>
+      <td>1951</td>
+      <td>ALGAE</td>
+      <td>Edward A Voorhees and Karl Balke</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>4</th>
+      <td>1951</td>
+      <td>Intermediate Programming Language</td>
+      <td>Arthur Burks</td>
+      <td>Short Code</td>
+    </tr>
+<tr>
+<th>5</th>
+      <td>1951</td>
+      <td>Regional Assembly Language</td>
+      <td>Maurice Wilkes</td>
+      <td>EDSAC</td>
+    </tr>
+<tr>
+<th>6</th>
+      <td>1951</td>
+      <td>Boehm unnamed coding system</td>
+      <td>Corrado Böhm</td>
+      <td>CPC Coding scheme</td>
+    </tr>
+<tr>
+<th>7</th>
+      <td>1951</td>
+      <td>Klammerausdrücke</td>
+      <td>Konrad Zuse</td>
+      <td>Plankalkül</td>
+    </tr>
+<tr>
+<th>8</th>
+      <td>1951</td>
+      <td>OMNIBAC Symbolic Assembler</td>
+      <td>Charles Katz</td>
+      <td>Short Code</td>
+    </tr>
+<tr>
+<th>9</th>
+      <td>1951</td>
+      <td>Stanislaus (Notation)</td>
+      <td>Fritz Bauer</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>10</th>
+      <td>1951</td>
+      <td>Whirlwind assembler</td>
+      <td>Charles Adams and Jack Gilmore at MIT Project ...</td>
+      <td>EDSAC</td>
+    </tr>
+<tr>
+<th>11</th>
+      <td>1951</td>
+      <td>Rochester assembler</td>
+      <td>Nat Rochester</td>
+      <td>EDSAC</td>
+    </tr>
+<tr>
+<th>12</th>
+      <td>1951</td>
+      <td>Sort Merge Generator</td>
+      <td>Betty Holberton</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>13</th>
+      <td>1952</td>
+      <td>A-0</td>
+      <td>Grace Hopper</td>
+      <td>Short Code</td>
+    </tr>
+<tr>
+<th>14</th>
+      <td>1952</td>
+      <td>Glennie Autocode</td>
+      <td>Alick Glennie after Alan Turing</td>
+      <td>CPC Coding scheme</td>
+    </tr>
+<tr>
+<th>15</th>
+      <td>1952</td>
+      <td>Editing Generator</td>
+      <td>Milly Koss</td>
+      <td>SORT/MERGE</td>
+    </tr>
+<tr>
+<th>16</th>
+      <td>1952</td>
+      <td>COMPOOL</td>
+      <td>RAND/SDC</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>17</th>
+      <td>1953</td>
+      <td>Speedcoding</td>
+      <td>John W. Backus</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>18</th>
+      <td>1953</td>
+      <td>READ/PRINT</td>
+      <td>Don Harroff, James Fishman, George Ryckman</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>19</th>
+      <td>1954</td>
+      <td>Laning and Zierler system</td>
+      <td>Laning, Zierler, Adams at MIT Project Whirlwind</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+<tr>
+<th>47</th>
+      <td>2009</td>
+      <td>Chapel</td>
+      <td>Brad Chamberlain, Cray Inc.</td>
+      <td>HPF, ZPL</td>
+    </tr>
+<tr>
+<th>48</th>
+      <td>2009</td>
+      <td>Go</td>
+      <td>Google</td>
+      <td>C, Oberon, Limbo, Smalltalk</td>
+    </tr>
+<tr>
+<th>49</th>
+      <td>2009</td>
+      <td>CoffeeScript</td>
+      <td>Jeremy Ashkenas</td>
+      <td>JavaScript, Ruby, Python, Haskell</td>
+    </tr>
+<tr>
+<th>50</th>
+      <td>2009</td>
+      <td>Idris</td>
+      <td>Edwin Brady</td>
+      <td>Haskell, Agda, Coq</td>
+    </tr>
+<tr>
+<th>51</th>
+      <td>2009</td>
+      <td>Parasail</td>
+      <td>S. Tucker Taft, AdaCore</td>
+      <td>Modula, Ada, Pascal, ML</td>
+    </tr>
+<tr>
+<th>52</th>
+      <td>2009</td>
+      <td>Whiley</td>
+      <td>David J. Pearce</td>
+      <td>Java, C, Python</td>
+    </tr>
+<tr>
+<th>53</th>
+      <td>Year</td>
+      <td>Name</td>
+      <td>Chief developer, company</td>
+      <td>Predecessor(s)</td>
+    </tr>
+<tr>
+<th>0</th>
+      <td>2010</td>
+      <td>Rust</td>
+      <td>Graydon Hoare, Mozilla</td>
+      <td>Alef, C++, Camlp4, Erlang, Hermes, Limbo, Napi...</td>
+    </tr>
+<tr>
+<th>1</th>
+      <td>2011</td>
+      <td>Ceylon</td>
+      <td>Gavin King, Red Hat</td>
+      <td>Java</td>
+    </tr>
+<tr>
+<th>2</th>
+      <td>2011</td>
+      <td>Dart</td>
+      <td>Google</td>
+      <td>Java, JavaScript, CoffeeScript, Go</td>
+    </tr>
+<tr>
+<th>3</th>
+      <td>2011</td>
+      <td>C++11</td>
+      <td>C++ ISO/IEC 14882:2011</td>
+      <td>C++, Standard C, C</td>
+    </tr>
+<tr>
+<th>4</th>
+      <td>2011</td>
+      <td>Kotlin</td>
+      <td>JetBrains</td>
+      <td>Java, Scala, Groovy, C#, Gosu</td>
+    </tr>
+<tr>
+<th>5</th>
+      <td>2011</td>
+      <td>Red</td>
+      <td>Nenad Rakocevic</td>
+      <td>Rebol, Scala, Lua</td>
+    </tr>
+<tr>
+<th>6</th>
+      <td>2011</td>
+      <td>Opa</td>
+      <td>MLstate</td>
+      <td>OCaml, Erlang, JavaScript</td>
+    </tr>
+<tr>
+<th>7</th>
+      <td>2012</td>
+      <td>Elixir</td>
+      <td>José Valim</td>
+      <td>Erlang, Ruby, Clojure</td>
+    </tr>
+<tr>
+<th>8</th>
+      <td>2012</td>
+      <td>Elm</td>
+      <td>Evan Czaplicki</td>
+      <td>Haskell, Standard ML, OCaml, F#</td>
+    </tr>
+<tr>
+<th>9</th>
+      <td>2012</td>
+      <td>TypeScript</td>
+      <td>Anders Hejlsberg, Microsoft</td>
+      <td>JavaScript, CoffeeScript</td>
+    </tr>
+<tr>
+<th>10</th>
+      <td>2012</td>
+      <td>Julia</td>
+      <td>Jeff Bezanson, Stefan Karpinski, Viral Shah, A...</td>
+      <td>MATLAB, Lisp, C, Fortran, Mathematica[9] (stri...</td>
+    </tr>
+<tr>
+<th>11</th>
+      <td>2012</td>
+      <td>P</td>
+      <td>Vivek Gupta: not the politician, Ethan Jackson...</td>
+      <td>NaN</td>
+    </tr>
+<tr>
+<th>12</th>
+      <td>2012</td>
+      <td>Ada 2012</td>
+      <td>ARA and Ada Europe (ISO/IEC 8652:2012)</td>
+      <td>Ada 2005, ISO/IEC 8652:1995/Amd 1:2007</td>
+    </tr>
+<tr>
+<th>13</th>
+      <td>2014</td>
+      <td>Crystal</td>
+      <td>Ary Borenszweig, Manas Technology Solutions</td>
+      <td>Ruby, C, Rust, Go, C#, Python</td>
+    </tr>
+<tr>
+<th>14</th>
+      <td>2014</td>
+      <td>Hack</td>
+      <td>Facebook</td>
+      <td>PHP</td>
+    </tr>
+<tr>
+<th>15</th>
+      <td>2014</td>
+      <td>Swift</td>
+      <td>Apple Inc.</td>
+      <td>Objective-C, Rust, Haskell, Ruby, Python, C#, CLU</td>
+    </tr>
+<tr>
+<th>16</th>
+      <td>2014</td>
+      <td>C++14</td>
+      <td>C++ ISO/IEC 14882:2014</td>
+      <td>C++, Standard C, C</td>
+    </tr>
+<tr>
+<th>17</th>
+      <td>2015</td>
+      <td>Atari 2600 SuperCharger BASIC</td>
+      <td>Microsoft sponsored think tank RelationalFrame...</td>
+      <td>BASIC, Dartmouth BASIC (compiled programming l...</td>
+    </tr>
+<tr>
+<th>18</th>
+      <td>2015</td>
+      <td>Perl 6</td>
+      <td>The Rakudo Team</td>
+      <td>Perl, Haskell, Python, Ruby</td>
+    </tr>
+<tr>
+<th>19</th>
+      <td>2016</td>
+      <td>Ring</td>
+      <td>Mahmoud Fayed</td>
+      <td>Lua, Python, Ruby, C, C#, BASIC, QML, xBase, S...</td>
+    </tr>
+<tr>
+<th>20</th>
+      <td>2017</td>
+      <td>C++17</td>
+      <td>C++ ISO/IEC 14882:2017</td>
+      <td>C++, Standard C, C</td>
+    </tr>
+<tr>
+<th>21</th>
+      <td>2017</td>
+      <td>Atari 2600 Flashback BASIC</td>
+      <td>Microsoft sponsored think tank RelationalFrame...</td>
+      <td>BASIC, Dartmouth BASIC (compiled programming l...</td>
+    </tr>
+<tr>
+<th>22</th>
+      <td>Year</td>
+      <td>Name</td>
+      <td>Chief developer, company</td>
+      <td>Predecessor(s)</td>
+    </tr>
+</tbody>
+</table>
+<p>388 rows × 4 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Remove the extra <em>header</em> rows.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [23]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">prog_lang</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">Year</span> <span class="o">!=</span> <span class="s1">'Year'</span><span class="p">]</span>
+<span class="n">prog_lang</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[23]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead><tr style="text-align: right;">
+<th></th>
+      <th>Year</th>
+      <th>Name</th>
+      <th>Chief developer, company</th>
+      <th>Predecessor(s)</th>
+    </tr></thead>
+<tbody>
+<tr>
+<th>0</th>
+      <td>1943–45</td>
+      <td>Plankalkül (concept)</td>
+      <td>Konrad Zuse</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>1</th>
+      <td>1943–46</td>
+      <td>ENIAC coding system</td>
+      <td>John von Neumann, John Mauchly, J. Presper Eck...</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>2</th>
+      <td>1946</td>
+      <td>ENIAC Short Code</td>
+      <td>Richard Clippinger, John von Neumann after Ala...</td>
+      <td>ENIAC coding system</td>
+    </tr>
+<tr>
+<th>3</th>
+      <td>1946</td>
+      <td>Von Neumann and Goldstine graphing system (Not...</td>
+      <td>John von Neumann and Herman Goldstine</td>
+      <td>ENIAC coding system</td>
+    </tr>
+<tr>
+<th>4</th>
+      <td>1947</td>
+      <td>ARC Assembly</td>
+      <td>Kathleen Booth[1][2]</td>
+      <td>ENIAC coding system</td>
+    </tr>
+<tr>
+<th>5</th>
+      <td>1948</td>
+      <td>CPC Coding scheme</td>
+      <td>Howard H. Aiken</td>
+      <td>Analytical Engine order code</td>
+    </tr>
+<tr>
+<th>6</th>
+      <td>1948</td>
+      <td>Curry notation system</td>
+      <td>Haskell Curry</td>
+      <td>ENIAC coding system</td>
+    </tr>
+<tr>
+<th>7</th>
+      <td>1948</td>
+      <td>Plankalkül (concept published)</td>
+      <td>Konrad Zuse</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>8</th>
+      <td>1949</td>
+      <td>Short Code</td>
+      <td>John Mauchly and William F. Schmitt</td>
+      <td>ENIAC Short Code</td>
+    </tr>
+<tr>
+<th>0</th>
+      <td>1950</td>
+      <td>Short Code</td>
+      <td>William F Schmidt, Albert B. Tonik,[3] J.R. Logan</td>
+      <td>Brief Code</td>
+    </tr>
+<tr>
+<th>1</th>
+      <td>1950</td>
+      <td>Birkbeck Assembler</td>
+      <td>Kathleen Booth</td>
+      <td>ARC</td>
+    </tr>
+<tr>
+<th>2</th>
+      <td>1951</td>
+      <td>Superplan</td>
+      <td>Heinz Rutishauser</td>
+      <td>Plankalkül</td>
+    </tr>
+<tr>
+<th>3</th>
+      <td>1951</td>
+      <td>ALGAE</td>
+      <td>Edward A Voorhees and Karl Balke</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>4</th>
+      <td>1951</td>
+      <td>Intermediate Programming Language</td>
+      <td>Arthur Burks</td>
+      <td>Short Code</td>
+    </tr>
+<tr>
+<th>5</th>
+      <td>1951</td>
+      <td>Regional Assembly Language</td>
+      <td>Maurice Wilkes</td>
+      <td>EDSAC</td>
+    </tr>
+<tr>
+<th>6</th>
+      <td>1951</td>
+      <td>Boehm unnamed coding system</td>
+      <td>Corrado Böhm</td>
+      <td>CPC Coding scheme</td>
+    </tr>
+<tr>
+<th>7</th>
+      <td>1951</td>
+      <td>Klammerausdrücke</td>
+      <td>Konrad Zuse</td>
+      <td>Plankalkül</td>
+    </tr>
+<tr>
+<th>8</th>
+      <td>1951</td>
+      <td>OMNIBAC Symbolic Assembler</td>
+      <td>Charles Katz</td>
+      <td>Short Code</td>
+    </tr>
+<tr>
+<th>9</th>
+      <td>1951</td>
+      <td>Stanislaus (Notation)</td>
+      <td>Fritz Bauer</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>10</th>
+      <td>1951</td>
+      <td>Whirlwind assembler</td>
+      <td>Charles Adams and Jack Gilmore at MIT Project ...</td>
+      <td>EDSAC</td>
+    </tr>
+<tr>
+<th>11</th>
+      <td>1951</td>
+      <td>Rochester assembler</td>
+      <td>Nat Rochester</td>
+      <td>EDSAC</td>
+    </tr>
+<tr>
+<th>12</th>
+      <td>1951</td>
+      <td>Sort Merge Generator</td>
+      <td>Betty Holberton</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>13</th>
+      <td>1952</td>
+      <td>A-0</td>
+      <td>Grace Hopper</td>
+      <td>Short Code</td>
+    </tr>
+<tr>
+<th>14</th>
+      <td>1952</td>
+      <td>Glennie Autocode</td>
+      <td>Alick Glennie after Alan Turing</td>
+      <td>CPC Coding scheme</td>
+    </tr>
+<tr>
+<th>15</th>
+      <td>1952</td>
+      <td>Editing Generator</td>
+      <td>Milly Koss</td>
+      <td>SORT/MERGE</td>
+    </tr>
+<tr>
+<th>16</th>
+      <td>1952</td>
+      <td>COMPOOL</td>
+      <td>RAND/SDC</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>17</th>
+      <td>1953</td>
+      <td>Speedcoding</td>
+      <td>John W. Backus</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>18</th>
+      <td>1953</td>
+      <td>READ/PRINT</td>
+      <td>Don Harroff, James Fishman, George Ryckman</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>19</th>
+      <td>1954</td>
+      <td>Laning and Zierler system</td>
+      <td>Laning, Zierler, Adams at MIT Project Whirlwind</td>
+      <td>none (unique language)</td>
+    </tr>
+<tr>
+<th>20</th>
+      <td>1954</td>
+      <td>Mark I Autocode</td>
+      <td>Tony Brooker</td>
+      <td>Glennie Autocode</td>
+    </tr>
+<tr>
+<th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+<tr>
+<th>45</th>
+      <td>2008</td>
+      <td>Genie</td>
+      <td>Jamie McCracken</td>
+      <td>Python, Boo, D, Object Pascal</td>
+    </tr>
+<tr>
+<th>46</th>
+      <td>2008</td>
+      <td>Pure</td>
+      <td>Albert Gräf</td>
+      <td>Q</td>
+    </tr>
+<tr>
+<th>47</th>
+      <td>2009</td>
+      <td>Chapel</td>
+      <td>Brad Chamberlain, Cray Inc.</td>
+      <td>HPF, ZPL</td>
+    </tr>
+<tr>
+<th>48</th>
+      <td>2009</td>
+      <td>Go</td>
+      <td>Google</td>
+      <td>C, Oberon, Limbo, Smalltalk</td>
+    </tr>
+<tr>
+<th>49</th>
+      <td>2009</td>
+      <td>CoffeeScript</td>
+      <td>Jeremy Ashkenas</td>
+      <td>JavaScript, Ruby, Python, Haskell</td>
+    </tr>
+<tr>
+<th>50</th>
+      <td>2009</td>
+      <td>Idris</td>
+      <td>Edwin Brady</td>
+      <td>Haskell, Agda, Coq</td>
+    </tr>
+<tr>
+<th>51</th>
+      <td>2009</td>
+      <td>Parasail</td>
+      <td>S. Tucker Taft, AdaCore</td>
+      <td>Modula, Ada, Pascal, ML</td>
+    </tr>
+<tr>
+<th>52</th>
+      <td>2009</td>
+      <td>Whiley</td>
+      <td>David J. Pearce</td>
+      <td>Java, C, Python</td>
+    </tr>
+<tr>
+<th>0</th>
+      <td>2010</td>
+      <td>Rust</td>
+      <td>Graydon Hoare, Mozilla</td>
+      <td>Alef, C++, Camlp4, Erlang, Hermes, Limbo, Napi...</td>
+    </tr>
+<tr>
+<th>1</th>
+      <td>2011</td>
+      <td>Ceylon</td>
+      <td>Gavin King, Red Hat</td>
+      <td>Java</td>
+    </tr>
+<tr>
+<th>2</th>
+      <td>2011</td>
+      <td>Dart</td>
+      <td>Google</td>
+      <td>Java, JavaScript, CoffeeScript, Go</td>
+    </tr>
+<tr>
+<th>3</th>
+      <td>2011</td>
+      <td>C++11</td>
+      <td>C++ ISO/IEC 14882:2011</td>
+      <td>C++, Standard C, C</td>
+    </tr>
+<tr>
+<th>4</th>
+      <td>2011</td>
+      <td>Kotlin</td>
+      <td>JetBrains</td>
+      <td>Java, Scala, Groovy, C#, Gosu</td>
+    </tr>
+<tr>
+<th>5</th>
+      <td>2011</td>
+      <td>Red</td>
+      <td>Nenad Rakocevic</td>
+      <td>Rebol, Scala, Lua</td>
+    </tr>
+<tr>
+<th>6</th>
+      <td>2011</td>
+      <td>Opa</td>
+      <td>MLstate</td>
+      <td>OCaml, Erlang, JavaScript</td>
+    </tr>
+<tr>
+<th>7</th>
+      <td>2012</td>
+      <td>Elixir</td>
+      <td>José Valim</td>
+      <td>Erlang, Ruby, Clojure</td>
+    </tr>
+<tr>
+<th>8</th>
+      <td>2012</td>
+      <td>Elm</td>
+      <td>Evan Czaplicki</td>
+      <td>Haskell, Standard ML, OCaml, F#</td>
+    </tr>
+<tr>
+<th>9</th>
+      <td>2012</td>
+      <td>TypeScript</td>
+      <td>Anders Hejlsberg, Microsoft</td>
+      <td>JavaScript, CoffeeScript</td>
+    </tr>
+<tr>
+<th>10</th>
+      <td>2012</td>
+      <td>Julia</td>
+      <td>Jeff Bezanson, Stefan Karpinski, Viral Shah, A...</td>
+      <td>MATLAB, Lisp, C, Fortran, Mathematica[9] (stri...</td>
+    </tr>
+<tr>
+<th>11</th>
+      <td>2012</td>
+      <td>P</td>
+      <td>Vivek Gupta: not the politician, Ethan Jackson...</td>
+      <td>NaN</td>
+    </tr>
+<tr>
+<th>12</th>
+      <td>2012</td>
+      <td>Ada 2012</td>
+      <td>ARA and Ada Europe (ISO/IEC 8652:2012)</td>
+      <td>Ada 2005, ISO/IEC 8652:1995/Amd 1:2007</td>
+    </tr>
+<tr>
+<th>13</th>
+      <td>2014</td>
+      <td>Crystal</td>
+      <td>Ary Borenszweig, Manas Technology Solutions</td>
+      <td>Ruby, C, Rust, Go, C#, Python</td>
+    </tr>
+<tr>
+<th>14</th>
+      <td>2014</td>
+      <td>Hack</td>
+      <td>Facebook</td>
+      <td>PHP</td>
+    </tr>
+<tr>
+<th>15</th>
+      <td>2014</td>
+      <td>Swift</td>
+      <td>Apple Inc.</td>
+      <td>Objective-C, Rust, Haskell, Ruby, Python, C#, CLU</td>
+    </tr>
+<tr>
+<th>16</th>
+      <td>2014</td>
+      <td>C++14</td>
+      <td>C++ ISO/IEC 14882:2014</td>
+      <td>C++, Standard C, C</td>
+    </tr>
+<tr>
+<th>17</th>
+      <td>2015</td>
+      <td>Atari 2600 SuperCharger BASIC</td>
+      <td>Microsoft sponsored think tank RelationalFrame...</td>
+      <td>BASIC, Dartmouth BASIC (compiled programming l...</td>
+    </tr>
+<tr>
+<th>18</th>
+      <td>2015</td>
+      <td>Perl 6</td>
+      <td>The Rakudo Team</td>
+      <td>Perl, Haskell, Python, Ruby</td>
+    </tr>
+<tr>
+<th>19</th>
+      <td>2016</td>
+      <td>Ring</td>
+      <td>Mahmoud Fayed</td>
+      <td>Lua, Python, Ruby, C, C#, BASIC, QML, xBase, S...</td>
+    </tr>
+<tr>
+<th>20</th>
+      <td>2017</td>
+      <td>C++17</td>
+      <td>C++ ISO/IEC 14882:2017</td>
+      <td>C++, Standard C, C</td>
+    </tr>
+<tr>
+<th>21</th>
+      <td>2017</td>
+      <td>Atari 2600 Flashback BASIC</td>
+      <td>Microsoft sponsored think tank RelationalFrame...</td>
+      <td>BASIC, Dartmouth BASIC (compiled programming l...</td>
+    </tr>
+</tbody>
+</table>
+<p>380 rows × 4 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>In what year was Python created?</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [24]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">prog_lang</span><span class="p">[</span><span class="n">prog_lang</span><span class="o">.</span><span class="n">Name</span> <span class="o">==</span> <span class="s1">'Python'</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[24]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead><tr style="text-align: right;">
+<th></th>
+      <th>Year</th>
+      <th>Name</th>
+      <th>Chief developer, company</th>
+      <th>Predecessor(s)</th>
+    </tr></thead>
+<tbody><tr>
+<th>9</th>
+      <td>1991</td>
+      <td>Python</td>
+      <td>Guido van Rossum</td>
+      <td>ABC, ALGOL 68, Icon, Modula-3</td>
+    </tr></tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Conclusion">Conclusion<a class="anchor-link" href="posts/parsing-html-tables-in-python-with-pandas/#Conclusion">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The last example should say it all.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [25]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="n">dfs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="s1">'https://en.wikipedia.org/wiki/Timeline_of_programming_languages'</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dfs</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">12</span><span class="p">])</span>
+<span class="n">prog_lang</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">Year</span> <span class="o">!=</span> <span class="s1">'Year'</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Four lines of code (including the <code>import</code>) and we have one DataFrame containing the data from 8 different HTML tables on one wikipedia page!</p>
+<p>Do I need to say why I love Python and pandas? :-)</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This post was written in a jupyter notebook.
+You can find the notebook on <a href="https://github.com/beenje/blog/blob/master/posts/parsing-html-tables-in-python-with-pandas.ipynb">GitHub</a> and download the conda <a href="posts/parsing-html-tables-in-python-with-pandas/environment.yml">environment.yml</a> file to get all the dependencies I used.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [ ]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+    </div>
+  </div>
+
+    </div>
+    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/logging-to-a-tkinter-scrolledtext-widget/" class="u-url">Logging to a Tkinter ScrolledText Widget</a></h1>
         <div class="metadata">
             <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
                 Benjamin Bertrand
@@ -2279,1094 +5037,6 @@ I'll talk about an even more user friendly way to control it.</p>
 </div>
 </div>
     </div>
-    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/parsing-and-indexing-pdf-in-python/" class="u-url">Parsing and indexing PDF in Python</a></h1>
-        <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
-                Benjamin Bertrand
-            </span></p>
-            <p class="dateline"><a href="posts/parsing-and-indexing-pdf-in-python/" rel="bookmark"><time class="published dt-published" datetime="2016-11-16T21:59:23+01:00" title="2016-11-16 21:59">2016-11-16 21:59</time></a></p>
-                <p class="commentline">
-        
-    <a href="posts/parsing-and-indexing-pdf-in-python/#disqus_thread" data-disqus-identifier="cache/posts/parsing-and-indexing-pdf-in-python.html">Comments</a>
-
-
-        </p>
-</div>
-    </header><div class="e-content entry-content">
-    <div tabindex="-1" id="notebook" class="border-box-sizing">
-    <div class="container" id="notebook-container">
-
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>I have a <a href="http://www.getdoxie.com">Doxie Go</a> scanner and I scan all the documents I receive in paper.
-That's nice, but it creates another problem. All the resulting PDF files have to be named, organized and stored...
-Doing that manually is boring and time consuming. Of course that's something I want to automate!</p>
-<p>I even bought <a href="https://www.noodlesoft.com">Hazel</a> a while ago.
-It's a nice software that monitors files in a folder and performs specific instructions based on the rules you defined.
-It works well but I felt a bit limited and I thought I could probably write something more tailored to my use case.
-And that would be more fun :-)</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Parsing-PDF-in-Python">Parsing PDF in Python<a class="anchor-link" href="posts/parsing-and-indexing-pdf-in-python/#Parsing-PDF-in-Python">¶</a>
-</h2>
-<p>A quick solution I found was to run <a href="https://linux.die.net/man/1/pdftotext">pdftotext</a> using subprocess.
-I looked at <a href="https://euske.github.io/pdfminer/">PDFMiner</a>, a pure Python PDF parser but I found pdftotext
-output to be more accurate.
-On MacOS, you can install it using <a href="http://brew.sh">Homebrew</a>:</p>
-
-<pre><code>$ brew install Caskroom/cask/pdftotext</code></pre>
-<p>Here is a simple Python function to do that:</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [1]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">subprocess</span>
-
-<span class="k">def</span> <span class="nf">parse_pdf</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">content</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">([</span><span class="s2">"pdftotext"</span><span class="p">,</span> <span class="s1">'-enc'</span><span class="p">,</span> <span class="s1">'UTF-8'</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s2">"-"</span><span class="p">])</span>
-    <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">'Skipping </span><span class="si">{}</span><span class="s1"> (pdftotext returned status </span><span class="si">{}</span><span class="s1">)'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">returncode</span><span class="p">))</span>
-        <span class="k">return</span> <span class="kc">None</span>
-    <span class="k">return</span> <span class="n">content</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">'utf-8'</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Let's try to parse a pdf file. We'll use <code>requests</code> to download a sample file.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [2]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
-
-<span class="n">url</span> <span class="o">=</span> <span class="s1">'http://www.cbu.edu.zm/downloads/pdf-sample.pdf'</span>
-<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">'/tmp/pdf-sample.pdf'</span><span class="p">,</span> <span class="s1">'wb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Let's first look at the PDF:</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [3]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="k">import</span> <span class="n">IFrame</span>
-<span class="n">IFrame</span><span class="p">(</span><span class="s1">'http://www.cbu.edu.zm/downloads/pdf-sample.pdf'</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">870</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt output_prompt">Out[3]:</div>
-
-<div class="output_html rendered_html output_subarea output_execute_result">
-
-        <iframe width="600" height="870" src="http://www.cbu.edu.zm/downloads/pdf-sample.pdf" frameborder="0" allowfullscreen></iframe>
-        
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Nothing complex. It should be easy to parse.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [4]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">content</span> <span class="o">=</span> <span class="n">parse_pdf</span><span class="p">(</span><span class="s1">'/tmp/pdf-sample.pdf'</span><span class="p">)</span>
-<span class="n">content</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt output_prompt">Out[4]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>"Adobe Acrobat PDF Files\nAdobe® Portable Document Format (PDF) is a universal file format that preserves all of the fonts, formatting, colours and graphics of any source document, regardless of the application and platform used to create it. Adobe PDF is an ideal format for electronic document distribution as it overcomes the problems commonly encountered with electronic file sharing. • Anyone, anywhere can open a PDF file. All you need is the free Adobe Acrobat Reader. Recipients of other file formats sometimes can't open files because they don't have the applications used to create the documents. PDF files always print correctly on any printing device. PDF files always display exactly as created, regardless of fonts, software, and operating systems. Fonts, and graphics are not lost due to platform, software, and version incompatibilities. The free Acrobat Reader is easy to download and can be freely distributed by anyone. Compact PDF files are smaller than their source files and download a page at a time for fast display on the Web.\n\n• •\n\n• •\n\n\x0c"</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>This works quite well. The layout is not respected but it's the text that matters. It would be easy to define some regex to define rules based on the PDF content.</p>
-<p>This could be the first step in naming and organizing the scanned documents.
-But it would be nice to have an interface to easily search in all the files.
-I've already used MongoDB full text search in a webapp I wrote and it worked well for my use case.
-But I read about Elasticsearch and I always wanted to give it a try.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Elasticsearch-Ingest-Attachment-Processor-Plugin">Elasticsearch Ingest Attachment Processor Plugin<a class="anchor-link" href="posts/parsing-and-indexing-pdf-in-python/#Elasticsearch-Ingest-Attachment-Processor-Plugin">¶</a>
-</h2>
-<p>I could just index the result from pdftotext, but I know there is a plugin that can parse PDF files.</p>
-<p>The <a href="https://github.com/elastic/elasticsearch-mapper-attachments#mapper-attachments-type-for-elasticsearch&gt;">Mapper Attachments Type plugin</a>
-is <a href="https://www.elastic.co/guide/en/elasticsearch/plugins/5.x/mapper-attachments.html&gt;">deprecated</a>
-in 5.0.0. It has been replaced with the <a href="https://www.elastic.co/guide/en/elasticsearch/plugins/5.x/ingest-attachment.html">ingest-attachment</a>
-plugin.
-So let's look at that.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Running-Elasticsearch">Running Elasticsearch<a class="anchor-link" href="posts/parsing-and-indexing-pdf-in-python/#Running-Elasticsearch">¶</a>
-</h3>
-<p>To run Elasticsearch, the easiest is to use Docker.
-As the official image from <a href="https://hub.docker.com/_/elasticsearch/">Docker Hub</a> comes with no plugin, we'll
-create our own image.
-See <a href="https://www.elastic.co/blog/elasticsearch-docker-plugin-management">Elasticsearch Plugin Management with Docker</a>
-for more information.</p>
-<p>Here is our <code>Dockerfile</code>:</p>
-
-<pre><code>FROM elasticsearch:5
-
-RUN /usr/share/elasticsearch/bin/elasticsearch-plugin install ingest-attachment</code></pre>
-<p>Create the <code>elasticsearch-ingest</code> docker image:</p>
-
-<pre><code>$ docker build -t elasticsearch-ingest .</code></pre>
-<p>We can now run elasticsearch with the ingest-attachment plugin:</p>
-
-<pre><code>$ docker run -d -p 9200:9200 elasticsearch-ingest</code></pre>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Python-Elasticsearch-Client">Python Elasticsearch Client<a class="anchor-link" href="posts/parsing-and-indexing-pdf-in-python/#Python-Elasticsearch-Client">¶</a>
-</h3>
-<p>We'll use <a href="https://elasticsearch-py.readthedocs.io/en/master/">elasticsearch-py</a>
-to interact with our Elasticsearch cluster.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [5]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">elasticsearch</span> <span class="k">import</span> <span class="n">Elasticsearch</span>
-<span class="n">es</span> <span class="o">=</span> <span class="n">Elasticsearch</span><span class="p">()</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Let's first check that our elasticsearch cluster is alive by asking about its health:</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [6]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">es</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">health</span><span class="p">()</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt output_prompt">Out[6]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>'1479333419 21:56:59 elasticsearch green 1 1 0 0 0 0 0 0 - 100.0%\n'</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Nice! We can start playing with our ES cluster.</p>
-<p>As described in the <a href="https://www.elastic.co/guide/en/elasticsearch/plugins/master/using-ingest-attachment.html">documentation</a>, we first have to create a pipeline to use the Ingest Attachment Processor Plugin:</p>
-
-<pre><code>PUT _ingest/pipeline/attachment
-{
-  "description" : "Extract attachment information",
-  "processors" : [
-    {
-      "attachment" : {
-        "field" : "data"
-      }
-    }
-  ]
-}</code></pre>
-<p>OK, how do we do that using the Python client?</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [7]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">body</span> <span class="o">=</span> <span class="p">{</span>
-  <span class="s2">"description"</span> <span class="p">:</span> <span class="s2">"Extract attachment information"</span><span class="p">,</span>
-  <span class="s2">"processors"</span> <span class="p">:</span> <span class="p">[</span>
-    <span class="p">{</span>
-      <span class="s2">"attachment"</span> <span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"field"</span> <span class="p">:</span> <span class="s2">"data"</span>
-      <span class="p">}</span>
-    <span class="p">}</span>
-  <span class="p">]</span>
-<span class="p">}</span>
-<span class="n">es</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">'_ingest'</span><span class="p">,</span> <span class="n">doc_type</span><span class="o">=</span><span class="s1">'pipeline'</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s1">'attachment'</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt output_prompt">Out[7]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>{'acknowledged': True}</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Now, we can send a document to our pipeline. Let's start by using the same example as in the documentation:</p>
-
-<pre><code>PUT my_index/my_type/my_id?pipeline=attachment
-{
-  "data": "e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0="
-}</code></pre>
-<p>Using Python client, this gives:</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [8]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">result1</span> <span class="o">=</span> <span class="n">es</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">'my_index'</span><span class="p">,</span> <span class="n">doc_type</span><span class="o">=</span><span class="s1">'my_type'</span><span class="p">,</span> <span class="n">pipeline</span><span class="o">=</span><span class="s1">'attachment'</span><span class="p">,</span>
-                  <span class="n">body</span><span class="o">=</span><span class="p">{</span><span class="s1">'data'</span><span class="p">:</span> <span class="s2">"e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0="</span><span class="p">})</span>
-<span class="n">result1</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt output_prompt">Out[8]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>{'_id': 'AVhvJKzVIvjFWZACJU_t',
- '_index': 'my_index',
- '_shards': {'failed': 0, 'successful': 1, 'total': 2},
- '_type': 'my_type',
- '_version': 1,
- 'created': True,
- 'result': 'created'}</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Let's try to get the created document based on its id:</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [9]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">es</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">'my_index'</span><span class="p">,</span> <span class="n">doc_type</span><span class="o">=</span><span class="s1">'my_type'</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">result1</span><span class="p">[</span><span class="s1">'_id'</span><span class="p">])</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt output_prompt">Out[9]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>{'_id': 'AVhvJKzVIvjFWZACJU_t',
- '_index': 'my_index',
- '_source': {'attachment': {'content': 'Lorem ipsum dolor sit amet',
-   'content_length': 28,
-   'content_type': 'application/rtf',
-   'language': 'ro'},
-  'data': 'e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0='},
- '_type': 'my_type',
- '_version': 1,
- 'found': True}</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>We can see that the binary data passed to the pipeline was a Rich Text Format file and that the content was extracted: <em>Lorem ipsum dolor sit amet</em></p>
-<p>Displaying the binary data is not very useful. It doesn't matter in this example as it's quite small.
-But it would be much bigger even on small files. We can exclude it using <code>_source_exclude</code>:</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [10]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">es</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">'my_index'</span><span class="p">,</span> <span class="n">doc_type</span><span class="o">=</span><span class="s1">'my_type'</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">result1</span><span class="p">[</span><span class="s1">'_id'</span><span class="p">],</span> <span class="n">_source_exclude</span><span class="o">=</span><span class="p">[</span><span class="s1">'data'</span><span class="p">])</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt output_prompt">Out[10]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>{'_id': 'AVhvJKzVIvjFWZACJU_t',
- '_index': 'my_index',
- '_source': {'attachment': {'content': 'Lorem ipsum dolor sit amet',
-   'content_length': 28,
-   'content_type': 'application/rtf',
-   'language': 'ro'}},
- '_type': 'my_type',
- '_version': 1,
- 'found': True}</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h3 id="Indexing-PDF-files">Indexing PDF files<a class="anchor-link" href="posts/parsing-and-indexing-pdf-in-python/#Indexing-PDF-files">¶</a>
-</h3>
-<p>Let's try to parse the same sample pdf as before.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [11]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">url</span> <span class="o">=</span> <span class="s1">'http://www.cbu.edu.zm/downloads/pdf-sample.pdf'</span>
-<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Note that we have to encode the content of the pdf before to pass it to ES.
-The source field must be a base64 encoded binary.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [12]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">base64</span>
-
-<span class="n">data</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">'ascii'</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [13]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">result2</span> <span class="o">=</span> <span class="n">es</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">'my_index'</span><span class="p">,</span> <span class="n">doc_type</span><span class="o">=</span><span class="s1">'my_type'</span><span class="p">,</span> <span class="n">pipeline</span><span class="o">=</span><span class="s1">'attachment'</span><span class="p">,</span>
-                  <span class="n">body</span><span class="o">=</span><span class="p">{</span><span class="s1">'data'</span><span class="p">:</span> <span class="n">data</span><span class="p">})</span>
-<span class="n">result2</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt output_prompt">Out[13]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>{'_id': 'AVhvJMC6IvjFWZACJU_u',
- '_index': 'my_index',
- '_shards': {'failed': 0, 'successful': 1, 'total': 2},
- '_type': 'my_type',
- '_version': 1,
- 'created': True,
- 'result': 'created'}</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>We can get the document based on its id:</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [14]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">doc</span> <span class="o">=</span> <span class="n">es</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">'my_index'</span><span class="p">,</span> <span class="n">doc_type</span><span class="o">=</span><span class="s1">'my_type'</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">result2</span><span class="p">[</span><span class="s1">'_id'</span><span class="p">],</span> <span class="n">_source_exclude</span><span class="o">=</span><span class="p">[</span><span class="s1">'data'</span><span class="p">])</span>
-<span class="n">doc</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt output_prompt">Out[14]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>{'_id': 'AVhvJMC6IvjFWZACJU_u',
- '_index': 'my_index',
- '_source': {'attachment': {'author': 'cdaily',
-   'content': "Adobe Acrobat PDF Files\n\nAdobe® Portable Document Format (PDF) is a universal file format that preserves all\nof the fonts, formatting, colours and graphics of any source document, regardless of\nthe application and platform used to create it.\n\nAdobe PDF is an ideal format for electronic document distribution as it overcomes the\nproblems commonly encountered with electronic file sharing.\n\n•  Anyone, anywhere can open a PDF file. All you need is the free Adobe Acrobat\nReader. Recipients of other file formats sometimes can't open files because they\ndon't have the applications used to create the documents.\n\n•  PDF files always print correctly on any printing device.\n\n•  PDF files always display exactly as created, regardless of fonts, software, and\noperating systems. Fonts, and graphics are not lost due to platform, software, and\nversion incompatibilities.\n\n•  The free Acrobat Reader is easy to download and can be freely distributed by\nanyone.\n\n•  Compact PDF files are smaller than their source files and download a\npage at a time for fast display on the Web.",
-   'content_length': 1073,
-   'content_type': 'application/pdf',
-   'date': '2000-06-28T23:21:08Z',
-   'language': 'en',
-   'title': 'This is a test PDF file'}},
- '_type': 'my_type',
- '_version': 1,
- 'found': True}</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Or with a basic search:</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [15]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">es</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">'my_index'</span><span class="p">,</span> <span class="n">doc_type</span><span class="o">=</span><span class="s1">'my_type'</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="s1">'Adobe'</span><span class="p">,</span> <span class="n">_source_exclude</span><span class="o">=</span><span class="p">[</span><span class="s1">'data'</span><span class="p">])</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt output_prompt">Out[15]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>{'_shards': {'failed': 0, 'successful': 5, 'total': 5},
- 'hits': {'hits': [{'_id': 'AVhvJMC6IvjFWZACJU_u',
-    '_index': 'my_index',
-    '_score': 0.45930308,
-    '_source': {'attachment': {'author': 'cdaily',
-      'content': "Adobe Acrobat PDF Files\n\nAdobe® Portable Document Format (PDF) is a universal file format that preserves all\nof the fonts, formatting, colours and graphics of any source document, regardless of\nthe application and platform used to create it.\n\nAdobe PDF is an ideal format for electronic document distribution as it overcomes the\nproblems commonly encountered with electronic file sharing.\n\n•  Anyone, anywhere can open a PDF file. All you need is the free Adobe Acrobat\nReader. Recipients of other file formats sometimes can't open files because they\ndon't have the applications used to create the documents.\n\n•  PDF files always print correctly on any printing device.\n\n•  PDF files always display exactly as created, regardless of fonts, software, and\noperating systems. Fonts, and graphics are not lost due to platform, software, and\nversion incompatibilities.\n\n•  The free Acrobat Reader is easy to download and can be freely distributed by\nanyone.\n\n•  Compact PDF files are smaller than their source files and download a\npage at a time for fast display on the Web.",
-      'content_length': 1073,
-      'content_type': 'application/pdf',
-      'date': '2000-06-28T23:21:08Z',
-      'language': 'en',
-      'title': 'This is a test PDF file'}},
-    '_type': 'my_type'}],
-  'max_score': 0.45930308,
-  'total': 1},
- 'timed_out': False,
- 'took': 75}</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Of course Elasticsearch allows much more complex queries. But that's something for another time.</p>
-<p>One interesting thing is that by printing the content, we can see that even the layout is quite acurate! Much better than the pdftotext output:</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [16]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s1">'_source'</span><span class="p">][</span><span class="s1">'attachment'</span><span class="p">][</span><span class="s1">'content'</span><span class="p">])</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Adobe Acrobat PDF Files
-
-Adobe® Portable Document Format (PDF) is a universal file format that preserves all
-of the fonts, formatting, colours and graphics of any source document, regardless of
-the application and platform used to create it.
-
-Adobe PDF is an ideal format for electronic document distribution as it overcomes the
-problems commonly encountered with electronic file sharing.
-
-•  Anyone, anywhere can open a PDF file. All you need is the free Adobe Acrobat
-Reader. Recipients of other file formats sometimes can't open files because they
-don't have the applications used to create the documents.
-
-•  PDF files always print correctly on any printing device.
-
-•  PDF files always display exactly as created, regardless of fonts, software, and
-operating systems. Fonts, and graphics are not lost due to platform, software, and
-version incompatibilities.
-
-•  The free Acrobat Reader is easy to download and can be freely distributed by
-anyone.
-
-•  Compact PDF files are smaller than their source files and download a
-page at a time for fast display on the Web.
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>The ingest-attachment plugin uses the Apache text extraction library <a href="http://tika.apache.org">Tika</a>.
-It's really powerful. It detects and extracts metadata and text from many file types.</p>
-<p>Sending the file directly to Elasticsearch is nice, but in my use case, I'd like to process the file (change its title, move it to a specific location...) based on its content. I could of course update the document in ES after processing it.</p>
-<p>It might be better in some case to decorelate the parsing and processing from the indexing.
-So let's check how to use Tika from Python.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Apache-Tika">Apache Tika<a class="anchor-link" href="posts/parsing-and-indexing-pdf-in-python/#Apache-Tika">¶</a>
-</h2>
-<p><a href="https://github.com/chrismattmann/tika-python">Tika-Python</a> makes Apache Tika available as a Python library.
-It can even starts a Tika REST server in the background, but this requires Java 7+ to be installed.
-I prefer to run the server myself using the prebuilt docker image: <a href="http://logicalspark.github.io/docker-tikaserver/">docker-tikaserver</a>.
-Like that I have control of what is running.</p>
-
-<pre><code>$ docker run --rm -p 9998:9998 logicalspark/docker-tikaserver</code></pre>
-<p>We can then set Tika-Python to use Client mode only:</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [17]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">tika</span>
-<span class="n">tika</span><span class="o">.</span><span class="n">TikaClientOnly</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="kn">from</span> <span class="nn">tika</span> <span class="k">import</span> <span class="n">parser</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [18]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">parsed</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s1">'/tmp/pdf-sample.pdf'</span><span class="p">,</span> <span class="s1">'http://localhost:9998/tika'</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt"></div>
-<div class="output_subarea output_stream output_stderr output_text">
-<pre>2016-11-16 22:57:14,233 [MainThread  ] [INFO ]  Starting new HTTP connection (1): localhost
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [19]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">parsed</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt output_prompt">Out[19]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>{'content': "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nThis is a test PDF file\n\n\nAdobe Acrobat PDF Files\n\nAdobe® Portable Document Format (PDF) is a universal file format that preserves all\nof the fonts, formatting, colours and graphics of any source document, regardless of\nthe application and platform used to create it.\n\nAdobe PDF is an ideal format for electronic document distribution as it overcomes the\nproblems commonly encountered with electronic file sharing.\n\n•  Anyone, anywhere can open a PDF file. All you need is the free Adobe Acrobat\nReader. Recipients of other file formats sometimes can't open files because they\ndon't have the applications used to create the documents.\n\n•  PDF files always print correctly on any printing device.\n\n•  PDF files always display exactly as created, regardless of fonts, software, and\noperating systems. Fonts, and graphics are not lost due to platform, software, and\nversion incompatibilities.\n\n•  The free Acrobat Reader is easy to download and can be freely distributed by\nanyone.\n\n•  Compact PDF files are smaller than their source files and download a\npage at a time for fast display on the Web.\n\n\n",
- 'metadata': {'Author': 'cdaily',
-  'Content-Type': 'application/pdf',
-  'Creation-Date': '2000-06-28T23:21:08Z',
-  'Last-Modified': '2013-10-28T19:24:13Z',
-  'Last-Save-Date': '2013-10-28T19:24:13Z',
-  'X-Parsed-By': ['org.apache.tika.parser.DefaultParser',
-   'org.apache.tika.parser.pdf.PDFParser'],
-  'X-TIKA:parse_time_millis': '62',
-  'access_permission:assemble_document': 'true',
-  'access_permission:can_modify': 'true',
-  'access_permission:can_print': 'true',
-  'access_permission:can_print_degraded': 'true',
-  'access_permission:extract_content': 'true',
-  'access_permission:extract_for_accessibility': 'true',
-  'access_permission:fill_in_form': 'true',
-  'access_permission:modify_annotations': 'true',
-  'created': 'Wed Jun 28 23:21:08 UTC 2000',
-  'creator': 'cdaily',
-  'date': '2013-10-28T19:24:13Z',
-  'dc:creator': 'cdaily',
-  'dc:format': 'application/pdf; version=1.3',
-  'dc:title': 'This is a test PDF file',
-  'dcterms:created': '2000-06-28T23:21:08Z',
-  'dcterms:modified': '2013-10-28T19:24:13Z',
-  'meta:author': 'cdaily',
-  'meta:creation-date': '2000-06-28T23:21:08Z',
-  'meta:save-date': '2013-10-28T19:24:13Z',
-  'modified': '2013-10-28T19:24:13Z',
-  'pdf:PDFVersion': '1.3',
-  'pdf:docinfo:created': '2000-06-28T23:21:08Z',
-  'pdf:docinfo:creator': 'cdaily',
-  'pdf:docinfo:creator_tool': 'Microsoft Word 8.0',
-  'pdf:docinfo:modified': '2013-10-28T19:24:13Z',
-  'pdf:docinfo:producer': 'Acrobat Distiller 4.0 for Windows',
-  'pdf:docinfo:title': 'This is a test PDF file',
-  'pdf:encrypted': 'false',
-  'producer': 'Acrobat Distiller 4.0 for Windows',
-  'resourceName': 'pdf-sample.pdf',
-  'title': 'This is a test PDF file',
-  'xmp:CreatorTool': 'Microsoft Word 8.0',
-  'xmpMM:DocumentID': 'uuid:0805e221-80a8-459e-a522-635ed5c1e2e6',
-  'xmpTPg:NPages': '1'}}</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [20]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">parsed</span><span class="p">[</span><span class="s1">'content'</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt"></div>
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>This is a test PDF file
-
-
-Adobe Acrobat PDF Files
-
-Adobe® Portable Document Format (PDF) is a universal file format that preserves all
-of the fonts, formatting, colours and graphics of any source document, regardless of
-the application and platform used to create it.
-
-Adobe PDF is an ideal format for electronic document distribution as it overcomes the
-problems commonly encountered with electronic file sharing.
-
-•  Anyone, anywhere can open a PDF file. All you need is the free Adobe Acrobat
-Reader. Recipients of other file formats sometimes can't open files because they
-don't have the applications used to create the documents.
-
-•  PDF files always print correctly on any printing device.
-
-•  PDF files always display exactly as created, regardless of fonts, software, and
-operating systems. Fonts, and graphics are not lost due to platform, software, and
-version incompatibilities.
-
-•  The free Acrobat Reader is easy to download and can be freely distributed by
-anyone.
-
-•  Compact PDF files are smaller than their source files and download a
-page at a time for fast display on the Web.
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Not sure why we get the title of the PDF inside the content.
-Anyway the text is extracted properly and we even get a lot of metadata:</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In [21]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">parsed</span><span class="p">[</span><span class="s1">'metadata'</span><span class="p">]</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-<div class="prompt output_prompt">Out[21]:</div>
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>{'Author': 'cdaily',
- 'Content-Type': 'application/pdf',
- 'Creation-Date': '2000-06-28T23:21:08Z',
- 'Last-Modified': '2013-10-28T19:24:13Z',
- 'Last-Save-Date': '2013-10-28T19:24:13Z',
- 'X-Parsed-By': ['org.apache.tika.parser.DefaultParser',
-  'org.apache.tika.parser.pdf.PDFParser'],
- 'X-TIKA:parse_time_millis': '62',
- 'access_permission:assemble_document': 'true',
- 'access_permission:can_modify': 'true',
- 'access_permission:can_print': 'true',
- 'access_permission:can_print_degraded': 'true',
- 'access_permission:extract_content': 'true',
- 'access_permission:extract_for_accessibility': 'true',
- 'access_permission:fill_in_form': 'true',
- 'access_permission:modify_annotations': 'true',
- 'created': 'Wed Jun 28 23:21:08 UTC 2000',
- 'creator': 'cdaily',
- 'date': '2013-10-28T19:24:13Z',
- 'dc:creator': 'cdaily',
- 'dc:format': 'application/pdf; version=1.3',
- 'dc:title': 'This is a test PDF file',
- 'dcterms:created': '2000-06-28T23:21:08Z',
- 'dcterms:modified': '2013-10-28T19:24:13Z',
- 'meta:author': 'cdaily',
- 'meta:creation-date': '2000-06-28T23:21:08Z',
- 'meta:save-date': '2013-10-28T19:24:13Z',
- 'modified': '2013-10-28T19:24:13Z',
- 'pdf:PDFVersion': '1.3',
- 'pdf:docinfo:created': '2000-06-28T23:21:08Z',
- 'pdf:docinfo:creator': 'cdaily',
- 'pdf:docinfo:creator_tool': 'Microsoft Word 8.0',
- 'pdf:docinfo:modified': '2013-10-28T19:24:13Z',
- 'pdf:docinfo:producer': 'Acrobat Distiller 4.0 for Windows',
- 'pdf:docinfo:title': 'This is a test PDF file',
- 'pdf:encrypted': 'false',
- 'producer': 'Acrobat Distiller 4.0 for Windows',
- 'resourceName': 'pdf-sample.pdf',
- 'title': 'This is a test PDF file',
- 'xmp:CreatorTool': 'Microsoft Word 8.0',
- 'xmpMM:DocumentID': 'uuid:0805e221-80a8-459e-a522-635ed5c1e2e6',
- 'xmpTPg:NPages': '1'}</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered">
-<div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Conclusion">Conclusion<a class="anchor-link" href="posts/parsing-and-indexing-pdf-in-python/#Conclusion">¶</a>
-</h2>
-<p>We saw different methods to extract text from PDF in Python.
-Depending on what you want to do, one might suit you better. And this was of course not exhaustive.</p>
-<p>If you want to index PDFs, Elasticsearch might be all you need.
-The ingest-attachment plugin uses <a href="http://tika.apache.org">Apache Tika</a> which is very powerful.</p>
-<p>And thanks to <a href="https://github.com/chrismattmann/tika-python">Tika-Python</a>, it's very easy to use Tika directly from Python.
-You can let the library starts the server or use Docker to start your own.</p>
-
-</div>
-</div>
-</div>
-    </div>
-  </div>
-
-    </div>
     </article>
 </div>
 
@@ -3381,7 +5051,7 @@ You can let the library starts the server or use Docker to start your own.</p>
         <!--End of body content-->
 
         <footer id="footer">
-            Contents © 2017         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2018         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
             

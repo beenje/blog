@@ -69,7 +69,1095 @@
 
     
 <div class="postindex">
-    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/gitlab-container-registry-and-proxy/" class="u-url">GitLab Container Registry and proxy</a></h1>
+    <article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/parsing-and-indexing-pdf-in-python/" class="u-url">Parsing and indexing PDF in Python</a></h1>
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                Benjamin Bertrand
+            </span></p>
+            <p class="dateline"><a href="posts/parsing-and-indexing-pdf-in-python/" rel="bookmark"><time class="published dt-published" datetime="2016-11-16T21:59:23+01:00" title="2016-11-16 21:59">2016-11-16 21:59</time></a></p>
+                <p class="commentline">
+        
+    <a href="posts/parsing-and-indexing-pdf-in-python/#disqus_thread" data-disqus-identifier="cache/posts/parsing-and-indexing-pdf-in-python.html">Comments</a>
+
+
+        </p>
+</div>
+    </header><div class="e-content entry-content">
+    <div tabindex="-1" id="notebook" class="border-box-sizing">
+    <div class="container" id="notebook-container">
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>I have a <a href="http://www.getdoxie.com">Doxie Go</a> scanner and I scan all the documents I receive in paper.
+That's nice, but it creates another problem. All the resulting PDF files have to be named, organized and stored...
+Doing that manually is boring and time consuming. Of course that's something I want to automate!</p>
+<p>I even bought <a href="https://www.noodlesoft.com">Hazel</a> a while ago.
+It's a nice software that monitors files in a folder and performs specific instructions based on the rules you defined.
+It works well but I felt a bit limited and I thought I could probably write something more tailored to my use case.
+And that would be more fun :-)</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Parsing-PDF-in-Python">Parsing PDF in Python<a class="anchor-link" href="posts/parsing-and-indexing-pdf-in-python/#Parsing-PDF-in-Python">¶</a>
+</h2>
+<p>A quick solution I found was to run <a href="https://linux.die.net/man/1/pdftotext">pdftotext</a> using subprocess.
+I looked at <a href="https://euske.github.io/pdfminer/">PDFMiner</a>, a pure Python PDF parser but I found pdftotext
+output to be more accurate.
+On MacOS, you can install it using <a href="http://brew.sh">Homebrew</a>:</p>
+
+<pre><code>$ brew install Caskroom/cask/pdftotext</code></pre>
+<p>Here is a simple Python function to do that:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">subprocess</span>
+
+<span class="k">def</span> <span class="nf">parse_pdf</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">([</span><span class="s2">"pdftotext"</span><span class="p">,</span> <span class="s1">'-enc'</span><span class="p">,</span> <span class="s1">'UTF-8'</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s2">"-"</span><span class="p">])</span>
+    <span class="k">except</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'Skipping </span><span class="si">{}</span><span class="s1"> (pdftotext returned status </span><span class="si">{}</span><span class="s1">)'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">returncode</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">content</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">'utf-8'</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's try to parse a pdf file. We'll use <code>requests</code> to download a sample file.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="n">url</span> <span class="o">=</span> <span class="s1">'http://www.cbu.edu.zm/downloads/pdf-sample.pdf'</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">'/tmp/pdf-sample.pdf'</span><span class="p">,</span> <span class="s1">'wb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's first look at the PDF:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="k">import</span> <span class="n">IFrame</span>
+<span class="n">IFrame</span><span class="p">(</span><span class="s1">'http://www.cbu.edu.zm/downloads/pdf-sample.pdf'</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">870</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[3]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+
+        <iframe width="600" height="870" src="http://www.cbu.edu.zm/downloads/pdf-sample.pdf" frameborder="0" allowfullscreen></iframe>
+        
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Nothing complex. It should be easy to parse.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">content</span> <span class="o">=</span> <span class="n">parse_pdf</span><span class="p">(</span><span class="s1">'/tmp/pdf-sample.pdf'</span><span class="p">)</span>
+<span class="n">content</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[4]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>"Adobe Acrobat PDF Files\nAdobe® Portable Document Format (PDF) is a universal file format that preserves all of the fonts, formatting, colours and graphics of any source document, regardless of the application and platform used to create it. Adobe PDF is an ideal format for electronic document distribution as it overcomes the problems commonly encountered with electronic file sharing. • Anyone, anywhere can open a PDF file. All you need is the free Adobe Acrobat Reader. Recipients of other file formats sometimes can't open files because they don't have the applications used to create the documents. PDF files always print correctly on any printing device. PDF files always display exactly as created, regardless of fonts, software, and operating systems. Fonts, and graphics are not lost due to platform, software, and version incompatibilities. The free Acrobat Reader is easy to download and can be freely distributed by anyone. Compact PDF files are smaller than their source files and download a page at a time for fast display on the Web.\n\n• •\n\n• •\n\n\x0c"</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This works quite well. The layout is not respected but it's the text that matters. It would be easy to define some regex to define rules based on the PDF content.</p>
+<p>This could be the first step in naming and organizing the scanned documents.
+But it would be nice to have an interface to easily search in all the files.
+I've already used MongoDB full text search in a webapp I wrote and it worked well for my use case.
+But I read about Elasticsearch and I always wanted to give it a try.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Elasticsearch-Ingest-Attachment-Processor-Plugin">Elasticsearch Ingest Attachment Processor Plugin<a class="anchor-link" href="posts/parsing-and-indexing-pdf-in-python/#Elasticsearch-Ingest-Attachment-Processor-Plugin">¶</a>
+</h2>
+<p>I could just index the result from pdftotext, but I know there is a plugin that can parse PDF files.</p>
+<p>The <a href="https://github.com/elastic/elasticsearch-mapper-attachments#mapper-attachments-type-for-elasticsearch&gt;">Mapper Attachments Type plugin</a>
+is <a href="https://www.elastic.co/guide/en/elasticsearch/plugins/5.x/mapper-attachments.html&gt;">deprecated</a>
+in 5.0.0. It has been replaced with the <a href="https://www.elastic.co/guide/en/elasticsearch/plugins/5.x/ingest-attachment.html">ingest-attachment</a>
+plugin.
+So let's look at that.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Running-Elasticsearch">Running Elasticsearch<a class="anchor-link" href="posts/parsing-and-indexing-pdf-in-python/#Running-Elasticsearch">¶</a>
+</h3>
+<p>To run Elasticsearch, the easiest is to use Docker.
+As the official image from <a href="https://hub.docker.com/_/elasticsearch/">Docker Hub</a> comes with no plugin, we'll
+create our own image.
+See <a href="https://www.elastic.co/blog/elasticsearch-docker-plugin-management">Elasticsearch Plugin Management with Docker</a>
+for more information.</p>
+<p>Here is our <code>Dockerfile</code>:</p>
+
+<pre><code>FROM elasticsearch:5
+
+RUN /usr/share/elasticsearch/bin/elasticsearch-plugin install ingest-attachment</code></pre>
+<p>Create the <code>elasticsearch-ingest</code> docker image:</p>
+
+<pre><code>$ docker build -t elasticsearch-ingest .</code></pre>
+<p>We can now run elasticsearch with the ingest-attachment plugin:</p>
+
+<pre><code>$ docker run -d -p 9200:9200 elasticsearch-ingest</code></pre>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Python-Elasticsearch-Client">Python Elasticsearch Client<a class="anchor-link" href="posts/parsing-and-indexing-pdf-in-python/#Python-Elasticsearch-Client">¶</a>
+</h3>
+<p>We'll use <a href="https://elasticsearch-py.readthedocs.io/en/master/">elasticsearch-py</a>
+to interact with our Elasticsearch cluster.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">elasticsearch</span> <span class="k">import</span> <span class="n">Elasticsearch</span>
+<span class="n">es</span> <span class="o">=</span> <span class="n">Elasticsearch</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's first check that our elasticsearch cluster is alive by asking about its health:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">es</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">health</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[6]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>'1479333419 21:56:59 elasticsearch green 1 1 0 0 0 0 0 0 - 100.0%\n'</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Nice! We can start playing with our ES cluster.</p>
+<p>As described in the <a href="https://www.elastic.co/guide/en/elasticsearch/plugins/master/using-ingest-attachment.html">documentation</a>, we first have to create a pipeline to use the Ingest Attachment Processor Plugin:</p>
+
+<pre><code>PUT _ingest/pipeline/attachment
+{
+  "description" : "Extract attachment information",
+  "processors" : [
+    {
+      "attachment" : {
+        "field" : "data"
+      }
+    }
+  ]
+}</code></pre>
+<p>OK, how do we do that using the Python client?</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">body</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="s2">"description"</span> <span class="p">:</span> <span class="s2">"Extract attachment information"</span><span class="p">,</span>
+  <span class="s2">"processors"</span> <span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">"attachment"</span> <span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"field"</span> <span class="p">:</span> <span class="s2">"data"</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+<span class="n">es</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">'_ingest'</span><span class="p">,</span> <span class="n">doc_type</span><span class="o">=</span><span class="s1">'pipeline'</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s1">'attachment'</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[7]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>{'acknowledged': True}</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now, we can send a document to our pipeline. Let's start by using the same example as in the documentation:</p>
+
+<pre><code>PUT my_index/my_type/my_id?pipeline=attachment
+{
+  "data": "e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0="
+}</code></pre>
+<p>Using Python client, this gives:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">result1</span> <span class="o">=</span> <span class="n">es</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">'my_index'</span><span class="p">,</span> <span class="n">doc_type</span><span class="o">=</span><span class="s1">'my_type'</span><span class="p">,</span> <span class="n">pipeline</span><span class="o">=</span><span class="s1">'attachment'</span><span class="p">,</span>
+                  <span class="n">body</span><span class="o">=</span><span class="p">{</span><span class="s1">'data'</span><span class="p">:</span> <span class="s2">"e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0="</span><span class="p">})</span>
+<span class="n">result1</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[8]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>{'_id': 'AVhvJKzVIvjFWZACJU_t',
+ '_index': 'my_index',
+ '_shards': {'failed': 0, 'successful': 1, 'total': 2},
+ '_type': 'my_type',
+ '_version': 1,
+ 'created': True,
+ 'result': 'created'}</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's try to get the created document based on its id:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">es</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">'my_index'</span><span class="p">,</span> <span class="n">doc_type</span><span class="o">=</span><span class="s1">'my_type'</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">result1</span><span class="p">[</span><span class="s1">'_id'</span><span class="p">])</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[9]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>{'_id': 'AVhvJKzVIvjFWZACJU_t',
+ '_index': 'my_index',
+ '_source': {'attachment': {'content': 'Lorem ipsum dolor sit amet',
+   'content_length': 28,
+   'content_type': 'application/rtf',
+   'language': 'ro'},
+  'data': 'e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0='},
+ '_type': 'my_type',
+ '_version': 1,
+ 'found': True}</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can see that the binary data passed to the pipeline was a Rich Text Format file and that the content was extracted: <em>Lorem ipsum dolor sit amet</em></p>
+<p>Displaying the binary data is not very useful. It doesn't matter in this example as it's quite small.
+But it would be much bigger even on small files. We can exclude it using <code>_source_exclude</code>:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">es</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">'my_index'</span><span class="p">,</span> <span class="n">doc_type</span><span class="o">=</span><span class="s1">'my_type'</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">result1</span><span class="p">[</span><span class="s1">'_id'</span><span class="p">],</span> <span class="n">_source_exclude</span><span class="o">=</span><span class="p">[</span><span class="s1">'data'</span><span class="p">])</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[10]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>{'_id': 'AVhvJKzVIvjFWZACJU_t',
+ '_index': 'my_index',
+ '_source': {'attachment': {'content': 'Lorem ipsum dolor sit amet',
+   'content_length': 28,
+   'content_type': 'application/rtf',
+   'language': 'ro'}},
+ '_type': 'my_type',
+ '_version': 1,
+ 'found': True}</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Indexing-PDF-files">Indexing PDF files<a class="anchor-link" href="posts/parsing-and-indexing-pdf-in-python/#Indexing-PDF-files">¶</a>
+</h3>
+<p>Let's try to parse the same sample pdf as before.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">url</span> <span class="o">=</span> <span class="s1">'http://www.cbu.edu.zm/downloads/pdf-sample.pdf'</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Note that we have to encode the content of the pdf before to pass it to ES.
+The source field must be a base64 encoded binary.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [12]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">base64</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">'ascii'</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">result2</span> <span class="o">=</span> <span class="n">es</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">'my_index'</span><span class="p">,</span> <span class="n">doc_type</span><span class="o">=</span><span class="s1">'my_type'</span><span class="p">,</span> <span class="n">pipeline</span><span class="o">=</span><span class="s1">'attachment'</span><span class="p">,</span>
+                  <span class="n">body</span><span class="o">=</span><span class="p">{</span><span class="s1">'data'</span><span class="p">:</span> <span class="n">data</span><span class="p">})</span>
+<span class="n">result2</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[13]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>{'_id': 'AVhvJMC6IvjFWZACJU_u',
+ '_index': 'my_index',
+ '_shards': {'failed': 0, 'successful': 1, 'total': 2},
+ '_type': 'my_type',
+ '_version': 1,
+ 'created': True,
+ 'result': 'created'}</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can get the document based on its id:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">doc</span> <span class="o">=</span> <span class="n">es</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">'my_index'</span><span class="p">,</span> <span class="n">doc_type</span><span class="o">=</span><span class="s1">'my_type'</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">result2</span><span class="p">[</span><span class="s1">'_id'</span><span class="p">],</span> <span class="n">_source_exclude</span><span class="o">=</span><span class="p">[</span><span class="s1">'data'</span><span class="p">])</span>
+<span class="n">doc</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[14]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>{'_id': 'AVhvJMC6IvjFWZACJU_u',
+ '_index': 'my_index',
+ '_source': {'attachment': {'author': 'cdaily',
+   'content': "Adobe Acrobat PDF Files\n\nAdobe® Portable Document Format (PDF) is a universal file format that preserves all\nof the fonts, formatting, colours and graphics of any source document, regardless of\nthe application and platform used to create it.\n\nAdobe PDF is an ideal format for electronic document distribution as it overcomes the\nproblems commonly encountered with electronic file sharing.\n\n•  Anyone, anywhere can open a PDF file. All you need is the free Adobe Acrobat\nReader. Recipients of other file formats sometimes can't open files because they\ndon't have the applications used to create the documents.\n\n•  PDF files always print correctly on any printing device.\n\n•  PDF files always display exactly as created, regardless of fonts, software, and\noperating systems. Fonts, and graphics are not lost due to platform, software, and\nversion incompatibilities.\n\n•  The free Acrobat Reader is easy to download and can be freely distributed by\nanyone.\n\n•  Compact PDF files are smaller than their source files and download a\npage at a time for fast display on the Web.",
+   'content_length': 1073,
+   'content_type': 'application/pdf',
+   'date': '2000-06-28T23:21:08Z',
+   'language': 'en',
+   'title': 'This is a test PDF file'}},
+ '_type': 'my_type',
+ '_version': 1,
+ 'found': True}</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Or with a basic search:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [15]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">es</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">'my_index'</span><span class="p">,</span> <span class="n">doc_type</span><span class="o">=</span><span class="s1">'my_type'</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="s1">'Adobe'</span><span class="p">,</span> <span class="n">_source_exclude</span><span class="o">=</span><span class="p">[</span><span class="s1">'data'</span><span class="p">])</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[15]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>{'_shards': {'failed': 0, 'successful': 5, 'total': 5},
+ 'hits': {'hits': [{'_id': 'AVhvJMC6IvjFWZACJU_u',
+    '_index': 'my_index',
+    '_score': 0.45930308,
+    '_source': {'attachment': {'author': 'cdaily',
+      'content': "Adobe Acrobat PDF Files\n\nAdobe® Portable Document Format (PDF) is a universal file format that preserves all\nof the fonts, formatting, colours and graphics of any source document, regardless of\nthe application and platform used to create it.\n\nAdobe PDF is an ideal format for electronic document distribution as it overcomes the\nproblems commonly encountered with electronic file sharing.\n\n•  Anyone, anywhere can open a PDF file. All you need is the free Adobe Acrobat\nReader. Recipients of other file formats sometimes can't open files because they\ndon't have the applications used to create the documents.\n\n•  PDF files always print correctly on any printing device.\n\n•  PDF files always display exactly as created, regardless of fonts, software, and\noperating systems. Fonts, and graphics are not lost due to platform, software, and\nversion incompatibilities.\n\n•  The free Acrobat Reader is easy to download and can be freely distributed by\nanyone.\n\n•  Compact PDF files are smaller than their source files and download a\npage at a time for fast display on the Web.",
+      'content_length': 1073,
+      'content_type': 'application/pdf',
+      'date': '2000-06-28T23:21:08Z',
+      'language': 'en',
+      'title': 'This is a test PDF file'}},
+    '_type': 'my_type'}],
+  'max_score': 0.45930308,
+  'total': 1},
+ 'timed_out': False,
+ 'took': 75}</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Of course Elasticsearch allows much more complex queries. But that's something for another time.</p>
+<p>One interesting thing is that by printing the content, we can see that even the layout is quite acurate! Much better than the pdftotext output:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [16]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s1">'_source'</span><span class="p">][</span><span class="s1">'attachment'</span><span class="p">][</span><span class="s1">'content'</span><span class="p">])</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Adobe Acrobat PDF Files
+
+Adobe® Portable Document Format (PDF) is a universal file format that preserves all
+of the fonts, formatting, colours and graphics of any source document, regardless of
+the application and platform used to create it.
+
+Adobe PDF is an ideal format for electronic document distribution as it overcomes the
+problems commonly encountered with electronic file sharing.
+
+•  Anyone, anywhere can open a PDF file. All you need is the free Adobe Acrobat
+Reader. Recipients of other file formats sometimes can't open files because they
+don't have the applications used to create the documents.
+
+•  PDF files always print correctly on any printing device.
+
+•  PDF files always display exactly as created, regardless of fonts, software, and
+operating systems. Fonts, and graphics are not lost due to platform, software, and
+version incompatibilities.
+
+•  The free Acrobat Reader is easy to download and can be freely distributed by
+anyone.
+
+•  Compact PDF files are smaller than their source files and download a
+page at a time for fast display on the Web.
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The ingest-attachment plugin uses the Apache text extraction library <a href="http://tika.apache.org">Tika</a>.
+It's really powerful. It detects and extracts metadata and text from many file types.</p>
+<p>Sending the file directly to Elasticsearch is nice, but in my use case, I'd like to process the file (change its title, move it to a specific location...) based on its content. I could of course update the document in ES after processing it.</p>
+<p>It might be better in some case to decorelate the parsing and processing from the indexing.
+So let's check how to use Tika from Python.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Apache-Tika">Apache Tika<a class="anchor-link" href="posts/parsing-and-indexing-pdf-in-python/#Apache-Tika">¶</a>
+</h2>
+<p><a href="https://github.com/chrismattmann/tika-python">Tika-Python</a> makes Apache Tika available as a Python library.
+It can even starts a Tika REST server in the background, but this requires Java 7+ to be installed.
+I prefer to run the server myself using the prebuilt docker image: <a href="http://logicalspark.github.io/docker-tikaserver/">docker-tikaserver</a>.
+Like that I have control of what is running.</p>
+
+<pre><code>$ docker run --rm -p 9998:9998 logicalspark/docker-tikaserver</code></pre>
+<p>We can then set Tika-Python to use Client mode only:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [17]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">tika</span>
+<span class="n">tika</span><span class="o">.</span><span class="n">TikaClientOnly</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="kn">from</span> <span class="nn">tika</span> <span class="k">import</span> <span class="n">parser</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [18]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">parsed</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s1">'/tmp/pdf-sample.pdf'</span><span class="p">,</span> <span class="s1">'http://localhost:9998/tika'</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>2016-11-16 22:57:14,233 [MainThread  ] [INFO ]  Starting new HTTP connection (1): localhost
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [19]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">parsed</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[19]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>{'content': "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nThis is a test PDF file\n\n\nAdobe Acrobat PDF Files\n\nAdobe® Portable Document Format (PDF) is a universal file format that preserves all\nof the fonts, formatting, colours and graphics of any source document, regardless of\nthe application and platform used to create it.\n\nAdobe PDF is an ideal format for electronic document distribution as it overcomes the\nproblems commonly encountered with electronic file sharing.\n\n•  Anyone, anywhere can open a PDF file. All you need is the free Adobe Acrobat\nReader. Recipients of other file formats sometimes can't open files because they\ndon't have the applications used to create the documents.\n\n•  PDF files always print correctly on any printing device.\n\n•  PDF files always display exactly as created, regardless of fonts, software, and\noperating systems. Fonts, and graphics are not lost due to platform, software, and\nversion incompatibilities.\n\n•  The free Acrobat Reader is easy to download and can be freely distributed by\nanyone.\n\n•  Compact PDF files are smaller than their source files and download a\npage at a time for fast display on the Web.\n\n\n",
+ 'metadata': {'Author': 'cdaily',
+  'Content-Type': 'application/pdf',
+  'Creation-Date': '2000-06-28T23:21:08Z',
+  'Last-Modified': '2013-10-28T19:24:13Z',
+  'Last-Save-Date': '2013-10-28T19:24:13Z',
+  'X-Parsed-By': ['org.apache.tika.parser.DefaultParser',
+   'org.apache.tika.parser.pdf.PDFParser'],
+  'X-TIKA:parse_time_millis': '62',
+  'access_permission:assemble_document': 'true',
+  'access_permission:can_modify': 'true',
+  'access_permission:can_print': 'true',
+  'access_permission:can_print_degraded': 'true',
+  'access_permission:extract_content': 'true',
+  'access_permission:extract_for_accessibility': 'true',
+  'access_permission:fill_in_form': 'true',
+  'access_permission:modify_annotations': 'true',
+  'created': 'Wed Jun 28 23:21:08 UTC 2000',
+  'creator': 'cdaily',
+  'date': '2013-10-28T19:24:13Z',
+  'dc:creator': 'cdaily',
+  'dc:format': 'application/pdf; version=1.3',
+  'dc:title': 'This is a test PDF file',
+  'dcterms:created': '2000-06-28T23:21:08Z',
+  'dcterms:modified': '2013-10-28T19:24:13Z',
+  'meta:author': 'cdaily',
+  'meta:creation-date': '2000-06-28T23:21:08Z',
+  'meta:save-date': '2013-10-28T19:24:13Z',
+  'modified': '2013-10-28T19:24:13Z',
+  'pdf:PDFVersion': '1.3',
+  'pdf:docinfo:created': '2000-06-28T23:21:08Z',
+  'pdf:docinfo:creator': 'cdaily',
+  'pdf:docinfo:creator_tool': 'Microsoft Word 8.0',
+  'pdf:docinfo:modified': '2013-10-28T19:24:13Z',
+  'pdf:docinfo:producer': 'Acrobat Distiller 4.0 for Windows',
+  'pdf:docinfo:title': 'This is a test PDF file',
+  'pdf:encrypted': 'false',
+  'producer': 'Acrobat Distiller 4.0 for Windows',
+  'resourceName': 'pdf-sample.pdf',
+  'title': 'This is a test PDF file',
+  'xmp:CreatorTool': 'Microsoft Word 8.0',
+  'xmpMM:DocumentID': 'uuid:0805e221-80a8-459e-a522-635ed5c1e2e6',
+  'xmpTPg:NPages': '1'}}</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [20]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">parsed</span><span class="p">[</span><span class="s1">'content'</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>This is a test PDF file
+
+
+Adobe Acrobat PDF Files
+
+Adobe® Portable Document Format (PDF) is a universal file format that preserves all
+of the fonts, formatting, colours and graphics of any source document, regardless of
+the application and platform used to create it.
+
+Adobe PDF is an ideal format for electronic document distribution as it overcomes the
+problems commonly encountered with electronic file sharing.
+
+•  Anyone, anywhere can open a PDF file. All you need is the free Adobe Acrobat
+Reader. Recipients of other file formats sometimes can't open files because they
+don't have the applications used to create the documents.
+
+•  PDF files always print correctly on any printing device.
+
+•  PDF files always display exactly as created, regardless of fonts, software, and
+operating systems. Fonts, and graphics are not lost due to platform, software, and
+version incompatibilities.
+
+•  The free Acrobat Reader is easy to download and can be freely distributed by
+anyone.
+
+•  Compact PDF files are smaller than their source files and download a
+page at a time for fast display on the Web.
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Not sure why we get the title of the PDF inside the content.
+Anyway the text is extracted properly and we even get a lot of metadata:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [21]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">parsed</span><span class="p">[</span><span class="s1">'metadata'</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[21]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>{'Author': 'cdaily',
+ 'Content-Type': 'application/pdf',
+ 'Creation-Date': '2000-06-28T23:21:08Z',
+ 'Last-Modified': '2013-10-28T19:24:13Z',
+ 'Last-Save-Date': '2013-10-28T19:24:13Z',
+ 'X-Parsed-By': ['org.apache.tika.parser.DefaultParser',
+  'org.apache.tika.parser.pdf.PDFParser'],
+ 'X-TIKA:parse_time_millis': '62',
+ 'access_permission:assemble_document': 'true',
+ 'access_permission:can_modify': 'true',
+ 'access_permission:can_print': 'true',
+ 'access_permission:can_print_degraded': 'true',
+ 'access_permission:extract_content': 'true',
+ 'access_permission:extract_for_accessibility': 'true',
+ 'access_permission:fill_in_form': 'true',
+ 'access_permission:modify_annotations': 'true',
+ 'created': 'Wed Jun 28 23:21:08 UTC 2000',
+ 'creator': 'cdaily',
+ 'date': '2013-10-28T19:24:13Z',
+ 'dc:creator': 'cdaily',
+ 'dc:format': 'application/pdf; version=1.3',
+ 'dc:title': 'This is a test PDF file',
+ 'dcterms:created': '2000-06-28T23:21:08Z',
+ 'dcterms:modified': '2013-10-28T19:24:13Z',
+ 'meta:author': 'cdaily',
+ 'meta:creation-date': '2000-06-28T23:21:08Z',
+ 'meta:save-date': '2013-10-28T19:24:13Z',
+ 'modified': '2013-10-28T19:24:13Z',
+ 'pdf:PDFVersion': '1.3',
+ 'pdf:docinfo:created': '2000-06-28T23:21:08Z',
+ 'pdf:docinfo:creator': 'cdaily',
+ 'pdf:docinfo:creator_tool': 'Microsoft Word 8.0',
+ 'pdf:docinfo:modified': '2013-10-28T19:24:13Z',
+ 'pdf:docinfo:producer': 'Acrobat Distiller 4.0 for Windows',
+ 'pdf:docinfo:title': 'This is a test PDF file',
+ 'pdf:encrypted': 'false',
+ 'producer': 'Acrobat Distiller 4.0 for Windows',
+ 'resourceName': 'pdf-sample.pdf',
+ 'title': 'This is a test PDF file',
+ 'xmp:CreatorTool': 'Microsoft Word 8.0',
+ 'xmpMM:DocumentID': 'uuid:0805e221-80a8-459e-a522-635ed5c1e2e6',
+ 'xmpTPg:NPages': '1'}</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Conclusion">Conclusion<a class="anchor-link" href="posts/parsing-and-indexing-pdf-in-python/#Conclusion">¶</a>
+</h2>
+<p>We saw different methods to extract text from PDF in Python.
+Depending on what you want to do, one might suit you better. And this was of course not exhaustive.</p>
+<p>If you want to index PDFs, Elasticsearch might be all you need.
+The ingest-attachment plugin uses <a href="http://tika.apache.org">Apache Tika</a> which is very powerful.</p>
+<p>And thanks to <a href="https://github.com/chrismattmann/tika-python">Tika-Python</a>, it's very easy to use Tika directly from Python.
+You can let the library starts the server or use Docker to start your own.</p>
+
+</div>
+</div>
+</div>
+    </div>
+  </div>
+
+    </div>
+    </article><article class="h-entry post-text"><header><h1 class="p-name entry-title"><a href="posts/gitlab-container-registry-and-proxy/" class="u-url">GitLab Container Registry and proxy</a></h1>
         <div class="metadata">
             <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
                 Benjamin Bertrand
@@ -1333,12 +2421,14 @@ to create a provisioning profile.</p>
 <li class="previous">
                 <a href="." rel="prev">Newer posts</a>
             </li>
-        </ul></nav><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script>
+        </ul></nav><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity="sha256-SDRP1VVYu+tgAGKhddBSl5+ezofHKZeI+OzxakbIe/Y=" crossorigin="anonymous"></script><script type="text/x-mathjax-config">
+        MathJax.Hub.Config({tex2jax: {inlineMath: [['$latex ','$'], ['\\(','\\)']]}});
+        </script>
 </div>
         <!--End of body content-->
 
         <footer id="footer">
-            Contents © 2017         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2018         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
             

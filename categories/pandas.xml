@@ -1,0 +1,2747 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>Tchut-Tchut Blog (Posts about pandas)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/pandas.xml" type="application/rss+xml" rel="self"></atom:link><language>en</language><lastBuildDate>Sat, 31 Mar 2018 18:53:14 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Parsing HTML Tables in Python with pandas</title><link>http://beenje.github.io/blog/posts/parsing-html-tables-in-python-with-pandas/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div tabindex="-1" id="notebook" class="border-box-sizing"&gt;
+    &lt;div class="container" id="notebook-container"&gt;
+
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Not long ago, I needed to parse some HTML tables from our confluence website at work. I first thought: I'm gonna need &lt;a href="http://docs.python-requests.org/en/master/"&gt;requests&lt;/a&gt; and &lt;a href="https://www.crummy.com/software/BeautifulSoup/bs4/doc/"&gt;BeautifulSoup&lt;/a&gt;. As HTML tables are well defined, I did some quick googling to see if there was some recipe or lib to parse them and I found a link to &lt;a href="https://pandas.pydata.org"&gt;pandas&lt;/a&gt;. What? Can pandas do that too?&lt;/p&gt;
+&lt;p&gt;I have been using pandas for quite some time and have used read_csv, read_excel, even read_sql, but I had missed read_html!&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Reading-excel-file-with-pandas"&gt;Reading excel file with pandas&lt;a class="anchor-link" href="http://beenje.github.io/blog/posts/parsing-html-tables-in-python-with-pandas/#Reading-excel-file-with-pandas"&gt;¶&lt;/a&gt;&lt;/h2&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Before to look at HTML tables, I want to show a quick example on how to read an excel file with pandas. The API is really nice. If I have to look at some excel data, I go directly to pandas.&lt;/p&gt;
+&lt;p&gt;So let's download a sample file file:&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [1]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;io&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;requests&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pandas&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;pd&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;zipfile&lt;/span&gt; &lt;span class="k"&gt;import&lt;/span&gt; &lt;span class="n"&gt;ZipFile&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [2]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'http://www.contextures.com/SampleData.zip'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;ZipFile&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;io&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;BytesIO&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;content&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;extractall&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;This created the &lt;em&gt;SampleData.xlsx&lt;/em&gt; file that includes four sheets: Instructions, SalesOrders, SampleNumbers and MyLinks. Only the &lt;em&gt;SalesOrders&lt;/em&gt; sheet includes tabular data:
+&lt;img src="http://beenje.github.io/blog/images/read_html/sample_data_xlsx.png" alt="SampleData"&gt;
+So let's read it.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [3]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_excel&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'SampleData.xlsx'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;sheet_name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'SalesOrders'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [4]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;head&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt output_prompt"&gt;Out[4]:&lt;/div&gt;
+
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;OrderDate&lt;/th&gt;
+      &lt;th&gt;Region&lt;/th&gt;
+      &lt;th&gt;Rep&lt;/th&gt;
+      &lt;th&gt;Item&lt;/th&gt;
+      &lt;th&gt;Units&lt;/th&gt;
+      &lt;th&gt;Unit Cost&lt;/th&gt;
+      &lt;th&gt;Total&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;2016-01-06&lt;/td&gt;
+      &lt;td&gt;East&lt;/td&gt;
+      &lt;td&gt;Jones&lt;/td&gt;
+      &lt;td&gt;Pencil&lt;/td&gt;
+      &lt;td&gt;95&lt;/td&gt;
+      &lt;td&gt;1.99&lt;/td&gt;
+      &lt;td&gt;189.05&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;2016-01-23&lt;/td&gt;
+      &lt;td&gt;Central&lt;/td&gt;
+      &lt;td&gt;Kivell&lt;/td&gt;
+      &lt;td&gt;Binder&lt;/td&gt;
+      &lt;td&gt;50&lt;/td&gt;
+      &lt;td&gt;19.99&lt;/td&gt;
+      &lt;td&gt;999.50&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;2016-02-09&lt;/td&gt;
+      &lt;td&gt;Central&lt;/td&gt;
+      &lt;td&gt;Jardine&lt;/td&gt;
+      &lt;td&gt;Pencil&lt;/td&gt;
+      &lt;td&gt;36&lt;/td&gt;
+      &lt;td&gt;4.99&lt;/td&gt;
+      &lt;td&gt;179.64&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;2016-02-26&lt;/td&gt;
+      &lt;td&gt;Central&lt;/td&gt;
+      &lt;td&gt;Gill&lt;/td&gt;
+      &lt;td&gt;Pen&lt;/td&gt;
+      &lt;td&gt;27&lt;/td&gt;
+      &lt;td&gt;19.99&lt;/td&gt;
+      &lt;td&gt;539.73&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;2016-03-15&lt;/td&gt;
+      &lt;td&gt;West&lt;/td&gt;
+      &lt;td&gt;Sorvino&lt;/td&gt;
+      &lt;td&gt;Pencil&lt;/td&gt;
+      &lt;td&gt;56&lt;/td&gt;
+      &lt;td&gt;2.99&lt;/td&gt;
+      &lt;td&gt;167.44&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;That's it. One line and you have your data in a DataFrame that you can easily manipulate, filter, convert and display in a jupyter notebook. Can it be easier than that?&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Parsing-HTML-Tables"&gt;Parsing HTML Tables&lt;a class="anchor-link" href="http://beenje.github.io/blog/posts/parsing-html-tables-in-python-with-pandas/#Parsing-HTML-Tables"&gt;¶&lt;/a&gt;&lt;/h2&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;So let's go back to HTML tables and look at &lt;a href="https://pandas.pydata.org/pandas-docs/stable/generated/pandas.read_html.html"&gt;pandas.read_html&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;The function accepts:&lt;/p&gt;
+&lt;blockquote&gt;&lt;p&gt;A URL, a file-like object, or a raw string containing HTML.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Let's start with a basic HTML table in a raw string.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h3 id="Parsing-raw-string"&gt;Parsing raw string&lt;a class="anchor-link" href="http://beenje.github.io/blog/posts/parsing-html-tables-in-python-with-pandas/#Parsing-raw-string"&gt;¶&lt;/a&gt;&lt;/h3&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [5]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;html_string&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;"""&lt;/span&gt;
+&lt;span class="s2"&gt;&amp;lt;table&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;  &amp;lt;thead&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;    &amp;lt;tr&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;      &amp;lt;th&amp;gt;Programming Language&amp;lt;/th&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;      &amp;lt;th&amp;gt;Creator&amp;lt;/th&amp;gt; &lt;/span&gt;
+&lt;span class="s2"&gt;      &amp;lt;th&amp;gt;Year&amp;lt;/th&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;    &amp;lt;/tr&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;  &amp;lt;/thead&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;  &amp;lt;tbody&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;    &amp;lt;tr&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;      &amp;lt;td&amp;gt;C&amp;lt;/td&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;      &amp;lt;td&amp;gt;Dennis Ritchie&amp;lt;/td&amp;gt; &lt;/span&gt;
+&lt;span class="s2"&gt;      &amp;lt;td&amp;gt;1972&amp;lt;/td&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;    &amp;lt;/tr&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;    &amp;lt;tr&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;      &amp;lt;td&amp;gt;Python&amp;lt;/td&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;      &amp;lt;td&amp;gt;Guido Van Rossum&amp;lt;/td&amp;gt; &lt;/span&gt;
+&lt;span class="s2"&gt;      &amp;lt;td&amp;gt;1989&amp;lt;/td&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;    &amp;lt;/tr&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;    &amp;lt;tr&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;      &amp;lt;td&amp;gt;Ruby&amp;lt;/td&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;      &amp;lt;td&amp;gt;Yukihiro Matsumoto&amp;lt;/td&amp;gt; &lt;/span&gt;
+&lt;span class="s2"&gt;      &amp;lt;td&amp;gt;1995&amp;lt;/td&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;    &amp;lt;/tr&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;  &amp;lt;/tbody&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;&amp;lt;/table&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;"""&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;We can render the table using IPython &lt;a href="http://ipython.readthedocs.io/en/stable/api/generated/IPython.display.html#IPython.display.display_html"&gt;display_html&lt;/a&gt; function:&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [6]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;IPython.display&lt;/span&gt; &lt;span class="k"&gt;import&lt;/span&gt; &lt;span class="n"&gt;display_html&lt;/span&gt;
+&lt;span class="n"&gt;display_html&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;html_string&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;raw&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+
+&lt;div class="output_html rendered_html output_subarea "&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Programming Language&lt;/th&gt;
+      &lt;th&gt;Creator&lt;/th&gt; 
+      &lt;th&gt;Year&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;C&lt;/td&gt;
+      &lt;td&gt;Dennis Ritchie&lt;/td&gt; 
+      &lt;td&gt;1972&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Python&lt;/td&gt;
+      &lt;td&gt;Guido Van Rossum&lt;/td&gt; 
+      &lt;td&gt;1989&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Ruby&lt;/td&gt;
+      &lt;td&gt;Yukihiro Matsumoto&lt;/td&gt; 
+      &lt;td&gt;1995&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Let's import this HTML table in a DataFrame. Note that the function &lt;code&gt;read_html&lt;/code&gt; always returns a list of DataFrame objects:&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [7]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;dfs&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_html&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;html_string&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;dfs&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt output_prompt"&gt;Out[7]:&lt;/div&gt;
+
+
+&lt;div class="output_text output_subarea output_execute_result"&gt;
+&lt;pre&gt;[  Programming Language             Creator  Year
+ 0                    C      Dennis Ritchie  1972
+ 1               Python    Guido Van Rossum  1989
+ 2                 Ruby  Yukihiro Matsumoto  1995]&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [8]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dfs&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;df&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt output_prompt"&gt;Out[8]:&lt;/div&gt;
+
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;Programming Language&lt;/th&gt;
+      &lt;th&gt;Creator&lt;/th&gt;
+      &lt;th&gt;Year&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;C&lt;/td&gt;
+      &lt;td&gt;Dennis Ritchie&lt;/td&gt;
+      &lt;td&gt;1972&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;Python&lt;/td&gt;
+      &lt;td&gt;Guido Van Rossum&lt;/td&gt;
+      &lt;td&gt;1989&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;Ruby&lt;/td&gt;
+      &lt;td&gt;Yukihiro Matsumoto&lt;/td&gt;
+      &lt;td&gt;1995&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;This looks quite similar to the raw string we rendered above, but we are printing a pandas DataFrame object here! We can apply any operation we want.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [9]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Year&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;1975&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt output_prompt"&gt;Out[9]:&lt;/div&gt;
+
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;Programming Language&lt;/th&gt;
+      &lt;th&gt;Creator&lt;/th&gt;
+      &lt;th&gt;Year&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;Python&lt;/td&gt;
+      &lt;td&gt;Guido Van Rossum&lt;/td&gt;
+      &lt;td&gt;1989&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;Ruby&lt;/td&gt;
+      &lt;td&gt;Yukihiro Matsumoto&lt;/td&gt;
+      &lt;td&gt;1995&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Pandas automatically found the header to use thanks to the &lt;code&gt;&amp;lt;thead&amp;gt;&lt;/code&gt; tag. It is not mandatory to define a table and is actually often missing on the web. So what happens if it's not present?&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [10]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;html_string&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s2"&gt;"""&lt;/span&gt;
+&lt;span class="s2"&gt;&amp;lt;table&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;  &amp;lt;tr&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;    &amp;lt;th&amp;gt;Programming Language&amp;lt;/th&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;    &amp;lt;th&amp;gt;Creator&amp;lt;/th&amp;gt; &lt;/span&gt;
+&lt;span class="s2"&gt;    &amp;lt;th&amp;gt;Year&amp;lt;/th&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;  &amp;lt;/tr&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;  &amp;lt;tr&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;    &amp;lt;td&amp;gt;C&amp;lt;/td&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;    &amp;lt;td&amp;gt;Dennis Ritchie&amp;lt;/td&amp;gt; &lt;/span&gt;
+&lt;span class="s2"&gt;    &amp;lt;td&amp;gt;1972&amp;lt;/td&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;  &amp;lt;/tr&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;  &amp;lt;tr&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;    &amp;lt;td&amp;gt;Python&amp;lt;/td&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;    &amp;lt;td&amp;gt;Guido Van Rossum&amp;lt;/td&amp;gt; &lt;/span&gt;
+&lt;span class="s2"&gt;    &amp;lt;td&amp;gt;1989&amp;lt;/td&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;  &amp;lt;/tr&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;  &amp;lt;tr&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;    &amp;lt;td&amp;gt;Ruby&amp;lt;/td&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;    &amp;lt;td&amp;gt;Yukihiro Matsumoto&amp;lt;/td&amp;gt; &lt;/span&gt;
+&lt;span class="s2"&gt;    &amp;lt;td&amp;gt;1995&amp;lt;/td&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;  &amp;lt;/tr&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;&amp;lt;/table&amp;gt;&lt;/span&gt;
+&lt;span class="s2"&gt;"""&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [11]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_html&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;html_string&lt;/span&gt;&lt;span class="p"&gt;)[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt output_prompt"&gt;Out[11]:&lt;/div&gt;
+
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;th&gt;2&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;Programming Language&lt;/td&gt;
+      &lt;td&gt;Creator&lt;/td&gt;
+      &lt;td&gt;Year&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;C&lt;/td&gt;
+      &lt;td&gt;Dennis Ritchie&lt;/td&gt;
+      &lt;td&gt;1972&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;Python&lt;/td&gt;
+      &lt;td&gt;Guido Van Rossum&lt;/td&gt;
+      &lt;td&gt;1989&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;Ruby&lt;/td&gt;
+      &lt;td&gt;Yukihiro Matsumoto&lt;/td&gt;
+      &lt;td&gt;1995&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;In this case, we need to pass the row number to use as header.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [12]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_html&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;html_string&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;header&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt output_prompt"&gt;Out[12]:&lt;/div&gt;
+
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;Programming Language&lt;/th&gt;
+      &lt;th&gt;Creator&lt;/th&gt;
+      &lt;th&gt;Year&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;C&lt;/td&gt;
+      &lt;td&gt;Dennis Ritchie&lt;/td&gt;
+      &lt;td&gt;1972&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;Python&lt;/td&gt;
+      &lt;td&gt;Guido Van Rossum&lt;/td&gt;
+      &lt;td&gt;1989&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;Ruby&lt;/td&gt;
+      &lt;td&gt;Yukihiro Matsumoto&lt;/td&gt;
+      &lt;td&gt;1995&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h3 id="Parsing-a-http-URL"&gt;Parsing a http URL&lt;a class="anchor-link" href="http://beenje.github.io/blog/posts/parsing-html-tables-in-python-with-pandas/#Parsing-a-http-URL"&gt;¶&lt;/a&gt;&lt;/h3&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;The same data we read in our excel file is available in a table at the following address: &lt;a href="http://www.contextures.com/xlSampleData01.html"&gt;http://www.contextures.com/xlSampleData01.html&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Let's pass this url to &lt;code&gt;read_html&lt;/code&gt;:&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [13]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;dfs&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_html&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'http://www.contextures.com/xlSampleData01.html'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [14]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;dfs&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt output_prompt"&gt;Out[14]:&lt;/div&gt;
+
+
+&lt;div class="output_text output_subarea output_execute_result"&gt;
+&lt;pre&gt;[             0        1         2        3      4         5        6
+ 0    OrderDate   Region       Rep     Item  Units  UnitCost    Total
+ 1     1/6/2016     East     Jones   Pencil     95      1.99   189.05
+ 2    1/23/2016  Central    Kivell   Binder     50     19.99   999.50
+ 3     2/9/2016  Central   Jardine   Pencil     36      4.99   179.64
+ 4    2/26/2016  Central      Gill      Pen     27     19.99   539.73
+ 5    3/15/2016     West   Sorvino   Pencil     56      2.99   167.44
+ 6     4/1/2016     East     Jones   Binder     60      4.99   299.40
+ 7    4/18/2016  Central   Andrews   Pencil     75      1.99   149.25
+ 8     5/5/2016  Central   Jardine   Pencil     90      4.99   449.10
+ 9    5/22/2016     West  Thompson   Pencil     32      1.99    63.68
+ 10    6/8/2016     East     Jones   Binder     60      8.99   539.40
+ 11   6/25/2016  Central    Morgan   Pencil     90      4.99   449.10
+ 12   7/12/2016     East    Howard   Binder     29      1.99    57.71
+ 13   7/29/2016     East    Parent   Binder     81     19.99  1619.19
+ 14   8/15/2016     East     Jones   Pencil     35      4.99   174.65
+ 15    9/1/2016  Central     Smith     Desk      2    125.00   250.00
+ 16   9/18/2016     East     Jones  Pen Set     16     15.99   255.84
+ 17   10/5/2016  Central    Morgan   Binder     28      8.99   251.72
+ 18  10/22/2016     East     Jones      Pen     64      8.99   575.36
+ 19   11/8/2016     East    Parent      Pen     15     19.99   299.85
+ 20  11/25/2016  Central    Kivell  Pen Set     96      4.99   479.04
+ 21  12/12/2016  Central     Smith   Pencil     67      1.29    86.43
+ 22  12/29/2016     East    Parent  Pen Set     74     15.99  1183.26
+ 23   1/15/2017  Central      Gill   Binder     46      8.99   413.54
+ 24    2/1/2017  Central     Smith   Binder     87     15.00  1305.00
+ 25   2/18/2017     East     Jones   Binder      4      4.99    19.96
+ 26    3/7/2017     West   Sorvino   Binder      7     19.99   139.93
+ 27   3/24/2017  Central   Jardine  Pen Set     50      4.99   249.50
+ 28   4/10/2017  Central   Andrews   Pencil     66      1.99   131.34
+ 29   4/27/2017     East    Howard      Pen     96      4.99   479.04
+ 30   5/14/2017  Central      Gill   Pencil     53      1.29    68.37
+ 31   5/31/2017  Central      Gill   Binder     80      8.99   719.20
+ 32   6/17/2017  Central    Kivell     Desk      5    125.00   625.00
+ 33    7/4/2017     East     Jones  Pen Set     62      4.99   309.38
+ 34   7/21/2017  Central    Morgan  Pen Set     55     12.49   686.95
+ 35    8/7/2017  Central    Kivell  Pen Set     42     23.95  1005.90
+ 36   8/24/2017     West   Sorvino     Desk      3    275.00   825.00
+ 37   9/10/2017  Central      Gill   Pencil      7      1.29     9.03
+ 38   9/27/2017     West   Sorvino      Pen     76      1.99   151.24
+ 39  10/14/2017     West  Thompson   Binder     57     19.99  1139.43
+ 40  10/31/2017  Central   Andrews   Pencil     14      1.29    18.06
+ 41  11/17/2017  Central   Jardine   Binder     11      4.99    54.89
+ 42   12/4/2017  Central   Jardine   Binder     94     19.99  1879.06
+ 43  12/21/2017  Central   Andrews   Binder     28      4.99   139.72]&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;We have one table and can see that we need to pass the row number to use as header (because &lt;code&gt;&amp;lt;thead&amp;gt;&lt;/code&gt; is not present).&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [15]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;dfs&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_html&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'http://www.contextures.com/xlSampleData01.html'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;header&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;dfs&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;head&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt output_prompt"&gt;Out[15]:&lt;/div&gt;
+
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;OrderDate&lt;/th&gt;
+      &lt;th&gt;Region&lt;/th&gt;
+      &lt;th&gt;Rep&lt;/th&gt;
+      &lt;th&gt;Item&lt;/th&gt;
+      &lt;th&gt;Units&lt;/th&gt;
+      &lt;th&gt;UnitCost&lt;/th&gt;
+      &lt;th&gt;Total&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;1/6/2016&lt;/td&gt;
+      &lt;td&gt;East&lt;/td&gt;
+      &lt;td&gt;Jones&lt;/td&gt;
+      &lt;td&gt;Pencil&lt;/td&gt;
+      &lt;td&gt;95&lt;/td&gt;
+      &lt;td&gt;1.99&lt;/td&gt;
+      &lt;td&gt;189.05&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;1/23/2016&lt;/td&gt;
+      &lt;td&gt;Central&lt;/td&gt;
+      &lt;td&gt;Kivell&lt;/td&gt;
+      &lt;td&gt;Binder&lt;/td&gt;
+      &lt;td&gt;50&lt;/td&gt;
+      &lt;td&gt;19.99&lt;/td&gt;
+      &lt;td&gt;999.50&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;2/9/2016&lt;/td&gt;
+      &lt;td&gt;Central&lt;/td&gt;
+      &lt;td&gt;Jardine&lt;/td&gt;
+      &lt;td&gt;Pencil&lt;/td&gt;
+      &lt;td&gt;36&lt;/td&gt;
+      &lt;td&gt;4.99&lt;/td&gt;
+      &lt;td&gt;179.64&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;2/26/2016&lt;/td&gt;
+      &lt;td&gt;Central&lt;/td&gt;
+      &lt;td&gt;Gill&lt;/td&gt;
+      &lt;td&gt;Pen&lt;/td&gt;
+      &lt;td&gt;27&lt;/td&gt;
+      &lt;td&gt;19.99&lt;/td&gt;
+      &lt;td&gt;539.73&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;3/15/2016&lt;/td&gt;
+      &lt;td&gt;West&lt;/td&gt;
+      &lt;td&gt;Sorvino&lt;/td&gt;
+      &lt;td&gt;Pencil&lt;/td&gt;
+      &lt;td&gt;56&lt;/td&gt;
+      &lt;td&gt;2.99&lt;/td&gt;
+      &lt;td&gt;167.44&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Nice!&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h3 id="Parsing-a-https-URL"&gt;Parsing a https URL&lt;a class="anchor-link" href="http://beenje.github.io/blog/posts/parsing-html-tables-in-python-with-pandas/#Parsing-a-https-URL"&gt;¶&lt;/a&gt;&lt;/h3&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;The documentation states that:&lt;/p&gt;
+&lt;blockquote&gt;&lt;p&gt;Note that lxml only accepts the http, ftp and file url protocols. If you have a URL that starts with 'https' you might try removing the 's'.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;This is true, but &lt;em&gt;bs4 + html5lib&lt;/em&gt; are used as a fallback when &lt;em&gt;lxml&lt;/em&gt; fails. I guess this is why passing a &lt;code&gt;https&lt;/code&gt; url does work. We can confirm that with a wikipedia page.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [16]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_html&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'https://en.wikipedia.org/wiki/Python_(programming_language)'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;header&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt output_prompt"&gt;Out[16]:&lt;/div&gt;
+
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;Type&lt;/th&gt;
+      &lt;th&gt;mutable&lt;/th&gt;
+      &lt;th&gt;Description&lt;/th&gt;
+      &lt;th&gt;Syntax example&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;bool&lt;/td&gt;
+      &lt;td&gt;immutable&lt;/td&gt;
+      &lt;td&gt;Boolean value&lt;/td&gt;
+      &lt;td&gt;True False&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;bytearray&lt;/td&gt;
+      &lt;td&gt;mutable&lt;/td&gt;
+      &lt;td&gt;Sequence of bytes&lt;/td&gt;
+      &lt;td&gt;bytearray(b'Some ASCII') bytearray(b"Some ASCI...&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;bytes&lt;/td&gt;
+      &lt;td&gt;immutable&lt;/td&gt;
+      &lt;td&gt;Sequence of bytes&lt;/td&gt;
+      &lt;td&gt;b'Some ASCII' b"Some ASCII" bytes([119, 105, 1...&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;complex&lt;/td&gt;
+      &lt;td&gt;immutable&lt;/td&gt;
+      &lt;td&gt;Complex number with real and imaginary parts&lt;/td&gt;
+      &lt;td&gt;3+2.7j&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;dict&lt;/td&gt;
+      &lt;td&gt;mutable&lt;/td&gt;
+      &lt;td&gt;Associative array (or dictionary) of key and v...&lt;/td&gt;
+      &lt;td&gt;{'key1': 1.0, 3: False}&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;5&lt;/th&gt;
+      &lt;td&gt;ellipsis&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;An ellipsis placeholder to be used as an index...&lt;/td&gt;
+      &lt;td&gt;...&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;6&lt;/th&gt;
+      &lt;td&gt;float&lt;/td&gt;
+      &lt;td&gt;immutable&lt;/td&gt;
+      &lt;td&gt;Floating point number, system-defined precision&lt;/td&gt;
+      &lt;td&gt;3.1415927&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;7&lt;/th&gt;
+      &lt;td&gt;frozenset&lt;/td&gt;
+      &lt;td&gt;immutable&lt;/td&gt;
+      &lt;td&gt;Unordered set, contains no duplicates; can con...&lt;/td&gt;
+      &lt;td&gt;frozenset([4.0, 'string', True])&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;8&lt;/th&gt;
+      &lt;td&gt;int&lt;/td&gt;
+      &lt;td&gt;immutable&lt;/td&gt;
+      &lt;td&gt;Integer of unlimited magnitude[76]&lt;/td&gt;
+      &lt;td&gt;42&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;9&lt;/th&gt;
+      &lt;td&gt;list&lt;/td&gt;
+      &lt;td&gt;mutable&lt;/td&gt;
+      &lt;td&gt;List, can contain mixed types&lt;/td&gt;
+      &lt;td&gt;[4.0, 'string', True]&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;10&lt;/th&gt;
+      &lt;td&gt;set&lt;/td&gt;
+      &lt;td&gt;mutable&lt;/td&gt;
+      &lt;td&gt;Unordered set, contains no duplicates; can con...&lt;/td&gt;
+      &lt;td&gt;{4.0, 'string', True}&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;11&lt;/th&gt;
+      &lt;td&gt;str&lt;/td&gt;
+      &lt;td&gt;immutable&lt;/td&gt;
+      &lt;td&gt;A character string: sequence of Unicode codepo...&lt;/td&gt;
+      &lt;td&gt;'Wikipedia' "Wikipedia" """Spanning multiple l...&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;12&lt;/th&gt;
+      &lt;td&gt;tuple&lt;/td&gt;
+      &lt;td&gt;immutable&lt;/td&gt;
+      &lt;td&gt;Can contain mixed types&lt;/td&gt;
+      &lt;td&gt;(4.0, 'string', True)But we can append element...&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;But what if the url requires authentiation?&lt;/p&gt;
+&lt;p&gt;In that case we can use &lt;a href="http://docs.python-requests.org/en/master/"&gt;requests&lt;/a&gt; to get the HTML and pass the string to pandas!&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;To demonstrate authentication, we can use &lt;a href="http://httpbin.org"&gt;http://httpbin.org&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;We can first confirm that passing a url that requires authentication raises a 401&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [17]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_html&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'https://httpbin.org/basic-auth/myuser/mypasswd'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="output_subarea output_text output_error"&gt;
+&lt;pre&gt;
+&lt;span class="ansi-red-fg"&gt;---------------------------------------------------------------------------&lt;/span&gt;
+&lt;span class="ansi-red-fg"&gt;HTTPError&lt;/span&gt;                                 Traceback (most recent call last)
+&lt;span class="ansi-green-fg"&gt;&amp;lt;ipython-input-17-7e6b50c9f1f3&amp;gt;&lt;/span&gt; in &lt;span class="ansi-cyan-fg"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;()&lt;/span&gt;
+&lt;span class="ansi-green-fg"&gt;----&amp;gt; 1&lt;/span&gt;&lt;span class="ansi-red-fg"&gt; &lt;/span&gt;pd&lt;span class="ansi-blue-fg"&gt;.&lt;/span&gt;read_html&lt;span class="ansi-blue-fg"&gt;(&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;'https://httpbin.org/basic-auth/myuser/mypasswd'&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;)&lt;/span&gt;
+
+&lt;span class="ansi-green-fg"&gt;~/miniconda3/envs/jupyter/lib/python3.6/site-packages/pandas/io/html.py&lt;/span&gt; in &lt;span class="ansi-cyan-fg"&gt;read_html&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;(io, match, flavor, header, index_col, skiprows, attrs, parse_dates, tupleize_cols, thousands, encoding, decimal, converters, na_values, keep_default_na)&lt;/span&gt;
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;    913&lt;/span&gt;                   thousands&lt;span class="ansi-blue-fg"&gt;=&lt;/span&gt;thousands&lt;span class="ansi-blue-fg"&gt;,&lt;/span&gt; attrs&lt;span class="ansi-blue-fg"&gt;=&lt;/span&gt;attrs&lt;span class="ansi-blue-fg"&gt;,&lt;/span&gt; encoding&lt;span class="ansi-blue-fg"&gt;=&lt;/span&gt;encoding&lt;span class="ansi-blue-fg"&gt;,&lt;/span&gt;
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;    914&lt;/span&gt;                   decimal&lt;span class="ansi-blue-fg"&gt;=&lt;/span&gt;decimal&lt;span class="ansi-blue-fg"&gt;,&lt;/span&gt; converters&lt;span class="ansi-blue-fg"&gt;=&lt;/span&gt;converters&lt;span class="ansi-blue-fg"&gt;,&lt;/span&gt; na_values&lt;span class="ansi-blue-fg"&gt;=&lt;/span&gt;na_values&lt;span class="ansi-blue-fg"&gt;,&lt;/span&gt;
+&lt;span class="ansi-green-fg"&gt;--&amp;gt; 915&lt;/span&gt;&lt;span class="ansi-red-fg"&gt;                   keep_default_na=keep_default_na)
+&lt;/span&gt;
+&lt;span class="ansi-green-fg"&gt;~/miniconda3/envs/jupyter/lib/python3.6/site-packages/pandas/io/html.py&lt;/span&gt; in &lt;span class="ansi-cyan-fg"&gt;_parse&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;(flavor, io, match, attrs, encoding, **kwargs)&lt;/span&gt;
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;    747&lt;/span&gt;             &lt;span class="ansi-green-fg"&gt;break&lt;/span&gt;
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;    748&lt;/span&gt;     &lt;span class="ansi-green-fg"&gt;else&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;:&lt;/span&gt;
+&lt;span class="ansi-green-fg"&gt;--&amp;gt; 749&lt;/span&gt;&lt;span class="ansi-red-fg"&gt;         &lt;/span&gt;raise_with_traceback&lt;span class="ansi-blue-fg"&gt;(&lt;/span&gt;retained&lt;span class="ansi-blue-fg"&gt;)&lt;/span&gt;
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;    750&lt;/span&gt; 
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;    751&lt;/span&gt;     ret &lt;span class="ansi-blue-fg"&gt;=&lt;/span&gt; &lt;span class="ansi-blue-fg"&gt;[&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;]&lt;/span&gt;
+
+&lt;span class="ansi-green-fg"&gt;~/miniconda3/envs/jupyter/lib/python3.6/site-packages/pandas/compat/__init__.py&lt;/span&gt; in &lt;span class="ansi-cyan-fg"&gt;raise_with_traceback&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;(exc, traceback)&lt;/span&gt;
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;    383&lt;/span&gt;         &lt;span class="ansi-green-fg"&gt;if&lt;/span&gt; traceback &lt;span class="ansi-blue-fg"&gt;==&lt;/span&gt; Ellipsis&lt;span class="ansi-blue-fg"&gt;:&lt;/span&gt;
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;    384&lt;/span&gt;             _&lt;span class="ansi-blue-fg"&gt;,&lt;/span&gt; _&lt;span class="ansi-blue-fg"&gt;,&lt;/span&gt; traceback &lt;span class="ansi-blue-fg"&gt;=&lt;/span&gt; sys&lt;span class="ansi-blue-fg"&gt;.&lt;/span&gt;exc_info&lt;span class="ansi-blue-fg"&gt;(&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;)&lt;/span&gt;
+&lt;span class="ansi-green-fg"&gt;--&amp;gt; 385&lt;/span&gt;&lt;span class="ansi-red-fg"&gt;         &lt;/span&gt;&lt;span class="ansi-green-fg"&gt;raise&lt;/span&gt; exc&lt;span class="ansi-blue-fg"&gt;.&lt;/span&gt;with_traceback&lt;span class="ansi-blue-fg"&gt;(&lt;/span&gt;traceback&lt;span class="ansi-blue-fg"&gt;)&lt;/span&gt;
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;    386&lt;/span&gt; &lt;span class="ansi-green-fg"&gt;else&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;:&lt;/span&gt;
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;    387&lt;/span&gt;     &lt;span class="ansi-red-fg"&gt;# this version of raise is a syntax error in Python 3&lt;/span&gt;
+
+&lt;span class="ansi-red-fg"&gt;HTTPError&lt;/span&gt;: HTTP Error 401: UNAUTHORIZED&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [ ]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'https://httpbin.org/basic-auth/myuser/mypasswd'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;status_code&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Yes, as expected. Let's pass the username and password with requests.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [ ]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'https://httpbin.org/basic-auth/myuser/mypasswd'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;auth&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'myuser'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'mypasswd'&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+&lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;status_code&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;We could now pass &lt;code&gt;r.text&lt;/code&gt; to pandas. &lt;a href="http://httpbin.org"&gt;http://httpbin.org&lt;/a&gt; was used to demonstrate authentication but it only returns JSON-encoded responses and no HTML. It's a testing service. So it doesn't make sense here.&lt;/p&gt;
+&lt;p&gt;The following example shows how to combine requests and pandas.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [18]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'https://en.wikipedia.org/wiki/Python_(programming_language)'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_html&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;text&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;header&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)[&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt output_prompt"&gt;Out[18]:&lt;/div&gt;
+
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;Type&lt;/th&gt;
+      &lt;th&gt;mutable&lt;/th&gt;
+      &lt;th&gt;Description&lt;/th&gt;
+      &lt;th&gt;Syntax example&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;bool&lt;/td&gt;
+      &lt;td&gt;immutable&lt;/td&gt;
+      &lt;td&gt;Boolean value&lt;/td&gt;
+      &lt;td&gt;True False&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;bytearray&lt;/td&gt;
+      &lt;td&gt;mutable&lt;/td&gt;
+      &lt;td&gt;Sequence of bytes&lt;/td&gt;
+      &lt;td&gt;bytearray(b'Some ASCII') bytearray(b"Some ASCI...&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;bytes&lt;/td&gt;
+      &lt;td&gt;immutable&lt;/td&gt;
+      &lt;td&gt;Sequence of bytes&lt;/td&gt;
+      &lt;td&gt;b'Some ASCII' b"Some ASCII" bytes([119, 105, 1...&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;complex&lt;/td&gt;
+      &lt;td&gt;immutable&lt;/td&gt;
+      &lt;td&gt;Complex number with real and imaginary parts&lt;/td&gt;
+      &lt;td&gt;3+2.7j&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;dict&lt;/td&gt;
+      &lt;td&gt;mutable&lt;/td&gt;
+      &lt;td&gt;Associative array (or dictionary) of key and v...&lt;/td&gt;
+      &lt;td&gt;{'key1': 1.0, 3: False}&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;5&lt;/th&gt;
+      &lt;td&gt;ellipsis&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;An ellipsis placeholder to be used as an index...&lt;/td&gt;
+      &lt;td&gt;...&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;6&lt;/th&gt;
+      &lt;td&gt;float&lt;/td&gt;
+      &lt;td&gt;immutable&lt;/td&gt;
+      &lt;td&gt;Floating point number, system-defined precision&lt;/td&gt;
+      &lt;td&gt;3.1415927&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;7&lt;/th&gt;
+      &lt;td&gt;frozenset&lt;/td&gt;
+      &lt;td&gt;immutable&lt;/td&gt;
+      &lt;td&gt;Unordered set, contains no duplicates; can con...&lt;/td&gt;
+      &lt;td&gt;frozenset([4.0, 'string', True])&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;8&lt;/th&gt;
+      &lt;td&gt;int&lt;/td&gt;
+      &lt;td&gt;immutable&lt;/td&gt;
+      &lt;td&gt;Integer of unlimited magnitude[76]&lt;/td&gt;
+      &lt;td&gt;42&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;9&lt;/th&gt;
+      &lt;td&gt;list&lt;/td&gt;
+      &lt;td&gt;mutable&lt;/td&gt;
+      &lt;td&gt;List, can contain mixed types&lt;/td&gt;
+      &lt;td&gt;[4.0, 'string', True]&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;10&lt;/th&gt;
+      &lt;td&gt;set&lt;/td&gt;
+      &lt;td&gt;mutable&lt;/td&gt;
+      &lt;td&gt;Unordered set, contains no duplicates; can con...&lt;/td&gt;
+      &lt;td&gt;{4.0, 'string', True}&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;11&lt;/th&gt;
+      &lt;td&gt;str&lt;/td&gt;
+      &lt;td&gt;immutable&lt;/td&gt;
+      &lt;td&gt;A character string: sequence of Unicode codepo...&lt;/td&gt;
+      &lt;td&gt;'Wikipedia' "Wikipedia" """Spanning multiple l...&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;12&lt;/th&gt;
+      &lt;td&gt;tuple&lt;/td&gt;
+      &lt;td&gt;immutable&lt;/td&gt;
+      &lt;td&gt;Can contain mixed types&lt;/td&gt;
+      &lt;td&gt;(4.0, 'string', True)But we can append element...&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h3 id="A-more-complex-example"&gt;A more complex example&lt;a class="anchor-link" href="http://beenje.github.io/blog/posts/parsing-html-tables-in-python-with-pandas/#A-more-complex-example"&gt;¶&lt;/a&gt;&lt;/h3&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;We looked at some quite simple examples so far. So let's try a page with several tables: &lt;a href="https://en.wikipedia.org/wiki/Timeline_of_programming_languages"&gt;https://en.wikipedia.org/wiki/Timeline_of_programming_languages&lt;/a&gt;&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [19]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;dfs&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_html&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'https://en.wikipedia.org/wiki/Timeline_of_programming_languages'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [20]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;dfs&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt output_prompt"&gt;Out[20]:&lt;/div&gt;
+
+
+&lt;div class="output_text output_subarea output_execute_result"&gt;
+&lt;pre&gt;13&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;If we look at the page we have 8 tables (one per decade). Looking at our &lt;code&gt;dfs&lt;/code&gt; list, we can see that the first interesting table is the fifth one and that we need to pass the row to use as header.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [21]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;dfs&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_html&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'https://en.wikipedia.org/wiki/Timeline_of_programming_languages'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;header&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;dfs&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt output_prompt"&gt;Out[21]:&lt;/div&gt;
+
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;Year&lt;/th&gt;
+      &lt;th&gt;Name&lt;/th&gt;
+      &lt;th&gt;Chief developer, company&lt;/th&gt;
+      &lt;th&gt;Predecessor(s)&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;1943–45&lt;/td&gt;
+      &lt;td&gt;Plankalkül (concept)&lt;/td&gt;
+      &lt;td&gt;Konrad Zuse&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;1943–46&lt;/td&gt;
+      &lt;td&gt;ENIAC coding system&lt;/td&gt;
+      &lt;td&gt;John von Neumann, John Mauchly, J. Presper Eck...&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;1946&lt;/td&gt;
+      &lt;td&gt;ENIAC Short Code&lt;/td&gt;
+      &lt;td&gt;Richard Clippinger, John von Neumann after Ala...&lt;/td&gt;
+      &lt;td&gt;ENIAC coding system&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;1946&lt;/td&gt;
+      &lt;td&gt;Von Neumann and Goldstine graphing system (Not...&lt;/td&gt;
+      &lt;td&gt;John von Neumann and Herman Goldstine&lt;/td&gt;
+      &lt;td&gt;ENIAC coding system&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;1947&lt;/td&gt;
+      &lt;td&gt;ARC Assembly&lt;/td&gt;
+      &lt;td&gt;Kathleen Booth[1][2]&lt;/td&gt;
+      &lt;td&gt;ENIAC coding system&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;5&lt;/th&gt;
+      &lt;td&gt;1948&lt;/td&gt;
+      &lt;td&gt;CPC Coding scheme&lt;/td&gt;
+      &lt;td&gt;Howard H. Aiken&lt;/td&gt;
+      &lt;td&gt;Analytical Engine order code&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;6&lt;/th&gt;
+      &lt;td&gt;1948&lt;/td&gt;
+      &lt;td&gt;Curry notation system&lt;/td&gt;
+      &lt;td&gt;Haskell Curry&lt;/td&gt;
+      &lt;td&gt;ENIAC coding system&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;7&lt;/th&gt;
+      &lt;td&gt;1948&lt;/td&gt;
+      &lt;td&gt;Plankalkül (concept published)&lt;/td&gt;
+      &lt;td&gt;Konrad Zuse&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;8&lt;/th&gt;
+      &lt;td&gt;1949&lt;/td&gt;
+      &lt;td&gt;Short Code&lt;/td&gt;
+      &lt;td&gt;John Mauchly and William F. Schmitt&lt;/td&gt;
+      &lt;td&gt;ENIAC Short Code&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;9&lt;/th&gt;
+      &lt;td&gt;Year&lt;/td&gt;
+      &lt;td&gt;Name&lt;/td&gt;
+      &lt;td&gt;Chief developer, company&lt;/td&gt;
+      &lt;td&gt;Predecessor(s)&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Notice that the header was repeated in the last row (to make the table easier to read on the HTML page). We can filter that after concatenating together the 8 tables to get one DataFrame.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [22]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;concat&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;dfs&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;12&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;span class="n"&gt;df&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt output_prompt"&gt;Out[22]:&lt;/div&gt;
+
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;Year&lt;/th&gt;
+      &lt;th&gt;Name&lt;/th&gt;
+      &lt;th&gt;Chief developer, company&lt;/th&gt;
+      &lt;th&gt;Predecessor(s)&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;1943–45&lt;/td&gt;
+      &lt;td&gt;Plankalkül (concept)&lt;/td&gt;
+      &lt;td&gt;Konrad Zuse&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;1943–46&lt;/td&gt;
+      &lt;td&gt;ENIAC coding system&lt;/td&gt;
+      &lt;td&gt;John von Neumann, John Mauchly, J. Presper Eck...&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;1946&lt;/td&gt;
+      &lt;td&gt;ENIAC Short Code&lt;/td&gt;
+      &lt;td&gt;Richard Clippinger, John von Neumann after Ala...&lt;/td&gt;
+      &lt;td&gt;ENIAC coding system&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;1946&lt;/td&gt;
+      &lt;td&gt;Von Neumann and Goldstine graphing system (Not...&lt;/td&gt;
+      &lt;td&gt;John von Neumann and Herman Goldstine&lt;/td&gt;
+      &lt;td&gt;ENIAC coding system&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;1947&lt;/td&gt;
+      &lt;td&gt;ARC Assembly&lt;/td&gt;
+      &lt;td&gt;Kathleen Booth[1][2]&lt;/td&gt;
+      &lt;td&gt;ENIAC coding system&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;5&lt;/th&gt;
+      &lt;td&gt;1948&lt;/td&gt;
+      &lt;td&gt;CPC Coding scheme&lt;/td&gt;
+      &lt;td&gt;Howard H. Aiken&lt;/td&gt;
+      &lt;td&gt;Analytical Engine order code&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;6&lt;/th&gt;
+      &lt;td&gt;1948&lt;/td&gt;
+      &lt;td&gt;Curry notation system&lt;/td&gt;
+      &lt;td&gt;Haskell Curry&lt;/td&gt;
+      &lt;td&gt;ENIAC coding system&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;7&lt;/th&gt;
+      &lt;td&gt;1948&lt;/td&gt;
+      &lt;td&gt;Plankalkül (concept published)&lt;/td&gt;
+      &lt;td&gt;Konrad Zuse&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;8&lt;/th&gt;
+      &lt;td&gt;1949&lt;/td&gt;
+      &lt;td&gt;Short Code&lt;/td&gt;
+      &lt;td&gt;John Mauchly and William F. Schmitt&lt;/td&gt;
+      &lt;td&gt;ENIAC Short Code&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;9&lt;/th&gt;
+      &lt;td&gt;Year&lt;/td&gt;
+      &lt;td&gt;Name&lt;/td&gt;
+      &lt;td&gt;Chief developer, company&lt;/td&gt;
+      &lt;td&gt;Predecessor(s)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;1950&lt;/td&gt;
+      &lt;td&gt;Short Code&lt;/td&gt;
+      &lt;td&gt;William F Schmidt, Albert B. Tonik,[3] J.R. Logan&lt;/td&gt;
+      &lt;td&gt;Brief Code&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;1950&lt;/td&gt;
+      &lt;td&gt;Birkbeck Assembler&lt;/td&gt;
+      &lt;td&gt;Kathleen Booth&lt;/td&gt;
+      &lt;td&gt;ARC&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;Superplan&lt;/td&gt;
+      &lt;td&gt;Heinz Rutishauser&lt;/td&gt;
+      &lt;td&gt;Plankalkül&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;ALGAE&lt;/td&gt;
+      &lt;td&gt;Edward A Voorhees and Karl Balke&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;Intermediate Programming Language&lt;/td&gt;
+      &lt;td&gt;Arthur Burks&lt;/td&gt;
+      &lt;td&gt;Short Code&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;5&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;Regional Assembly Language&lt;/td&gt;
+      &lt;td&gt;Maurice Wilkes&lt;/td&gt;
+      &lt;td&gt;EDSAC&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;6&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;Boehm unnamed coding system&lt;/td&gt;
+      &lt;td&gt;Corrado Böhm&lt;/td&gt;
+      &lt;td&gt;CPC Coding scheme&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;7&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;Klammerausdrücke&lt;/td&gt;
+      &lt;td&gt;Konrad Zuse&lt;/td&gt;
+      &lt;td&gt;Plankalkül&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;8&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;OMNIBAC Symbolic Assembler&lt;/td&gt;
+      &lt;td&gt;Charles Katz&lt;/td&gt;
+      &lt;td&gt;Short Code&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;9&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;Stanislaus (Notation)&lt;/td&gt;
+      &lt;td&gt;Fritz Bauer&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;10&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;Whirlwind assembler&lt;/td&gt;
+      &lt;td&gt;Charles Adams and Jack Gilmore at MIT Project ...&lt;/td&gt;
+      &lt;td&gt;EDSAC&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;11&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;Rochester assembler&lt;/td&gt;
+      &lt;td&gt;Nat Rochester&lt;/td&gt;
+      &lt;td&gt;EDSAC&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;12&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;Sort Merge Generator&lt;/td&gt;
+      &lt;td&gt;Betty Holberton&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;13&lt;/th&gt;
+      &lt;td&gt;1952&lt;/td&gt;
+      &lt;td&gt;A-0&lt;/td&gt;
+      &lt;td&gt;Grace Hopper&lt;/td&gt;
+      &lt;td&gt;Short Code&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;14&lt;/th&gt;
+      &lt;td&gt;1952&lt;/td&gt;
+      &lt;td&gt;Glennie Autocode&lt;/td&gt;
+      &lt;td&gt;Alick Glennie after Alan Turing&lt;/td&gt;
+      &lt;td&gt;CPC Coding scheme&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;15&lt;/th&gt;
+      &lt;td&gt;1952&lt;/td&gt;
+      &lt;td&gt;Editing Generator&lt;/td&gt;
+      &lt;td&gt;Milly Koss&lt;/td&gt;
+      &lt;td&gt;SORT/MERGE&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;16&lt;/th&gt;
+      &lt;td&gt;1952&lt;/td&gt;
+      &lt;td&gt;COMPOOL&lt;/td&gt;
+      &lt;td&gt;RAND/SDC&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;17&lt;/th&gt;
+      &lt;td&gt;1953&lt;/td&gt;
+      &lt;td&gt;Speedcoding&lt;/td&gt;
+      &lt;td&gt;John W. Backus&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;18&lt;/th&gt;
+      &lt;td&gt;1953&lt;/td&gt;
+      &lt;td&gt;READ/PRINT&lt;/td&gt;
+      &lt;td&gt;Don Harroff, James Fishman, George Ryckman&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;19&lt;/th&gt;
+      &lt;td&gt;1954&lt;/td&gt;
+      &lt;td&gt;Laning and Zierler system&lt;/td&gt;
+      &lt;td&gt;Laning, Zierler, Adams at MIT Project Whirlwind&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;...&lt;/th&gt;
+      &lt;td&gt;...&lt;/td&gt;
+      &lt;td&gt;...&lt;/td&gt;
+      &lt;td&gt;...&lt;/td&gt;
+      &lt;td&gt;...&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;47&lt;/th&gt;
+      &lt;td&gt;2009&lt;/td&gt;
+      &lt;td&gt;Chapel&lt;/td&gt;
+      &lt;td&gt;Brad Chamberlain, Cray Inc.&lt;/td&gt;
+      &lt;td&gt;HPF, ZPL&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;48&lt;/th&gt;
+      &lt;td&gt;2009&lt;/td&gt;
+      &lt;td&gt;Go&lt;/td&gt;
+      &lt;td&gt;Google&lt;/td&gt;
+      &lt;td&gt;C, Oberon, Limbo, Smalltalk&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;49&lt;/th&gt;
+      &lt;td&gt;2009&lt;/td&gt;
+      &lt;td&gt;CoffeeScript&lt;/td&gt;
+      &lt;td&gt;Jeremy Ashkenas&lt;/td&gt;
+      &lt;td&gt;JavaScript, Ruby, Python, Haskell&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;50&lt;/th&gt;
+      &lt;td&gt;2009&lt;/td&gt;
+      &lt;td&gt;Idris&lt;/td&gt;
+      &lt;td&gt;Edwin Brady&lt;/td&gt;
+      &lt;td&gt;Haskell, Agda, Coq&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;51&lt;/th&gt;
+      &lt;td&gt;2009&lt;/td&gt;
+      &lt;td&gt;Parasail&lt;/td&gt;
+      &lt;td&gt;S. Tucker Taft, AdaCore&lt;/td&gt;
+      &lt;td&gt;Modula, Ada, Pascal, ML&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;52&lt;/th&gt;
+      &lt;td&gt;2009&lt;/td&gt;
+      &lt;td&gt;Whiley&lt;/td&gt;
+      &lt;td&gt;David J. Pearce&lt;/td&gt;
+      &lt;td&gt;Java, C, Python&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;53&lt;/th&gt;
+      &lt;td&gt;Year&lt;/td&gt;
+      &lt;td&gt;Name&lt;/td&gt;
+      &lt;td&gt;Chief developer, company&lt;/td&gt;
+      &lt;td&gt;Predecessor(s)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;2010&lt;/td&gt;
+      &lt;td&gt;Rust&lt;/td&gt;
+      &lt;td&gt;Graydon Hoare, Mozilla&lt;/td&gt;
+      &lt;td&gt;Alef, C++, Camlp4, Erlang, Hermes, Limbo, Napi...&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;2011&lt;/td&gt;
+      &lt;td&gt;Ceylon&lt;/td&gt;
+      &lt;td&gt;Gavin King, Red Hat&lt;/td&gt;
+      &lt;td&gt;Java&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;2011&lt;/td&gt;
+      &lt;td&gt;Dart&lt;/td&gt;
+      &lt;td&gt;Google&lt;/td&gt;
+      &lt;td&gt;Java, JavaScript, CoffeeScript, Go&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;2011&lt;/td&gt;
+      &lt;td&gt;C++11&lt;/td&gt;
+      &lt;td&gt;C++ ISO/IEC 14882:2011&lt;/td&gt;
+      &lt;td&gt;C++, Standard C, C&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;2011&lt;/td&gt;
+      &lt;td&gt;Kotlin&lt;/td&gt;
+      &lt;td&gt;JetBrains&lt;/td&gt;
+      &lt;td&gt;Java, Scala, Groovy, C#, Gosu&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;5&lt;/th&gt;
+      &lt;td&gt;2011&lt;/td&gt;
+      &lt;td&gt;Red&lt;/td&gt;
+      &lt;td&gt;Nenad Rakocevic&lt;/td&gt;
+      &lt;td&gt;Rebol, Scala, Lua&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;6&lt;/th&gt;
+      &lt;td&gt;2011&lt;/td&gt;
+      &lt;td&gt;Opa&lt;/td&gt;
+      &lt;td&gt;MLstate&lt;/td&gt;
+      &lt;td&gt;OCaml, Erlang, JavaScript&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;7&lt;/th&gt;
+      &lt;td&gt;2012&lt;/td&gt;
+      &lt;td&gt;Elixir&lt;/td&gt;
+      &lt;td&gt;José Valim&lt;/td&gt;
+      &lt;td&gt;Erlang, Ruby, Clojure&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;8&lt;/th&gt;
+      &lt;td&gt;2012&lt;/td&gt;
+      &lt;td&gt;Elm&lt;/td&gt;
+      &lt;td&gt;Evan Czaplicki&lt;/td&gt;
+      &lt;td&gt;Haskell, Standard ML, OCaml, F#&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;9&lt;/th&gt;
+      &lt;td&gt;2012&lt;/td&gt;
+      &lt;td&gt;TypeScript&lt;/td&gt;
+      &lt;td&gt;Anders Hejlsberg, Microsoft&lt;/td&gt;
+      &lt;td&gt;JavaScript, CoffeeScript&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;10&lt;/th&gt;
+      &lt;td&gt;2012&lt;/td&gt;
+      &lt;td&gt;Julia&lt;/td&gt;
+      &lt;td&gt;Jeff Bezanson, Stefan Karpinski, Viral Shah, A...&lt;/td&gt;
+      &lt;td&gt;MATLAB, Lisp, C, Fortran, Mathematica[9] (stri...&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;11&lt;/th&gt;
+      &lt;td&gt;2012&lt;/td&gt;
+      &lt;td&gt;P&lt;/td&gt;
+      &lt;td&gt;Vivek Gupta: not the politician, Ethan Jackson...&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;12&lt;/th&gt;
+      &lt;td&gt;2012&lt;/td&gt;
+      &lt;td&gt;Ada 2012&lt;/td&gt;
+      &lt;td&gt;ARA and Ada Europe (ISO/IEC 8652:2012)&lt;/td&gt;
+      &lt;td&gt;Ada 2005, ISO/IEC 8652:1995/Amd 1:2007&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;13&lt;/th&gt;
+      &lt;td&gt;2014&lt;/td&gt;
+      &lt;td&gt;Crystal&lt;/td&gt;
+      &lt;td&gt;Ary Borenszweig, Manas Technology Solutions&lt;/td&gt;
+      &lt;td&gt;Ruby, C, Rust, Go, C#, Python&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;14&lt;/th&gt;
+      &lt;td&gt;2014&lt;/td&gt;
+      &lt;td&gt;Hack&lt;/td&gt;
+      &lt;td&gt;Facebook&lt;/td&gt;
+      &lt;td&gt;PHP&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;15&lt;/th&gt;
+      &lt;td&gt;2014&lt;/td&gt;
+      &lt;td&gt;Swift&lt;/td&gt;
+      &lt;td&gt;Apple Inc.&lt;/td&gt;
+      &lt;td&gt;Objective-C, Rust, Haskell, Ruby, Python, C#, CLU&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;16&lt;/th&gt;
+      &lt;td&gt;2014&lt;/td&gt;
+      &lt;td&gt;C++14&lt;/td&gt;
+      &lt;td&gt;C++ ISO/IEC 14882:2014&lt;/td&gt;
+      &lt;td&gt;C++, Standard C, C&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;17&lt;/th&gt;
+      &lt;td&gt;2015&lt;/td&gt;
+      &lt;td&gt;Atari 2600 SuperCharger BASIC&lt;/td&gt;
+      &lt;td&gt;Microsoft sponsored think tank RelationalFrame...&lt;/td&gt;
+      &lt;td&gt;BASIC, Dartmouth BASIC (compiled programming l...&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;18&lt;/th&gt;
+      &lt;td&gt;2015&lt;/td&gt;
+      &lt;td&gt;Perl 6&lt;/td&gt;
+      &lt;td&gt;The Rakudo Team&lt;/td&gt;
+      &lt;td&gt;Perl, Haskell, Python, Ruby&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;19&lt;/th&gt;
+      &lt;td&gt;2016&lt;/td&gt;
+      &lt;td&gt;Ring&lt;/td&gt;
+      &lt;td&gt;Mahmoud Fayed&lt;/td&gt;
+      &lt;td&gt;Lua, Python, Ruby, C, C#, BASIC, QML, xBase, S...&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;20&lt;/th&gt;
+      &lt;td&gt;2017&lt;/td&gt;
+      &lt;td&gt;C++17&lt;/td&gt;
+      &lt;td&gt;C++ ISO/IEC 14882:2017&lt;/td&gt;
+      &lt;td&gt;C++, Standard C, C&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;21&lt;/th&gt;
+      &lt;td&gt;2017&lt;/td&gt;
+      &lt;td&gt;Atari 2600 Flashback BASIC&lt;/td&gt;
+      &lt;td&gt;Microsoft sponsored think tank RelationalFrame...&lt;/td&gt;
+      &lt;td&gt;BASIC, Dartmouth BASIC (compiled programming l...&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;22&lt;/th&gt;
+      &lt;td&gt;Year&lt;/td&gt;
+      &lt;td&gt;Name&lt;/td&gt;
+      &lt;td&gt;Chief developer, company&lt;/td&gt;
+      &lt;td&gt;Predecessor(s)&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;388 rows × 4 columns&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Remove the extra &lt;em&gt;header&lt;/em&gt; rows.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [23]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;prog_lang&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Year&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="s1"&gt;'Year'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;span class="n"&gt;prog_lang&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt output_prompt"&gt;Out[23]:&lt;/div&gt;
+
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;Year&lt;/th&gt;
+      &lt;th&gt;Name&lt;/th&gt;
+      &lt;th&gt;Chief developer, company&lt;/th&gt;
+      &lt;th&gt;Predecessor(s)&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;1943–45&lt;/td&gt;
+      &lt;td&gt;Plankalkül (concept)&lt;/td&gt;
+      &lt;td&gt;Konrad Zuse&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;1943–46&lt;/td&gt;
+      &lt;td&gt;ENIAC coding system&lt;/td&gt;
+      &lt;td&gt;John von Neumann, John Mauchly, J. Presper Eck...&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;1946&lt;/td&gt;
+      &lt;td&gt;ENIAC Short Code&lt;/td&gt;
+      &lt;td&gt;Richard Clippinger, John von Neumann after Ala...&lt;/td&gt;
+      &lt;td&gt;ENIAC coding system&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;1946&lt;/td&gt;
+      &lt;td&gt;Von Neumann and Goldstine graphing system (Not...&lt;/td&gt;
+      &lt;td&gt;John von Neumann and Herman Goldstine&lt;/td&gt;
+      &lt;td&gt;ENIAC coding system&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;1947&lt;/td&gt;
+      &lt;td&gt;ARC Assembly&lt;/td&gt;
+      &lt;td&gt;Kathleen Booth[1][2]&lt;/td&gt;
+      &lt;td&gt;ENIAC coding system&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;5&lt;/th&gt;
+      &lt;td&gt;1948&lt;/td&gt;
+      &lt;td&gt;CPC Coding scheme&lt;/td&gt;
+      &lt;td&gt;Howard H. Aiken&lt;/td&gt;
+      &lt;td&gt;Analytical Engine order code&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;6&lt;/th&gt;
+      &lt;td&gt;1948&lt;/td&gt;
+      &lt;td&gt;Curry notation system&lt;/td&gt;
+      &lt;td&gt;Haskell Curry&lt;/td&gt;
+      &lt;td&gt;ENIAC coding system&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;7&lt;/th&gt;
+      &lt;td&gt;1948&lt;/td&gt;
+      &lt;td&gt;Plankalkül (concept published)&lt;/td&gt;
+      &lt;td&gt;Konrad Zuse&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;8&lt;/th&gt;
+      &lt;td&gt;1949&lt;/td&gt;
+      &lt;td&gt;Short Code&lt;/td&gt;
+      &lt;td&gt;John Mauchly and William F. Schmitt&lt;/td&gt;
+      &lt;td&gt;ENIAC Short Code&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;1950&lt;/td&gt;
+      &lt;td&gt;Short Code&lt;/td&gt;
+      &lt;td&gt;William F Schmidt, Albert B. Tonik,[3] J.R. Logan&lt;/td&gt;
+      &lt;td&gt;Brief Code&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;1950&lt;/td&gt;
+      &lt;td&gt;Birkbeck Assembler&lt;/td&gt;
+      &lt;td&gt;Kathleen Booth&lt;/td&gt;
+      &lt;td&gt;ARC&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;Superplan&lt;/td&gt;
+      &lt;td&gt;Heinz Rutishauser&lt;/td&gt;
+      &lt;td&gt;Plankalkül&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;ALGAE&lt;/td&gt;
+      &lt;td&gt;Edward A Voorhees and Karl Balke&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;Intermediate Programming Language&lt;/td&gt;
+      &lt;td&gt;Arthur Burks&lt;/td&gt;
+      &lt;td&gt;Short Code&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;5&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;Regional Assembly Language&lt;/td&gt;
+      &lt;td&gt;Maurice Wilkes&lt;/td&gt;
+      &lt;td&gt;EDSAC&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;6&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;Boehm unnamed coding system&lt;/td&gt;
+      &lt;td&gt;Corrado Böhm&lt;/td&gt;
+      &lt;td&gt;CPC Coding scheme&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;7&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;Klammerausdrücke&lt;/td&gt;
+      &lt;td&gt;Konrad Zuse&lt;/td&gt;
+      &lt;td&gt;Plankalkül&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;8&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;OMNIBAC Symbolic Assembler&lt;/td&gt;
+      &lt;td&gt;Charles Katz&lt;/td&gt;
+      &lt;td&gt;Short Code&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;9&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;Stanislaus (Notation)&lt;/td&gt;
+      &lt;td&gt;Fritz Bauer&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;10&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;Whirlwind assembler&lt;/td&gt;
+      &lt;td&gt;Charles Adams and Jack Gilmore at MIT Project ...&lt;/td&gt;
+      &lt;td&gt;EDSAC&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;11&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;Rochester assembler&lt;/td&gt;
+      &lt;td&gt;Nat Rochester&lt;/td&gt;
+      &lt;td&gt;EDSAC&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;12&lt;/th&gt;
+      &lt;td&gt;1951&lt;/td&gt;
+      &lt;td&gt;Sort Merge Generator&lt;/td&gt;
+      &lt;td&gt;Betty Holberton&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;13&lt;/th&gt;
+      &lt;td&gt;1952&lt;/td&gt;
+      &lt;td&gt;A-0&lt;/td&gt;
+      &lt;td&gt;Grace Hopper&lt;/td&gt;
+      &lt;td&gt;Short Code&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;14&lt;/th&gt;
+      &lt;td&gt;1952&lt;/td&gt;
+      &lt;td&gt;Glennie Autocode&lt;/td&gt;
+      &lt;td&gt;Alick Glennie after Alan Turing&lt;/td&gt;
+      &lt;td&gt;CPC Coding scheme&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;15&lt;/th&gt;
+      &lt;td&gt;1952&lt;/td&gt;
+      &lt;td&gt;Editing Generator&lt;/td&gt;
+      &lt;td&gt;Milly Koss&lt;/td&gt;
+      &lt;td&gt;SORT/MERGE&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;16&lt;/th&gt;
+      &lt;td&gt;1952&lt;/td&gt;
+      &lt;td&gt;COMPOOL&lt;/td&gt;
+      &lt;td&gt;RAND/SDC&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;17&lt;/th&gt;
+      &lt;td&gt;1953&lt;/td&gt;
+      &lt;td&gt;Speedcoding&lt;/td&gt;
+      &lt;td&gt;John W. Backus&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;18&lt;/th&gt;
+      &lt;td&gt;1953&lt;/td&gt;
+      &lt;td&gt;READ/PRINT&lt;/td&gt;
+      &lt;td&gt;Don Harroff, James Fishman, George Ryckman&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;19&lt;/th&gt;
+      &lt;td&gt;1954&lt;/td&gt;
+      &lt;td&gt;Laning and Zierler system&lt;/td&gt;
+      &lt;td&gt;Laning, Zierler, Adams at MIT Project Whirlwind&lt;/td&gt;
+      &lt;td&gt;none (unique language)&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;20&lt;/th&gt;
+      &lt;td&gt;1954&lt;/td&gt;
+      &lt;td&gt;Mark I Autocode&lt;/td&gt;
+      &lt;td&gt;Tony Brooker&lt;/td&gt;
+      &lt;td&gt;Glennie Autocode&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;...&lt;/th&gt;
+      &lt;td&gt;...&lt;/td&gt;
+      &lt;td&gt;...&lt;/td&gt;
+      &lt;td&gt;...&lt;/td&gt;
+      &lt;td&gt;...&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;45&lt;/th&gt;
+      &lt;td&gt;2008&lt;/td&gt;
+      &lt;td&gt;Genie&lt;/td&gt;
+      &lt;td&gt;Jamie McCracken&lt;/td&gt;
+      &lt;td&gt;Python, Boo, D, Object Pascal&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;46&lt;/th&gt;
+      &lt;td&gt;2008&lt;/td&gt;
+      &lt;td&gt;Pure&lt;/td&gt;
+      &lt;td&gt;Albert Gräf&lt;/td&gt;
+      &lt;td&gt;Q&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;47&lt;/th&gt;
+      &lt;td&gt;2009&lt;/td&gt;
+      &lt;td&gt;Chapel&lt;/td&gt;
+      &lt;td&gt;Brad Chamberlain, Cray Inc.&lt;/td&gt;
+      &lt;td&gt;HPF, ZPL&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;48&lt;/th&gt;
+      &lt;td&gt;2009&lt;/td&gt;
+      &lt;td&gt;Go&lt;/td&gt;
+      &lt;td&gt;Google&lt;/td&gt;
+      &lt;td&gt;C, Oberon, Limbo, Smalltalk&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;49&lt;/th&gt;
+      &lt;td&gt;2009&lt;/td&gt;
+      &lt;td&gt;CoffeeScript&lt;/td&gt;
+      &lt;td&gt;Jeremy Ashkenas&lt;/td&gt;
+      &lt;td&gt;JavaScript, Ruby, Python, Haskell&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;50&lt;/th&gt;
+      &lt;td&gt;2009&lt;/td&gt;
+      &lt;td&gt;Idris&lt;/td&gt;
+      &lt;td&gt;Edwin Brady&lt;/td&gt;
+      &lt;td&gt;Haskell, Agda, Coq&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;51&lt;/th&gt;
+      &lt;td&gt;2009&lt;/td&gt;
+      &lt;td&gt;Parasail&lt;/td&gt;
+      &lt;td&gt;S. Tucker Taft, AdaCore&lt;/td&gt;
+      &lt;td&gt;Modula, Ada, Pascal, ML&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;52&lt;/th&gt;
+      &lt;td&gt;2009&lt;/td&gt;
+      &lt;td&gt;Whiley&lt;/td&gt;
+      &lt;td&gt;David J. Pearce&lt;/td&gt;
+      &lt;td&gt;Java, C, Python&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;2010&lt;/td&gt;
+      &lt;td&gt;Rust&lt;/td&gt;
+      &lt;td&gt;Graydon Hoare, Mozilla&lt;/td&gt;
+      &lt;td&gt;Alef, C++, Camlp4, Erlang, Hermes, Limbo, Napi...&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;2011&lt;/td&gt;
+      &lt;td&gt;Ceylon&lt;/td&gt;
+      &lt;td&gt;Gavin King, Red Hat&lt;/td&gt;
+      &lt;td&gt;Java&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;2011&lt;/td&gt;
+      &lt;td&gt;Dart&lt;/td&gt;
+      &lt;td&gt;Google&lt;/td&gt;
+      &lt;td&gt;Java, JavaScript, CoffeeScript, Go&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;2011&lt;/td&gt;
+      &lt;td&gt;C++11&lt;/td&gt;
+      &lt;td&gt;C++ ISO/IEC 14882:2011&lt;/td&gt;
+      &lt;td&gt;C++, Standard C, C&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;2011&lt;/td&gt;
+      &lt;td&gt;Kotlin&lt;/td&gt;
+      &lt;td&gt;JetBrains&lt;/td&gt;
+      &lt;td&gt;Java, Scala, Groovy, C#, Gosu&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;5&lt;/th&gt;
+      &lt;td&gt;2011&lt;/td&gt;
+      &lt;td&gt;Red&lt;/td&gt;
+      &lt;td&gt;Nenad Rakocevic&lt;/td&gt;
+      &lt;td&gt;Rebol, Scala, Lua&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;6&lt;/th&gt;
+      &lt;td&gt;2011&lt;/td&gt;
+      &lt;td&gt;Opa&lt;/td&gt;
+      &lt;td&gt;MLstate&lt;/td&gt;
+      &lt;td&gt;OCaml, Erlang, JavaScript&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;7&lt;/th&gt;
+      &lt;td&gt;2012&lt;/td&gt;
+      &lt;td&gt;Elixir&lt;/td&gt;
+      &lt;td&gt;José Valim&lt;/td&gt;
+      &lt;td&gt;Erlang, Ruby, Clojure&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;8&lt;/th&gt;
+      &lt;td&gt;2012&lt;/td&gt;
+      &lt;td&gt;Elm&lt;/td&gt;
+      &lt;td&gt;Evan Czaplicki&lt;/td&gt;
+      &lt;td&gt;Haskell, Standard ML, OCaml, F#&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;9&lt;/th&gt;
+      &lt;td&gt;2012&lt;/td&gt;
+      &lt;td&gt;TypeScript&lt;/td&gt;
+      &lt;td&gt;Anders Hejlsberg, Microsoft&lt;/td&gt;
+      &lt;td&gt;JavaScript, CoffeeScript&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;10&lt;/th&gt;
+      &lt;td&gt;2012&lt;/td&gt;
+      &lt;td&gt;Julia&lt;/td&gt;
+      &lt;td&gt;Jeff Bezanson, Stefan Karpinski, Viral Shah, A...&lt;/td&gt;
+      &lt;td&gt;MATLAB, Lisp, C, Fortran, Mathematica[9] (stri...&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;11&lt;/th&gt;
+      &lt;td&gt;2012&lt;/td&gt;
+      &lt;td&gt;P&lt;/td&gt;
+      &lt;td&gt;Vivek Gupta: not the politician, Ethan Jackson...&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;12&lt;/th&gt;
+      &lt;td&gt;2012&lt;/td&gt;
+      &lt;td&gt;Ada 2012&lt;/td&gt;
+      &lt;td&gt;ARA and Ada Europe (ISO/IEC 8652:2012)&lt;/td&gt;
+      &lt;td&gt;Ada 2005, ISO/IEC 8652:1995/Amd 1:2007&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;13&lt;/th&gt;
+      &lt;td&gt;2014&lt;/td&gt;
+      &lt;td&gt;Crystal&lt;/td&gt;
+      &lt;td&gt;Ary Borenszweig, Manas Technology Solutions&lt;/td&gt;
+      &lt;td&gt;Ruby, C, Rust, Go, C#, Python&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;14&lt;/th&gt;
+      &lt;td&gt;2014&lt;/td&gt;
+      &lt;td&gt;Hack&lt;/td&gt;
+      &lt;td&gt;Facebook&lt;/td&gt;
+      &lt;td&gt;PHP&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;15&lt;/th&gt;
+      &lt;td&gt;2014&lt;/td&gt;
+      &lt;td&gt;Swift&lt;/td&gt;
+      &lt;td&gt;Apple Inc.&lt;/td&gt;
+      &lt;td&gt;Objective-C, Rust, Haskell, Ruby, Python, C#, CLU&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;16&lt;/th&gt;
+      &lt;td&gt;2014&lt;/td&gt;
+      &lt;td&gt;C++14&lt;/td&gt;
+      &lt;td&gt;C++ ISO/IEC 14882:2014&lt;/td&gt;
+      &lt;td&gt;C++, Standard C, C&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;17&lt;/th&gt;
+      &lt;td&gt;2015&lt;/td&gt;
+      &lt;td&gt;Atari 2600 SuperCharger BASIC&lt;/td&gt;
+      &lt;td&gt;Microsoft sponsored think tank RelationalFrame...&lt;/td&gt;
+      &lt;td&gt;BASIC, Dartmouth BASIC (compiled programming l...&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;18&lt;/th&gt;
+      &lt;td&gt;2015&lt;/td&gt;
+      &lt;td&gt;Perl 6&lt;/td&gt;
+      &lt;td&gt;The Rakudo Team&lt;/td&gt;
+      &lt;td&gt;Perl, Haskell, Python, Ruby&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;19&lt;/th&gt;
+      &lt;td&gt;2016&lt;/td&gt;
+      &lt;td&gt;Ring&lt;/td&gt;
+      &lt;td&gt;Mahmoud Fayed&lt;/td&gt;
+      &lt;td&gt;Lua, Python, Ruby, C, C#, BASIC, QML, xBase, S...&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;20&lt;/th&gt;
+      &lt;td&gt;2017&lt;/td&gt;
+      &lt;td&gt;C++17&lt;/td&gt;
+      &lt;td&gt;C++ ISO/IEC 14882:2017&lt;/td&gt;
+      &lt;td&gt;C++, Standard C, C&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;21&lt;/th&gt;
+      &lt;td&gt;2017&lt;/td&gt;
+      &lt;td&gt;Atari 2600 Flashback BASIC&lt;/td&gt;
+      &lt;td&gt;Microsoft sponsored think tank RelationalFrame...&lt;/td&gt;
+      &lt;td&gt;BASIC, Dartmouth BASIC (compiled programming l...&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;380 rows × 4 columns&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;In what year was Python created?&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [24]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;prog_lang&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;prog_lang&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Name&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="s1"&gt;'Python'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt output_prompt"&gt;Out[24]:&lt;/div&gt;
+
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;Year&lt;/th&gt;
+      &lt;th&gt;Name&lt;/th&gt;
+      &lt;th&gt;Chief developer, company&lt;/th&gt;
+      &lt;th&gt;Predecessor(s)&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;9&lt;/th&gt;
+      &lt;td&gt;1991&lt;/td&gt;
+      &lt;td&gt;Python&lt;/td&gt;
+      &lt;td&gt;Guido van Rossum&lt;/td&gt;
+      &lt;td&gt;ABC, ALGOL 68, Icon, Modula-3&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Conclusion"&gt;Conclusion&lt;a class="anchor-link" href="http://beenje.github.io/blog/posts/parsing-html-tables-in-python-with-pandas/#Conclusion"&gt;¶&lt;/a&gt;&lt;/h2&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;The last example should say it all.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [25]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pandas&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;pd&lt;/span&gt;
+
+&lt;span class="n"&gt;dfs&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_html&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'https://en.wikipedia.org/wiki/Timeline_of_programming_languages'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;header&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;concat&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;dfs&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;12&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
+&lt;span class="n"&gt;prog_lang&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;Year&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="s1"&gt;'Year'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Four lines of code (including the &lt;code&gt;import&lt;/code&gt;) and we have one DataFrame containing the data from 8 different HTML tables on one wikipedia page!&lt;/p&gt;
+&lt;p&gt;Do I need to say why I love Python and pandas? :-)&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;This post was written in a jupyter notebook.
+You can find the notebook on &lt;a href="https://github.com/beenje/blog/blob/master/posts/parsing-html-tables-in-python-with-pandas.ipynb"&gt;GitHub&lt;/a&gt; and download the conda &lt;a href="http://beenje.github.io/blog/posts/parsing-html-tables-in-python-with-pandas/environment.yml"&gt;environment.yml&lt;/a&gt; file to get all the dependencies I used.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [ ]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt; 
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+</description><category>pandas</category><category>python</category><category>requests</category><guid>http://beenje.github.io/blog/posts/parsing-html-tables-in-python-with-pandas/</guid><pubDate>Tue, 27 Mar 2018 20:31:12 GMT</pubDate></item></channel></rss>
