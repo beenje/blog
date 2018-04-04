@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>Tchut-Tchut Blog (Posts about python)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/cat_python.xml" type="application/rss+xml" rel="self"></atom:link><language>en</language><lastBuildDate>Sat, 31 Mar 2018 18:53:14 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Parsing HTML Tables in Python with pandas</title><link>http://beenje.github.io/blog/posts/parsing-html-tables-in-python-with-pandas/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div tabindex="-1" id="notebook" class="border-box-sizing"&gt;
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0"><channel><title>Tchut-Tchut Blog (Posts about python)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link rel="self" href="http://beenje.github.io/blog/categories/cat_python.xml" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Wed, 04 Apr 2018 21:05:17 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Parsing HTML Tables in Python with pandas</title><link>http://beenje.github.io/blog/posts/parsing-html-tables-in-python-with-pandas/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div tabindex="-1" id="notebook" class="border-box-sizing"&gt;
     &lt;div class="container" id="notebook-container"&gt;
 
 &lt;div class="cell border-box-sizing text_cell rendered"&gt;
@@ -3625,6 +3625,9 @@ storageFile = "/etc/traefik/acme/acme.json"
 entryPoint = "https"
 onDemand = false
 OnHostRule = true
+  # Use a HTTP-01 acme challenge rather than TLS-SNI-01 challenge
+  [acme.httpChallenge]
+  entryPoint = "http"
 
 # Enable Docker configuration backend
 [docker]
@@ -3639,6 +3642,10 @@ exposedbydefault = false
 &lt;li&gt;Let's Encrypt support&lt;/li&gt;
 &lt;li&gt;Docker backend support&lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;UPDATE (2018-03-04): as mentioned by @jackminardi in the comments, Let's Encrypt &lt;a class="reference external" href="https://community.letsencrypt.org/t/important-what-you-need-to-know-about-tls-sni-validation-issues/50811"&gt;disabled the TLS-SNI
+challenges for most new issuance&lt;/a&gt;.
+Traefik added &lt;a class="reference external" href="https://github.com/containous/traefik/pull/2701"&gt;support for the HTTP-01 challenge&lt;/a&gt;. I updated the above
+configuration to use this validation method: &lt;cite&gt;[acme.httpChallenge]&lt;/cite&gt;.&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="a-simple-example"&gt;
 &lt;h2&gt;A simple example&lt;/h2&gt;

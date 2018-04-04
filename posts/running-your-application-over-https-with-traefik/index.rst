@@ -68,6 +68,9 @@ Here is a `traefik.toml` configuration example::
     entryPoint = "https"
     onDemand = false
     OnHostRule = true
+      # Use a HTTP-01 acme challenge rather than TLS-SNI-01 challenge
+      [acme.httpChallenge]
+      entryPoint = "http"
 
     # Enable Docker configuration backend
     [docker]
@@ -82,6 +85,12 @@ With this simple configuration, you get:
 - HTTP redirect on HTTPS
 - Let's Encrypt support
 - Docker backend support
+
+UPDATE (2018-03-04): as mentioned by @jackminardi in the comments, Let's Encrypt `disabled the TLS-SNI
+challenges for most new issuance <https://community.letsencrypt.org/t/important-what-you-need-to-know-about-tls-sni-validation-issues/50811>`_.
+Traefik added `support for the HTTP-01 challenge
+<https://github.com/containous/traefik/pull/2701>`_. I updated the above
+configuration to use this validation method: `[acme.httpChallenge]`.
 
 A simple example
 ----------------

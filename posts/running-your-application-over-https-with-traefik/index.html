@@ -155,6 +155,9 @@ storageFile = "/etc/traefik/acme/acme.json"
 entryPoint = "https"
 onDemand = false
 OnHostRule = true
+  # Use a HTTP-01 acme challenge rather than TLS-SNI-01 challenge
+  [acme.httpChallenge]
+  entryPoint = "http"
 
 # Enable Docker configuration backend
 [docker]
@@ -169,6 +172,10 @@ exposedbydefault = false
 <li>Let's Encrypt support</li>
 <li>Docker backend support</li>
 </ul>
+<p>UPDATE (2018-03-04): as mentioned by @jackminardi in the comments, Let's Encrypt <a class="reference external" href="https://community.letsencrypt.org/t/important-what-you-need-to-know-about-tls-sni-validation-issues/50811">disabled the TLS-SNI
+challenges for most new issuance</a>.
+Traefik added <a class="reference external" href="https://github.com/containous/traefik/pull/2701">support for the HTTP-01 challenge</a>. I updated the above
+configuration to use this validation method: <cite>[acme.httpChallenge]</cite>.</p>
 </div>
 <div class="section" id="a-simple-example">
 <h2>A simple example</h2>
