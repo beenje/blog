@@ -1,5 +1,1602 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>Tchut-Tchut Blog (Posts about pandas)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/pandas.xml" type="application/rss+xml" rel="self"></atom:link><language>en</language><lastBuildDate>Sat, 31 Mar 2018 18:53:14 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Parsing HTML Tables in Python with pandas</title><link>http://beenje.github.io/blog/posts/parsing-html-tables-in-python-with-pandas/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div tabindex="-1" id="notebook" class="border-box-sizing"&gt;
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0"><channel><title>Tchut-Tchut Blog (Posts about pandas)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link type="application/rss+xml" rel="self" href="http://beenje.github.io/blog/categories/pandas.xml"></atom:link><language>en</language><lastBuildDate>Sat, 02 Jun 2018 22:08:05 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Parsing JavaScript rendered pages in Python with pyppeteer</title><link>http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div tabindex="-1" id="notebook" class="border-box-sizing"&gt;
+    &lt;div class="container" id="notebook-container"&gt;
+
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Parsing-JavaScript-rendered-pages-in-Python-with-pyppeteer"&gt;Parsing JavaScript rendered pages in Python with pyppeteer&lt;a class="anchor-link" href="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/#Parsing-JavaScript-rendered-pages-in-Python-with-pyppeteer"&gt;¶&lt;/a&gt;&lt;/h2&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h3 id="Where-is-my-table?"&gt;Where is my table?&lt;a class="anchor-link" href="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/#Where-is-my-table?"&gt;¶&lt;/a&gt;&lt;/h3&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;I already wrote a blog post about &lt;a href="https://beenje.github.io/blog/posts/parsing-html-tables-in-python-with-pandas/"&gt;Parsing HTML Tables in Python with pandas&lt;/a&gt;. Using &lt;a href="http://docs.python-requests.org/en/master/"&gt;requests&lt;/a&gt; or even directly &lt;a href="https://pandas.pydata.org"&gt;pandas&lt;/a&gt; was working nicely.&lt;/p&gt;
+&lt;p&gt;I wanted to play with some data from a race I recently run: &lt;a href="http://www.lundaloppet.se/info/resultat/"&gt;Lundaloppet&lt;/a&gt;.
+The results are available here: &lt;a href="http://results.neptron.se/#/lundaloppet2018/?sortOrder=Place&amp;amp;raceId=99&amp;amp;page=0&amp;amp;pageSize=25"&gt;http://results.neptron.se/#/lundaloppet2018/?sortOrder=Place&amp;amp;raceId=99&amp;amp;page=0&amp;amp;pageSize=25&lt;/a&gt;
+&lt;img src="http://beenje.github.io/blog/images/pyppeteer/results_lundaloppet_2018.png" alt="Results Lundaloppet 2018"&gt;&lt;/p&gt;
+&lt;p&gt;Let's try to get that table!&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [1]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pandas&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;pd&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [2]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;dfs&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_html&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'http://results.neptron.se/#/lundaloppet2018/?sortOrder=Place&amp;amp;raceId=99&amp;amp;page=0&amp;amp;pageSize=25'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="output_subarea output_text output_error"&gt;
+&lt;pre&gt;
+&lt;span class="ansi-red-fg"&gt;---------------------------------------------------------------------------&lt;/span&gt;
+&lt;span class="ansi-red-fg"&gt;ValueError&lt;/span&gt;                                Traceback (most recent call last)
+&lt;span class="ansi-green-fg"&gt;&amp;lt;ipython-input-2-881110a1fe3d&amp;gt;&lt;/span&gt; in &lt;span class="ansi-cyan-fg"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;()&lt;/span&gt;
+&lt;span class="ansi-green-fg"&gt;----&amp;gt; 1&lt;/span&gt;&lt;span class="ansi-red-fg"&gt; &lt;/span&gt;dfs &lt;span class="ansi-blue-fg"&gt;=&lt;/span&gt; pd&lt;span class="ansi-blue-fg"&gt;.&lt;/span&gt;read_html&lt;span class="ansi-blue-fg"&gt;(&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;'http://results.neptron.se/#/lundaloppet2018/?sortOrder=Place&amp;amp;raceId=99&amp;amp;page=0&amp;amp;pageSize=25'&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;)&lt;/span&gt;
+
+&lt;span class="ansi-green-fg"&gt;~/miniconda3/envs/notebook/lib/python3.6/site-packages/pandas/io/html.py&lt;/span&gt; in &lt;span class="ansi-cyan-fg"&gt;read_html&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;(io, match, flavor, header, index_col, skiprows, attrs, parse_dates, tupleize_cols, thousands, encoding, decimal, converters, na_values, keep_default_na, displayed_only)&lt;/span&gt;
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;    985&lt;/span&gt;                   decimal&lt;span class="ansi-blue-fg"&gt;=&lt;/span&gt;decimal&lt;span class="ansi-blue-fg"&gt;,&lt;/span&gt; converters&lt;span class="ansi-blue-fg"&gt;=&lt;/span&gt;converters&lt;span class="ansi-blue-fg"&gt;,&lt;/span&gt; na_values&lt;span class="ansi-blue-fg"&gt;=&lt;/span&gt;na_values&lt;span class="ansi-blue-fg"&gt;,&lt;/span&gt;
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;    986&lt;/span&gt;                   keep_default_na&lt;span class="ansi-blue-fg"&gt;=&lt;/span&gt;keep_default_na&lt;span class="ansi-blue-fg"&gt;,&lt;/span&gt;
+&lt;span class="ansi-green-fg"&gt;--&amp;gt; 987&lt;/span&gt;&lt;span class="ansi-red-fg"&gt;                   displayed_only=displayed_only)
+&lt;/span&gt;
+&lt;span class="ansi-green-fg"&gt;~/miniconda3/envs/notebook/lib/python3.6/site-packages/pandas/io/html.py&lt;/span&gt; in &lt;span class="ansi-cyan-fg"&gt;_parse&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;(flavor, io, match, attrs, encoding, displayed_only, **kwargs)&lt;/span&gt;
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;    813&lt;/span&gt;             &lt;span class="ansi-green-fg"&gt;break&lt;/span&gt;
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;    814&lt;/span&gt;     &lt;span class="ansi-green-fg"&gt;else&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;:&lt;/span&gt;
+&lt;span class="ansi-green-fg"&gt;--&amp;gt; 815&lt;/span&gt;&lt;span class="ansi-red-fg"&gt;         &lt;/span&gt;raise_with_traceback&lt;span class="ansi-blue-fg"&gt;(&lt;/span&gt;retained&lt;span class="ansi-blue-fg"&gt;)&lt;/span&gt;
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;    816&lt;/span&gt; 
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;    817&lt;/span&gt;     ret &lt;span class="ansi-blue-fg"&gt;=&lt;/span&gt; &lt;span class="ansi-blue-fg"&gt;[&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;]&lt;/span&gt;
+
+&lt;span class="ansi-green-fg"&gt;~/miniconda3/envs/notebook/lib/python3.6/site-packages/pandas/compat/__init__.py&lt;/span&gt; in &lt;span class="ansi-cyan-fg"&gt;raise_with_traceback&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;(exc, traceback)&lt;/span&gt;
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;    401&lt;/span&gt;         &lt;span class="ansi-green-fg"&gt;if&lt;/span&gt; traceback &lt;span class="ansi-blue-fg"&gt;==&lt;/span&gt; Ellipsis&lt;span class="ansi-blue-fg"&gt;:&lt;/span&gt;
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;    402&lt;/span&gt;             _&lt;span class="ansi-blue-fg"&gt;,&lt;/span&gt; _&lt;span class="ansi-blue-fg"&gt;,&lt;/span&gt; traceback &lt;span class="ansi-blue-fg"&gt;=&lt;/span&gt; sys&lt;span class="ansi-blue-fg"&gt;.&lt;/span&gt;exc_info&lt;span class="ansi-blue-fg"&gt;(&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;)&lt;/span&gt;
+&lt;span class="ansi-green-fg"&gt;--&amp;gt; 403&lt;/span&gt;&lt;span class="ansi-red-fg"&gt;         &lt;/span&gt;&lt;span class="ansi-green-fg"&gt;raise&lt;/span&gt; exc&lt;span class="ansi-blue-fg"&gt;.&lt;/span&gt;with_traceback&lt;span class="ansi-blue-fg"&gt;(&lt;/span&gt;traceback&lt;span class="ansi-blue-fg"&gt;)&lt;/span&gt;
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;    404&lt;/span&gt; &lt;span class="ansi-green-fg"&gt;else&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;:&lt;/span&gt;
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;    405&lt;/span&gt;     &lt;span class="ansi-red-fg"&gt;# this version of raise is a syntax error in Python 3&lt;/span&gt;
+
+&lt;span class="ansi-red-fg"&gt;ValueError&lt;/span&gt;: No tables found&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;No tables found... So what is going on? Let's look at what is returned by requests.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [3]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;requests&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;IPython.display&lt;/span&gt; &lt;span class="k"&gt;import&lt;/span&gt; &lt;span class="n"&gt;display_html&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [4]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'http://results.neptron.se/#/lundaloppet2018/?sortOrder=Place&amp;amp;raceId=99&amp;amp;page=0&amp;amp;pageSize=25'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;text&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt output_prompt"&gt;Out[4]:&lt;/div&gt;
+
+
+&lt;div class="output_text output_subarea output_execute_result"&gt;
+&lt;pre&gt;'ï»¿&amp;lt;!DOCTYPE html&amp;gt;\r\n&amp;lt;html xmlns="http://www.w3.org/1999/xhtml" ng-app="app"&amp;gt;\r\n&amp;lt;head&amp;gt;\r\n    &amp;lt;title ng-bind="event.name || \'Neptron Timing\'"&amp;gt;Neptron Timing&amp;lt;/title&amp;gt;\r\n\r\n    &amp;lt;meta charset="utf-8"&amp;gt;\r\n    &amp;lt;meta http-equiv="X-UA-Compatible" content="IE=edge"&amp;gt;\r\n    &amp;lt;meta name="viewport" content="width=device-width, initial-scale=1"&amp;gt;\r\n    &amp;lt;meta name="description" content="Neptron Timing event results"&amp;gt;\r\n\r\n    &amp;lt;link rel="shortcut icon" href="favicon.ico"&amp;gt;\r\n    &amp;lt;link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css"&amp;gt;\r\n    &amp;lt;link rel="stylesheet" href="content/app.min.css"&amp;gt;\r\n    &amp;lt;script src="scripts/iframeResizer.contentWindow.min.js"&amp;gt;&amp;lt;/script&amp;gt;\r\n    &amp;lt;script src="https://cdnjs.cloudflare.com/ajax/libs/es6-shim/0.35.0/es6-shim.min.js"&amp;gt;&amp;lt;/script&amp;gt;\r\n    &amp;lt;script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"&amp;gt;&amp;lt;/script&amp;gt;\r\n    &amp;lt;script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.min.js"&amp;gt;&amp;lt;/script&amp;gt;\r\n    &amp;lt;script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular.min.js"&amp;gt;&amp;lt;/script&amp;gt;\r\n    &amp;lt;script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular-route.min.js"&amp;gt;&amp;lt;/script&amp;gt;\r\n    &amp;lt;script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"&amp;gt;&amp;lt;/script&amp;gt;\r\n    &amp;lt;script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.0.2/Chart.min.js"&amp;gt;&amp;lt;/script&amp;gt;\r\n    &amp;lt;script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD7OPJoYN6W9qUHU1L_fEr_5ut8tQN8r2A"&amp;gt;&amp;lt;/script&amp;gt;\r\n&amp;lt;/head&amp;gt;\r\n&amp;lt;body&amp;gt;\r\n    &amp;lt;div class="navbar navbar-inverse navbar-static-top" role="navigation"&amp;gt;\r\n        &amp;lt;div class="container"&amp;gt;\r\n            &amp;lt;div class="navbar-header"&amp;gt;\r\n                &amp;lt;button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse"&amp;gt;\r\n                    &amp;lt;span class="sr-only"&amp;gt;Toggle navigation&amp;lt;/span&amp;gt;\r\n                    &amp;lt;span class="icon-bar"&amp;gt;&amp;lt;/span&amp;gt;\r\n                    &amp;lt;span class="icon-bar"&amp;gt;&amp;lt;/span&amp;gt;\r\n                    &amp;lt;span class="icon-bar"&amp;gt;&amp;lt;/span&amp;gt;\r\n                &amp;lt;/button&amp;gt;\r\n                &amp;lt;a class="navbar-brand" href="#"&amp;gt;Neptron Timing&amp;lt;/a&amp;gt;\r\n            &amp;lt;/div&amp;gt;\r\n            &amp;lt;div class="collapse navbar-collapse"&amp;gt;\r\n                &amp;lt;ul class="nav navbar-nav"&amp;gt;\r\n                    &amp;lt;li&amp;gt;&amp;lt;a href="#/"&amp;gt;Events&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;\r\n                    &amp;lt;li ng-show="event.id"&amp;gt;&amp;lt;a href="#/{{event.id}}/event"&amp;gt;Info&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;\r\n                    &amp;lt;li ng-show="event.id"&amp;gt;&amp;lt;a href="#/{{event.id}}/results"&amp;gt;Results&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;\r\n                    &amp;lt;li ng-show="event.id"&amp;gt;&amp;lt;a href="#/{{event.id}}/leaderboard"&amp;gt;Leaderboard&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;\r\n                    &amp;lt;li ng-show="event.id &amp;amp;&amp;amp; event.tracking"&amp;gt;&amp;lt;a href="#/{{event.id}}/tracking"&amp;gt;Tracking&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;\r\n                    &amp;lt;li ng-show="event.id"&amp;gt;&amp;lt;a href="#/{{event.id}}/favorites"&amp;gt;Favorites&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;\r\n                    &amp;lt;li ng-show="event.id &amp;amp;&amp;amp; event.sprints.length &amp;gt; 0"&amp;gt;&amp;lt;a href="#/{{event.id}}/sprint"&amp;gt;Sprint&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;\r\n                    &amp;lt;li ng-show="event.id &amp;amp;&amp;amp; event.teamCompetitions.length &amp;gt; 0"&amp;gt;&amp;lt;a href="#/{{event.id}}/teams"&amp;gt;Teams&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;\r\n                &amp;lt;/ul&amp;gt;\r\n            &amp;lt;/div&amp;gt;&amp;lt;!--/.nav-collapse --&amp;gt;\r\n        &amp;lt;/div&amp;gt;\r\n    &amp;lt;/div&amp;gt;\r\n  &amp;lt;script type="text/javascript"&amp;gt;\r\n\r\nvar fixLidingloppetMessage = function() {\r\n\tvar str = window.location.href || \'\';\r\n\tvar cssStyle = (str.match(\'lidingolor2017\') ? \'\' : \'none\');\r\n\t//console.log(\'changed: \'+str, cssStyle);\r\n\t$(\'#nytamin-fix\').css(\'display\', cssStyle);\r\n}\r\n$(window).bind(\'hashchange\', function() {\r\n\tfixLidingloppetMessage();\r\n});\r\nwindow.setInterval(fixLidingloppetMessage, 1000);\r\n\r\n&amp;lt;/script&amp;gt;\r\n\r\n&amp;lt;div class="container-fluid"&amp;gt;\r\n\t&amp;lt;div id="nytamin-fix" class="panel panel-primary" style="display: none; margin: 2em;"&amp;gt;\r\n\t  &amp;lt;div class="panel-heading"&amp;gt;Liding&amp;amp;ouml;loppet.se&amp;lt;/div&amp;gt;\r\n\t  &amp;lt;div class="panel-body"&amp;gt;\r\n\t\t\r\n\t\t&amp;lt;strong&amp;gt;&amp;lt;a href="http://213.39.39.152"&amp;gt;Click here to get back to Liding&amp;amp;ouml;loppet\'s homepage!&amp;lt;/a&amp;gt;&amp;lt;/strong&amp;gt;\r\n\r\n\t  &amp;lt;/div&amp;gt;\r\n\t&amp;lt;/div&amp;gt;\r\n&amp;lt;/div&amp;gt;\r\n    &amp;lt;div class="container-fluid" ng-view&amp;gt;&amp;lt;/div&amp;gt;\r\n  &amp;lt;div class="nt-app-links" style="margin:10px 20px"&amp;gt;\r\n    &amp;lt;a href="https://www.raceone.com/redirect" id="download-icon-footer-ios" target="_blank"&amp;gt;\r\n      &amp;lt;img class="download-icon" src="https://www.raceone.com/wp-content/uploads/2016/09/app-store-e1475238488598.png" alt=""&amp;gt;\r\n    &amp;lt;/a&amp;gt;\r\n    &amp;lt;a href="https://www.raceone.com/redirect" id="download-icon-footer-android" target="_blank"&amp;gt;\r\n      &amp;lt;img class="download-icon" src="https://www.raceone.com/wp-content/uploads/2016/09/google-play-e1475238513871.png" alt=""&amp;gt;\r\n    &amp;lt;/a&amp;gt;\r\n  &amp;lt;/div&amp;gt;\r\n\r\n    &amp;lt;script type="text/javascript" src="scripts/app.js"&amp;gt;&amp;lt;/script&amp;gt;\r\n\r\n    &amp;lt;!-- AddThis Button BEGIN --&amp;gt;\r\n    &amp;lt;div class="addthis_toolbox addthis_default_style addthis_32x32_style"&amp;gt;\r\n        &amp;lt;a class="addthis_button_facebook"&amp;gt;&amp;lt;/a&amp;gt;\r\n        &amp;lt;a class="addthis_button_twitter"&amp;gt;&amp;lt;/a&amp;gt;\r\n        &amp;lt;a class="addthis_button_linkedin"&amp;gt;&amp;lt;/a&amp;gt;\r\n        &amp;lt;a class="addthis_button_email"&amp;gt;&amp;lt;/a&amp;gt;\r\n        &amp;lt;a class="addthis_button_print"&amp;gt;&amp;lt;/a&amp;gt;\r\n        &amp;lt;a class="addthis_button_textme"&amp;gt;&amp;lt;/a&amp;gt;\r\n        &amp;lt;a class="addthis_button_compact"&amp;gt;&amp;lt;/a&amp;gt;\r\n    &amp;lt;/div&amp;gt;\r\n    &amp;lt;script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5364e093794f9d2f"&amp;gt;&amp;lt;/script&amp;gt;\r\n    &amp;lt;!-- AddThis Button END --&amp;gt;\r\n\r\n    &amp;lt;!--&amp;lt;div class="applinks"&amp;gt;\r\n        &amp;lt;a href="https://itunes.apple.com/se/app/neptron-timing/id709776903" target="_blank"&amp;gt;&amp;lt;img class="appstore" alt="Get it on iTunes" src="content/appstore.svg" /&amp;gt;&amp;lt;/a&amp;gt;\r\n        &amp;lt;a href="https://play.google.com/store/apps/details?id=se.neptron.timing" target="_blank"&amp;gt;&amp;lt;img class="playstore" alt="Get it on Google Play" src="content/playstore.png" /&amp;gt;&amp;lt;/a&amp;gt;\r\n    &amp;lt;/div&amp;gt;--&amp;gt;\r\n\r\n&amp;lt;/body&amp;gt;\r\n&amp;lt;/html&amp;gt;\r\n'&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [5]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;display_html&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;text&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;raw&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+
+&lt;div class="output_html rendered_html output_subarea "&gt;
+ï»¿
+
+
+    &lt;title ng-bind="event.name || 'Neptron Timing'"&gt;Neptron Timing&lt;/title&gt;
+
+    &lt;meta charset="utf-8"&gt;
+    &lt;meta http-equiv="X-UA-Compatible" content="IE=edge"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+    &lt;meta name="description" content="Neptron Timing event results"&gt;
+
+    &lt;link rel="shortcut icon" href="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/favicon.ico"&gt;
+    &lt;link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css"&gt;
+    &lt;link rel="stylesheet" href="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/content/app.min.css"&gt;
+    &lt;script src="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/scripts/iframeResizer.contentWindow.min.js"&gt;&lt;/script&gt;
+    &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/es6-shim/0.35.0/es6-shim.min.js"&gt;&lt;/script&gt;
+    &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"&gt;&lt;/script&gt;
+    &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.min.js"&gt;&lt;/script&gt;
+    &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular.min.js"&gt;&lt;/script&gt;
+    &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular-route.min.js"&gt;&lt;/script&gt;
+    &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"&gt;&lt;/script&gt;
+    &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.0.2/Chart.min.js"&gt;&lt;/script&gt;
+    &lt;script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD7OPJoYN6W9qUHU1L_fEr_5ut8tQN8r2A"&gt;&lt;/script&gt;
+
+
+    &lt;div class="navbar navbar-inverse navbar-static-top" role="navigation"&gt;
+        &lt;div class="container"&gt;
+            &lt;div class="navbar-header"&gt;
+                &lt;button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse"&gt;
+                    &lt;span class="sr-only"&gt;Toggle navigation&lt;/span&gt;
+                    &lt;span class="icon-bar"&gt;&lt;/span&gt;
+                    &lt;span class="icon-bar"&gt;&lt;/span&gt;
+                    &lt;span class="icon-bar"&gt;&lt;/span&gt;
+                &lt;/button&gt;
+                &lt;a class="navbar-brand" href="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/"&gt;Neptron Timing&lt;/a&gt;
+            &lt;/div&gt;
+            &lt;div class="collapse navbar-collapse"&gt;
+                &lt;ul class="nav navbar-nav"&gt;
+                    &lt;li&gt;&lt;a href="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/#/"&gt;Events&lt;/a&gt;&lt;/li&gt;
+                    &lt;li ng-show="event.id"&gt;&lt;a href="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/#/%7B%7Bevent.id%7D%7D/event"&gt;Info&lt;/a&gt;&lt;/li&gt;
+                    &lt;li ng-show="event.id"&gt;&lt;a href="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/#/%7B%7Bevent.id%7D%7D/results"&gt;Results&lt;/a&gt;&lt;/li&gt;
+                    &lt;li ng-show="event.id"&gt;&lt;a href="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/#/%7B%7Bevent.id%7D%7D/leaderboard"&gt;Leaderboard&lt;/a&gt;&lt;/li&gt;
+                    &lt;li ng-show="event.id &amp;amp;&amp;amp; event.tracking"&gt;&lt;a href="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/#/%7B%7Bevent.id%7D%7D/tracking"&gt;Tracking&lt;/a&gt;&lt;/li&gt;
+                    &lt;li ng-show="event.id"&gt;&lt;a href="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/#/%7B%7Bevent.id%7D%7D/favorites"&gt;Favorites&lt;/a&gt;&lt;/li&gt;
+                    &lt;li ng-show="event.id &amp;amp;&amp;amp; event.sprints.length &amp;gt; 0"&gt;&lt;a href="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/#/%7B%7Bevent.id%7D%7D/sprint"&gt;Sprint&lt;/a&gt;&lt;/li&gt;
+                    &lt;li ng-show="event.id &amp;amp;&amp;amp; event.teamCompetitions.length &amp;gt; 0"&gt;&lt;a href="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/#/%7B%7Bevent.id%7D%7D/teams"&gt;Teams&lt;/a&gt;&lt;/li&gt;
+                &lt;/ul&gt;
+            &lt;/div&gt;&lt;!--/.nav-collapse --&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;script type="text/javascript"&gt;
+
+var fixLidingloppetMessage = function() {
+	var str = window.location.href || '';
+	var cssStyle = (str.match('lidingolor2017') ? '' : 'none');
+	//console.log('changed: '+str, cssStyle);
+	$('#nytamin-fix').css('display', cssStyle);
+}
+$(window).bind('hashchange', function() {
+	fixLidingloppetMessage();
+});
+window.setInterval(fixLidingloppetMessage, 1000);
+
+&lt;/script&gt;
+
+&lt;div class="container-fluid"&gt;
+	&lt;div id="nytamin-fix" class="panel panel-primary" style="display: none; margin: 2em;"&gt;
+	  &lt;div class="panel-heading"&gt;Lidingöloppet.se&lt;/div&gt;
+	  &lt;div class="panel-body"&gt;
+		
+		&lt;strong&gt;&lt;a href="http://213.39.39.152"&gt;Click here to get back to Lidingöloppet's homepage!&lt;/a&gt;&lt;/strong&gt;
+
+	  &lt;/div&gt;
+	&lt;/div&gt;
+&lt;/div&gt;
+    &lt;div class="container-fluid" ng-view&gt;&lt;/div&gt;
+  &lt;div class="nt-app-links" style="margin:10px 20px"&gt;
+    &lt;a href="https://www.raceone.com/redirect" id="download-icon-footer-ios" target="_blank"&gt;
+      &lt;img class="download-icon" src="https://www.raceone.com/wp-content/uploads/2016/09/app-store-e1475238488598.png" alt=""&gt;
+    &lt;/a&gt;
+    &lt;a href="https://www.raceone.com/redirect" id="download-icon-footer-android" target="_blank"&gt;
+      &lt;img class="download-icon" src="https://www.raceone.com/wp-content/uploads/2016/09/google-play-e1475238513871.png" alt=""&gt;
+    &lt;/a&gt;
+  &lt;/div&gt;
+
+    &lt;script type="text/javascript" src="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/scripts/app.js"&gt;&lt;/script&gt;
+
+    &lt;!-- AddThis Button BEGIN --&gt;
+    &lt;div class="addthis_toolbox addthis_default_style addthis_32x32_style"&gt;
+        &lt;a class="addthis_button_facebook"&gt;&lt;/a&gt;
+        &lt;a class="addthis_button_twitter"&gt;&lt;/a&gt;
+        &lt;a class="addthis_button_linkedin"&gt;&lt;/a&gt;
+        &lt;a class="addthis_button_email"&gt;&lt;/a&gt;
+        &lt;a class="addthis_button_print"&gt;&lt;/a&gt;
+        &lt;a class="addthis_button_textme"&gt;&lt;/a&gt;
+        &lt;a class="addthis_button_compact"&gt;&lt;/a&gt;
+    &lt;/div&gt;
+    &lt;script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5364e093794f9d2f"&gt;&lt;/script&gt;
+    &lt;!-- AddThis Button END --&gt;
+
+    &lt;!--&lt;div class="applinks"&gt;
+        &lt;a href="https://itunes.apple.com/se/app/neptron-timing/id709776903" target="_blank"&gt;&lt;img class="appstore" alt="Get it on iTunes" src="content/appstore.svg" /&gt;&lt;/a&gt;
+        &lt;a href="https://play.google.com/store/apps/details?id=se.neptron.timing" target="_blank"&gt;&lt;img class="playstore" alt="Get it on Google Play" src="content/playstore.png" /&gt;&lt;/a&gt;
+    &lt;/div&gt;--&gt;
+
+
+
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;There is no table in the HTML sent by the server.
+The table is rendered on the client side by AngularJS. We can check that by looking at the page source in Chrome:
+&lt;img src="http://beenje.github.io/blog/images/pyppeteer/results_lundaloppet_2018_source.png" alt="Results Lundaloppet 2018 source"&gt;&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;How do you parse JavaScript rendered page in Python? Don't we need a browser to run the JavaScript code?
+By googling, I found &lt;a href="https://github.com/kennethreitz/requests-html"&gt;Requests-HTML&lt;/a&gt; that has JavaScript support!&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h3 id="Requests-HTML"&gt;Requests-HTML&lt;a class="anchor-link" href="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/#Requests-HTML"&gt;¶&lt;/a&gt;&lt;/h3&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [6]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;requests_html&lt;/span&gt; &lt;span class="k"&gt;import&lt;/span&gt; &lt;span class="n"&gt;HTMLSession&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [7]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;session&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;HTMLSession&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;r&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;session&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'http://results.neptron.se/#/lundaloppet2018/?sortOrder=Place&amp;amp;raceId=99&amp;amp;page=0&amp;amp;pageSize=25'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;html&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;render&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;table&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;html&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'table'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;first&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [8]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;display_html&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;table&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;html&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;raw&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+
+&lt;div class="output_html rendered_html output_subarea "&gt;
+&lt;table&gt;
+                &lt;thead&gt;
+                    &lt;tr&gt;
+                        &lt;th class="res-favorite"&gt; &lt;/th&gt;
+                        &lt;!-- ngRepeat: item in vm.resultsHeader --&gt;&lt;th class="res-placeByRace " ng-repeat="item in vm.resultsHeader"&gt;&lt;span ng-bind-html="item.value" class="ng-binding"&gt;Place&lt;br&gt;(race)&lt;/span&gt;&lt;/th&gt;&lt;!-- end ngRepeat: item in vm.resultsHeader --&gt;&lt;th class="res-placeByCategory " ng-repeat="item in vm.resultsHeader"&gt;&lt;span ng-bind-html="item.value" class="ng-binding"&gt;Place&lt;br&gt;(cat)&lt;/span&gt;&lt;/th&gt;&lt;!-- end ngRepeat: item in vm.resultsHeader --&gt;&lt;th class="res-startNo " ng-repeat="item in vm.resultsHeader"&gt;&lt;span ng-bind-html="item.value" class="ng-binding"&gt;Bib no&lt;/span&gt;&lt;/th&gt;&lt;!-- end ngRepeat: item in vm.resultsHeader --&gt;&lt;th class="res-category " ng-repeat="item in vm.resultsHeader"&gt;&lt;span ng-bind-html="item.value" class="ng-binding"&gt;Category&lt;/span&gt;&lt;/th&gt;&lt;!-- end ngRepeat: item in vm.resultsHeader --&gt;&lt;th class="res-name " ng-repeat="item in vm.resultsHeader"&gt;&lt;span ng-bind-html="item.value" class="ng-binding"&gt;Name&lt;/span&gt;&lt;/th&gt;&lt;!-- end ngRepeat: item in vm.resultsHeader --&gt;&lt;th class="res-flag " ng-repeat="item in vm.resultsHeader"&gt;&lt;span ng-bind-html="item.value" class="ng-binding"&gt;&lt;/span&gt;&lt;/th&gt;&lt;!-- end ngRepeat: item in vm.resultsHeader --&gt;&lt;th class="res-association " ng-repeat="item in vm.resultsHeader"&gt;&lt;span ng-bind-html="item.value" class="ng-binding"&gt;Association&lt;/span&gt;&lt;/th&gt;&lt;!-- end ngRepeat: item in vm.resultsHeader --&gt;&lt;th class="res-lastSplitPoint " ng-repeat="item in vm.resultsHeader"&gt;&lt;span ng-bind-html="item.value" class="ng-binding"&gt;Progress&lt;/span&gt;&lt;/th&gt;&lt;!-- end ngRepeat: item in vm.resultsHeader --&gt;&lt;th class="res-time " ng-repeat="item in vm.resultsHeader"&gt;&lt;span ng-bind-html="item.value" class="ng-binding"&gt;Time&lt;/span&gt;&lt;/th&gt;&lt;!-- end ngRepeat: item in vm.resultsHeader --&gt;&lt;th class="res-status " ng-repeat="item in vm.resultsHeader"&gt;&lt;span ng-bind-html="item.value" class="ng-binding"&gt;Status&lt;/span&gt;&lt;/th&gt;&lt;!-- end ngRepeat: item in vm.resultsHeader --&gt;
+                    &lt;/tr&gt;
+                &lt;/thead&gt;
+                &lt;tbody&gt;
+                    &lt;!-- ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="1" class="ng-binding"&gt;1&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="1" class="ng-binding"&gt;1&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="6922" class="ng-binding"&gt;6922&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Hans Larsson" class="ng-binding"&gt;Hans Larsson&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="MAI" class="ng-binding"&gt;MAI&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="33:22" class="ng-binding"&gt;33:22&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="2" class="ng-binding"&gt;2&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="2" class="ng-binding"&gt;2&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="6514" class="ng-binding"&gt;6514&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Filip Helmroth" class="ng-binding"&gt;Filip Helmroth&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="IK Lerum Friidrott" class="ng-binding"&gt;IK Lerum Friidrott&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="33:37" class="ng-binding"&gt;33:37&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="3" class="ng-binding"&gt;3&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="3" class="ng-binding"&gt;3&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="3920" class="ng-binding"&gt;3920&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="David Hartman" class="ng-binding"&gt;David Hartman&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Björnstorps IF" class="ng-binding"&gt;Björnstorps IF&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="33:39" class="ng-binding"&gt;33:39&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="4" class="ng-binding"&gt;4&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="4" class="ng-binding"&gt;4&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="3926" class="ng-binding"&gt;3926&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Henrik Orre" class="ng-binding"&gt;Henrik Orre&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Björnstorps IF" class="ng-binding"&gt;Björnstorps IF&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="34:24" class="ng-binding"&gt;34:24&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="5" class="ng-binding"&gt;5&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="5" class="ng-binding"&gt;5&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="2666" class="ng-binding"&gt;2666&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Jesper Bokefors" class="ng-binding"&gt;Jesper Bokefors&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Malmö AI" class="ng-binding"&gt;Malmö AI&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="34:51" class="ng-binding"&gt;34:51&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="6" class="ng-binding"&gt;6&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="6" class="ng-binding"&gt;6&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="5729" class="ng-binding"&gt;5729&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Juan Negreira" class="ng-binding"&gt;Juan Negreira&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Lunds universitet" class="ng-binding"&gt;Lunds universitet&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="35:19" class="ng-binding"&gt;35:19&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="7" class="ng-binding"&gt;7&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="7" class="ng-binding"&gt;7&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="3649" class="ng-binding"&gt;3649&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Jim Webb" class="ng-binding"&gt;Jim Webb&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="   " class="ng-binding"&gt;   &lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="35:23" class="ng-binding"&gt;35:23&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="8" class="ng-binding"&gt;8&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="8" class="ng-binding"&gt;8&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="3675" class="ng-binding"&gt;3675&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Nils Wetterberg" class="ng-binding"&gt;Nils Wetterberg&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Ekmans Löpare i Lund" class="ng-binding"&gt;Ekmans Löpare i Lund&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="35:39" class="ng-binding"&gt;35:39&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="9" class="ng-binding"&gt;9&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="9" class="ng-binding"&gt;9&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="4880" class="ng-binding"&gt;4880&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Hannes Hjalmarsson" class="ng-binding"&gt;Hannes Hjalmarsson&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Lunds kommun" class="ng-binding"&gt;Lunds kommun&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="35:41" class="ng-binding"&gt;35:41&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="10" class="ng-binding"&gt;10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="10" class="ng-binding"&gt;10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="6929" class="ng-binding"&gt;6929&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Freyi Karlsson" class="ng-binding"&gt;Freyi Karlsson&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Ekmans löpare i lund" class="ng-binding"&gt;Ekmans löpare i lund&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="35:42" class="ng-binding"&gt;35:42&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="11" class="ng-binding"&gt;11&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="11" class="ng-binding"&gt;11&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="5995" class="ng-binding"&gt;5995&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Shijie Xu" class="ng-binding"&gt;Shijie Xu&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Lunds universitet" class="ng-binding"&gt;Lunds universitet&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="35:43" class="ng-binding"&gt;35:43&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="12" class="ng-binding"&gt;12&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="12" class="ng-binding"&gt;12&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="5276" class="ng-binding"&gt;5276&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Stuart Ansell" class="ng-binding"&gt;Stuart Ansell&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Lunds universitet" class="ng-binding"&gt;Lunds universitet&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="36:02" class="ng-binding"&gt;36:02&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="13" class="ng-binding"&gt;13&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="13" class="ng-binding"&gt;13&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="3917" class="ng-binding"&gt;3917&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Christer Friberg" class="ng-binding"&gt;Christer Friberg&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Björnstorps IF" class="ng-binding"&gt;Björnstorps IF&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="36:15" class="ng-binding"&gt;36:15&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="14" class="ng-binding"&gt;14&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="14" class="ng-binding"&gt;14&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="5647" class="ng-binding"&gt;5647&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Roger Lindskog" class="ng-binding"&gt;Roger Lindskog&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Lunds universitet" class="ng-binding"&gt;Lunds universitet&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="36:15" class="ng-binding"&gt;36:15&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="15" class="ng-binding"&gt;15&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="15" class="ng-binding"&gt;15&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="3616" class="ng-binding"&gt;3616&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Andreas Thell" class="ng-binding"&gt;Andreas Thell&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Ystads IF Friidrott" class="ng-binding"&gt;Ystads IF Friidrott&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="36:20" class="ng-binding"&gt;36:20&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="16" class="ng-binding"&gt;16&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="16" class="ng-binding"&gt;16&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="6382" class="ng-binding"&gt;6382&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Tommy Olofsson" class="ng-binding"&gt;Tommy Olofsson&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Tetra Pak IF" class="ng-binding"&gt;Tetra Pak IF&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="36:20" class="ng-binding"&gt;36:20&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="17" class="ng-binding"&gt;17&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="17" class="ng-binding"&gt;17&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="3183" class="ng-binding"&gt;3183&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Kristoffer  Loo" class="ng-binding"&gt;Kristoffer  Loo&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="   " class="ng-binding"&gt;   &lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="36:36" class="ng-binding"&gt;36:36&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="18" class="ng-binding"&gt;18&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="18" class="ng-binding"&gt;18&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="2664" class="ng-binding"&gt;2664&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Alfred Bodenäs" class="ng-binding"&gt;Alfred Bodenäs&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Triathlon Syd" class="ng-binding"&gt;Triathlon Syd&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="36:44" class="ng-binding"&gt;36:44&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="19" class="ng-binding"&gt;19&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="19" class="ng-binding"&gt;19&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="6979" class="ng-binding"&gt;6979&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Daniel Jonsson" class="ng-binding"&gt;Daniel Jonsson&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="   " class="ng-binding"&gt;   &lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="36:54" class="ng-binding"&gt;36:54&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="20" class="ng-binding"&gt;20&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="20" class="ng-binding"&gt;20&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="4977" class="ng-binding"&gt;4977&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Johan Lindgren" class="ng-binding"&gt;Johan Lindgren&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Lunds kommun" class="ng-binding"&gt;Lunds kommun&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="36:58" class="ng-binding"&gt;36:58&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="21" class="ng-binding"&gt;21&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="21" class="ng-binding"&gt;21&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="3495" class="ng-binding"&gt;3495&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Erik Schultz-Eklund" class="ng-binding"&gt;Erik Schultz-Eklund&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Agape Lund" class="ng-binding"&gt;Agape Lund&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="37:20" class="ng-binding"&gt;37:20&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="22" class="ng-binding"&gt;22&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="22" class="ng-binding"&gt;22&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="3571" class="ng-binding"&gt;3571&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Daniel Strandberg" class="ng-binding"&gt;Daniel Strandberg&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Malmö AI" class="ng-binding"&gt;Malmö AI&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="37:28" class="ng-binding"&gt;37:28&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="23" class="ng-binding"&gt;23&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="23" class="ng-binding"&gt;23&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="3121" class="ng-binding"&gt;3121&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Martin Larsson" class="ng-binding"&gt;Martin Larsson&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="inQore-part of Qgroup" class="ng-binding"&gt;inQore-part of Qgroup&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="37:32" class="ng-binding"&gt;37:32&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="24" class="ng-binding"&gt;24&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="24" class="ng-binding"&gt;24&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="5955" class="ng-binding"&gt;5955&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Johan Vallon-Christersson" class="ng-binding"&gt;Johan Vallon-Christersson&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Lunds universitet" class="ng-binding"&gt;Lunds universitet&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="37:33" class="ng-binding"&gt;37:33&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;&lt;tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd"&gt;
+                        &lt;td class="res-favorite"&gt;&lt;div title="Add to favorites" ng-click="vm.toggleFav(row.result)"&gt;&lt;span class="glyphicon glyphicon-star-empty"&gt;&lt;/span&gt;&lt;/div&gt;&lt;/td&gt;
+                        &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="25" class="ng-binding"&gt;25&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="25" class="ng-binding"&gt;25&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="6675" class="ng-binding"&gt;6675&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Kristian  Haggärde" class="ng-binding"&gt;Kristian  Haggärde&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Björnstorps IF" class="ng-binding"&gt;Björnstorps IF&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="37:34" class="ng-binding"&gt;37:34&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
+                    &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;
+                &lt;/tbody&gt;
+            &lt;/table&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Wow! Isn't that magic? We'll explore a bit later how this works.&lt;/p&gt;
+&lt;p&gt;What I want to get is all the results, not just the first 25. I tried increasing the &lt;em&gt;pageSize&lt;/em&gt; passed in the URL, but that didn't help. Even passing a lower value always returns 25 rows. Not sure how the API is implemented...&lt;/p&gt;
+&lt;p&gt;An issue I had with requests-html is that sometimes &lt;code&gt;r.html.find('table', first=True)&lt;/code&gt; returned &lt;code&gt;None&lt;/code&gt; or an empty table...&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [9]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;r&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;session&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'http://results.neptron.se/#/lundaloppet2018/?sortOrder=Place&amp;amp;raceId=99&amp;amp;page=63&amp;amp;pageSize=25'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;html&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;render&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;span class="n"&gt;table&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;html&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'table'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;first&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_html&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;table&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;html&lt;/span&gt;&lt;span class="p"&gt;)[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="output_subarea output_text output_error"&gt;
+&lt;pre&gt;
+&lt;span class="ansi-red-fg"&gt;---------------------------------------------------------------------------&lt;/span&gt;
+&lt;span class="ansi-red-fg"&gt;IndexError&lt;/span&gt;                                Traceback (most recent call last)
+&lt;span class="ansi-green-fg"&gt;&amp;lt;ipython-input-9-e9d6c036862c&amp;gt;&lt;/span&gt; in &lt;span class="ansi-cyan-fg"&gt;&amp;lt;module&amp;gt;&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;()&lt;/span&gt;
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;      2&lt;/span&gt; r&lt;span class="ansi-blue-fg"&gt;.&lt;/span&gt;html&lt;span class="ansi-blue-fg"&gt;.&lt;/span&gt;render&lt;span class="ansi-blue-fg"&gt;(&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;)&lt;/span&gt;
+&lt;span class="ansi-green-intense-fg ansi-bold"&gt;      3&lt;/span&gt; table &lt;span class="ansi-blue-fg"&gt;=&lt;/span&gt; r&lt;span class="ansi-blue-fg"&gt;.&lt;/span&gt;html&lt;span class="ansi-blue-fg"&gt;.&lt;/span&gt;find&lt;span class="ansi-blue-fg"&gt;(&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;'table'&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;,&lt;/span&gt; first&lt;span class="ansi-blue-fg"&gt;=&lt;/span&gt;&lt;span class="ansi-green-fg"&gt;True&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;)&lt;/span&gt;
+&lt;span class="ansi-green-fg"&gt;----&amp;gt; 4&lt;/span&gt;&lt;span class="ansi-red-fg"&gt; &lt;/span&gt;pd&lt;span class="ansi-blue-fg"&gt;.&lt;/span&gt;read_html&lt;span class="ansi-blue-fg"&gt;(&lt;/span&gt;table&lt;span class="ansi-blue-fg"&gt;.&lt;/span&gt;html&lt;span class="ansi-blue-fg"&gt;)&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;[&lt;/span&gt;&lt;span class="ansi-cyan-fg"&gt;0&lt;/span&gt;&lt;span class="ansi-blue-fg"&gt;]&lt;/span&gt;
+
+&lt;span class="ansi-red-fg"&gt;IndexError&lt;/span&gt;: list index out of range&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;That's probably a timing issue (the rendering might take longer sometimes). I tried playing with the &lt;code&gt;wait&lt;/code&gt; and &lt;code&gt;sleep&lt;/code&gt; arguments of &lt;code&gt;r.html.render(wait=1, sleep=1)&lt;/code&gt; but couldn't make the problem completetly go away. This is an issue because I don't need just one page but 135.&lt;/p&gt;
+&lt;p&gt;I started to look at &lt;a href="https://github.com/kennethreitz/requests-html/blob/master/requests_html.py"&gt;requests-html&lt;/a&gt; code to see how this was implemented. That's how I discovered &lt;a href="https://github.com/miyakogi/pyppeteer"&gt;pyppeteer&lt;/a&gt;.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h3 id="Pyppeteer"&gt;Pyppeteer&lt;a class="anchor-link" href="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/#Pyppeteer"&gt;¶&lt;/a&gt;&lt;/h3&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;&lt;a href="https://miyakogi.github.io/pyppeteer/"&gt;Pyppeteer&lt;/a&gt; is an unofficial Python port of &lt;a href="https://github.com/GoogleChrome/puppeteer"&gt;puppeteer&lt;/a&gt; JavaScript (headless) chrome/chromium browser automation library.&lt;/p&gt;
+&lt;blockquote&gt;&lt;p&gt;Puppeteer is a Node library which provides a high-level API to control headless Chrome or Chromium over the DevTools Protocol.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Pyppeteer allows you to do the same from Python.
+So there is no &lt;em&gt;magic&lt;/em&gt;. You just let Chromium load and render the page with the latest JavaScript and browser features. This is super powerful.&lt;/p&gt;
+&lt;p&gt;The first time you run pyppeteer, it even downloads a recent version of Chromium. So no initial setup is required.&lt;/p&gt;
+&lt;p&gt;Pyppeteer is based on &lt;a href="https://docs.python.org/3/library/asyncio.html"&gt;asyncio&lt;/a&gt;. This is hidden by requests-html that gives you a simple interface but of course less flexibility.&lt;/p&gt;
+&lt;p&gt;So let's explore pyppeteer. The first example from the documentation is how to take a screenshot of a page.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;asyncio&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;pyppeteer&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;launch&lt;/span&gt;
+
+&lt;span class="n"&gt;async&lt;/span&gt; &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;browser&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;await&lt;/span&gt; &lt;span class="n"&gt;launch&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;page&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;await&lt;/span&gt; &lt;span class="n"&gt;browser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;newPage&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;await&lt;/span&gt; &lt;span class="n"&gt;page&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;goto&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'http://example.com'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;await&lt;/span&gt; &lt;span class="n"&gt;page&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;screenshot&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;&lt;span class="s1"&gt;'path'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;'example.png'&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
+    &lt;span class="n"&gt;await&lt;/span&gt; &lt;span class="n"&gt;browser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;close&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="n"&gt;asyncio&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get_event_loop&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;run_until_complete&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;main&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Let's try that with our page. Note that I pass the &lt;code&gt;fullPage&lt;/code&gt; option otherwise the page is cut.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [10]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;asyncio&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;pyppeteer&lt;/span&gt; &lt;span class="k"&gt;import&lt;/span&gt; &lt;span class="n"&gt;launch&lt;/span&gt;
+
+
+&lt;span class="k"&gt;async&lt;/span&gt; &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;browser&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;launch&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;page&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;browser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;newPage&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;page&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;goto&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'http://results.neptron.se/#/lundaloppet2018/?sortOrder=Place&amp;amp;raceId=99&amp;amp;page=0&amp;amp;pageSize=25'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;page&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;screenshot&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;&lt;span class="s1"&gt;'path'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s1"&gt;'pyppeteer_screenshot.png'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'fullPage'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="kc"&gt;True&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
+    &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;browser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;close&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+&lt;span class="n"&gt;asyncio&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get_event_loop&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;run_until_complete&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;main&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Here is the screenshot taken:
+&lt;img src="http://beenje.github.io/blog/images/pyppeteer/pyppeteer_screenshot.png" alt="Pyppeteer screenshot"&gt;&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;Nice, no?
+This example showed us how to load a page:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;create a bowser&lt;/li&gt;
+&lt;li&gt;create a new page&lt;/li&gt;
+&lt;li&gt;goto a page&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;There are several functions that can be used to retrieve elements from the page, like &lt;a href="https://miyakogi.github.io/pyppeteer/reference.html#pyppeteer.page.Page.querySelector"&gt;querySelector&lt;/a&gt; or &lt;a href="https://miyakogi.github.io/pyppeteer/reference.html#pyppeteer.page.Page.querySelectorEval"&gt;querySelectorEval&lt;/a&gt;. This is the function we gonna use to retrieve the table. We use the &lt;code&gt;table&lt;/code&gt; selector and apply the &lt;code&gt;outerHTML&lt;/code&gt; function to get the HTML representation of the table:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;table&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;await&lt;/span&gt; &lt;span class="n"&gt;page&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;querySelectorEval&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'table'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'(element) =&amp;gt; element.outerHTML'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;We can then pass that to pandas.&lt;/p&gt;
+&lt;p&gt;One thing we wanted is to wait for the table to be rendered before trying to retrieve it. We can use the &lt;a href="https://miyakogi.github.io/pyppeteer/reference.html#pyppeteer.page.Page.waitForSelector"&gt;waitForSelector&lt;/a&gt; function for that.
+I initially tried to use the &lt;code&gt;table&lt;/code&gt; selector but that sometimes returned an empty table. So I chose a class of one row element &lt;code&gt;td.res-startNo&lt;/code&gt; to be sure that the table was rendered.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [11]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;asyncio&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pandas&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;pd&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;pyppeteer&lt;/span&gt; &lt;span class="k"&gt;import&lt;/span&gt; &lt;span class="n"&gt;launch&lt;/span&gt;
+
+
+&lt;span class="k"&gt;async&lt;/span&gt; &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="n"&gt;browser&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;launch&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;page&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;browser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;newPage&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;page&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;goto&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'http://results.neptron.se/#/lundaloppet2018/?sortOrder=Place&amp;amp;raceId=99&amp;amp;page=0&amp;amp;pageSize=25'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;page&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;waitForSelector&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'td.res-startNo'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;table&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;page&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;querySelectorEval&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'table'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'(element) =&amp;gt; element.outerHTML'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;browser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;close&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_html&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;table&lt;/span&gt;&lt;span class="p"&gt;)[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+&lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;asyncio&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get_event_loop&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;run_until_complete&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;main&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+&lt;span class="n"&gt;df&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt output_prompt"&gt;Out[11]:&lt;/div&gt;
+
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;Unnamed: 0&lt;/th&gt;
+      &lt;th&gt;Place(race)&lt;/th&gt;
+      &lt;th&gt;Place(cat)&lt;/th&gt;
+      &lt;th&gt;Bib no&lt;/th&gt;
+      &lt;th&gt;Category&lt;/th&gt;
+      &lt;th&gt;Name&lt;/th&gt;
+      &lt;th&gt;Unnamed: 6&lt;/th&gt;
+      &lt;th&gt;Association&lt;/th&gt;
+      &lt;th&gt;Progress&lt;/th&gt;
+      &lt;th&gt;Time&lt;/th&gt;
+      &lt;th&gt;Status&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;6922&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Hans Larsson&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;MAI&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;33:22&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;6514&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Filip Helmroth&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;IK Lerum Friidrott&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;33:37&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;3920&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;David Hartman&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Björnstorps IF&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;33:39&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;3926&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Henrik Orre&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Björnstorps IF&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;34:24&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;2666&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Jesper Bokefors&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Malmö AI&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;34:51&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;5&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;6&lt;/td&gt;
+      &lt;td&gt;6&lt;/td&gt;
+      &lt;td&gt;5729&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Juan Negreira&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Lunds universitet&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;35:19&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;6&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;7&lt;/td&gt;
+      &lt;td&gt;7&lt;/td&gt;
+      &lt;td&gt;3649&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Jim Webb&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;35:23&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;7&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;8&lt;/td&gt;
+      &lt;td&gt;8&lt;/td&gt;
+      &lt;td&gt;3675&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Nils Wetterberg&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Ekmans Löpare i Lund&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;35:39&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;8&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;9&lt;/td&gt;
+      &lt;td&gt;9&lt;/td&gt;
+      &lt;td&gt;4880&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Hannes Hjalmarsson&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Lunds kommun&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;35:41&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;9&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;10&lt;/td&gt;
+      &lt;td&gt;10&lt;/td&gt;
+      &lt;td&gt;6929&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Freyi Karlsson&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Ekmans löpare i lund&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;35:42&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;10&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;11&lt;/td&gt;
+      &lt;td&gt;11&lt;/td&gt;
+      &lt;td&gt;5995&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Shijie Xu&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Lunds universitet&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;35:43&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;11&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;12&lt;/td&gt;
+      &lt;td&gt;12&lt;/td&gt;
+      &lt;td&gt;5276&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Stuart Ansell&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Lunds universitet&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;36:02&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;12&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;13&lt;/td&gt;
+      &lt;td&gt;13&lt;/td&gt;
+      &lt;td&gt;3917&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Christer Friberg&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Björnstorps IF&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;36:15&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;13&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;14&lt;/td&gt;
+      &lt;td&gt;14&lt;/td&gt;
+      &lt;td&gt;5647&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Roger Lindskog&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Lunds universitet&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;36:15&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;14&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;15&lt;/td&gt;
+      &lt;td&gt;15&lt;/td&gt;
+      &lt;td&gt;3616&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Andreas Thell&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Ystads IF Friidrott&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;36:20&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;15&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;16&lt;/td&gt;
+      &lt;td&gt;16&lt;/td&gt;
+      &lt;td&gt;6382&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Tommy Olofsson&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Tetra Pak IF&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;36:20&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;16&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;17&lt;/td&gt;
+      &lt;td&gt;17&lt;/td&gt;
+      &lt;td&gt;3183&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Kristoffer Loo&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;36:36&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;17&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;18&lt;/td&gt;
+      &lt;td&gt;18&lt;/td&gt;
+      &lt;td&gt;2664&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Alfred Bodenäs&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Triathlon Syd&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;36:44&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;18&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;19&lt;/td&gt;
+      &lt;td&gt;19&lt;/td&gt;
+      &lt;td&gt;6979&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Daniel Jonsson&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;36:54&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;19&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;20&lt;/td&gt;
+      &lt;td&gt;20&lt;/td&gt;
+      &lt;td&gt;4977&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Johan Lindgren&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Lunds kommun&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;36:58&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;20&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;21&lt;/td&gt;
+      &lt;td&gt;21&lt;/td&gt;
+      &lt;td&gt;3495&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Erik Schultz-Eklund&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Agape Lund&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;37:20&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;21&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;22&lt;/td&gt;
+      &lt;td&gt;22&lt;/td&gt;
+      &lt;td&gt;3571&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Daniel Strandberg&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Malmö AI&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;37:28&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;22&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;23&lt;/td&gt;
+      &lt;td&gt;23&lt;/td&gt;
+      &lt;td&gt;3121&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Martin Larsson&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;inQore-part of Qgroup&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;37:32&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;23&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;24&lt;/td&gt;
+      &lt;td&gt;24&lt;/td&gt;
+      &lt;td&gt;5955&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Johan Vallon-Christersson&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Lunds universitet&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;37:33&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;24&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;25&lt;/td&gt;
+      &lt;td&gt;25&lt;/td&gt;
+      &lt;td&gt;6675&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Kristian Haggärde&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Björnstorps IF&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;37:34&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;That's a bit more code than with requests-HTML but we have finer control.
+Let's refactor that code to retrieve all the results of the race.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [12]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;asyncio&lt;/span&gt;
+&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;pandas&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="nn"&gt;pd&lt;/span&gt;
+&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;pyppeteer&lt;/span&gt; &lt;span class="k"&gt;import&lt;/span&gt; &lt;span class="n"&gt;launch&lt;/span&gt;
+
+&lt;span class="n"&gt;URL&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;'http://results.neptron.se/#/lundaloppet2018/results?sortOrder=Place&amp;amp;raceId=99&amp;amp;pageSize=25&amp;amp;page=&lt;/span&gt;&lt;span class="si"&gt;{}&lt;/span&gt;&lt;span class="s1"&gt;'&lt;/span&gt;
+
+
+&lt;span class="k"&gt;async&lt;/span&gt; &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_page&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;browser&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;selector&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="sd"&gt;"""Return a page after waiting for the given selector"""&lt;/span&gt;
+    &lt;span class="n"&gt;page&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;browser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;newPage&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;page&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;goto&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;page&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;waitForSelector&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;selector&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;page&lt;/span&gt;
+
+
+&lt;span class="k"&gt;async&lt;/span&gt; &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_num_pages&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;browser&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="sd"&gt;"""Return the total number of pages available"""&lt;/span&gt;
+    &lt;span class="n"&gt;page&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;get_page&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;browser&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;URL&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="s1"&gt;'div.ng-isolate-scope'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;num_pages&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;page&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;querySelectorEval&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+        &lt;span class="s1"&gt;'div.ng-isolate-scope'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="s1"&gt;'(element) =&amp;gt; element.getAttribute("data-num-pages")'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;int&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;num_pages&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+
+&lt;span class="k"&gt;async&lt;/span&gt; &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_table&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;browser&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;page_nb&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="sd"&gt;"""Return the table from the given page number as a pandas dataframe"""&lt;/span&gt;
+    &lt;span class="nb"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s1"&gt;'Get table from page &lt;/span&gt;&lt;span class="si"&gt;{page_nb}&lt;/span&gt;&lt;span class="s1"&gt;'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;page&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;get_page&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;browser&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;URL&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;page_nb&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="s1"&gt;'td.res-startNo'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="n"&gt;table&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;page&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;querySelectorEval&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'table'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'(element) =&amp;gt; element.outerHTML'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;read_html&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;table&lt;/span&gt;&lt;span class="p"&gt;)[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
+
+
+&lt;span class="k"&gt;async&lt;/span&gt; &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_results&lt;/span&gt;&lt;span class="p"&gt;():&lt;/span&gt;
+    &lt;span class="sd"&gt;"""Return all the results as a pandas dataframe"""&lt;/span&gt;
+    &lt;span class="n"&gt;browser&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;launch&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;num_pages&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;get_num_pages&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;browser&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nb"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="s1"&gt;'Number of pages: &lt;/span&gt;&lt;span class="si"&gt;{num_pages}&lt;/span&gt;&lt;span class="s1"&gt;'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="c1"&gt;# Python 3.6 asynchronous comprehensions! Nice!&lt;/span&gt;
+    &lt;span class="n"&gt;dfs&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;get_table&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;browser&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;page_nb&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;page_nb&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;num_pages&lt;/span&gt;&lt;span class="p"&gt;)]&lt;/span&gt;
+    &lt;span class="k"&gt;await&lt;/span&gt; &lt;span class="n"&gt;browser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;close&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+    &lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pd&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;concat&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;dfs&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ignore_index&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="kc"&gt;True&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;df&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;This code could be made a bit more generic but that's good enough for what I want.
+I think it's quite straightforward. We first get the total number of pages and then load each page to retrieve the table.
+Once done, we just have to concatenate all those tables in one.&lt;/p&gt;
+&lt;p&gt;One thing to note is the use of Python &lt;a href="https://www.python.org/dev/peps/pep-0530/"&gt;asynchronous comprehensions&lt;/a&gt;. This is a Python 3.6 feature and makes it really Pythonic. It just works as it would with synchronous functions:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;dfs&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;await&lt;/span&gt; &lt;span class="n"&gt;get_table&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;browser&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;page_nb&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="n"&gt;page_nb&lt;/span&gt; &lt;span class="ow"&gt;in&lt;/span&gt; &lt;span class="nb"&gt;range&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;num_pages&lt;/span&gt;&lt;span class="p"&gt;)]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Let's run that code!&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [13]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;asyncio&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get_event_loop&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;run_until_complete&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;get_results&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt"&gt;&lt;/div&gt;
+&lt;div class="output_subarea output_stream output_stdout output_text"&gt;
+&lt;pre&gt;Number of pages: 115
+Get table from page 0
+Get table from page 1
+Get table from page 2
+Get table from page 3
+Get table from page 4
+Get table from page 5
+Get table from page 6
+Get table from page 7
+Get table from page 8
+Get table from page 9
+Get table from page 10
+Get table from page 11
+Get table from page 12
+Get table from page 13
+Get table from page 14
+Get table from page 15
+Get table from page 16
+Get table from page 17
+Get table from page 18
+Get table from page 19
+Get table from page 20
+Get table from page 21
+Get table from page 22
+Get table from page 23
+Get table from page 24
+Get table from page 25
+Get table from page 26
+Get table from page 27
+Get table from page 28
+Get table from page 29
+Get table from page 30
+Get table from page 31
+Get table from page 32
+Get table from page 33
+Get table from page 34
+Get table from page 35
+Get table from page 36
+Get table from page 37
+Get table from page 38
+Get table from page 39
+Get table from page 40
+Get table from page 41
+Get table from page 42
+Get table from page 43
+Get table from page 44
+Get table from page 45
+Get table from page 46
+Get table from page 47
+Get table from page 48
+Get table from page 49
+Get table from page 50
+Get table from page 51
+Get table from page 52
+Get table from page 53
+Get table from page 54
+Get table from page 55
+Get table from page 56
+Get table from page 57
+Get table from page 58
+Get table from page 59
+Get table from page 60
+Get table from page 61
+Get table from page 62
+Get table from page 63
+Get table from page 64
+Get table from page 65
+Get table from page 66
+Get table from page 67
+Get table from page 68
+Get table from page 69
+Get table from page 70
+Get table from page 71
+Get table from page 72
+Get table from page 73
+Get table from page 74
+Get table from page 75
+Get table from page 76
+Get table from page 77
+Get table from page 78
+Get table from page 79
+Get table from page 80
+Get table from page 81
+Get table from page 82
+Get table from page 83
+Get table from page 84
+Get table from page 85
+Get table from page 86
+Get table from page 87
+Get table from page 88
+Get table from page 89
+Get table from page 90
+Get table from page 91
+Get table from page 92
+Get table from page 93
+Get table from page 94
+Get table from page 95
+Get table from page 96
+Get table from page 97
+Get table from page 98
+Get table from page 99
+Get table from page 100
+Get table from page 101
+Get table from page 102
+Get table from page 103
+Get table from page 104
+Get table from page 105
+Get table from page 106
+Get table from page 107
+Get table from page 108
+Get table from page 109
+Get table from page 110
+Get table from page 111
+Get table from page 112
+Get table from page 113
+Get table from page 114
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;That's it! We got all the results from the Lundaloppet 2018 in a nice pandas DataFrame.&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [14]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;len&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt output_prompt"&gt;Out[14]:&lt;/div&gt;
+
+
+&lt;div class="output_text output_subarea output_execute_result"&gt;
+&lt;pre&gt;2872&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [15]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;head&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt output_prompt"&gt;Out[15]:&lt;/div&gt;
+
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;Unnamed: 0&lt;/th&gt;
+      &lt;th&gt;Place(race)&lt;/th&gt;
+      &lt;th&gt;Place(cat)&lt;/th&gt;
+      &lt;th&gt;Bib no&lt;/th&gt;
+      &lt;th&gt;Category&lt;/th&gt;
+      &lt;th&gt;Name&lt;/th&gt;
+      &lt;th&gt;Unnamed: 6&lt;/th&gt;
+      &lt;th&gt;Association&lt;/th&gt;
+      &lt;th&gt;Progress&lt;/th&gt;
+      &lt;th&gt;Time&lt;/th&gt;
+      &lt;th&gt;Status&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;0&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;1.0&lt;/td&gt;
+      &lt;td&gt;6922&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Hans Larsson&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;MAI&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;33:22&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;1&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;2.0&lt;/td&gt;
+      &lt;td&gt;2.0&lt;/td&gt;
+      &lt;td&gt;6514&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Filip Helmroth&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;IK Lerum Friidrott&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;33:37&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;3.0&lt;/td&gt;
+      &lt;td&gt;3.0&lt;/td&gt;
+      &lt;td&gt;3920&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;David Hartman&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Björnstorps IF&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;33:39&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;3&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;4.0&lt;/td&gt;
+      &lt;td&gt;4.0&lt;/td&gt;
+      &lt;td&gt;3926&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Henrik Orre&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Björnstorps IF&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;34:24&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;4&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;5.0&lt;/td&gt;
+      &lt;td&gt;5.0&lt;/td&gt;
+      &lt;td&gt;2666&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Jesper Bokefors&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Malmö AI&lt;/td&gt;
+      &lt;td&gt;Finish&lt;/td&gt;
+      &lt;td&gt;34:51&lt;/td&gt;
+      &lt;td&gt;Finished&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing code_cell rendered"&gt;
+&lt;div class="input"&gt;
+&lt;div class="prompt input_prompt"&gt;In [16]:&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+    &lt;div class="input_area"&gt;
+&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;df&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;tail&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="output_wrapper"&gt;
+&lt;div class="output"&gt;
+
+
+&lt;div class="output_area"&gt;&lt;div class="prompt output_prompt"&gt;Out[16]:&lt;/div&gt;
+
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
+&lt;div&gt;
+&lt;style scoped&gt;
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+&lt;/style&gt;
+&lt;table border="1" class="dataframe"&gt;
+  &lt;thead&gt;
+    &lt;tr style="text-align: right;"&gt;
+      &lt;th&gt;&lt;/th&gt;
+      &lt;th&gt;Unnamed: 0&lt;/th&gt;
+      &lt;th&gt;Place(race)&lt;/th&gt;
+      &lt;th&gt;Place(cat)&lt;/th&gt;
+      &lt;th&gt;Bib no&lt;/th&gt;
+      &lt;th&gt;Category&lt;/th&gt;
+      &lt;th&gt;Name&lt;/th&gt;
+      &lt;th&gt;Unnamed: 6&lt;/th&gt;
+      &lt;th&gt;Association&lt;/th&gt;
+      &lt;th&gt;Progress&lt;/th&gt;
+      &lt;th&gt;Time&lt;/th&gt;
+      &lt;th&gt;Status&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2867&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;6855&lt;/td&gt;
+      &lt;td&gt;T10&lt;/td&gt;
+      &lt;td&gt;porntepin sooksaengprasit&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Lunds universitet&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Not started&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2868&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;6857&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Gabriel Teku&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Lunds universitet&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Not started&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2869&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;6888&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Viktor Karlsson&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Genarps if&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Not started&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2870&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;6892&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Emil Larsson&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Not started&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th&gt;2871&lt;/th&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;6893&lt;/td&gt;
+      &lt;td&gt;P10&lt;/td&gt;
+      &lt;td&gt;Göran Larsson&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;NaN&lt;/td&gt;
+      &lt;td&gt;Not started&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;h2 id="Summary"&gt;Summary&lt;a class="anchor-link" href="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/#Summary"&gt;¶&lt;/a&gt;&lt;/h2&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="cell border-box-sizing text_cell rendered"&gt;
+&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;
+&lt;div class="inner_cell"&gt;
+&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
+&lt;p&gt;With frameworks like &lt;a href="https://angularjs.org"&gt;AngularJS&lt;/a&gt;, &lt;a href="https://reactjs.org"&gt;React&lt;/a&gt;, &lt;a href="https://vuejs.org"&gt;Vue.js&lt;/a&gt;... more and more websites use client-side rendering. To parse those websites, you can't just request HTML from the server. Parsing requires to run some JavaScript.&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://miyakogi.github.io/pyppeteer/"&gt;Pyppeteer&lt;/a&gt; makes that possible. Thanks to &lt;a href="https://chromium.googlesource.com/chromium/src/+/lkgr/headless/README.md"&gt;Headless Chomium&lt;/a&gt;, it gives you access to the full power of a browser from Python. I find that really impressive!&lt;/p&gt;
+&lt;p&gt;I tried to use &lt;a href="https://www.seleniumhq.org"&gt;Selenium&lt;/a&gt; in the past but didn't find it very easy to start with. That wasn't the case with Pyppeteer. To be fair, it was a while ago and both projects are quite different. It's not just about browser automation. Selenium allows you to perform cross browser testing. Pyppeteer is limited to Chrome/Chromium.
+Anyway, I'll probably look more at Pyppeteer for web application testing.&lt;/p&gt;
+&lt;p&gt;For simple tasks, &lt;a href="https://github.com/kennethreitz/requests-html"&gt;Requests-HTML&lt;/a&gt; is a nice wrapper and gives you a simple API. If you want more control, use directly Pyppeteer.&lt;/p&gt;
+&lt;p&gt;One last note. To run this code in a Jupyter notebook, you should use tornado 4. asyncio code doesn't play well with ipython and tornado 5. See this Github issue: &lt;a href="https://github.com/ipython/ipython/issues/11030"&gt;asyncio will be running by default with tornado 5&lt;/a&gt;. There is some &lt;a href="https://github.com/ipython/ipython/pull/11155"&gt;work in progress&lt;/a&gt; for a nice integration.&lt;/p&gt;
+&lt;p&gt;What about the Lundaloppet results you might ask? I'll explore them in another post!&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+</description><category>javascript</category><category>pandas</category><category>pyppeteer</category><category>python</category><category>request-html</category><category>requests</category><guid>http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/</guid><pubDate>Sat, 02 Jun 2018 20:54:45 GMT</pubDate></item><item><title>Parsing HTML Tables in Python with pandas</title><link>http://beenje.github.io/blog/posts/parsing-html-tables-in-python-with-pandas/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div tabindex="-1" id="notebook" class="border-box-sizing"&gt;
     &lt;div class="container" id="notebook-container"&gt;
 
 &lt;div class="cell border-box-sizing text_cell rendered"&gt;

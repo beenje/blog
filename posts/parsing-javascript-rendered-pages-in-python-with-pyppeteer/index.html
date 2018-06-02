@@ -1,0 +1,2051 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article# " lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parsing JavaScript rendered pages in Python with pyppeteer | Tchut-Tchut Blog</title>
+<link href="../../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/ipython.min.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/nikola_ipython.css" rel="stylesheet" type="text/css">
+<meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="../../rss.xml">
+<link rel="canonical" href="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/">
+<!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><meta name="author" content="Benjamin Bertrand">
+<link rel="prev" href="../parsing-html-tables-in-python-with-pandas/" title="Parsing HTML Tables in Python with pandas" type="text/html">
+<meta property="og:site_name" content="Tchut-Tchut Blog">
+<meta property="og:title" content="Parsing JavaScript rendered pages in Python with pyppeteer">
+<meta property="og:url" content="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/">
+<meta property="og:description" content="Parsing JavaScript rendered pages in Python with pyppeteer¶
+
+
+
+
+
+
+
+
+Where is my table?¶
+
+
+
+
+
+
+
+
+I already wrote a blog post about Parsing HTML Tables in Python with pandas. Using requests or even dire">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2018-06-02T22:54:45+02:00">
+<meta property="article:tag" content="javascript">
+<meta property="article:tag" content="pandas">
+<meta property="article:tag" content="pyppeteer">
+<meta property="article:tag" content="python">
+<meta property="article:tag" content="request-html">
+<meta property="article:tag" content="requests">
+</head>
+<body>
+<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+
+<!-- Menubar -->
+
+<nav class="navbar navbar-inverse navbar-static-top"><div class="container">
+<!-- This keeps the margins nice -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-navbar" aria-controls="bs-navbar" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://beenje.github.io/blog/">
+
+                <span id="blog-title">Tchut-Tchut Blog</span>
+            </a>
+        </div>
+<!-- /.navbar-header -->
+        <div class="collapse navbar-collapse" id="bs-navbar" aria-expanded="false">
+            <ul class="nav navbar-nav">
+<li>
+<a href="../../archive.html">Archive</a>
+                </li>
+<li>
+<a href="../../categories/">Tags</a>
+                </li>
+<li>
+<a href="../../rss.xml">RSS feed</a>
+                </li>
+<li>
+<a href="../../stories/about/index.html">About</a>
+
+                
+            </li>
+</ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+    <a href="index.ipynb" id="sourcelink">Source</a>
+    </li>
+
+                
+            </ul>
+</div>
+<!-- /.navbar-collapse -->
+    </div>
+<!-- /.container -->
+</nav><!-- End of Menubar --><div class="container" id="content" role="main">
+    <div class="body-content">
+        <!--Body content-->
+        <div class="row">
+            
+            
+<article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Parsing JavaScript rendered pages in Python with pyppeteer</a></h1>
+
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                    Benjamin Bertrand
+            </span></p>
+            <p class="dateline"><a href="." rel="bookmark"><time class="published dt-published" datetime="2018-06-02T22:54:45+02:00" itemprop="datePublished" title="2018-06-02 22:54">2018-06-02 22:54</time></a></p>
+                <p class="commentline">
+        
+    <a href="#disqus_thread" data-disqus-identifier="cache/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer.html">Comments</a>
+
+
+            
+        </p>
+<p class="sourceline"><a href="index.ipynb" class="sourcelink">Source</a></p>
+
+        </div>
+        
+
+    </header><div class="e-content entry-content" itemprop="articleBody text">
+    <div tabindex="-1" id="notebook" class="border-box-sizing">
+    <div class="container" id="notebook-container">
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Parsing-JavaScript-rendered-pages-in-Python-with-pyppeteer">Parsing JavaScript rendered pages in Python with pyppeteer<a class="anchor-link" href="#Parsing-JavaScript-rendered-pages-in-Python-with-pyppeteer">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Where-is-my-table?">Where is my table?<a class="anchor-link" href="#Where-is-my-table?">¶</a>
+</h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>I already wrote a blog post about <a href="https://beenje.github.io/blog/posts/parsing-html-tables-in-python-with-pandas/">Parsing HTML Tables in Python with pandas</a>. Using <a href="http://docs.python-requests.org/en/master/">requests</a> or even directly <a href="https://pandas.pydata.org">pandas</a> was working nicely.</p>
+<p>I wanted to play with some data from a race I recently run: <a href="http://www.lundaloppet.se/info/resultat/">Lundaloppet</a>.
+The results are available here: <a href="http://results.neptron.se/#/lundaloppet2018/?sortOrder=Place&amp;raceId=99&amp;page=0&amp;pageSize=25">http://results.neptron.se/#/lundaloppet2018/?sortOrder=Place&amp;raceId=99&amp;page=0&amp;pageSize=25</a>
+<img src="../../images/pyppeteer/results_lundaloppet_2018.png" alt="Results Lundaloppet 2018"></p>
+<p>Let's try to get that table!</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dfs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="s1">'http://results.neptron.se/#/lundaloppet2018/?sortOrder=Place&amp;raceId=99&amp;page=0&amp;pageSize=25'</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">ValueError</span>                                Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-2-881110a1fe3d&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg">----&gt; 1</span><span class="ansi-red-fg"> </span>dfs <span class="ansi-blue-fg">=</span> pd<span class="ansi-blue-fg">.</span>read_html<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">'http://results.neptron.se/#/lundaloppet2018/?sortOrder=Place&amp;raceId=99&amp;page=0&amp;pageSize=25'</span><span class="ansi-blue-fg">)</span>
+
+<span class="ansi-green-fg">~/miniconda3/envs/notebook/lib/python3.6/site-packages/pandas/io/html.py</span> in <span class="ansi-cyan-fg">read_html</span><span class="ansi-blue-fg">(io, match, flavor, header, index_col, skiprows, attrs, parse_dates, tupleize_cols, thousands, encoding, decimal, converters, na_values, keep_default_na, displayed_only)</span>
+<span class="ansi-green-intense-fg ansi-bold">    985</span>                   decimal<span class="ansi-blue-fg">=</span>decimal<span class="ansi-blue-fg">,</span> converters<span class="ansi-blue-fg">=</span>converters<span class="ansi-blue-fg">,</span> na_values<span class="ansi-blue-fg">=</span>na_values<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-intense-fg ansi-bold">    986</span>                   keep_default_na<span class="ansi-blue-fg">=</span>keep_default_na<span class="ansi-blue-fg">,</span>
+<span class="ansi-green-fg">--&gt; 987</span><span class="ansi-red-fg">                   displayed_only=displayed_only)
+</span>
+<span class="ansi-green-fg">~/miniconda3/envs/notebook/lib/python3.6/site-packages/pandas/io/html.py</span> in <span class="ansi-cyan-fg">_parse</span><span class="ansi-blue-fg">(flavor, io, match, attrs, encoding, displayed_only, **kwargs)</span>
+<span class="ansi-green-intense-fg ansi-bold">    813</span>             <span class="ansi-green-fg">break</span>
+<span class="ansi-green-intense-fg ansi-bold">    814</span>     <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-fg">--&gt; 815</span><span class="ansi-red-fg">         </span>raise_with_traceback<span class="ansi-blue-fg">(</span>retained<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    816</span> 
+<span class="ansi-green-intense-fg ansi-bold">    817</span>     ret <span class="ansi-blue-fg">=</span> <span class="ansi-blue-fg">[</span><span class="ansi-blue-fg">]</span>
+
+<span class="ansi-green-fg">~/miniconda3/envs/notebook/lib/python3.6/site-packages/pandas/compat/__init__.py</span> in <span class="ansi-cyan-fg">raise_with_traceback</span><span class="ansi-blue-fg">(exc, traceback)</span>
+<span class="ansi-green-intense-fg ansi-bold">    401</span>         <span class="ansi-green-fg">if</span> traceback <span class="ansi-blue-fg">==</span> Ellipsis<span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    402</span>             _<span class="ansi-blue-fg">,</span> _<span class="ansi-blue-fg">,</span> traceback <span class="ansi-blue-fg">=</span> sys<span class="ansi-blue-fg">.</span>exc_info<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">--&gt; 403</span><span class="ansi-red-fg">         </span><span class="ansi-green-fg">raise</span> exc<span class="ansi-blue-fg">.</span>with_traceback<span class="ansi-blue-fg">(</span>traceback<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">    404</span> <span class="ansi-green-fg">else</span><span class="ansi-blue-fg">:</span>
+<span class="ansi-green-intense-fg ansi-bold">    405</span>     <span class="ansi-red-fg"># this version of raise is a syntax error in Python 3</span>
+
+<span class="ansi-red-fg">ValueError</span>: No tables found</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>No tables found... So what is going on? Let's look at what is returned by requests.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="k">import</span> <span class="n">display_html</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'http://results.neptron.se/#/lundaloppet2018/?sortOrder=Place&amp;raceId=99&amp;page=0&amp;pageSize=25'</span><span class="p">)</span>
+<span class="n">r</span><span class="o">.</span><span class="n">text</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[4]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>'ï»¿&lt;!DOCTYPE html&gt;\r\n&lt;html xmlns="http://www.w3.org/1999/xhtml" ng-app="app"&gt;\r\n&lt;head&gt;\r\n    &lt;title ng-bind="event.name || \'Neptron Timing\'"&gt;Neptron Timing&lt;/title&gt;\r\n\r\n    &lt;meta charset="utf-8"&gt;\r\n    &lt;meta http-equiv="X-UA-Compatible" content="IE=edge"&gt;\r\n    &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;\r\n    &lt;meta name="description" content="Neptron Timing event results"&gt;\r\n\r\n    &lt;link rel="shortcut icon" href="favicon.ico"&gt;\r\n    &lt;link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css"&gt;\r\n    &lt;link rel="stylesheet" href="content/app.min.css"&gt;\r\n    &lt;script src="scripts/iframeResizer.contentWindow.min.js"&gt;&lt;/script&gt;\r\n    &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/es6-shim/0.35.0/es6-shim.min.js"&gt;&lt;/script&gt;\r\n    &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"&gt;&lt;/script&gt;\r\n    &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.min.js"&gt;&lt;/script&gt;\r\n    &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular.min.js"&gt;&lt;/script&gt;\r\n    &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular-route.min.js"&gt;&lt;/script&gt;\r\n    &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"&gt;&lt;/script&gt;\r\n    &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.0.2/Chart.min.js"&gt;&lt;/script&gt;\r\n    &lt;script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD7OPJoYN6W9qUHU1L_fEr_5ut8tQN8r2A"&gt;&lt;/script&gt;\r\n&lt;/head&gt;\r\n&lt;body&gt;\r\n    &lt;div class="navbar navbar-inverse navbar-static-top" role="navigation"&gt;\r\n        &lt;div class="container"&gt;\r\n            &lt;div class="navbar-header"&gt;\r\n                &lt;button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse"&gt;\r\n                    &lt;span class="sr-only"&gt;Toggle navigation&lt;/span&gt;\r\n                    &lt;span class="icon-bar"&gt;&lt;/span&gt;\r\n                    &lt;span class="icon-bar"&gt;&lt;/span&gt;\r\n                    &lt;span class="icon-bar"&gt;&lt;/span&gt;\r\n                &lt;/button&gt;\r\n                &lt;a class="navbar-brand" href="#"&gt;Neptron Timing&lt;/a&gt;\r\n            &lt;/div&gt;\r\n            &lt;div class="collapse navbar-collapse"&gt;\r\n                &lt;ul class="nav navbar-nav"&gt;\r\n                    &lt;li&gt;&lt;a href="#/"&gt;Events&lt;/a&gt;&lt;/li&gt;\r\n                    &lt;li ng-show="event.id"&gt;&lt;a href="#/{{event.id}}/event"&gt;Info&lt;/a&gt;&lt;/li&gt;\r\n                    &lt;li ng-show="event.id"&gt;&lt;a href="#/{{event.id}}/results"&gt;Results&lt;/a&gt;&lt;/li&gt;\r\n                    &lt;li ng-show="event.id"&gt;&lt;a href="#/{{event.id}}/leaderboard"&gt;Leaderboard&lt;/a&gt;&lt;/li&gt;\r\n                    &lt;li ng-show="event.id &amp;&amp; event.tracking"&gt;&lt;a href="#/{{event.id}}/tracking"&gt;Tracking&lt;/a&gt;&lt;/li&gt;\r\n                    &lt;li ng-show="event.id"&gt;&lt;a href="#/{{event.id}}/favorites"&gt;Favorites&lt;/a&gt;&lt;/li&gt;\r\n                    &lt;li ng-show="event.id &amp;&amp; event.sprints.length &gt; 0"&gt;&lt;a href="#/{{event.id}}/sprint"&gt;Sprint&lt;/a&gt;&lt;/li&gt;\r\n                    &lt;li ng-show="event.id &amp;&amp; event.teamCompetitions.length &gt; 0"&gt;&lt;a href="#/{{event.id}}/teams"&gt;Teams&lt;/a&gt;&lt;/li&gt;\r\n                &lt;/ul&gt;\r\n            &lt;/div&gt;&lt;!--/.nav-collapse --&gt;\r\n        &lt;/div&gt;\r\n    &lt;/div&gt;\r\n  &lt;script type="text/javascript"&gt;\r\n\r\nvar fixLidingloppetMessage = function() {\r\n\tvar str = window.location.href || \'\';\r\n\tvar cssStyle = (str.match(\'lidingolor2017\') ? \'\' : \'none\');\r\n\t//console.log(\'changed: \'+str, cssStyle);\r\n\t$(\'#nytamin-fix\').css(\'display\', cssStyle);\r\n}\r\n$(window).bind(\'hashchange\', function() {\r\n\tfixLidingloppetMessage();\r\n});\r\nwindow.setInterval(fixLidingloppetMessage, 1000);\r\n\r\n&lt;/script&gt;\r\n\r\n&lt;div class="container-fluid"&gt;\r\n\t&lt;div id="nytamin-fix" class="panel panel-primary" style="display: none; margin: 2em;"&gt;\r\n\t  &lt;div class="panel-heading"&gt;Liding&amp;ouml;loppet.se&lt;/div&gt;\r\n\t  &lt;div class="panel-body"&gt;\r\n\t\t\r\n\t\t&lt;strong&gt;&lt;a href="http://213.39.39.152"&gt;Click here to get back to Liding&amp;ouml;loppet\'s homepage!&lt;/a&gt;&lt;/strong&gt;\r\n\r\n\t  &lt;/div&gt;\r\n\t&lt;/div&gt;\r\n&lt;/div&gt;\r\n    &lt;div class="container-fluid" ng-view&gt;&lt;/div&gt;\r\n  &lt;div class="nt-app-links" style="margin:10px 20px"&gt;\r\n    &lt;a href="https://www.raceone.com/redirect" id="download-icon-footer-ios" target="_blank"&gt;\r\n      &lt;img class="download-icon" src="https://www.raceone.com/wp-content/uploads/2016/09/app-store-e1475238488598.png" alt=""&gt;\r\n    &lt;/a&gt;\r\n    &lt;a href="https://www.raceone.com/redirect" id="download-icon-footer-android" target="_blank"&gt;\r\n      &lt;img class="download-icon" src="https://www.raceone.com/wp-content/uploads/2016/09/google-play-e1475238513871.png" alt=""&gt;\r\n    &lt;/a&gt;\r\n  &lt;/div&gt;\r\n\r\n    &lt;script type="text/javascript" src="scripts/app.js"&gt;&lt;/script&gt;\r\n\r\n    &lt;!-- AddThis Button BEGIN --&gt;\r\n    &lt;div class="addthis_toolbox addthis_default_style addthis_32x32_style"&gt;\r\n        &lt;a class="addthis_button_facebook"&gt;&lt;/a&gt;\r\n        &lt;a class="addthis_button_twitter"&gt;&lt;/a&gt;\r\n        &lt;a class="addthis_button_linkedin"&gt;&lt;/a&gt;\r\n        &lt;a class="addthis_button_email"&gt;&lt;/a&gt;\r\n        &lt;a class="addthis_button_print"&gt;&lt;/a&gt;\r\n        &lt;a class="addthis_button_textme"&gt;&lt;/a&gt;\r\n        &lt;a class="addthis_button_compact"&gt;&lt;/a&gt;\r\n    &lt;/div&gt;\r\n    &lt;script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5364e093794f9d2f"&gt;&lt;/script&gt;\r\n    &lt;!-- AddThis Button END --&gt;\r\n\r\n    &lt;!--&lt;div class="applinks"&gt;\r\n        &lt;a href="https://itunes.apple.com/se/app/neptron-timing/id709776903" target="_blank"&gt;&lt;img class="appstore" alt="Get it on iTunes" src="content/appstore.svg" /&gt;&lt;/a&gt;\r\n        &lt;a href="https://play.google.com/store/apps/details?id=se.neptron.timing" target="_blank"&gt;&lt;img class="playstore" alt="Get it on Google Play" src="content/playstore.png" /&gt;&lt;/a&gt;\r\n    &lt;/div&gt;--&gt;\r\n\r\n&lt;/body&gt;\r\n&lt;/html&gt;\r\n'</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">display_html</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+
+<div class="output_html rendered_html output_subarea ">
+ï»¿
+
+
+    <title ng-bind="event.name || 'Neptron Timing'">Neptron Timing</title>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Neptron Timing event results">
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css">
+<link rel="stylesheet" href="content/app.min.css">
+<script src="scripts/iframeResizer.contentWindow.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/es6-shim/0.35.0/es6-shim.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.8/angular-route.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.0.2/Chart.min.js"></script><script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD7OPJoYN6W9qUHU1L_fEr_5ut8tQN8r2A"></script><div class="navbar navbar-inverse navbar-static-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href=".">Neptron Timing</a>
+            </div>
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+<li><a href="#/">Events</a></li>
+                    <li ng-show="event.id"><a href="#/%7B%7Bevent.id%7D%7D/event">Info</a></li>
+                    <li ng-show="event.id"><a href="#/%7B%7Bevent.id%7D%7D/results">Results</a></li>
+                    <li ng-show="event.id"><a href="#/%7B%7Bevent.id%7D%7D/leaderboard">Leaderboard</a></li>
+                    <li ng-show="event.id &amp;&amp; event.tracking"><a href="#/%7B%7Bevent.id%7D%7D/tracking">Tracking</a></li>
+                    <li ng-show="event.id"><a href="#/%7B%7Bevent.id%7D%7D/favorites">Favorites</a></li>
+                    <li ng-show="event.id &amp;&amp; event.sprints.length &gt; 0"><a href="#/%7B%7Bevent.id%7D%7D/sprint">Sprint</a></li>
+                    <li ng-show="event.id &amp;&amp; event.teamCompetitions.length &gt; 0"><a href="#/%7B%7Bevent.id%7D%7D/teams">Teams</a></li>
+                </ul>
+</div>
+<!--/.nav-collapse -->
+        </div>
+    </div>
+  <script type="text/javascript">
+
+var fixLidingloppetMessage = function() {
+	var str = window.location.href || '';
+	var cssStyle = (str.match('lidingolor2017') ? '' : 'none');
+	//console.log('changed: '+str, cssStyle);
+	$('#nytamin-fix').css('display', cssStyle);
+}
+$(window).bind('hashchange', function() {
+	fixLidingloppetMessage();
+});
+window.setInterval(fixLidingloppetMessage, 1000);
+
+</script><div class="container-fluid">
+	<div id="nytamin-fix" class="panel panel-primary" style="display: none; margin: 2em;">
+	  <div class="panel-heading">Lidingöloppet.se</div>
+	  <div class="panel-body">
+		
+		<strong><a href="http://213.39.39.152">Click here to get back to Lidingöloppet's homepage!</a></strong>
+
+	  </div>
+	</div>
+</div>
+    <div class="container-fluid" ng-view></div>
+  <div class="nt-app-links" style="margin:10px 20px">
+    <a href="https://www.raceone.com/redirect" id="download-icon-footer-ios" target="_blank">
+      <img class="download-icon" src="https://www.raceone.com/wp-content/uploads/2016/09/app-store-e1475238488598.png" alt=""></a>
+    <a href="https://www.raceone.com/redirect" id="download-icon-footer-android" target="_blank">
+      <img class="download-icon" src="https://www.raceone.com/wp-content/uploads/2016/09/google-play-e1475238513871.png" alt=""></a>
+  </div>
+
+    <script type="text/javascript" src="scripts/app.js"></script><!-- AddThis Button BEGIN --><div class="addthis_toolbox addthis_default_style addthis_32x32_style">
+        <a class="addthis_button_facebook"></a>
+        <a class="addthis_button_twitter"></a>
+        <a class="addthis_button_linkedin"></a>
+        <a class="addthis_button_email"></a>
+        <a class="addthis_button_print"></a>
+        <a class="addthis_button_textme"></a>
+        <a class="addthis_button_compact"></a>
+    </div>
+    <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5364e093794f9d2f"></script><!-- AddThis Button END --><!--<div class="applinks">
+        <a href="https://itunes.apple.com/se/app/neptron-timing/id709776903" target="_blank"><img class="appstore" alt="Get it on iTunes" src="content/appstore.svg" /></a>
+        <a href="https://play.google.com/store/apps/details?id=se.neptron.timing" target="_blank"><img class="playstore" alt="Get it on Google Play" src="content/playstore.png" /></a>
+    </div>-->
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>There is no table in the HTML sent by the server.
+The table is rendered on the client side by AngularJS. We can check that by looking at the page source in Chrome:
+<img src="../../images/pyppeteer/results_lundaloppet_2018_source.png" alt="Results Lundaloppet 2018 source"></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>How do you parse JavaScript rendered page in Python? Don't we need a browser to run the JavaScript code?
+By googling, I found <a href="https://github.com/kennethreitz/requests-html">Requests-HTML</a> that has JavaScript support!</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Requests-HTML">Requests-HTML<a class="anchor-link" href="#Requests-HTML">¶</a>
+</h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">requests_html</span> <span class="k">import</span> <span class="n">HTMLSession</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">session</span> <span class="o">=</span> <span class="n">HTMLSession</span><span class="p">()</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'http://results.neptron.se/#/lundaloppet2018/?sortOrder=Place&amp;raceId=99&amp;page=0&amp;pageSize=25'</span><span class="p">)</span>
+<span class="n">r</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+<span class="n">table</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">'table'</span><span class="p">,</span> <span class="n">first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">display_html</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">html</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+
+<div class="output_html rendered_html output_subarea ">
+<table>
+<thead><tr>
+<th class="res-favorite"> </th>
+                        <!-- ngRepeat: item in vm.resultsHeader --><th class="res-placeByRace " ng-repeat="item in vm.resultsHeader"><span ng-bind-html="item.value" class="ng-binding">Place<br>(race)</span></th>
+<!-- end ngRepeat: item in vm.resultsHeader --><th class="res-placeByCategory " ng-repeat="item in vm.resultsHeader"><span ng-bind-html="item.value" class="ng-binding">Place<br>(cat)</span></th>
+<!-- end ngRepeat: item in vm.resultsHeader --><th class="res-startNo " ng-repeat="item in vm.resultsHeader"><span ng-bind-html="item.value" class="ng-binding">Bib no</span></th>
+<!-- end ngRepeat: item in vm.resultsHeader --><th class="res-category " ng-repeat="item in vm.resultsHeader"><span ng-bind-html="item.value" class="ng-binding">Category</span></th>
+<!-- end ngRepeat: item in vm.resultsHeader --><th class="res-name " ng-repeat="item in vm.resultsHeader"><span ng-bind-html="item.value" class="ng-binding">Name</span></th>
+<!-- end ngRepeat: item in vm.resultsHeader --><th class="res-flag " ng-repeat="item in vm.resultsHeader"><span ng-bind-html="item.value" class="ng-binding"></span></th>
+<!-- end ngRepeat: item in vm.resultsHeader --><th class="res-association " ng-repeat="item in vm.resultsHeader"><span ng-bind-html="item.value" class="ng-binding">Association</span></th>
+<!-- end ngRepeat: item in vm.resultsHeader --><th class="res-lastSplitPoint " ng-repeat="item in vm.resultsHeader"><span ng-bind-html="item.value" class="ng-binding">Progress</span></th>
+<!-- end ngRepeat: item in vm.resultsHeader --><th class="res-time " ng-repeat="item in vm.resultsHeader"><span ng-bind-html="item.value" class="ng-binding">Time</span></th>
+<!-- end ngRepeat: item in vm.resultsHeader --><th class="res-status " ng-repeat="item in vm.resultsHeader"><span ng-bind-html="item.value" class="ng-binding">Status</span></th>
+<!-- end ngRepeat: item in vm.resultsHeader -->
+                    </tr></thead>
+<tbody>
+<!-- ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="1" class="ng-binding">1</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="1" class="ng-binding">1</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="6922" class="ng-binding">6922</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Hans Larsson" class="ng-binding">Hans Larsson</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="MAI" class="ng-binding">MAI</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="33:22" class="ng-binding">33:22</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="2" class="ng-binding">2</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="2" class="ng-binding">2</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="6514" class="ng-binding">6514</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Filip Helmroth" class="ng-binding">Filip Helmroth</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="IK Lerum Friidrott" class="ng-binding">IK Lerum Friidrott</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="33:37" class="ng-binding">33:37</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="3" class="ng-binding">3</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="3" class="ng-binding">3</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="3920" class="ng-binding">3920</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="David Hartman" class="ng-binding">David Hartman</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Björnstorps IF" class="ng-binding">Björnstorps IF</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="33:39" class="ng-binding">33:39</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="4" class="ng-binding">4</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="4" class="ng-binding">4</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="3926" class="ng-binding">3926</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Henrik Orre" class="ng-binding">Henrik Orre</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Björnstorps IF" class="ng-binding">Björnstorps IF</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="34:24" class="ng-binding">34:24</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="5" class="ng-binding">5</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="5" class="ng-binding">5</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="2666" class="ng-binding">2666</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Jesper Bokefors" class="ng-binding">Jesper Bokefors</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Malmö AI" class="ng-binding">Malmö AI</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="34:51" class="ng-binding">34:51</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="6" class="ng-binding">6</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="6" class="ng-binding">6</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="5729" class="ng-binding">5729</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Juan Negreira" class="ng-binding">Juan Negreira</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Lunds universitet" class="ng-binding">Lunds universitet</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="35:19" class="ng-binding">35:19</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="7" class="ng-binding">7</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="7" class="ng-binding">7</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="3649" class="ng-binding">3649</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Jim Webb" class="ng-binding">Jim Webb</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="   " class="ng-binding">   </div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="35:23" class="ng-binding">35:23</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="8" class="ng-binding">8</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="8" class="ng-binding">8</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="3675" class="ng-binding">3675</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Nils Wetterberg" class="ng-binding">Nils Wetterberg</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Ekmans Löpare i Lund" class="ng-binding">Ekmans Löpare i Lund</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="35:39" class="ng-binding">35:39</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="9" class="ng-binding">9</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="9" class="ng-binding">9</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="4880" class="ng-binding">4880</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Hannes Hjalmarsson" class="ng-binding">Hannes Hjalmarsson</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Lunds kommun" class="ng-binding">Lunds kommun</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="35:41" class="ng-binding">35:41</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="10" class="ng-binding">10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="10" class="ng-binding">10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="6929" class="ng-binding">6929</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Freyi Karlsson" class="ng-binding">Freyi Karlsson</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Ekmans löpare i lund" class="ng-binding">Ekmans löpare i lund</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="35:42" class="ng-binding">35:42</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="11" class="ng-binding">11</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="11" class="ng-binding">11</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="5995" class="ng-binding">5995</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Shijie Xu" class="ng-binding">Shijie Xu</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Lunds universitet" class="ng-binding">Lunds universitet</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="35:43" class="ng-binding">35:43</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="12" class="ng-binding">12</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="12" class="ng-binding">12</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="5276" class="ng-binding">5276</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Stuart Ansell" class="ng-binding">Stuart Ansell</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Lunds universitet" class="ng-binding">Lunds universitet</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="36:02" class="ng-binding">36:02</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="13" class="ng-binding">13</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="13" class="ng-binding">13</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="3917" class="ng-binding">3917</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Christer Friberg" class="ng-binding">Christer Friberg</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Björnstorps IF" class="ng-binding">Björnstorps IF</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="36:15" class="ng-binding">36:15</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="14" class="ng-binding">14</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="14" class="ng-binding">14</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="5647" class="ng-binding">5647</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Roger Lindskog" class="ng-binding">Roger Lindskog</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Lunds universitet" class="ng-binding">Lunds universitet</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="36:15" class="ng-binding">36:15</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="15" class="ng-binding">15</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="15" class="ng-binding">15</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="3616" class="ng-binding">3616</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Andreas Thell" class="ng-binding">Andreas Thell</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Ystads IF Friidrott" class="ng-binding">Ystads IF Friidrott</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="36:20" class="ng-binding">36:20</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="16" class="ng-binding">16</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="16" class="ng-binding">16</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="6382" class="ng-binding">6382</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Tommy Olofsson" class="ng-binding">Tommy Olofsson</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Tetra Pak IF" class="ng-binding">Tetra Pak IF</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="36:20" class="ng-binding">36:20</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="17" class="ng-binding">17</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="17" class="ng-binding">17</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="3183" class="ng-binding">3183</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Kristoffer  Loo" class="ng-binding">Kristoffer  Loo</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="   " class="ng-binding">   </div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="36:36" class="ng-binding">36:36</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="18" class="ng-binding">18</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="18" class="ng-binding">18</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="2664" class="ng-binding">2664</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Alfred Bodenäs" class="ng-binding">Alfred Bodenäs</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Triathlon Syd" class="ng-binding">Triathlon Syd</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="36:44" class="ng-binding">36:44</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="19" class="ng-binding">19</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="19" class="ng-binding">19</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="6979" class="ng-binding">6979</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Daniel Jonsson" class="ng-binding">Daniel Jonsson</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="   " class="ng-binding">   </div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="36:54" class="ng-binding">36:54</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="20" class="ng-binding">20</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="20" class="ng-binding">20</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="4977" class="ng-binding">4977</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Johan Lindgren" class="ng-binding">Johan Lindgren</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Lunds kommun" class="ng-binding">Lunds kommun</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="36:58" class="ng-binding">36:58</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="21" class="ng-binding">21</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="21" class="ng-binding">21</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="3495" class="ng-binding">3495</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Erik Schultz-Eklund" class="ng-binding">Erik Schultz-Eklund</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Agape Lund" class="ng-binding">Agape Lund</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="37:20" class="ng-binding">37:20</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="22" class="ng-binding">22</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="22" class="ng-binding">22</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="3571" class="ng-binding">3571</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Daniel Strandberg" class="ng-binding">Daniel Strandberg</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Malmö AI" class="ng-binding">Malmö AI</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="37:28" class="ng-binding">37:28</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="23" class="ng-binding">23</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="23" class="ng-binding">23</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="3121" class="ng-binding">3121</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Martin Larsson" class="ng-binding">Martin Larsson</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="inQore-part of Qgroup" class="ng-binding">inQore-part of Qgroup</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="37:32" class="ng-binding">37:32</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope even">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="24" class="ng-binding">24</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="24" class="ng-binding">24</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="5955" class="ng-binding">5955</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Johan Vallon-Christersson" class="ng-binding">Johan Vallon-Christersson</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Lunds universitet" class="ng-binding">Lunds universitet</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="37:33" class="ng-binding">37:33</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows --><tr ng-class-odd="'odd'" ng-class-even="'even'" ng-repeat="row in vm.resultsRows" class="ng-scope odd">
+<td class="res-favorite"><div title="Add to favorites" ng-click="vm.toggleFav(row.result)"><span class="glyphicon glyphicon-star-empty"></span></div></td>
+                        <!-- ngRepeat: cell in row.cells --><td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="25" class="ng-binding">25</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="25" class="ng-binding">25</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="6675" class="ng-binding">6675</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="P10" class="ng-binding">P10</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Kristian  Haggärde" class="ng-binding">Kristian  Haggärde</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="" class="ng-binding"></div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Björnstorps IF" class="ng-binding">Björnstorps IF</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finish" class="ng-binding">Finish</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="37:34" class="ng-binding">37:34</div></td>
+<!-- end ngRepeat: cell in row.cells --><td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"><div data-value="Finished" class="ng-binding">Finished</div></td>
+<!-- end ngRepeat: cell in row.cells -->
+                    </tr>
+<!-- end ngRepeat: row in vm.resultsRows -->
+</tbody>
+</table>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Wow! Isn't that magic? We'll explore a bit later how this works.</p>
+<p>What I want to get is all the results, not just the first 25. I tried increasing the <em>pageSize</em> passed in the URL, but that didn't help. Even passing a lower value always returns 25 rows. Not sure how the API is implemented...</p>
+<p>An issue I had with requests-html is that sometimes <code>r.html.find('table', first=True)</code> returned <code>None</code> or an empty table...</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">r</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'http://results.neptron.se/#/lundaloppet2018/?sortOrder=Place&amp;raceId=99&amp;page=63&amp;pageSize=25'</span><span class="p">)</span>
+<span class="n">r</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+<span class="n">table</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">'table'</span><span class="p">,</span> <span class="n">first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">html</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">IndexError</span>                                Traceback (most recent call last)
+<span class="ansi-green-fg">&lt;ipython-input-9-e9d6c036862c&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-intense-fg ansi-bold">      2</span> r<span class="ansi-blue-fg">.</span>html<span class="ansi-blue-fg">.</span>render<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-intense-fg ansi-bold">      3</span> table <span class="ansi-blue-fg">=</span> r<span class="ansi-blue-fg">.</span>html<span class="ansi-blue-fg">.</span>find<span class="ansi-blue-fg">(</span><span class="ansi-blue-fg">'table'</span><span class="ansi-blue-fg">,</span> first<span class="ansi-blue-fg">=</span><span class="ansi-green-fg">True</span><span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg">----&gt; 4</span><span class="ansi-red-fg"> </span>pd<span class="ansi-blue-fg">.</span>read_html<span class="ansi-blue-fg">(</span>table<span class="ansi-blue-fg">.</span>html<span class="ansi-blue-fg">)</span><span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">0</span><span class="ansi-blue-fg">]</span>
+
+<span class="ansi-red-fg">IndexError</span>: list index out of range</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>That's probably a timing issue (the rendering might take longer sometimes). I tried playing with the <code>wait</code> and <code>sleep</code> arguments of <code>r.html.render(wait=1, sleep=1)</code> but couldn't make the problem completetly go away. This is an issue because I don't need just one page but 135.</p>
+<p>I started to look at <a href="https://github.com/kennethreitz/requests-html/blob/master/requests_html.py">requests-html</a> code to see how this was implemented. That's how I discovered <a href="https://github.com/miyakogi/pyppeteer">pyppeteer</a>.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Pyppeteer">Pyppeteer<a class="anchor-link" href="#Pyppeteer">¶</a>
+</h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><a href="https://miyakogi.github.io/pyppeteer/">Pyppeteer</a> is an unofficial Python port of <a href="https://github.com/GoogleChrome/puppeteer">puppeteer</a> JavaScript (headless) chrome/chromium browser automation library.</p>
+<blockquote>
+<p>Puppeteer is a Node library which provides a high-level API to control headless Chrome or Chromium over the DevTools Protocol.</p>
+</blockquote>
+<p>Pyppeteer allows you to do the same from Python.
+So there is no <em>magic</em>. You just let Chromium load and render the page with the latest JavaScript and browser features. This is super powerful.</p>
+<p>The first time you run pyppeteer, it even downloads a recent version of Chromium. So no initial setup is required.</p>
+<p>Pyppeteer is based on <a href="https://docs.python.org/3/library/asyncio.html">asyncio</a>. This is hidden by requests-html that gives you a simple interface but of course less flexibility.</p>
+<p>So let's explore pyppeteer. The first example from the documentation is how to take a screenshot of a page.</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">from</span> <span class="nn">pyppeteer</span> <span class="kn">import</span> <span class="n">launch</span>
+
+<span class="n">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">browser</span> <span class="o">=</span> <span class="n">await</span> <span class="n">launch</span><span class="p">()</span>
+    <span class="n">page</span> <span class="o">=</span> <span class="n">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">newPage</span><span class="p">()</span>
+    <span class="n">await</span> <span class="n">page</span><span class="o">.</span><span class="n">goto</span><span class="p">(</span><span class="s1">'http://example.com'</span><span class="p">)</span>
+    <span class="n">await</span> <span class="n">page</span><span class="o">.</span><span class="n">screenshot</span><span class="p">({</span><span class="s1">'path'</span><span class="p">:</span> <span class="s1">'example.png'</span><span class="p">})</span>
+    <span class="n">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</pre></div>
+<p>Let's try that with our page. Note that I pass the <code>fullPage</code> option otherwise the page is cut.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">from</span> <span class="nn">pyppeteer</span> <span class="k">import</span> <span class="n">launch</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">browser</span> <span class="o">=</span> <span class="k">await</span> <span class="n">launch</span><span class="p">()</span>
+    <span class="n">page</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">newPage</span><span class="p">()</span>
+    <span class="k">await</span> <span class="n">page</span><span class="o">.</span><span class="n">goto</span><span class="p">(</span><span class="s1">'http://results.neptron.se/#/lundaloppet2018/?sortOrder=Place&amp;raceId=99&amp;page=0&amp;pageSize=25'</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">page</span><span class="o">.</span><span class="n">screenshot</span><span class="p">({</span><span class="s1">'path'</span><span class="p">:</span> <span class="s1">'pyppeteer_screenshot.png'</span><span class="p">,</span> <span class="s1">'fullPage'</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+    <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Here is the screenshot taken:
+<img src="../../images/pyppeteer/pyppeteer_screenshot.png" alt="Pyppeteer screenshot"></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Nice, no?
+This example showed us how to load a page:</p>
+<ul>
+<li>create a bowser</li>
+<li>create a new page</li>
+<li>goto a page</li>
+</ul>
+<p>There are several functions that can be used to retrieve elements from the page, like <a href="https://miyakogi.github.io/pyppeteer/reference.html#pyppeteer.page.Page.querySelector">querySelector</a> or <a href="https://miyakogi.github.io/pyppeteer/reference.html#pyppeteer.page.Page.querySelectorEval">querySelectorEval</a>. This is the function we gonna use to retrieve the table. We use the <code>table</code> selector and apply the <code>outerHTML</code> function to get the HTML representation of the table:</p>
+<div class="highlight"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="n">await</span> <span class="n">page</span><span class="o">.</span><span class="n">querySelectorEval</span><span class="p">(</span><span class="s1">'table'</span><span class="p">,</span> <span class="s1">'(element) =&gt; element.outerHTML'</span><span class="p">)</span>
+</pre></div>
+<p>We can then pass that to pandas.</p>
+<p>One thing we wanted is to wait for the table to be rendered before trying to retrieve it. We can use the <a href="https://miyakogi.github.io/pyppeteer/reference.html#pyppeteer.page.Page.waitForSelector">waitForSelector</a> function for that.
+I initially tried to use the <code>table</code> selector but that sometimes returned an empty table. So I chose a class of one row element <code>td.res-startNo</code> to be sure that the table was rendered.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">pyppeteer</span> <span class="k">import</span> <span class="n">launch</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">browser</span> <span class="o">=</span> <span class="k">await</span> <span class="n">launch</span><span class="p">()</span>
+    <span class="n">page</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">newPage</span><span class="p">()</span>
+    <span class="k">await</span> <span class="n">page</span><span class="o">.</span><span class="n">goto</span><span class="p">(</span><span class="s1">'http://results.neptron.se/#/lundaloppet2018/?sortOrder=Place&amp;raceId=99&amp;page=0&amp;pageSize=25'</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">page</span><span class="o">.</span><span class="n">waitForSelector</span><span class="p">(</span><span class="s1">'td.res-startNo'</span><span class="p">)</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="k">await</span> <span class="n">page</span><span class="o">.</span><span class="n">querySelectorEval</span><span class="p">(</span><span class="s1">'table'</span><span class="p">,</span> <span class="s1">'(element) =&gt; element.outerHTML'</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="n">table</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+<span class="n">df</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[11]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead><tr style="text-align: right;">
+<th></th>
+      <th>Unnamed: 0</th>
+      <th>Place(race)</th>
+      <th>Place(cat)</th>
+      <th>Bib no</th>
+      <th>Category</th>
+      <th>Name</th>
+      <th>Unnamed: 6</th>
+      <th>Association</th>
+      <th>Progress</th>
+      <th>Time</th>
+      <th>Status</th>
+    </tr></thead>
+<tbody>
+<tr>
+<th>0</th>
+      <td>NaN</td>
+      <td>1</td>
+      <td>1</td>
+      <td>6922</td>
+      <td>P10</td>
+      <td>Hans Larsson</td>
+      <td>NaN</td>
+      <td>MAI</td>
+      <td>Finish</td>
+      <td>33:22</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>1</th>
+      <td>NaN</td>
+      <td>2</td>
+      <td>2</td>
+      <td>6514</td>
+      <td>P10</td>
+      <td>Filip Helmroth</td>
+      <td>NaN</td>
+      <td>IK Lerum Friidrott</td>
+      <td>Finish</td>
+      <td>33:37</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>2</th>
+      <td>NaN</td>
+      <td>3</td>
+      <td>3</td>
+      <td>3920</td>
+      <td>P10</td>
+      <td>David Hartman</td>
+      <td>NaN</td>
+      <td>Björnstorps IF</td>
+      <td>Finish</td>
+      <td>33:39</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>3</th>
+      <td>NaN</td>
+      <td>4</td>
+      <td>4</td>
+      <td>3926</td>
+      <td>P10</td>
+      <td>Henrik Orre</td>
+      <td>NaN</td>
+      <td>Björnstorps IF</td>
+      <td>Finish</td>
+      <td>34:24</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>4</th>
+      <td>NaN</td>
+      <td>5</td>
+      <td>5</td>
+      <td>2666</td>
+      <td>P10</td>
+      <td>Jesper Bokefors</td>
+      <td>NaN</td>
+      <td>Malmö AI</td>
+      <td>Finish</td>
+      <td>34:51</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>5</th>
+      <td>NaN</td>
+      <td>6</td>
+      <td>6</td>
+      <td>5729</td>
+      <td>P10</td>
+      <td>Juan Negreira</td>
+      <td>NaN</td>
+      <td>Lunds universitet</td>
+      <td>Finish</td>
+      <td>35:19</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>6</th>
+      <td>NaN</td>
+      <td>7</td>
+      <td>7</td>
+      <td>3649</td>
+      <td>P10</td>
+      <td>Jim Webb</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Finish</td>
+      <td>35:23</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>7</th>
+      <td>NaN</td>
+      <td>8</td>
+      <td>8</td>
+      <td>3675</td>
+      <td>P10</td>
+      <td>Nils Wetterberg</td>
+      <td>NaN</td>
+      <td>Ekmans Löpare i Lund</td>
+      <td>Finish</td>
+      <td>35:39</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>8</th>
+      <td>NaN</td>
+      <td>9</td>
+      <td>9</td>
+      <td>4880</td>
+      <td>P10</td>
+      <td>Hannes Hjalmarsson</td>
+      <td>NaN</td>
+      <td>Lunds kommun</td>
+      <td>Finish</td>
+      <td>35:41</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>9</th>
+      <td>NaN</td>
+      <td>10</td>
+      <td>10</td>
+      <td>6929</td>
+      <td>P10</td>
+      <td>Freyi Karlsson</td>
+      <td>NaN</td>
+      <td>Ekmans löpare i lund</td>
+      <td>Finish</td>
+      <td>35:42</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>10</th>
+      <td>NaN</td>
+      <td>11</td>
+      <td>11</td>
+      <td>5995</td>
+      <td>P10</td>
+      <td>Shijie Xu</td>
+      <td>NaN</td>
+      <td>Lunds universitet</td>
+      <td>Finish</td>
+      <td>35:43</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>11</th>
+      <td>NaN</td>
+      <td>12</td>
+      <td>12</td>
+      <td>5276</td>
+      <td>P10</td>
+      <td>Stuart Ansell</td>
+      <td>NaN</td>
+      <td>Lunds universitet</td>
+      <td>Finish</td>
+      <td>36:02</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>12</th>
+      <td>NaN</td>
+      <td>13</td>
+      <td>13</td>
+      <td>3917</td>
+      <td>P10</td>
+      <td>Christer Friberg</td>
+      <td>NaN</td>
+      <td>Björnstorps IF</td>
+      <td>Finish</td>
+      <td>36:15</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>13</th>
+      <td>NaN</td>
+      <td>14</td>
+      <td>14</td>
+      <td>5647</td>
+      <td>P10</td>
+      <td>Roger Lindskog</td>
+      <td>NaN</td>
+      <td>Lunds universitet</td>
+      <td>Finish</td>
+      <td>36:15</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>14</th>
+      <td>NaN</td>
+      <td>15</td>
+      <td>15</td>
+      <td>3616</td>
+      <td>P10</td>
+      <td>Andreas Thell</td>
+      <td>NaN</td>
+      <td>Ystads IF Friidrott</td>
+      <td>Finish</td>
+      <td>36:20</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>15</th>
+      <td>NaN</td>
+      <td>16</td>
+      <td>16</td>
+      <td>6382</td>
+      <td>P10</td>
+      <td>Tommy Olofsson</td>
+      <td>NaN</td>
+      <td>Tetra Pak IF</td>
+      <td>Finish</td>
+      <td>36:20</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>16</th>
+      <td>NaN</td>
+      <td>17</td>
+      <td>17</td>
+      <td>3183</td>
+      <td>P10</td>
+      <td>Kristoffer Loo</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Finish</td>
+      <td>36:36</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>17</th>
+      <td>NaN</td>
+      <td>18</td>
+      <td>18</td>
+      <td>2664</td>
+      <td>P10</td>
+      <td>Alfred Bodenäs</td>
+      <td>NaN</td>
+      <td>Triathlon Syd</td>
+      <td>Finish</td>
+      <td>36:44</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>18</th>
+      <td>NaN</td>
+      <td>19</td>
+      <td>19</td>
+      <td>6979</td>
+      <td>P10</td>
+      <td>Daniel Jonsson</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Finish</td>
+      <td>36:54</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>19</th>
+      <td>NaN</td>
+      <td>20</td>
+      <td>20</td>
+      <td>4977</td>
+      <td>P10</td>
+      <td>Johan Lindgren</td>
+      <td>NaN</td>
+      <td>Lunds kommun</td>
+      <td>Finish</td>
+      <td>36:58</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>20</th>
+      <td>NaN</td>
+      <td>21</td>
+      <td>21</td>
+      <td>3495</td>
+      <td>P10</td>
+      <td>Erik Schultz-Eklund</td>
+      <td>NaN</td>
+      <td>Agape Lund</td>
+      <td>Finish</td>
+      <td>37:20</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>21</th>
+      <td>NaN</td>
+      <td>22</td>
+      <td>22</td>
+      <td>3571</td>
+      <td>P10</td>
+      <td>Daniel Strandberg</td>
+      <td>NaN</td>
+      <td>Malmö AI</td>
+      <td>Finish</td>
+      <td>37:28</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>22</th>
+      <td>NaN</td>
+      <td>23</td>
+      <td>23</td>
+      <td>3121</td>
+      <td>P10</td>
+      <td>Martin Larsson</td>
+      <td>NaN</td>
+      <td>inQore-part of Qgroup</td>
+      <td>Finish</td>
+      <td>37:32</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>23</th>
+      <td>NaN</td>
+      <td>24</td>
+      <td>24</td>
+      <td>5955</td>
+      <td>P10</td>
+      <td>Johan Vallon-Christersson</td>
+      <td>NaN</td>
+      <td>Lunds universitet</td>
+      <td>Finish</td>
+      <td>37:33</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>24</th>
+      <td>NaN</td>
+      <td>25</td>
+      <td>25</td>
+      <td>6675</td>
+      <td>P10</td>
+      <td>Kristian Haggärde</td>
+      <td>NaN</td>
+      <td>Björnstorps IF</td>
+      <td>Finish</td>
+      <td>37:34</td>
+      <td>Finished</td>
+    </tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>That's a bit more code than with requests-HTML but we have finer control.
+Let's refactor that code to retrieve all the results of the race.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [12]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">pyppeteer</span> <span class="k">import</span> <span class="n">launch</span>
+
+<span class="n">URL</span> <span class="o">=</span> <span class="s1">'http://results.neptron.se/#/lundaloppet2018/results?sortOrder=Place&amp;raceId=99&amp;pageSize=25&amp;page=</span><span class="si">{}</span><span class="s1">'</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">get_page</span><span class="p">(</span><span class="n">browser</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">selector</span><span class="p">):</span>
+    <span class="sd">"""Return a page after waiting for the given selector"""</span>
+    <span class="n">page</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">newPage</span><span class="p">()</span>
+    <span class="k">await</span> <span class="n">page</span><span class="o">.</span><span class="n">goto</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">page</span><span class="o">.</span><span class="n">waitForSelector</span><span class="p">(</span><span class="n">selector</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">page</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">get_num_pages</span><span class="p">(</span><span class="n">browser</span><span class="p">):</span>
+    <span class="sd">"""Return the total number of pages available"""</span>
+    <span class="n">page</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_page</span><span class="p">(</span><span class="n">browser</span><span class="p">,</span> <span class="n">URL</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="s1">'div.ng-isolate-scope'</span><span class="p">)</span>
+    <span class="n">num_pages</span> <span class="o">=</span> <span class="k">await</span> <span class="n">page</span><span class="o">.</span><span class="n">querySelectorEval</span><span class="p">(</span>
+        <span class="s1">'div.ng-isolate-scope'</span><span class="p">,</span>
+        <span class="s1">'(element) =&gt; element.getAttribute("data-num-pages")'</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_pages</span><span class="p">)</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">get_table</span><span class="p">(</span><span class="n">browser</span><span class="p">,</span> <span class="n">page_nb</span><span class="p">):</span>
+    <span class="sd">"""Return the table from the given page number as a pandas dataframe"""</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">'Get table from page </span><span class="si">{page_nb}</span><span class="s1">'</span><span class="p">)</span>
+    <span class="n">page</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_page</span><span class="p">(</span><span class="n">browser</span><span class="p">,</span> <span class="n">URL</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page_nb</span><span class="p">),</span> <span class="s1">'td.res-startNo'</span><span class="p">)</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="k">await</span> <span class="n">page</span><span class="o">.</span><span class="n">querySelectorEval</span><span class="p">(</span><span class="s1">'table'</span><span class="p">,</span> <span class="s1">'(element) =&gt; element.outerHTML'</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="n">table</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">get_results</span><span class="p">():</span>
+    <span class="sd">"""Return all the results as a pandas dataframe"""</span>
+    <span class="n">browser</span> <span class="o">=</span> <span class="k">await</span> <span class="n">launch</span><span class="p">()</span>
+    <span class="n">num_pages</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_num_pages</span><span class="p">(</span><span class="n">browser</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">'Number of pages: </span><span class="si">{num_pages}</span><span class="s1">'</span><span class="p">)</span>
+    <span class="c1"># Python 3.6 asynchronous comprehensions! Nice!</span>
+    <span class="n">dfs</span> <span class="o">=</span> <span class="p">[</span><span class="k">await</span> <span class="n">get_table</span><span class="p">(</span><span class="n">browser</span><span class="p">,</span> <span class="n">page_nb</span><span class="p">)</span> <span class="k">for</span> <span class="n">page_nb</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_pages</span><span class="p">)]</span>
+    <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dfs</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This code could be made a bit more generic but that's good enough for what I want.
+I think it's quite straightforward. We first get the total number of pages and then load each page to retrieve the table.
+Once done, we just have to concatenate all those tables in one.</p>
+<p>One thing to note is the use of Python <a href="https://www.python.org/dev/peps/pep-0530/">asynchronous comprehensions</a>. This is a Python 3.6 feature and makes it really Pythonic. It just works as it would with synchronous functions:</p>
+<div class="highlight"><pre><span></span><span class="n">dfs</span> <span class="o">=</span> <span class="p">[</span><span class="n">await</span> <span class="n">get_table</span><span class="p">(</span><span class="n">browser</span><span class="p">,</span> <span class="n">page_nb</span><span class="p">)</span> <span class="k">for</span> <span class="n">page_nb</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_pages</span><span class="p">)]</span>
+</pre></div>
+<p>Let's run that code!</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">get_results</span><span class="p">())</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Number of pages: 115
+Get table from page 0
+Get table from page 1
+Get table from page 2
+Get table from page 3
+Get table from page 4
+Get table from page 5
+Get table from page 6
+Get table from page 7
+Get table from page 8
+Get table from page 9
+Get table from page 10
+Get table from page 11
+Get table from page 12
+Get table from page 13
+Get table from page 14
+Get table from page 15
+Get table from page 16
+Get table from page 17
+Get table from page 18
+Get table from page 19
+Get table from page 20
+Get table from page 21
+Get table from page 22
+Get table from page 23
+Get table from page 24
+Get table from page 25
+Get table from page 26
+Get table from page 27
+Get table from page 28
+Get table from page 29
+Get table from page 30
+Get table from page 31
+Get table from page 32
+Get table from page 33
+Get table from page 34
+Get table from page 35
+Get table from page 36
+Get table from page 37
+Get table from page 38
+Get table from page 39
+Get table from page 40
+Get table from page 41
+Get table from page 42
+Get table from page 43
+Get table from page 44
+Get table from page 45
+Get table from page 46
+Get table from page 47
+Get table from page 48
+Get table from page 49
+Get table from page 50
+Get table from page 51
+Get table from page 52
+Get table from page 53
+Get table from page 54
+Get table from page 55
+Get table from page 56
+Get table from page 57
+Get table from page 58
+Get table from page 59
+Get table from page 60
+Get table from page 61
+Get table from page 62
+Get table from page 63
+Get table from page 64
+Get table from page 65
+Get table from page 66
+Get table from page 67
+Get table from page 68
+Get table from page 69
+Get table from page 70
+Get table from page 71
+Get table from page 72
+Get table from page 73
+Get table from page 74
+Get table from page 75
+Get table from page 76
+Get table from page 77
+Get table from page 78
+Get table from page 79
+Get table from page 80
+Get table from page 81
+Get table from page 82
+Get table from page 83
+Get table from page 84
+Get table from page 85
+Get table from page 86
+Get table from page 87
+Get table from page 88
+Get table from page 89
+Get table from page 90
+Get table from page 91
+Get table from page 92
+Get table from page 93
+Get table from page 94
+Get table from page 95
+Get table from page 96
+Get table from page 97
+Get table from page 98
+Get table from page 99
+Get table from page 100
+Get table from page 101
+Get table from page 102
+Get table from page 103
+Get table from page 104
+Get table from page 105
+Get table from page 106
+Get table from page 107
+Get table from page 108
+Get table from page 109
+Get table from page 110
+Get table from page 111
+Get table from page 112
+Get table from page 113
+Get table from page 114
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>That's it! We got all the results from the Lundaloppet 2018 in a nice pandas DataFrame.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[14]:</div>
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>2872</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [15]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[15]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead><tr style="text-align: right;">
+<th></th>
+      <th>Unnamed: 0</th>
+      <th>Place(race)</th>
+      <th>Place(cat)</th>
+      <th>Bib no</th>
+      <th>Category</th>
+      <th>Name</th>
+      <th>Unnamed: 6</th>
+      <th>Association</th>
+      <th>Progress</th>
+      <th>Time</th>
+      <th>Status</th>
+    </tr></thead>
+<tbody>
+<tr>
+<th>0</th>
+      <td>NaN</td>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>6922</td>
+      <td>P10</td>
+      <td>Hans Larsson</td>
+      <td>NaN</td>
+      <td>MAI</td>
+      <td>Finish</td>
+      <td>33:22</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>1</th>
+      <td>NaN</td>
+      <td>2.0</td>
+      <td>2.0</td>
+      <td>6514</td>
+      <td>P10</td>
+      <td>Filip Helmroth</td>
+      <td>NaN</td>
+      <td>IK Lerum Friidrott</td>
+      <td>Finish</td>
+      <td>33:37</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>2</th>
+      <td>NaN</td>
+      <td>3.0</td>
+      <td>3.0</td>
+      <td>3920</td>
+      <td>P10</td>
+      <td>David Hartman</td>
+      <td>NaN</td>
+      <td>Björnstorps IF</td>
+      <td>Finish</td>
+      <td>33:39</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>3</th>
+      <td>NaN</td>
+      <td>4.0</td>
+      <td>4.0</td>
+      <td>3926</td>
+      <td>P10</td>
+      <td>Henrik Orre</td>
+      <td>NaN</td>
+      <td>Björnstorps IF</td>
+      <td>Finish</td>
+      <td>34:24</td>
+      <td>Finished</td>
+    </tr>
+<tr>
+<th>4</th>
+      <td>NaN</td>
+      <td>5.0</td>
+      <td>5.0</td>
+      <td>2666</td>
+      <td>P10</td>
+      <td>Jesper Bokefors</td>
+      <td>NaN</td>
+      <td>Malmö AI</td>
+      <td>Finish</td>
+      <td>34:51</td>
+      <td>Finished</td>
+    </tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [16]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">tail</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+<div class="prompt output_prompt">Out[16]:</div>
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead><tr style="text-align: right;">
+<th></th>
+      <th>Unnamed: 0</th>
+      <th>Place(race)</th>
+      <th>Place(cat)</th>
+      <th>Bib no</th>
+      <th>Category</th>
+      <th>Name</th>
+      <th>Unnamed: 6</th>
+      <th>Association</th>
+      <th>Progress</th>
+      <th>Time</th>
+      <th>Status</th>
+    </tr></thead>
+<tbody>
+<tr>
+<th>2867</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>6855</td>
+      <td>T10</td>
+      <td>porntepin sooksaengprasit</td>
+      <td>NaN</td>
+      <td>Lunds universitet</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Not started</td>
+    </tr>
+<tr>
+<th>2868</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>6857</td>
+      <td>P10</td>
+      <td>Gabriel Teku</td>
+      <td>NaN</td>
+      <td>Lunds universitet</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Not started</td>
+    </tr>
+<tr>
+<th>2869</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>6888</td>
+      <td>P10</td>
+      <td>Viktor Karlsson</td>
+      <td>NaN</td>
+      <td>Genarps if</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Not started</td>
+    </tr>
+<tr>
+<th>2870</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>6892</td>
+      <td>P10</td>
+      <td>Emil Larsson</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Not started</td>
+    </tr>
+<tr>
+<th>2871</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>6893</td>
+      <td>P10</td>
+      <td>Göran Larsson</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Not started</td>
+    </tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Summary">Summary<a class="anchor-link" href="#Summary">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>With frameworks like <a href="https://angularjs.org">AngularJS</a>, <a href="https://reactjs.org">React</a>, <a href="https://vuejs.org">Vue.js</a>... more and more websites use client-side rendering. To parse those websites, you can't just request HTML from the server. Parsing requires to run some JavaScript.</p>
+<p><a href="https://miyakogi.github.io/pyppeteer/">Pyppeteer</a> makes that possible. Thanks to <a href="https://chromium.googlesource.com/chromium/src/+/lkgr/headless/README.md">Headless Chomium</a>, it gives you access to the full power of a browser from Python. I find that really impressive!</p>
+<p>I tried to use <a href="https://www.seleniumhq.org">Selenium</a> in the past but didn't find it very easy to start with. That wasn't the case with Pyppeteer. To be fair, it was a while ago and both projects are quite different. It's not just about browser automation. Selenium allows you to perform cross browser testing. Pyppeteer is limited to Chrome/Chromium.
+Anyway, I'll probably look more at Pyppeteer for web application testing.</p>
+<p>For simple tasks, <a href="https://github.com/kennethreitz/requests-html">Requests-HTML</a> is a nice wrapper and gives you a simple API. If you want more control, use directly Pyppeteer.</p>
+<p>One last note. To run this code in a Jupyter notebook, you should use tornado 4. asyncio code doesn't play well with ipython and tornado 5. See this Github issue: <a href="https://github.com/ipython/ipython/issues/11030">asyncio will be running by default with tornado 5</a>. There is some <a href="https://github.com/ipython/ipython/pull/11155">work in progress</a> for a nice integration.</p>
+<p>What about the Lundaloppet results you might ask? I'll explore them in another post!</p>
+
+</div>
+</div>
+</div>
+    </div>
+  </div>
+
+    </div>
+    <aside class="postpromonav"><nav><ul itemprop="keywords" class="tags">
+<li><a class="tag p-category" href="../../categories/javascript/" rel="tag">javascript</a></li>
+            <li><a class="tag p-category" href="../../categories/pandas/" rel="tag">pandas</a></li>
+            <li><a class="tag p-category" href="../../categories/pyppeteer/" rel="tag">pyppeteer</a></li>
+            <li><a class="tag p-category" href="../../categories/python/" rel="tag">python</a></li>
+            <li><a class="tag p-category" href="../../categories/request-html/" rel="tag">request-html</a></li>
+            <li><a class="tag p-category" href="../../categories/requests/" rel="tag">requests</a></li>
+        </ul>
+<ul class="pager hidden-print">
+<li class="previous">
+                <a href="../parsing-html-tables-in-python-with-pandas/" rel="prev" title="Parsing HTML Tables in Python with pandas">Previous post</a>
+            </li>
+        </ul></nav></aside><section class="comments hidden-print"><h2>Comments</h2>
+        
+        
+        <div id="disqus_thread"></div>
+        <script>
+        var disqus_shortname ="tchutchut",
+            disqus_url="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/",
+        disqus_title="Parsing JavaScript rendered pages in Python with pyppeteer",
+        disqus_identifier="cache/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer.html",
+        disqus_config = function () {
+            this.language = "en";
+        };
+        (function() {
+            var dsq = document.createElement('script'); dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script><noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a>
+</noscript>
+    <a href="https://disqus.com" class="dsq-brlink" rel="nofollow">Comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+        </section><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity="sha256-SDRP1VVYu+tgAGKhddBSl5+ezofHKZeI+OzxakbIe/Y=" crossorigin="anonymous"></script><script type="text/x-mathjax-config">
+        MathJax.Hub.Config({tex2jax: {inlineMath: [['$latex ','$'], ['\\(','\\)']]}});
+        </script></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script>
+</div>
+        <!--End of body content-->
+
+        <footer id="footer">
+            Contents © 2018         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
+        </footer>
+</div>
+</div>
+
+
+            <script src="../../assets/js/all-nocdn.js"></script><script>$('a.image-reference:not(.islink) img:not(.islink)').parent().colorbox({rel:"gal",maxWidth:"100%",maxHeight:"100%",scalePhotos:true});</script><!-- fancy dates --><script>
+    moment.locale("en");
+    fancydates(0, "YYYY-MM-DD HH:mm");
+    </script><!-- end fancy dates --><script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-99836987-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+</body>
+</html>
