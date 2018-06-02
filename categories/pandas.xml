@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0"><channel><title>Tchut-Tchut Blog (Posts about pandas)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link type="application/rss+xml" rel="self" href="http://beenje.github.io/blog/categories/pandas.xml"></atom:link><language>en</language><lastBuildDate>Sat, 02 Jun 2018 22:08:05 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Parsing JavaScript rendered pages in Python with pyppeteer</title><link>http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div tabindex="-1" id="notebook" class="border-box-sizing"&gt;
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about pandas)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/pandas.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Sat, 02 Jun 2018 22:18:23 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Parsing JavaScript rendered pages in Python with pyppeteer</title><link>http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div tabindex="-1" id="notebook" class="border-box-sizing"&gt;
     &lt;div class="container" id="notebook-container"&gt;
 
 &lt;div class="cell border-box-sizing text_cell rendered"&gt;
@@ -602,7 +602,7 @@ So there is no &lt;em&gt;magic&lt;/em&gt;. You just let Chromium load and render
 &lt;p&gt;Nice, no?
 This example showed us how to load a page:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;create a bowser&lt;/li&gt;
+&lt;li&gt;create a browser&lt;/li&gt;
 &lt;li&gt;create a new page&lt;/li&gt;
 &lt;li&gt;goto a page&lt;/li&gt;
 &lt;/ul&gt;
