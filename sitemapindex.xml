@@ -6,8 +6,16 @@
     xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
                         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
  <sitemap>
+  <loc>http://beenje.github.io/blog/categories/aiohttp.xml</loc>
+  <lastmod>2018-09-17T20:40:00Z</lastmod>
+ </sitemap>
+ <sitemap>
   <loc>http://beenje.github.io/blog/categories/ajax.xml</loc>
   <lastmod>2018-03-31T18:53:00Z</lastmod>
+ </sitemap>
+ <sitemap>
+  <loc>http://beenje.github.io/blog/categories/altair.xml</loc>
+  <lastmod>2018-09-11T20:57:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/ansible.xml</loc>
@@ -20,6 +28,10 @@
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/bash.xml</loc>
   <lastmod>2018-03-31T18:53:00Z</lastmod>
+ </sitemap>
+ <sitemap>
+  <loc>http://beenje.github.io/blog/categories/bot.xml</loc>
+  <lastmod>2018-09-17T20:40:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/cat_docker.xml</loc>
@@ -43,7 +55,7 @@
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/cat_python.xml</loc>
-  <lastmod>2018-05-29T21:00:00Z</lastmod>
+  <lastmod>2018-09-17T20:45:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/ci.xml</loc>
@@ -70,12 +82,16 @@
   <lastmod>2018-04-04T21:05:00Z</lastmod>
  </sitemap>
  <sitemap>
+  <loc>http://beenje.github.io/blog/categories/gidgetlab.xml</loc>
+  <lastmod>2018-09-17T20:40:00Z</lastmod>
+ </sitemap>
+ <sitemap>
   <loc>http://beenje.github.io/blog/categories/git.xml</loc>
   <lastmod>2018-03-31T18:53:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/gitlab.xml</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2018-09-17T20:40:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/gui.xml</loc>
@@ -103,7 +119,7 @@
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/javascript.xml</loc>
-  <lastmod>2018-06-02T21:55:00Z</lastmod>
+  <lastmod>2018-09-11T20:57:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/kodi.xml</loc>
@@ -135,7 +151,7 @@
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/pandas.xml</loc>
-  <lastmod>2018-06-02T21:55:00Z</lastmod>
+  <lastmod>2018-09-17T20:45:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/pi.xml</loc>
@@ -143,11 +159,11 @@
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/pyppeteer.xml</loc>
-  <lastmod>2018-06-02T21:55:00Z</lastmod>
+  <lastmod>2018-09-11T20:57:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/python.xml</loc>
-  <lastmod>2018-06-02T21:55:00Z</lastmod>
+  <lastmod>2018-09-17T20:45:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/redis.xml</loc>
@@ -155,11 +171,11 @@
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/request-html.xml</loc>
-  <lastmod>2018-06-02T21:55:00Z</lastmod>
+  <lastmod>2018-09-11T20:57:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/requests.xml</loc>
-  <lastmod>2018-06-02T21:55:00Z</lastmod>
+  <lastmod>2018-09-11T20:57:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/categories/rq.xml</loc>
@@ -203,10 +219,10 @@
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/rss.xml</loc>
-  <lastmod>2018-06-02T21:55:00Z</lastmod>
+  <lastmod>2018-09-17T20:45:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/sitemap.xml</loc>
-  <lastmod>2018-06-02T21:55:00Z</lastmod>
+  <lastmod>2018-09-17T20:45:00Z</lastmod>
  </sitemap>
 </sitemapindex>

@@ -13,6 +13,7 @@
 <link rel="canonical" href="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/">
 <!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><meta name="author" content="Benjamin Bertrand">
 <link rel="prev" href="../parsing-html-tables-in-python-with-pandas/" title="Parsing HTML Tables in Python with pandas" type="text/html">
+<link rel="next" href="../building-a-gitlab-bot-using-gidgetlab-and-aiohttp/" title="Building a GitLab bot using gidgetlab and aiohttp" type="text/html">
 <meta property="og:site_name" content="Tchut-Tchut Blog">
 <meta property="og:title" content="Parsing JavaScript rendered pages in Python with pyppeteer">
 <meta property="og:url" content="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/">
@@ -1959,6 +1960,29 @@ Get table from page 114
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's save the result to a csv file</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [17]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">'lundaloppet2018.csv'</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Summary">Summary<a class="anchor-link" href="#Summary">¶</a>
 </h2>
 </div>
@@ -1995,6 +2019,9 @@ Anyway, I'll probably look more at Pyppeteer for web application testing.</p>
 <ul class="pager hidden-print">
 <li class="previous">
                 <a href="../parsing-html-tables-in-python-with-pandas/" rel="prev" title="Parsing HTML Tables in Python with pandas">Previous post</a>
+            </li>
+            <li class="next">
+                <a href="../building-a-gitlab-bot-using-gidgetlab-and-aiohttp/" rel="next" title="Building a GitLab bot using gidgetlab and aiohttp">Next post</a>
             </li>
         </ul></nav></aside><section class="comments hidden-print"><h2>Comments</h2>
         

@@ -7,7 +7,7 @@
                         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
  <url>
   <loc>http://beenje.github.io/blog/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2018-09-11T20:57:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/2016/</loc>
@@ -23,15 +23,23 @@
  </url>
  <url>
   <loc>http://beenje.github.io/blog/archive.html</loc>
-  <lastmod>2018-05-29T21:00:00Z</lastmod>
+  <lastmod>2018-09-17T20:45:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/</loc>
-  <lastmod>2018-06-02T21:55:00Z</lastmod>
+  <lastmod>2018-09-11T20:57:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/aiohttp/</loc>
+  <lastmod>2018-09-11T20:57:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/ajax/</loc>
   <lastmod>2018-03-31T18:53:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/altair/</loc>
+  <lastmod>2018-09-11T20:57:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/ansible/</loc>
@@ -44,6 +52,10 @@
  <url>
   <loc>http://beenje.github.io/blog/categories/bash/</loc>
   <lastmod>2018-03-31T18:53:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/bot/</loc>
+  <lastmod>2018-09-11T20:57:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/cat_docker/</loc>
@@ -92,6 +104,10 @@
  <url>
   <loc>http://beenje.github.io/blog/categories/flask/</loc>
   <lastmod>2018-03-31T18:53:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/gidgetlab/</loc>
+  <lastmod>2018-09-11T20:57:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/git/</loc>
@@ -227,11 +243,19 @@
  </url>
  <url>
   <loc>http://beenje.github.io/blog/index-1.html</loc>
-  <lastmod>2018-05-29T21:00:00Z</lastmod>
+  <lastmod>2018-09-11T20:57:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/index-2.html</loc>
+  <lastmod>2018-09-17T20:45:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/listings/</loc>
   <lastmod>2018-03-31T18:53:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp/</loc>
+  <lastmod>2018-09-11T20:57:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/compile-and-install-kodi-on-ipad-without-jailbreak/</loc>
@@ -256,6 +280,10 @@
  <url>
   <loc>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</loc>
   <lastmod>2018-03-31T18:53:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/posts/exploring-data-with-pandas-and-altair/</loc>
+  <lastmod>2018-09-11T20:57:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/gitlab-ci-and-conda/</loc>
