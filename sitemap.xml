@@ -23,11 +23,11 @@
  </url>
  <url>
   <loc>http://beenje.github.io/blog/archive.html</loc>
-  <lastmod>2018-09-17T20:45:00Z</lastmod>
+  <lastmod>2018-09-18T20:23:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/</loc>
-  <lastmod>2018-09-11T20:57:00Z</lastmod>
+  <lastmod>2018-09-18T20:03:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/aiohttp/</loc>
@@ -36,10 +36,6 @@
  <url>
   <loc>http://beenje.github.io/blog/categories/ajax/</loc>
   <lastmod>2018-03-31T18:53:00Z</lastmod>
- </url>
- <url>
-  <loc>http://beenje.github.io/blog/categories/altair/</loc>
-  <lastmod>2018-09-11T20:57:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/ansible/</loc>
@@ -76,6 +72,10 @@
  <url>
   <loc>http://beenje.github.io/blog/categories/cat_pi/</loc>
   <lastmod>2018-03-31T18:53:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/cat_posts/</loc>
+  <lastmod>2018-09-18T20:02:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/cat_python/</loc>
@@ -243,11 +243,11 @@
  </url>
  <url>
   <loc>http://beenje.github.io/blog/index-1.html</loc>
-  <lastmod>2018-09-11T20:57:00Z</lastmod>
+  <lastmod>2018-09-18T20:23:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/index-2.html</loc>
-  <lastmod>2018-09-17T20:45:00Z</lastmod>
+  <lastmod>2018-09-18T20:23:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/listings/</loc>
@@ -280,10 +280,6 @@
  <url>
   <loc>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</loc>
   <lastmod>2018-03-31T18:53:00Z</lastmod>
- </url>
- <url>
-  <loc>http://beenje.github.io/blog/posts/exploring-data-with-pandas-and-altair/</loc>
-  <lastmod>2018-09-11T20:57:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/gitlab-ci-and-conda/</loc>

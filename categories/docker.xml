@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>Tchut-Tchut Blog (Posts about docker)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/docker.xml" type="application/rss+xml" rel="self"></atom:link><language>en</language><lastBuildDate>Sat, 31 Mar 2018 18:53:13 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Experimenting with asyncio on a Raspberry Pi</title><link>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In a previous post, I described how I built a &lt;a class="reference external" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display"&gt;LEGO Macintosh Classic with
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about docker)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/docker.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Tue, 18 Sep 2018 20:09:32 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Experimenting with asyncio on a Raspberry Pi</title><link>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In a previous post, I described how I built a &lt;a class="reference external" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display"&gt;LEGO Macintosh Classic with
 a Raspberry Pi and e-paper display&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;For testing purpose I installed the clock demo which is part of the
 &lt;a class="reference external" href="https://github.com/embeddedartists/gratis"&gt;Embedded Artists repository&lt;/a&gt;.
@@ -788,16 +788,16 @@ The documentation to use the image is quite clear and can be found &lt;a class="
 I wanted to access GitLab using HTTPS, so I disabled port 443 in nginx
 configuration. To do that I had to modify the template
 &lt;cite&gt;/usr/syno/share/nginx/WWWService.mustache&lt;/cite&gt; and reboot the NAS:&lt;/p&gt;
-&lt;pre class="code diff"&gt;&lt;a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-1"&gt;&lt;/a&gt;&lt;span class="gd"&gt;--- WWWService.mustache.org 2016-08-16 23:25:06.000000000 +0100&lt;/span&gt;
-&lt;a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-2"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+++ WWWService.mustache 2016-09-19 13:53:45.256735700 +0100&lt;/span&gt;
-&lt;a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-3"&gt;&lt;/a&gt;&lt;span class="gu"&gt;@@ -1,8 +1,6 @@&lt;/span&gt;
-&lt;a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-4"&gt;&lt;/a&gt; server {
-&lt;a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-5"&gt;&lt;/a&gt;     listen 80 default_server{{#reuseport}} reuseport{{/reuseport}};
-&lt;a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-6"&gt;&lt;/a&gt;     listen [::]:80 default_server{{#reuseport}} reuseport{{/reuseport}};
-&lt;a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-7"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    listen 443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};&lt;/span&gt;
-&lt;a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-8"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    listen [::]:443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};&lt;/span&gt;
-&lt;a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-9"&gt;&lt;/a&gt;
-&lt;a name="rest_code_91453d6367fc4e9fb0fab988af58ea9a-10"&gt;&lt;/a&gt;     server_name _;
+&lt;pre class="code diff"&gt;&lt;a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-1"&gt;&lt;/a&gt;&lt;span class="gd"&gt;--- WWWService.mustache.org 2016-08-16 23:25:06.000000000 +0100&lt;/span&gt;
+&lt;a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-2"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+++ WWWService.mustache 2016-09-19 13:53:45.256735700 +0100&lt;/span&gt;
+&lt;a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-3"&gt;&lt;/a&gt;&lt;span class="gu"&gt;@@ -1,8 +1,6 @@&lt;/span&gt;
+&lt;a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-4"&gt;&lt;/a&gt; server {
+&lt;a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-5"&gt;&lt;/a&gt;     listen 80 default_server{{#reuseport}} reuseport{{/reuseport}};
+&lt;a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-6"&gt;&lt;/a&gt;     listen [::]:80 default_server{{#reuseport}} reuseport{{/reuseport}};
+&lt;a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-7"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    listen 443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};&lt;/span&gt;
+&lt;a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-8"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    listen [::]:443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};&lt;/span&gt;
+&lt;a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-9"&gt;&lt;/a&gt;
+&lt;a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-10"&gt;&lt;/a&gt;     server_name _;
 &lt;/pre&gt;&lt;p&gt;The port 22 is also already used by the ssh daemon so I decided to use
 the port 2222. I created the directory &lt;cite&gt;/volume1/docker/gitlab&lt;/cite&gt; to store
 all GitLab data. Here are the required variables in the
