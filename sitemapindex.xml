@@ -50,10 +50,6 @@
   <lastmod>2018-09-18T20:09:00Z</lastmod>
  </sitemap>
  <sitemap>
-  <loc>http://beenje.github.io/blog/categories/cat_posts.xml</loc>
-  <lastmod>2018-09-18T20:09:00Z</lastmod>
- </sitemap>
- <sitemap>
   <loc>http://beenje.github.io/blog/categories/cat_python.xml</loc>
   <lastmod>2018-09-18T20:09:00Z</lastmod>
  </sitemap>
@@ -215,7 +211,7 @@
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/galleries/rss.xml</loc>
-  <lastmod>2018-09-18T20:23:00Z</lastmod>
+  <lastmod>2018-10-28T08:36:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/rss.xml</loc>
@@ -223,6 +219,6 @@
  </sitemap>
  <sitemap>
   <loc>http://beenje.github.io/blog/sitemap.xml</loc>
-  <lastmod>2018-09-18T20:23:00Z</lastmod>
+  <lastmod>2018-10-28T08:36:00Z</lastmod>
  </sitemap>
 </sitemapindex>
