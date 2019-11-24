@@ -7,6 +7,7 @@
 .. description:
 .. type: text
 
+UPDATED 2019-11-24
 
 Beginning of April I read an inspiring blog post from Jannis Hermanns
 about a `LEGO Machintosh Classic with e-paper display
@@ -134,7 +135,7 @@ I'm more a command line guy and I have used `dd` many times. But I was pleasantl
 It's easy to install and use.
 
 1. Download and install Etcher_
-2. Download `Raspbian Strecth Lite image <https://www.raspberrypi.org/downloads/raspbian/>`_
+2. Download `Raspbian Buster Lite image <https://www.raspberrypi.org/downloads/raspbian/>`_
 3. Flash the SD card using Etcher
 4. Mount the SD card to configure it:
 
@@ -148,7 +149,7 @@ It's easy to install and use.
     $ touch ssh
 
     # Create the file wpa_supplicant.conf with your wifi settings
-    # Note that for Raspbian Stretch, you need the first line
+    # Note that for Raspbian Stretch and Buster, you need the first line
     # (ctrl_interface...)! This was not the case for Jessie.
     $  cat << EOF > wpa_supplicant.conf
     ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
@@ -172,14 +173,13 @@ I wrote a small Ansible playbook to install the E-ink driver and the clock demo:
 
     - name: install required dependencies
       apt:
-        name: "{{item}}"
+        name:
+          - git
+          - libfuse-dev
+          - fonts-liberation
+          - python-pil
         state: present
         update_cache: yes
-      with_items:
-        - git
-        - libfuse-dev
-        - fonts-liberation
-        - python-pil
 
     - name: check if the epd-fuse service exists
       command: systemctl status epd-fuse.service
@@ -191,6 +191,7 @@ I wrote a small Ansible playbook to install the E-ink driver and the clock demo:
     - name: clone the embeddedartists gratis repository
       git:
         repo: https://github.com/embeddedartists/gratis.git
+        version: 9b7accc68db23865935b0d90c77a33055483b290
         dest: /home/pi/gratis
 
     - name: build the EPD driver and install the epd-fuse service
@@ -221,6 +222,10 @@ I wrote a small Ansible playbook to install the E-ink driver and the clock demo:
         daemon_reload: yes
         state: started
         enabled: yes
+
+Note that commit 282e88f_ in embeddedartists/gratis repository added support
+for the RaspberryPi 3, but broke the PI Zero W.
+You currently have to use the commit 9b7accc68 if you have a PI Zero W.
 
 To run the playbook, clone the repository https://github.com/beenje/legomac::
 
@@ -269,3 +274,4 @@ That will be the subject of another `blog post
 </posts/experimenting-with-asyncio-on-a-raspberry-pi>`_!
 
 .. _Etcher: https://etcher.io
+.. _282e88f: https://github.com/embeddedartists/gratis/commit/282e88f8f642d8086d779c462d248063770482e3

@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about Mac)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/mac.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Tue, 18 Sep 2018 20:09:33 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>My LEGO Macintosh Classic with Raspberry Pi and e-paper display</title><link>http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;Beginning of April I read an inspiring blog post from Jannis Hermanns
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about Mac)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/mac.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2019 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
+&lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
+&lt;img alt="Creative Commons License BY-NC-SA"
+style="border-width:0; margin-bottom:12px;"
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sun, 24 Nov 2019 18:47:31 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>My LEGO Macintosh Classic with Raspberry Pi and e-paper display</title><link>http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;UPDATED 2019-11-24&lt;/p&gt;
+&lt;p&gt;Beginning of April I read an inspiring blog post from Jannis Hermanns
 about a &lt;a class="reference external" href="https://jann.is/lego-macintosh-classic/"&gt;LEGO Machintosh Classic with e-paper display&lt;/a&gt;.  It was a really nice and cool article.&lt;/p&gt;
 &lt;p&gt;I've been playing with some Raspberry Pis before but only with
 &lt;a class="reference external" href="http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible"&gt;software&lt;/a&gt;.
@@ -40,7 +45,7 @@ existing soldering iron when I discovered this &lt;a class="reference external" 
 I used the installation jig and it was really easy to install.
 There is a nice &lt;a class="reference external" href="https://youtu.be/VDJ2-feg2lk"&gt;video&lt;/a&gt; that explains how
 to proceed:&lt;/p&gt;
-&lt;iframe width="480" height="270" src="https://www.youtube.com/embed/VDJ2-feg2lk?feature=oembed" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen&gt;&lt;/iframe&gt;&lt;/div&gt;
+&lt;iframe width="480" height="270" src="https://www.youtube.com/embed/VDJ2-feg2lk?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen&gt;&lt;/iframe&gt;&lt;/div&gt;
 &lt;div class="section" id="connecting-the-display-to-the-pi"&gt;
 &lt;h2&gt;Connecting the display to the Pi&lt;/h2&gt;
 &lt;p&gt;Based on Jannis article I initially thought it wasn't possible to use a ribbon
@@ -90,7 +95,7 @@ I'm more a command line guy and I have used &lt;cite&gt;dd&lt;/cite&gt; many tim
 It's easy to install and use.&lt;/p&gt;
 &lt;ol class="arabic simple"&gt;
 &lt;li&gt;Download and install &lt;a class="reference external" href="https://etcher.io"&gt;Etcher&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;Download &lt;a class="reference external" href="https://www.raspberrypi.org/downloads/raspbian/"&gt;Raspbian Strecth Lite image&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;Download &lt;a class="reference external" href="https://www.raspberrypi.org/downloads/raspbian/"&gt;Raspbian Buster Lite image&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Flash the SD card using Etcher&lt;/li&gt;
 &lt;li&gt;Mount the SD card to configure it:&lt;/li&gt;
 &lt;/ol&gt;
@@ -103,7 +108,7 @@ $ cd /Volumes/boot
 $ touch ssh
 
 # Create the file wpa_supplicant.conf with your wifi settings
-# Note that for Raspbian Stretch, you need the first line
+# Note that for Raspbian Stretch and Buster, you need the first line
 # (ctrl_interface...)! This was not the case for Jessie.
 $  cat &amp;lt;&amp;lt; EOF &amp;gt; wpa_supplicant.conf
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
@@ -128,14 +133,13 @@ $ cd
 &lt;pre class="literal-block"&gt;
 - name: install required dependencies
   apt:
-    name: "{{item}}"
+    name:
+      - git
+      - libfuse-dev
+      - fonts-liberation
+      - python-pil
     state: present
     update_cache: yes
-  with_items:
-    - git
-    - libfuse-dev
-    - fonts-liberation
-    - python-pil
 
 - name: check if the epd-fuse service exists
   command: systemctl status epd-fuse.service
@@ -147,6 +151,7 @@ $ cd
 - name: clone the embeddedartists gratis repository
   git:
     repo: https://github.com/embeddedartists/gratis.git
+    version: 9b7accc68db23865935b0d90c77a33055483b290
     dest: /home/pi/gratis
 
 - name: build the EPD driver and install the epd-fuse service
@@ -178,6 +183,9 @@ $ cd
     state: started
     enabled: yes
 &lt;/pre&gt;
+&lt;p&gt;Note that commit &lt;a class="reference external" href="https://github.com/embeddedartists/gratis/commit/282e88f8f642d8086d779c462d248063770482e3"&gt;282e88f&lt;/a&gt; in embeddedartists/gratis repository added support
+for the RaspberryPi 3, but broke the PI Zero W.
+You currently have to use the commit 9b7accc68 if you have a PI Zero W.&lt;/p&gt;
 &lt;p&gt;To run the playbook, clone the repository &lt;a class="reference external" href="https://github.com/beenje/legomac"&gt;https://github.com/beenje/legomac&lt;/a&gt;:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;
 $ git clone https://github.com/beenje/legomac.git
@@ -199,17 +207,17 @@ Thanks again to @mkennedy for the stickers!&lt;/p&gt;
 &lt;a class="reference external image-reference" href="http://beenje.github.io/blog/images/legomac/talkpythontome.jpg"&gt;&lt;img alt="/images/legomac/talkpythontome.thumbnail.jpg" src="http://beenje.github.io/blog/images/legomac/talkpythontome.thumbnail.jpg"&gt;&lt;/a&gt;
 &lt;p&gt;Below are a few pictures. You can see more on &lt;a class="reference external" href="https://flic.kr/s/aHskVAadfo"&gt;flickr&lt;/a&gt;.&lt;/p&gt;
 
-&lt;div id="slides_8dbe0b3f32de4a33b4b849ceafb2c236" class="carousel slide" data-ride="carousel"&gt;
+&lt;div id="slides_5b51e2787a8b4412a47b037f2a546f8b" class="carousel slide" data-ride="carousel"&gt;
     &lt;ol class="carousel-indicators"&gt;
-            &lt;li data-target="#slides_8dbe0b3f32de4a33b4b849ceafb2c236" data-slide-to="0" class="active"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_8dbe0b3f32de4a33b4b849ceafb2c236" data-slide-to="1"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_8dbe0b3f32de4a33b4b849ceafb2c236" data-slide-to="2"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_8dbe0b3f32de4a33b4b849ceafb2c236" data-slide-to="3"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_8dbe0b3f32de4a33b4b849ceafb2c236" data-slide-to="4"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_8dbe0b3f32de4a33b4b849ceafb2c236" data-slide-to="5"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_8dbe0b3f32de4a33b4b849ceafb2c236" data-slide-to="6"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_8dbe0b3f32de4a33b4b849ceafb2c236" data-slide-to="7"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_8dbe0b3f32de4a33b4b849ceafb2c236" data-slide-to="8"&gt;
+            &lt;li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="0" class="active"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="1"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="2"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="3"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="4"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="5"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="6"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="7"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="8"&gt;
     &lt;/li&gt;&lt;/ol&gt;
     &lt;div class="carousel-inner"&gt;
                 &lt;div class="carousel-item active"&gt;&lt;img class="d-block w-100" src="http://beenje.github.io/blog/images/legomac/legomac.jpg" alt=""&gt;&lt;/div&gt;
@@ -222,11 +230,11 @@ Thanks again to @mkennedy for the stickers!&lt;/p&gt;
                 &lt;div class="carousel-item"&gt;&lt;img class="d-block w-100" src="http://beenje.github.io/blog/images/legomac/button_front.jpg" alt=""&gt;&lt;/div&gt;
                 &lt;div class="carousel-item"&gt;&lt;img class="d-block w-100" src="http://beenje.github.io/blog/images/legomac/button_top.jpg" alt=""&gt;&lt;/div&gt;
     &lt;/div&gt;
-      &lt;a class="carousel-control-prev" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_8dbe0b3f32de4a33b4b849ceafb2c236" role="button" data-slide="prev"&gt;
+      &lt;a class="carousel-control-prev" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_5b51e2787a8b4412a47b037f2a546f8b" role="button" data-slide="prev"&gt;
     &lt;span class="carousel-control-prev-icon" aria-hidden="true"&gt;&lt;/span&gt;
     &lt;span class="sr-only"&gt;Previous&lt;/span&gt;
   &lt;/a&gt;
-  &lt;a class="carousel-control-next" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_8dbe0b3f32de4a33b4b849ceafb2c236" role="button" data-slide="next"&gt;
+  &lt;a class="carousel-control-next" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_5b51e2787a8b4412a47b037f2a546f8b" role="button" data-slide="next"&gt;
     &lt;span class="carousel-control-next-icon" aria-hidden="true"&gt;&lt;/span&gt;
     &lt;span class="sr-only"&gt;Next&lt;/span&gt;
   &lt;/a&gt;

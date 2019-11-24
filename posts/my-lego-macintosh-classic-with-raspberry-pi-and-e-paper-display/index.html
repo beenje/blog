@@ -18,9 +18,10 @@
 <meta property="og:site_name" content="Tchut-Tchut Blog">
 <meta property="og:title" content="My LEGO Macintosh Classic with Raspberry Pi and e-paper display">
 <meta property="og:url" content="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/">
-<meta property="og:description" content="Beginning of April I read an inspiring blog post from Jannis Hermanns
+<meta property="og:description" content="UPDATED 2019-11-24
+Beginning of April I read an inspiring blog post from Jannis Hermanns
 about a LEGO Machintosh Classic with e-paper display.  It was a really nice and cool article.
-I've been playing with some Raspberr">
+I've been playing">
 <meta property="og:type" content="article">
 <meta property="article:published_time" content="2017-05-23T22:39:12+02:00">
 <meta property="article:tag" content="lego">
@@ -103,6 +104,7 @@ navbar-dark bg-dark
 
     </header><div class="e-content entry-content" itemprop="articleBody text">
     <div>
+<p>UPDATED 2019-11-24</p>
 <p>Beginning of April I read an inspiring blog post from Jannis Hermanns
 about a <a class="reference external" href="https://jann.is/lego-macintosh-classic/">LEGO Machintosh Classic with e-paper display</a>.  It was a really nice and cool article.</p>
 <p>I've been playing with some Raspberry Pis before but only with
@@ -144,7 +146,7 @@ existing soldering iron when I discovered this <a class="reference external" hre
 I used the installation jig and it was really easy to install.
 There is a nice <a class="reference external" href="https://youtu.be/VDJ2-feg2lk">video</a> that explains how
 to proceed:</p>
-<iframe width="480" height="270" src="https://www.youtube.com/embed/VDJ2-feg2lk?feature=oembed" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+<iframe width="480" height="270" src="https://www.youtube.com/embed/VDJ2-feg2lk?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </div>
 <div class="section" id="connecting-the-display-to-the-pi">
 <h2>Connecting the display to the Pi</h2>
@@ -196,7 +198,7 @@ It's easy to install and use.</p>
 <ol class="arabic simple">
 <li>Download and install <a class="reference external" href="https://etcher.io">Etcher</a>
 </li>
-<li>Download <a class="reference external" href="https://www.raspberrypi.org/downloads/raspbian/">Raspbian Strecth Lite image</a>
+<li>Download <a class="reference external" href="https://www.raspberrypi.org/downloads/raspbian/">Raspbian Buster Lite image</a>
 </li>
 <li>Flash the SD card using Etcher</li>
 <li>Mount the SD card to configure it:</li>
@@ -210,7 +212,7 @@ $ cd /Volumes/boot
 $ touch ssh
 
 # Create the file wpa_supplicant.conf with your wifi settings
-# Note that for Raspbian Stretch, you need the first line
+# Note that for Raspbian Stretch and Buster, you need the first line
 # (ctrl_interface...)! This was not the case for Jessie.
 $  cat &lt;&lt; EOF &gt; wpa_supplicant.conf
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
@@ -235,14 +237,13 @@ $ cd
 <pre class="literal-block">
 - name: install required dependencies
   apt:
-    name: "{{item}}"
+    name:
+      - git
+      - libfuse-dev
+      - fonts-liberation
+      - python-pil
     state: present
     update_cache: yes
-  with_items:
-    - git
-    - libfuse-dev
-    - fonts-liberation
-    - python-pil
 
 - name: check if the epd-fuse service exists
   command: systemctl status epd-fuse.service
@@ -254,6 +255,7 @@ $ cd
 - name: clone the embeddedartists gratis repository
   git:
     repo: https://github.com/embeddedartists/gratis.git
+    version: 9b7accc68db23865935b0d90c77a33055483b290
     dest: /home/pi/gratis
 
 - name: build the EPD driver and install the epd-fuse service
@@ -285,6 +287,9 @@ $ cd
     state: started
     enabled: yes
 </pre>
+<p>Note that commit <a class="reference external" href="https://github.com/embeddedartists/gratis/commit/282e88f8f642d8086d779c462d248063770482e3">282e88f</a> in embeddedartists/gratis repository added support
+for the RaspberryPi 3, but broke the PI Zero W.
+You currently have to use the commit 9b7accc68 if you have a PI Zero W.</p>
 <p>To run the playbook, clone the repository <a class="reference external" href="https://github.com/beenje/legomac">https://github.com/beenje/legomac</a>:</p>
 <pre class="literal-block">
 $ git clone https://github.com/beenje/legomac.git
@@ -306,25 +311,25 @@ Thanks again to @mkennedy for the stickers!</p>
 <a class="reference external image-reference" href="../../images/legomac/talkpythontome.jpg"><img alt="/images/legomac/talkpythontome.thumbnail.jpg" src="../../images/legomac/talkpythontome.thumbnail.jpg"></a>
 <p>Below are a few pictures. You can see more on <a class="reference external" href="https://flic.kr/s/aHskVAadfo">flickr</a>.</p>
 
-<div id="slides_8dbe0b3f32de4a33b4b849ceafb2c236" class="carousel slide" data-ride="carousel">
+<div id="slides_5b51e2787a8b4412a47b037f2a546f8b" class="carousel slide" data-ride="carousel">
     <ol class="carousel-indicators">
-<li data-target="#slides_8dbe0b3f32de4a33b4b849ceafb2c236" data-slide-to="0" class="active">
+<li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="0" class="active">
             </li>
-<li data-target="#slides_8dbe0b3f32de4a33b4b849ceafb2c236" data-slide-to="1">
+<li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="1">
             </li>
-<li data-target="#slides_8dbe0b3f32de4a33b4b849ceafb2c236" data-slide-to="2">
+<li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="2">
             </li>
-<li data-target="#slides_8dbe0b3f32de4a33b4b849ceafb2c236" data-slide-to="3">
+<li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="3">
             </li>
-<li data-target="#slides_8dbe0b3f32de4a33b4b849ceafb2c236" data-slide-to="4">
+<li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="4">
             </li>
-<li data-target="#slides_8dbe0b3f32de4a33b4b849ceafb2c236" data-slide-to="5">
+<li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="5">
             </li>
-<li data-target="#slides_8dbe0b3f32de4a33b4b849ceafb2c236" data-slide-to="6">
+<li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="6">
             </li>
-<li data-target="#slides_8dbe0b3f32de4a33b4b849ceafb2c236" data-slide-to="7">
+<li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="7">
             </li>
-<li data-target="#slides_8dbe0b3f32de4a33b4b849ceafb2c236" data-slide-to="8">
+<li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="8">
     </li>
 </ol>
 <div class="carousel-inner">
@@ -338,11 +343,11 @@ Thanks again to @mkennedy for the stickers!</p>
                 <div class="carousel-item"><img class="d-block w-100" src="../../images/legomac/button_front.jpg" alt=""></div>
                 <div class="carousel-item"><img class="d-block w-100" src="../../images/legomac/button_top.jpg" alt=""></div>
     </div>
-      <a class="carousel-control-prev" href="#slides_8dbe0b3f32de4a33b4b849ceafb2c236" role="button" data-slide="prev">
+      <a class="carousel-control-prev" href="#slides_5b51e2787a8b4412a47b037f2a546f8b" role="button" data-slide="prev">
     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
     <span class="sr-only">Previous</span>
   </a>
-  <a class="carousel-control-next" href="#slides_8dbe0b3f32de4a33b4b849ceafb2c236" role="button" data-slide="next">
+  <a class="carousel-control-next" href="#slides_5b51e2787a8b4412a47b037f2a546f8b" role="button" data-slide="next">
     <span class="carousel-control-next-icon" aria-hidden="true"></span>
     <span class="sr-only">Next</span>
   </a>
@@ -393,7 +398,7 @@ That will be the subject of another <a class="reference external" href="../exper
 
 
         </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
-            Contents © 2018         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2019         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
             
