@@ -80,10 +80,11 @@ navbar-dark bg-dark
         <!--Body content-->
         
         
+        
 <article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Running your application over HTTPS with traefik</a></h1>
 
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
                     Benjamin Bertrand
             </span></p>
             <p class="dateline">
@@ -129,8 +130,7 @@ was impressed. It's written in go, so single binary. There is also a tiny docker
 image that makes it easy to deploy. It includes Let's Encrypt support (with automatic renewal),
 websocket support (no specific setup required)... And many other features.</p>
 <p>Here is a <cite>traefik.toml</cite> configuration example:</p>
-<pre class="literal-block">
-defaultEntryPoints = ["http", "https"]
+<pre class="literal-block">defaultEntryPoints = ["http", "https"]
 
 [web]
 # Port for the status page
@@ -165,13 +165,12 @@ OnHostRule = true
 endpoint = "unix:///var/run/docker.sock"
 domain = "example.com"
 watch = true
-exposedbydefault = false
-</pre>
+exposedbydefault = false</pre>
 <p>With this simple configuration, you get:</p>
 <ul class="simple">
-<li>HTTP redirect on HTTPS</li>
-<li>Let's Encrypt support</li>
-<li>Docker backend support</li>
+<li><p>HTTP redirect on HTTPS</p></li>
+<li><p>Let's Encrypt support</p></li>
+<li><p>Docker backend support</p></li>
 </ul>
 <p>UPDATE (2018-03-04): as mentioned by @jackminardi in the comments, Let's Encrypt <a class="reference external" href="https://community.letsencrypt.org/t/important-what-you-need-to-know-about-tls-sni-validation-issues/50811">disabled the TLS-SNI
 challenges for most new issuance</a>.
@@ -185,8 +184,7 @@ HTTPS with traefik and Let's Encrypt.
 Note that traefik is made to dynamically discover backends. So you usually
 don't run it with your app in the same docker-compose.yml file. It usually
 runs separately. But to make it easier, I put both in the same file:</p>
-<pre class="literal-block">
-version: '2'
+<pre class="literal-block">version: '2'
 services:
   flask:
     build: ./flask
@@ -205,8 +203,7 @@ services:
     ports:
      - "80:80"
      - "443:443"
-     - "8080:8080"
-</pre>
+     - "8080:8080"</pre>
 <p>Traefik requires access to the docker socket to listen for changes in the
 backends. It can thus automatically discover when you start and stop
 containers. You can ovverride default behaviour by using labels in your
@@ -214,12 +211,10 @@ container.</p>
 <p>Supposing you own the myhost.example.com domain and have access to ports 80 and 443
 (you can setup port forwarding if you run that on your machine behind a
 router at home), you can run:</p>
-<pre class="literal-block">
-$ git clone https://github.com/beenje/flask_traefik_letsencrypt.git
+<pre class="literal-block">$ git clone https://github.com/beenje/flask_traefik_letsencrypt.git
 $ cd flask_traefik_letsencrypt
 $ export TRAEFIK_FRONTEND_RULE=Host:myhost.example.com
-$ docker-compose up
-</pre>
+$ docker-compose up</pre>
 <p>Voilà! Our flask app is available over HTTPS with a real SSL certificate!</p>
 <img alt="/images/flask_traefik/hello_world.png" src="../../images/flask_traefik/hello_world.png"><p>Traefik discovered the flask docker container and requested a certificate for our domain.
 All that automatically!</p>
@@ -234,8 +229,7 @@ Especially considering there isn't any specific SSL setup.</p>
 <p>As I already mentioned, traefik is made to automatically discover backends (docker containers in my case).
 So you usually run it by itself.</p>
 <p>Here is an example how it can be deployed using <a class="reference external" href="http://docs.ansible.com/ansible/">Ansible</a>:</p>
-<pre class="literal-block">
----
+<pre class="literal-block">---
 - name: create traefik directories
   file:
     path: /etc/traefik/acme
@@ -280,13 +274,11 @@ So you usually run it by itself.</p>
       - name: "{{traefik_network}}"
 
 - name: force all notified handlers to run
-  meta: flush_handlers
-</pre>
+  meta: flush_handlers</pre>
 <p>Nothing strange here. It's quite similar to what we had in our docker-compose.yml file.
 We created a specific <cite>traefik_network</cite>. Our docker containers will have to be on that same network.</p>
 <p>Here is how we could deploy a flask application on the same server using another ansible role:</p>
-<pre class="literal-block">
-- name: launch flask container
+<pre class="literal-block">- name: launch flask container
   docker_container:
     name: flask
     image: flask
@@ -300,8 +292,7 @@ We created a specific <cite>traefik_network</cite>. Our docker containers will h
       traefik.enable: "true"
       traefik.backend: "flask"
       traefik.frontend.rule: "Host:myhost.example.com"
-      traefik.port: "5000"
-</pre>
+      traefik.port: "5000"</pre>
 <p>We make sure the container is on the same network as the traefik proxy.
 Note that the <cite>traefik.port</cite> label is only required if the container exposes multiple ports.
 It's thus not needed in our example.</p>
@@ -353,19 +344,17 @@ Really cool.</p>
 
 
         </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
-            Contents © 2019         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2020         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
             
         </footer>
 </div>
 </div>
 
 
-        <script src="../../assets/js/all-nocdn.js"></script><!-- fancy dates --><script>
-    moment.locale("en");
-    fancydates(0, "YYYY-MM-DD HH:mm");
-    </script><!-- end fancy dates --><script>
+        <script src="../../assets/js/all-nocdn.js"></script><script>
     baguetteBox.run('div#content', {
         ignoreClass: 'islink',
         captions: function(element) {

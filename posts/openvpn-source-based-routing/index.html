@@ -80,10 +80,11 @@ navbar-dark bg-dark
         <!--Body content-->
         
         
+        
 <article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">OpenVPN source based routing</a></h1>
 
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
                     Benjamin Bertrand
             </span></p>
             <p class="dateline">
@@ -120,37 +121,30 @@ If you haven't heard about it, you should check it out.</p>
 <p>Installing an OpenVPN client on OpenWrt is not very difficult.
 Here is a quick summary.</p>
 <ol class="arabic">
+<li><p>Install <cite>openvpn-openssl</cite> package (via the
+webinterface or the command line)</p></li>
 <li>
-<p class="first">Install <cite>openvpn-openssl</cite> package (via the
-webinterface or the command line)</p>
-</li>
-<li>
-<p class="first">I already have a custom client config that I generated with Ansible in
+<p>I already have a custom client config that I generated with Ansible in
 this <a class="reference external" href="../installing-openvpn-on-a-raspberry-pi-with-ansible">post</a>.
 To use this config, create the file <cite>/etc/config/openvpn</cite>:</p>
-<pre class="literal-block">
-# cat /etc/config/openvpn
+<pre class="literal-block"># cat /etc/config/openvpn
 package openvpn
 
 config openvpn myvpn
         # Set to 1 to enable this instance:
         option enabled 1
         # Include OpenVPN configuration
-        option config /etc/openvpn/myclientconfig.ovpn
-</pre>
+        option config /etc/openvpn/myclientconfig.ovpn</pre>
 </li>
 <li>
-<p class="first">Add a new interface in <cite>/etc/config/network</cite>:</p>
-<pre class="literal-block">
-config interface 'myvpn'
+<p>Add a new interface in <cite>/etc/config/network</cite>:</p>
+<pre class="literal-block">config interface 'myvpn'
        option proto 'none'
-       option ifname 'tun0'
-</pre>
+       option ifname 'tun0'</pre>
 </li>
 <li>
-<p class="first">Add a new zone to <cite>/etc/config/firewall</cite>:</p>
-<pre class="literal-block">
-config zone
+<p>Add a new zone to <cite>/etc/config/firewall</cite>:</p>
+<pre class="literal-block">config zone
         option forward 'REJECT'
         option output 'ACCEPT'
         option name 'VPN_FW'
@@ -161,21 +155,18 @@ config zone
 
 config forwarding
         option dest 'VPN_FW'
-        option src 'lan'
-</pre>
+        option src 'lan'</pre>
 </li>
 <li>
-<p class="first">An easy way to configure DNS servers is to add fixed DNS for the WAN interface of the router.
+<p>An easy way to configure DNS servers is to add fixed DNS for the WAN interface of the router.
 To use Google DNS, add the following two lines to the wan interface in <cite>/etc/config/network</cite>:</p>
-<pre class="literal-block">
-# diff -u network.save network
+<pre class="literal-block"># diff -u network.save network
 @@ -20,6 +20,8 @@
  config interface 'wan'
          option ifname 'eth1'
          option proto 'dhcp'
 +        option peerdns '0'
-+        option dns '8.8.8.8 8.8.4.4'
-</pre>
++        option dns '8.8.8.8 8.8.4.4'</pre>
 </li>
 </ol>
 <p>If you run <cite>/etc/init.d/openvpn start</cite> with this config, you should connect successfully!
@@ -190,12 +181,10 @@ that before to do that I had to ignore the routes pushed by the server.</p>
 <p>With my configuration, when the client connects, the server pushes some
 routes among which a default route that makes all the traffic go via the
 VPN:</p>
-<pre class="literal-block">
-Kernel IP routing table
+<pre class="literal-block">Kernel IP routing table
 Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 default         10.8.0.21       128.0.0.0       UG    0      0        0 tun0
-...
-</pre>
+...</pre>
 <p>Ignoring the routes pushed by the server can be done with the <cite>--route-noexec</cite> option.
 I tried to add <cite>option route_noexec 1</cite> to my <cite>/etc/config/openvpn</cite> file
 but it had no effect. It looks like that when using a custom config, you
@@ -204,14 +193,11 @@ config. I added <cite>route-noexec</cite> to  my <cite>/etc/openvpn/myclientconf
 No more route added. No traffic sent via the VPN.</p>
 <p>We can now apply the changes described in the <a class="reference external" href="https://wiki.openwrt.org/doc/networking/routing">Routing wiki page</a>.</p>
 <ol class="arabic">
+<li><p>Install the <cite>ip</cite> package</p></li>
 <li>
-<p class="first">Install the <cite>ip</cite> package</p>
-</li>
-<li>
-<p class="first">Add the <cite>10 vpn</cite> line to <cite>/etc/iproute2/rt_tables</cite> so that it looks like
+<p>Add the <cite>10 vpn</cite> line to <cite>/etc/iproute2/rt_tables</cite> so that it looks like
 this:</p>
-<pre class="literal-block">
-# cat /etc/iproute2/rt_tables
+<pre class="literal-block"># cat /etc/iproute2/rt_tables
 #
 # reserved values
 #
@@ -223,14 +209,12 @@ this:</p>
 #
 # local
 #
-#1  inr.ruhep
-</pre>
+#1  inr.ruhep</pre>
 </li>
 <li>
-<p class="first">We now need to add a new rule and route when starting the client.
+<p>We now need to add a new rule and route when starting the client.
 We can do so using the openvpn <cite>up</cite> command. Create the <cite>/etc/openvpn/upvpn</cite> script:</p>
-<pre class="literal-block">
-# cat /etc/openvpn/upvpn
+<pre class="literal-block"># cat /etc/openvpn/upvpn
 #!/bin/sh
 
 client=192.168.75.20
@@ -245,13 +229,11 @@ echo "Routing client $client traffic through VPN"
 ip rule add from $client priority 10 table vpn
 ip route add $client dev $tun_dev table vpn
 ip route add default via $ifconfig_remote_ip dev $tun_dev table vpn
-ip route flush cache
-</pre>
+ip route flush cache</pre>
 </li>
 <li>
-<p class="first">Create the <cite>/etc/openvpn/downvpn</cite> script to properly remove the rule and route:</p>
-<pre class="literal-block">
-# cat /etc/openvpn/downvpn
+<p>Create the <cite>/etc/openvpn/downvpn</cite> script to properly remove the rule and route:</p>
+<pre class="literal-block"># cat /etc/openvpn/downvpn
 #!/bin/sh
 
 client=192.168.75.20
@@ -266,14 +248,12 @@ echo "Delete client $client traffic routing through VPN"
 ip rule del from $client priority 10 table vpn
 ip route del $client dev $tun_dev table vpn
 ip route del default via $ifconfig_remote_ip dev $tun_dev table vpn
-ip route flush cache
-</pre>
+ip route flush cache</pre>
 </li>
 <li>
-<p class="first">We now have to add those scripts to the client config.
+<p>We now have to add those scripts to the client config.
 Here is everything I added to my <cite>/etc/openvpn/myclientconfig.ovpn</cite> file:</p>
-<pre class="literal-block">
-# Don't add or remove routes automatically
+<pre class="literal-block"># Don't add or remove routes automatically
 # Source based routing for specific client added in up script
 route-noexec
 # script-security 2 needed to run up and down scripts
@@ -282,8 +262,7 @@ script-security 2
 up /etc/openvpn/upvpn
 # Call down script before to close TUN to properly remove the routing
 down-pre
-down /etc/openvpn/downvpn
-</pre>
+down /etc/openvpn/downvpn</pre>
 </li>
 </ol>
 <p>Notice that the machine IP address that we want to route via the VPN is
@@ -342,19 +321,17 @@ I'll talk about an even more user friendly way to control it.</p>
 
 
         </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
-            Contents © 2019         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2020         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
             
         </footer>
 </div>
 </div>
 
 
-        <script src="../../assets/js/all-nocdn.js"></script><!-- fancy dates --><script>
-    moment.locale("en");
-    fancydates(0, "YYYY-MM-DD HH:mm");
-    </script><!-- end fancy dates --><script>
+        <script src="../../assets/js/all-nocdn.js"></script><script>
     baguetteBox.run('div#content', {
         ignoreClass: 'islink',
         captions: function(element) {

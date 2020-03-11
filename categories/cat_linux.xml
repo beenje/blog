@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about linux)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/cat_linux.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Tue, 18 Sep 2018 20:09:32 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Control your accessories from Home Assistant with Siri and HomeKit</title><link>http://beenje.github.io/blog/posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;While reading more about &lt;a class="reference external" href="https://home-assistant.io"&gt;Home Assistant&lt;/a&gt;, I
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about linux)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/cat_linux.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2020 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
+&lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
+&lt;img alt="Creative Commons License BY-NC-SA"
+style="border-width:0; margin-bottom:12px;"
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 11 Mar 2020 18:05:00 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Control your accessories from Home Assistant with Siri and HomeKit</title><link>http://beenje.github.io/blog/posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;While reading more about &lt;a class="reference external" href="https://home-assistant.io"&gt;Home Assistant&lt;/a&gt;, I
 discovered it was possible to control your accessories from Home Assistant
 with Siri and HomeKit. I decided to give that a try.&lt;/p&gt;
 &lt;p&gt;This requires to install &lt;a class="reference external" href="https://github.com/nfarina/homebridge"&gt;Homebridge&lt;/a&gt; and
@@ -8,55 +12,40 @@ the &lt;a class="reference external" href="https://github.com/home-assistant/hom
 &lt;h2&gt;Install Homebridge&lt;/h2&gt;
 &lt;p&gt;Homebridge is a lightweight NodeJS server that emulates the iOS HomeKit
 API. Let's install it in the same &lt;a class="reference external" href="http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container"&gt;LXC container as Home Assistant&lt;/a&gt;:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@turris:~# lxc-attach -n homeassistant
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;root@turris:~# lxc-attach -n homeassistant&lt;/pre&gt;
 &lt;p&gt;I followed the &lt;a class="reference external" href="https://github.com/nfarina/homebridge/wiki/Running-HomeBridge-on-a-Raspberry-Pi"&gt;Running HomeBridge on a Raspberry Pi page&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;We need curl and git:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# apt-get install -y curl git
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;root@homeassistant:~# apt-get install -y curl git&lt;/pre&gt;
 &lt;p&gt;Install Node:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# curl -sL https://deb.nodesource.com/setup_6.x | bash -
+&lt;pre class="literal-block"&gt;root@homeassistant:~# curl -sL https://deb.nodesource.com/setup_6.x | bash -
 ## Installing the NodeSource Node.js v6.x repo...
 
 ## Populating apt-get cache...
 
-root@homeassistant:~# apt-get install -y nodejs
-&lt;/pre&gt;
+root@homeassistant:~# apt-get install -y nodejs&lt;/pre&gt;
 &lt;p&gt;Install avahi and other dependencies:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# apt-get install -y libavahi-compat-libdnssd-dev
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;root@homeassistant:~# apt-get install -y libavahi-compat-libdnssd-dev&lt;/pre&gt;
 &lt;p&gt;Install Homebridge and dependencies still following this &lt;a class="reference external" href="https://github.com/nfarina/homebridge/wiki/Running-HomeBridge-on-a-Raspberry-Pi#install-homebridge-and-dependencies"&gt;page&lt;/a&gt;.
 Note that I had a strange problem here. The &lt;em&gt;npm&lt;/em&gt; command didn't produce
 any output. I found the same issue on &lt;a class="reference external" href="http://stackoverflow.com/questions/40755598/containers-lxc-attach-and-npm-no-output"&gt;stackoverflow&lt;/a&gt;
 and even an &lt;a class="reference external" href="https://github.com/npm/npm/issues/15681"&gt;issue on github&lt;/a&gt;.
 The workaround is just to open a new terminal...&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# npm install -g --unsafe-perm homebridge hap-nodejs node-gyp
+&lt;pre class="literal-block"&gt;root@homeassistant:~# npm install -g --unsafe-perm homebridge hap-nodejs node-gyp
 root@homeassistant:~# cd /usr/lib/node_modules/homebridge/
 root@homeassistant:/usr/lib/node_modules/homebridge# npm install --unsafe-perm bignum
 root@homeassistant:/usr/lib/node_modules/homebridge# cd ../hap-nodejs/node_modules/mdns/
-root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# node-gyp BUILDTYPE=Release rebuild
-&lt;/pre&gt;
+root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# node-gyp BUILDTYPE=Release rebuild&lt;/pre&gt;
 &lt;/div&gt;
 &lt;div class="section" id="install-and-configure-homebridge-homeassistant-plugin"&gt;
 &lt;h2&gt;Install and configure homebridge-homeassistant plugin&lt;/h2&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# cd
-root@homeassistant:~# npm install -g --unsafe-perm homebridge-homeassistant
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# cd
+root@homeassistant:~# npm install -g --unsafe-perm homebridge-homeassistant&lt;/pre&gt;
 &lt;p&gt;Try to start Homebridge:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# su -s /bin/bash homeassistant
-homeassistant@homeassistant:~$ homebridge
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;root@homeassistant:~# su -s /bin/bash homeassistant
+homeassistant@homeassistant:~$ homebridge&lt;/pre&gt;
 &lt;p&gt;Homebridge won't do anything until you've created a configuration file.
 So press CTRL-C and create the file &lt;cite&gt;~/.homebridge/config.json&lt;/cite&gt;:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-homeassistant@homeassistant:~$ cat &amp;lt;&amp;lt;EOF &amp;gt;&amp;gt; ~/.homebridge/config.json
+&lt;pre class="literal-block"&gt;homeassistant@homeassistant:~$ cat &amp;lt;&amp;lt;EOF &amp;gt;&amp;gt; ~/.homebridge/config.json
 {
   "bridge": {
     "name": "Homebridge",
@@ -74,8 +63,7 @@ homeassistant@homeassistant:~$ cat &amp;lt;&amp;lt;EOF &amp;gt;&amp;gt; ~/.homeb
     }
  ]
 }
-EOF
-&lt;/pre&gt;
+EOF&lt;/pre&gt;
 &lt;p&gt;Note that you can change the username and pin code.
 You will need the PIN code to add the Homebridge accessory to HomeKit.&lt;/p&gt;
 &lt;p&gt;Check the &lt;a class="reference external" href="https://github.com/home-assistant/homebridge-homeassistant#configuration"&gt;Home Assistant plugin page&lt;/a&gt;
@@ -85,8 +73,7 @@ for more information on how to configure the plugin.&lt;/p&gt;
 &lt;h2&gt;Automatically start Homebridge&lt;/h2&gt;
 &lt;p&gt;Let's configure systemd.
 Create the file &lt;cite&gt;/etc/systemd/system/home-assistant@homebridge.service&lt;/cite&gt;:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# cat &amp;lt;&amp;lt;EOF &amp;gt;&amp;gt; /etc/systemd/system/home-assistant@homebridge.service
+&lt;pre class="literal-block"&gt;root@homeassistant:~# cat &amp;lt;&amp;lt;EOF &amp;gt;&amp;gt; /etc/systemd/system/home-assistant@homebridge.service
 [Unit]
 Description=Node.js HomeKit Server
 After=syslog.target network-online.target
@@ -101,15 +88,12 @@ KillMode=process
 
 [Install]
 WantedBy=multi-user.target
-EOF
-&lt;/pre&gt;
+EOF&lt;/pre&gt;
 &lt;p&gt;Enable and launch Homebridge:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# systemctl --system daemon-reload
+&lt;pre class="literal-block"&gt;root@homeassistant:~# systemctl --system daemon-reload
 root@homeassistant:~# systemctl enable home-assistant@homebridge
 Created symlink from /etc/systemd/system/multi-user.target.wants/home-assistant@homebridge.service to /etc/systemd/system/home-assistant@homebridge.service.
-root@homeassistant:~# systemctl start home-assistant@homebridge
-&lt;/pre&gt;
+root@homeassistant:~# systemctl start home-assistant@homebridge&lt;/pre&gt;
 &lt;/div&gt;
 &lt;div class="section" id="adding-homebridge-to-ios"&gt;
 &lt;h2&gt;Adding Homebridge to iOS&lt;/h2&gt;
@@ -157,8 +141,7 @@ to easily keep the version up-to-date.&lt;/p&gt;
 &lt;p&gt;As described &lt;a class="reference external" href="https://www.turris.cz/doc/en/howto/lxc"&gt;here&lt;/a&gt;, you can
 create a LXC container via the LuCI web interface or via the command
 line:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@turris:~# lxc-create -t download -n homeassistant
+&lt;pre class="literal-block"&gt;root@turris:~# lxc-create -t download -n homeassistant
 Setting up the GPG keyring
 Downloading the image index
 WARNING: Failed to download the file over HTTPs.
@@ -195,52 +178,38 @@ WARNING: Failed to download the file over HTTPs.
  container.
 
  Content of the tarballs is provided by third party, thus there is
- no warranty of any kind.
-&lt;/pre&gt;
+ no warranty of any kind.&lt;/pre&gt;
 &lt;p&gt;As you can see above, I chose a Debian Jessie distribution.&lt;/p&gt;
 &lt;p&gt;Let's start and enter the container:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@turris:~# lxc-start -n homeassistant
-root@turris:~# lxc-attach -n homeassistant
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;root@turris:~# lxc-start -n homeassistant
+root@turris:~# lxc-attach -n homeassistant&lt;/pre&gt;
 &lt;p&gt;Now that we are inside the container, we can first set the root password:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@LXC_NAME:~# passwd
+&lt;pre class="literal-block"&gt;root@LXC_NAME:~# passwd
 Enter new UNIX password:
 Retype new UNIX password:
-passwd: password updated successfully
-&lt;/pre&gt;
+passwd: password updated successfully&lt;/pre&gt;
 &lt;p&gt;&lt;em&gt;LXC_NAME&lt;/em&gt; is not a super nice hostname. Let's update it:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@LXC_NAME:~# hostnamectl set-hostname homeassistant
-Failed to create bus connection: No such file or directory
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;root@LXC_NAME:~# hostnamectl set-hostname homeassistant
+Failed to create bus connection: No such file or directory&lt;/pre&gt;
 &lt;p&gt;Ok... We have to &lt;a class="reference external" href="http://serverfault.com/questions/685837/how-to-set-the-hostname-for-a-debian-jessie-system"&gt;install dbus&lt;/a&gt;.
 While we are at it, let's install vim because
 we'll need it to edit the homeassistant configuration:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@LXC_NAME:~# apt-get update
+&lt;pre class="literal-block"&gt;root@LXC_NAME:~# apt-get update
 root@LXC_NAME:~# apt-get upgrade
-root@LXC_NAME:~# apt-get install -y dbus vim
-&lt;/pre&gt;
+root@LXC_NAME:~# apt-get install -y dbus vim&lt;/pre&gt;
 &lt;p&gt;Setting the hostname now works properly:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@LXC_NAME:~# hostnamectl set-hostname homeassistant
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;root@LXC_NAME:~# hostnamectl set-hostname homeassistant&lt;/pre&gt;
 &lt;p&gt;We can exit and enter the container again to see the change:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@LXC_NAME:~# exit
+&lt;pre class="literal-block"&gt;root@LXC_NAME:~# exit
 root@turris:~# lxc-attach -n homeassistant
-root@homeassistant:~#
-&lt;/pre&gt;
+root@homeassistant:~#&lt;/pre&gt;
 &lt;/div&gt;
 &lt;div class="section" id="install-home-assistant"&gt;
 &lt;h2&gt;Install Home Assistant&lt;/h2&gt;
 &lt;p&gt;Next, we just have to follow the &lt;a class="reference external" href="https://home-assistant.io/getting-started/installation-virtualenv/"&gt;Home Assistant installation instructions&lt;/a&gt;.
 They are well detailed. I'll just quickly repeat them here to make it
 easier to follow but you should refer to the official page for any update:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# apt-get install python-pip python3-dev
+&lt;pre class="literal-block"&gt;root@homeassistant:~# apt-get install python-pip python3-dev
 root@homeassistant:~# pip install --upgrade virtualenv
 root@homeassistant:~# adduser --system homeassistant
 root@homeassistant:~# mkdir /srv/homeassistant
@@ -248,49 +217,40 @@ root@homeassistant:~# chown homeassistant /srv/homeassistant
 root@homeassistant:~# su -s /bin/bash homeassistant
 homeassistant@homeassistant:/root$ virtualenv -p python3 /srv/homeassistant
 homeassistant@homeassistant:/root$ source /srv/homeassistant/bin/activate
-(homeassistant) homeassistant@homeassistant:/root$ pip3 install --upgrade homeassistant
-&lt;/pre&gt;
+(homeassistant) homeassistant@homeassistant:/root$ pip3 install --upgrade homeassistant&lt;/pre&gt;
 &lt;p&gt;Just run &lt;em&gt;hass&lt;/em&gt; to start the application and create the default
 configuration:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-(homeassistant) homeassistant@homeassistant:/root$ hass
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;(homeassistant) homeassistant@homeassistant:/root$ hass&lt;/pre&gt;
 &lt;p&gt;Press CTRL-C to exit.
 Check the created configuration file:
 &lt;cite&gt;/home/homeassistant/.homeassistant/configuration.yaml&lt;/cite&gt;.&lt;/p&gt;
 &lt;p&gt;You can comment out the &lt;cite&gt;introduction:&lt;/cite&gt; line:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-# Show links to resources in log and frontend
-#introduction:
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;# Show links to resources in log and frontend
+#introduction:&lt;/pre&gt;
 &lt;/div&gt;
 &lt;div class="section" id="add-a-switch-to-home-assistant"&gt;
 &lt;h2&gt;Add a switch to Home Assistant&lt;/h2&gt;
 &lt;p&gt;To start and stop our VPN we define a &lt;a class="reference external" href="https://home-assistant.io/components/switch.command_line/"&gt;Command Line Switch&lt;/a&gt; that
 triggers the openvpn script on the router.
 Add the following at the end of the file:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-switch:
+&lt;pre class="literal-block"&gt;switch:
   platform: command_line
   switches:
         atv_vpn:
           command_on: 'ssh root@&amp;lt;router IP&amp;gt; "/etc/init.d/openvpn start"'
           command_off: 'ssh root@&amp;lt;router IP&amp;gt; "/etc/init.d/openvpn stop"'
-          friendly_name: ATV4 VPN
-&lt;/pre&gt;
+          friendly_name: ATV4 VPN&lt;/pre&gt;
 &lt;p&gt;The LXC container is just like another computer (a virtual one) on the local network.
 To access the router, we have to ssh to it. For this to work without
 requesting a password, we have to generate a ssh key and add the public
 key to the authorized_keys file on the router:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-homeassistant@homeassistant:~$ ssh-keygen
+&lt;pre class="literal-block"&gt;homeassistant@homeassistant:~$ ssh-keygen
 Generating public/private rsa key pair.
 Enter file in which to save the key (/home/homeassistant/.ssh/id_rsa):
 Enter passphrase (empty for no passphrase):
 Enter same passphrase again:
 Your identification has been saved in /home/homeassistant/.ssh/id_rsa.
-Your public key has been saved in /home/homeassistant/.ssh/id_rsa.pub.
-&lt;/pre&gt;
+Your public key has been saved in /home/homeassistant/.ssh/id_rsa.pub.&lt;/pre&gt;
 &lt;p&gt;Copy the content of &lt;cite&gt;/home/homeassistant/.ssh/id_rsa.pub&lt;/cite&gt; to
 &lt;cite&gt;/root/.ssh/authorized_keys&lt;/cite&gt; (on the router not inside the container).&lt;/p&gt;
 &lt;p&gt;With this configuration, the switch will always be off when you restart
@@ -301,16 +261,14 @@ command shall return a result code &lt;em&gt;0&lt;/em&gt; if the switch is on.
 The openvpn init script on the Turris Omnia doesn't take "status" as
 argument. An easy way to check if openvpn is running is to use pgrep.
 Our new configuration becomes:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-switch:
+&lt;pre class="literal-block"&gt;switch:
   platform: command_line
   switches:
         atv_vpn:
           command_on: 'ssh root@&amp;lt;router IP&amp;gt; "/etc/init.d/openvpn start"'
           command_off: 'ssh root@&amp;lt;router IP&amp;gt; "/etc/init.d/openvpn stop"'
           command_state: 'ssh root@&amp;lt;router IP&amp;gt; "pgrep /usr/sbin/openvpn"'
-          friendly_name: ATV4 VPN
-&lt;/pre&gt;
+          friendly_name: ATV4 VPN&lt;/pre&gt;
 &lt;p&gt;That's it. The switch state will now properly be updated
 even if the VPN is started or stopped without using the application.&lt;/p&gt;
 &lt;p&gt;If you go to &lt;em&gt;http://&amp;lt;container IP&amp;gt;:8123&lt;/em&gt;, you should see something like
@@ -322,8 +280,7 @@ that:&lt;/p&gt;
 &lt;p&gt;Let's configure &lt;a class="reference external" href="https://home-assistant.io/getting-started/autostart-systemd/"&gt;systemd&lt;/a&gt; to automatically
 start the application.
 Create the file &lt;cite&gt;/etc/systemd/system/home-assistant@homeassistant.service&lt;/cite&gt;:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# cat &amp;lt;&amp;lt;EOF &amp;gt;&amp;gt; /etc/systemd/system/home-assistant@homeassistant.service
+&lt;pre class="literal-block"&gt;root@homeassistant:~# cat &amp;lt;&amp;lt;EOF &amp;gt;&amp;gt; /etc/systemd/system/home-assistant@homeassistant.service
 [Unit]
 Description=Home Assistant
 After=network.target
@@ -335,28 +292,21 @@ ExecStart=/srv/homeassistant/bin/hass -c "/home/homeassistant/.homeassistant"
 
 [Install]
 WantedBy=multi-user.target
-EOF
-&lt;/pre&gt;
+EOF&lt;/pre&gt;
 &lt;p&gt;Enable and launch Home Assistant:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# systemctl --system daemon-reload
+&lt;pre class="literal-block"&gt;root@homeassistant:~# systemctl --system daemon-reload
 root@homeassistant:~# systemctl enable home-assistant@homeassistant
 Created symlink from /etc/systemd/system/multi-user.target.wants/home-assistant@homeassistant.service to /etc/systemd/system/home-assistant@homeassistant.service.
-root@homeassistant:~# systemctl start home-assistant@homeassistant
-&lt;/pre&gt;
+root@homeassistant:~# systemctl start home-assistant@homeassistant&lt;/pre&gt;
 &lt;p&gt;You can check the logs with:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# journalctl -f -u home-assistant@homeassistant
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;root@homeassistant:~# journalctl -f -u home-assistant@homeassistant&lt;/pre&gt;
 &lt;p&gt;We just have to make sure the container starts automatically when we
 reboot the router.
 Set the following in &lt;cite&gt;/etc/config/lxc-auto&lt;/cite&gt;:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@turris:~# cat /etc/config/lxc-auto
+&lt;pre class="literal-block"&gt;root@turris:~# cat /etc/config/lxc-auto
 config container
   option name homeassistant
-  option timeout 60
-&lt;/pre&gt;
+  option timeout 60&lt;/pre&gt;
 &lt;/div&gt;
 &lt;div class="section" id="make-it-easy-to-access-home-assistant"&gt;
 &lt;h2&gt;Make it easy to access Home Assistant&lt;/h2&gt;
@@ -383,33 +333,27 @@ If you haven't heard about it, you should check it out.&lt;/p&gt;
 &lt;p&gt;Installing an OpenVPN client on OpenWrt is not very difficult.
 Here is a quick summary.&lt;/p&gt;
 &lt;ol class="arabic"&gt;
-&lt;li&gt;&lt;p class="first"&gt;Install &lt;cite&gt;openvpn-openssl&lt;/cite&gt; package (via the
-webinterface or the command line)&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;I already have a custom client config that I generated with Ansible in
+&lt;li&gt;&lt;p&gt;Install &lt;cite&gt;openvpn-openssl&lt;/cite&gt; package (via the
+webinterface or the command line)&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;I already have a custom client config that I generated with Ansible in
 this &lt;a class="reference external" href="http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible"&gt;post&lt;/a&gt;.
 To use this config, create the file &lt;cite&gt;/etc/config/openvpn&lt;/cite&gt;:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-# cat /etc/config/openvpn
+&lt;pre class="literal-block"&gt;# cat /etc/config/openvpn
 package openvpn
 
 config openvpn myvpn
         # Set to 1 to enable this instance:
         option enabled 1
         # Include OpenVPN configuration
-        option config /etc/openvpn/myclientconfig.ovpn
-&lt;/pre&gt;
+        option config /etc/openvpn/myclientconfig.ovpn&lt;/pre&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;Add a new interface in &lt;cite&gt;/etc/config/network&lt;/cite&gt;:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-config interface 'myvpn'
+&lt;li&gt;&lt;p&gt;Add a new interface in &lt;cite&gt;/etc/config/network&lt;/cite&gt;:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;config interface 'myvpn'
        option proto 'none'
-       option ifname 'tun0'
-&lt;/pre&gt;
+       option ifname 'tun0'&lt;/pre&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;Add a new zone to &lt;cite&gt;/etc/config/firewall&lt;/cite&gt;:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-config zone
+&lt;li&gt;&lt;p&gt;Add a new zone to &lt;cite&gt;/etc/config/firewall&lt;/cite&gt;:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;config zone
         option forward 'REJECT'
         option output 'ACCEPT'
         option name 'VPN_FW'
@@ -420,20 +364,17 @@ config zone
 
 config forwarding
         option dest 'VPN_FW'
-        option src 'lan'
-&lt;/pre&gt;
+        option src 'lan'&lt;/pre&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;An easy way to configure DNS servers is to add fixed DNS for the WAN interface of the router.
+&lt;li&gt;&lt;p&gt;An easy way to configure DNS servers is to add fixed DNS for the WAN interface of the router.
 To use Google DNS, add the following two lines to the wan interface in &lt;cite&gt;/etc/config/network&lt;/cite&gt;:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-# diff -u network.save network
+&lt;pre class="literal-block"&gt;# diff -u network.save network
 @@ -20,6 +20,8 @@
  config interface 'wan'
          option ifname 'eth1'
          option proto 'dhcp'
 +        option peerdns '0'
-+        option dns '8.8.8.8 8.8.4.4'
-&lt;/pre&gt;
++        option dns '8.8.8.8 8.8.4.4'&lt;/pre&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;If you run &lt;cite&gt;/etc/init.d/openvpn start&lt;/cite&gt; with this config, you should connect successfully!
@@ -448,12 +389,10 @@ that before to do that I had to ignore the routes pushed by the server.&lt;/p&gt
 &lt;p&gt;With my configuration, when the client connects, the server pushes some
 routes among which a default route that makes all the traffic go via the
 VPN:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-Kernel IP routing table
+&lt;pre class="literal-block"&gt;Kernel IP routing table
 Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 default         10.8.0.21       128.0.0.0       UG    0      0        0 tun0
-...
-&lt;/pre&gt;
+...&lt;/pre&gt;
 &lt;p&gt;Ignoring the routes pushed by the server can be done with the &lt;cite&gt;--route-noexec&lt;/cite&gt; option.
 I tried to add &lt;cite&gt;option route_noexec 1&lt;/cite&gt; to my &lt;cite&gt;/etc/config/openvpn&lt;/cite&gt; file
 but it had no effect. It looks like that when using a custom config, you
@@ -462,12 +401,10 @@ config. I added &lt;cite&gt;route-noexec&lt;/cite&gt; to  my &lt;cite&gt;/etc/op
 No more route added. No traffic sent via the VPN.&lt;/p&gt;
 &lt;p&gt;We can now apply the changes described in the &lt;a class="reference external" href="https://wiki.openwrt.org/doc/networking/routing"&gt;Routing wiki page&lt;/a&gt;.&lt;/p&gt;
 &lt;ol class="arabic"&gt;
-&lt;li&gt;&lt;p class="first"&gt;Install the &lt;cite&gt;ip&lt;/cite&gt; package&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;Add the &lt;cite&gt;10 vpn&lt;/cite&gt; line to &lt;cite&gt;/etc/iproute2/rt_tables&lt;/cite&gt; so that it looks like
+&lt;li&gt;&lt;p&gt;Install the &lt;cite&gt;ip&lt;/cite&gt; package&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Add the &lt;cite&gt;10 vpn&lt;/cite&gt; line to &lt;cite&gt;/etc/iproute2/rt_tables&lt;/cite&gt; so that it looks like
 this:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-# cat /etc/iproute2/rt_tables
+&lt;pre class="literal-block"&gt;# cat /etc/iproute2/rt_tables
 #
 # reserved values
 #
@@ -479,13 +416,11 @@ this:&lt;/p&gt;
 #
 # local
 #
-#1  inr.ruhep
-&lt;/pre&gt;
+#1  inr.ruhep&lt;/pre&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;We now need to add a new rule and route when starting the client.
+&lt;li&gt;&lt;p&gt;We now need to add a new rule and route when starting the client.
 We can do so using the openvpn &lt;cite&gt;up&lt;/cite&gt; command. Create the &lt;cite&gt;/etc/openvpn/upvpn&lt;/cite&gt; script:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-# cat /etc/openvpn/upvpn
+&lt;pre class="literal-block"&gt;# cat /etc/openvpn/upvpn
 #!/bin/sh
 
 client=192.168.75.20
@@ -500,12 +435,10 @@ echo "Routing client $client traffic through VPN"
 ip rule add from $client priority 10 table vpn
 ip route add $client dev $tun_dev table vpn
 ip route add default via $ifconfig_remote_ip dev $tun_dev table vpn
-ip route flush cache
-&lt;/pre&gt;
+ip route flush cache&lt;/pre&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;Create the &lt;cite&gt;/etc/openvpn/downvpn&lt;/cite&gt; script to properly remove the rule and route:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-# cat /etc/openvpn/downvpn
+&lt;li&gt;&lt;p&gt;Create the &lt;cite&gt;/etc/openvpn/downvpn&lt;/cite&gt; script to properly remove the rule and route:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;# cat /etc/openvpn/downvpn
 #!/bin/sh
 
 client=192.168.75.20
@@ -520,13 +453,11 @@ echo "Delete client $client traffic routing through VPN"
 ip rule del from $client priority 10 table vpn
 ip route del $client dev $tun_dev table vpn
 ip route del default via $ifconfig_remote_ip dev $tun_dev table vpn
-ip route flush cache
-&lt;/pre&gt;
+ip route flush cache&lt;/pre&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;We now have to add those scripts to the client config.
+&lt;li&gt;&lt;p&gt;We now have to add those scripts to the client config.
 Here is everything I added to my &lt;cite&gt;/etc/openvpn/myclientconfig.ovpn&lt;/cite&gt; file:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-# Don't add or remove routes automatically
+&lt;pre class="literal-block"&gt;# Don't add or remove routes automatically
 # Source based routing for specific client added in up script
 route-noexec
 # script-security 2 needed to run up and down scripts
@@ -535,8 +466,7 @@ script-security 2
 up /etc/openvpn/upvpn
 # Call down script before to close TUN to properly remove the routing
 down-pre
-down /etc/openvpn/downvpn
-&lt;/pre&gt;
+down /etc/openvpn/downvpn&lt;/pre&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;Notice that the machine IP address that we want to route via the VPN is
@@ -578,8 +508,7 @@ favorite tool to deploy software.&lt;/p&gt;
 &lt;p&gt;So let's write a small Ansible playbook to install OpenVPN on a Raspberry Pi.&lt;/p&gt;
 &lt;p&gt;First the firewall configuration. I like to use &lt;a class="reference external" href="https://help.ubuntu.com/community/UFW"&gt;ufw&lt;/a&gt; which is quite easy to
 setup:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-- name: install dependencies
+&lt;pre class="literal-block"&gt;- name: install dependencies
   apt: name=ufw state=present update_cache=yes cache_valid_time=3600
 
 - name: update ufw default forward policy
@@ -614,15 +543,13 @@ setup:&lt;/p&gt;
   ufw: rule=allow port={{openvpn_port}} proto={{openvpn_protocol}}
 
 - name: enable ufw
-  ufw: logging=on state=enabled
-&lt;/pre&gt;
+  ufw: logging=on state=enabled&lt;/pre&gt;
 &lt;p&gt;This enables IP forwarding, adds the required NAT rules and allows ssh and
 openvpn.&lt;/p&gt;
 &lt;p&gt;The rest of the playbook installs OpenVPN and generates all the keys automatically,
 except the Diffie-Hellman one that should be generated locally.
 This is just because it takes for ever on the Pi :-)&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-- name: install openvpn
+&lt;pre class="literal-block"&gt;- name: install openvpn
   apt: name=openvpn state=present
 
 - name: create /etc/openvpn
@@ -691,8 +618,7 @@ This is just because it takes for ever on the Pi :-)&lt;/p&gt;
   notify: restart openvpn
 
 - name: start openvpn
-  service: name=openvpn state=started
-&lt;/pre&gt;
+  service: name=openvpn state=started&lt;/pre&gt;
 &lt;p&gt;The &lt;em&gt;create_clientside&lt;/em&gt; script generates all the required client keys and creates an ovpn file
 that includes them.  It makes it very easy to install on any device: just one file to
 drop.&lt;/p&gt;
@@ -722,13 +648,9 @@ The README includes some quick instructions.&lt;/p&gt;
 securely access my NAS from anywhere!&lt;/p&gt;&lt;/div&gt;</description><category>Ansible</category><category>pi</category><category>VPN</category><guid>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</guid><pubDate>Mon, 18 Jul 2016 20:26:28 GMT</pubDate></item><item><title>crontab and date</title><link>http://beenje.github.io/blog/posts/crontab-and-date/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;The other day, I wanted to add a script to the crontab and to redirect the
 output to a file including the current date. Easy. I have used the
 &lt;cite&gt;date&lt;/cite&gt; command many times in bash script like that:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-current_date=$(date +"%Y%m%dT%H%M")
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;current_date=$(date +"%Y%m%dT%H%M")&lt;/pre&gt;
 &lt;p&gt;So I added the following to my crontab:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-0 1 * * * /usr/local/bin/foo &amp;gt; /tmp/foo.$(date +%Y%m%dT%H%M).log 2&amp;gt;&amp;amp;1
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;0 1 * * * /usr/local/bin/foo &amp;gt; /tmp/foo.$(date +%Y%m%dT%H%M).log 2&amp;gt;&amp;amp;1&lt;/pre&gt;
 &lt;p&gt;And... it didn't work...&lt;/p&gt;
 &lt;p&gt;I quickly identified that the script was working properly when run from the
 crontab (it's easy to get a script working from the prompt, not running
@@ -736,15 +658,11 @@ from the crontab due to incorrect PATH). The problem was the redirection
 but I couldn't see why.&lt;/p&gt;
 &lt;p&gt;I googled a bit but didn't find anything...&lt;/p&gt;
 &lt;p&gt;I finally looked at the man pages:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-$  man 5 crontab
+&lt;pre class="literal-block"&gt;$  man 5 crontab
 
      ...
      The  ``sixth''  field  (the  rest of the line) specifies the command to be run.  The entire command portion of the line, up to a
-     newline or % character...
-&lt;/pre&gt;
+     newline or % character...&lt;/pre&gt;
 &lt;p&gt;Here it was of course! &lt;cite&gt;%&lt;/cite&gt; is a special character. It needs to be escaped:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-0 1 * * * /usr/local/bin/foo &amp;gt; /tmp/foo.$(date +\%Y\%m\%dT\%H\%M).log 2&amp;gt;&amp;amp;1
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;0 1 * * * /usr/local/bin/foo &amp;gt; /tmp/foo.$(date +\%Y\%m\%dT\%H\%M).log 2&amp;gt;&amp;amp;1&lt;/pre&gt;
 &lt;p&gt;Lesson to remember: check the man pages before to google!&lt;/p&gt;&lt;/div&gt;</description><category>bash</category><category>cron</category><category>linux</category><guid>http://beenje.github.io/blog/posts/crontab-and-date/</guid><pubDate>Mon, 18 Jan 2016 21:42:39 GMT</pubDate></item></channel></rss>

@@ -81,10 +81,11 @@ navbar-dark bg-dark
         <!--Body content-->
         
         
+        
 <article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">GitLab Container Registry and proxy</a></h1>
 
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
                     Benjamin Bertrand
             </span></p>
             <p class="dateline">
@@ -115,33 +116,30 @@ The documentation to use the image is quite clear and can be found <a class="ref
 I wanted to access GitLab using HTTPS, so I disabled port 443 in nginx
 configuration. To do that I had to modify the template
 <cite>/usr/syno/share/nginx/WWWService.mustache</cite> and reboot the NAS:</p>
-<pre class="code diff"><a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-1"></a><span class="gd">--- WWWService.mustache.org 2016-08-16 23:25:06.000000000 +0100</span>
-<a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-2"></a><span class="gi">+++ WWWService.mustache 2016-09-19 13:53:45.256735700 +0100</span>
-<a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-3"></a><span class="gu">@@ -1,8 +1,6 @@</span>
-<a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-4"></a> server {
-<a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-5"></a>     listen 80 default_server{{#reuseport}} reuseport{{/reuseport}};
-<a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-6"></a>     listen [::]:80 default_server{{#reuseport}} reuseport{{/reuseport}};
-<a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-7"></a><span class="gd">-    listen 443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
-<a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-8"></a><span class="gd">-    listen [::]:443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
-<a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-9"></a>
-<a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-10"></a>     server_name _;
+<pre class="code diff"><a name="rest_code_7870ce14df8241a4b6006e19315a25dc-1"></a><span class="gd">--- WWWService.mustache.org 2016-08-16 23:25:06.000000000 +0100</span>
+<a name="rest_code_7870ce14df8241a4b6006e19315a25dc-2"></a><span class="gi">+++ WWWService.mustache 2016-09-19 13:53:45.256735700 +0100</span>
+<a name="rest_code_7870ce14df8241a4b6006e19315a25dc-3"></a><span class="gu">@@ -1,8 +1,6 @@</span>
+<a name="rest_code_7870ce14df8241a4b6006e19315a25dc-4"></a> server {
+<a name="rest_code_7870ce14df8241a4b6006e19315a25dc-5"></a>     listen 80 default_server{{#reuseport}} reuseport{{/reuseport}};
+<a name="rest_code_7870ce14df8241a4b6006e19315a25dc-6"></a>     listen [::]:80 default_server{{#reuseport}} reuseport{{/reuseport}};
+<a name="rest_code_7870ce14df8241a4b6006e19315a25dc-7"></a><span class="gd">-    listen 443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
+<a name="rest_code_7870ce14df8241a4b6006e19315a25dc-8"></a><span class="gd">-    listen [::]:443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
+<a name="rest_code_7870ce14df8241a4b6006e19315a25dc-9"></a>
+<a name="rest_code_7870ce14df8241a4b6006e19315a25dc-10"></a>     server_name _;
 </pre>
 <p>The port 22 is also already used by the ssh daemon so I decided to use
 the port 2222. I created the directory <cite>/volume1/docker/gitlab</cite> to store
 all GitLab data. Here are the required variables in the
 <cite>/volume1/docker/gitlab/config/gitlab.rb</cite> config file:</p>
-<pre class="literal-block">
-external_url "https://mygitlab.example.com"
+<pre class="literal-block">external_url "https://mygitlab.example.com"
 
 ## GitLab Shell settings for GitLab
 gitlab_rails['gitlab_shell_ssh_port'] = 2222
 
 nginx['enable'] = true
-nginx['redirect_http_to_https'] = true
-</pre>
+nginx['redirect_http_to_https'] = true</pre>
 <p>And this is how I run the image:</p>
-<pre class="literal-block">
-docker run --detach \
+<pre class="literal-block">docker run --detach \
     --hostname mygitlab.example.com \
     --publish 443:443 --publish 8080:80 --publish 2222:22 \
     --name gitlab \
@@ -149,22 +147,18 @@ docker run --detach \
     --volume /volume1/docker/gitlab/config:/etc/gitlab \
     --volume /volume1/docker/gitlab/logs:/var/log/gitlab \
     --volume /volume1/docker/gitlab/data:/var/opt/gitlab \
-    gitlab/gitlab-ce:latest
-</pre>
+    gitlab/gitlab-ce:latest</pre>
 <p>This has been working fine. Since I heard about <a class="reference external" href="https://about.gitlab.com/2016/05/23/gitlab-container-registry/">GitLab Container Registry</a>,
 I've been wanted to give it a try.</p>
 </div>
 <div class="section" id="id1">
 <h2>GitLab Container Registry</h2>
 <p>To enable it, I just added to my <cite>gitlab.rb</cite> file the registry url:</p>
-<pre class="literal-block">
-registry_external_url 'https://mygitlab.example.com:4567'
-</pre>
+<pre class="literal-block">registry_external_url 'https://mygitlab.example.com:4567'</pre>
 <p>I use the existing GitLab domain and use the port 4567 for the registry.
 The TLS certificate and key are in the default path, so no need to specify them.</p>
 <p>So let's restart GitLab. Don't forget to publish the new port 4567!</p>
-<pre class="literal-block">
-$ docker stop gitlab
+<pre class="literal-block">$ docker stop gitlab
 $ docker rm gitlab
 $ docker run --detach \
     --hostname mygitlab.example.com \
@@ -175,21 +169,17 @@ $ docker run --detach \
     --volume /volume1/docker/gitlab/config:/etc/gitlab \
     --volume /volume1/docker/gitlab/logs:/var/log/gitlab \
     --volume /volume1/docker/gitlab/data:/var/opt/gitlab \
-    gitlab/gitlab-ce:latest
-</pre>
+    gitlab/gitlab-ce:latest</pre>
 <p>Easy! Let's test our new docker registry!</p>
-<pre class="literal-block">
-$ docker login mygitlab.example.com:4567
+<pre class="literal-block">$ docker login mygitlab.example.com:4567
 Username: user
 Password:
-Error response from daemon: Get https://mygitlab.example.com:4567/v1/users/: Service Unavailable
-</pre>
+Error response from daemon: Get https://mygitlab.example.com:4567/v1/users/: Service Unavailable</pre>
 <p>Hmm... Not super useful error...
 I thought about publishing port 4567 in docker, so what is happening?
 After looking through the logs, I found <cite>/volume1/docker/gitlab/logs/nginx/gitlab_registry_access.logi</cite>. It's empty...
 Let's try curl:</p>
-<pre class="literal-block">
-$ curl https://mygitlab.example.com:4567/v1/users/
+<pre class="literal-block">$ curl https://mygitlab.example.com:4567/v1/users/
 
 curl: (60) Peer certificate cannot be authenticated with known CA certificates
 More details here: http://curl.haxx.se/docs/sslcerts.html
@@ -203,69 +193,52 @@ If this HTTPS server uses a certificate signed by a CA represented in
  problem with the certificate (it might be expired, or the name might
  not match the domain name in the URL).
 If you'd like to turn off curl's verification of the certificate, use
- the -k (or --insecure) option.
-</pre>
+ the -k (or --insecure) option.</pre>
 <p>OK, I have a self-signed certificate. So let's try with <cite>--insecure</cite>:</p>
-<pre class="literal-block">
-$ curl --insecure https://mygitlab.example.com:4567/v1/users/
-404 page not found
-</pre>
+<pre class="literal-block">$ curl --insecure https://mygitlab.example.com:4567/v1/users/
+404 page not found</pre>
 <p>At least I get an entry in my log file:</p>
-<pre class="literal-block">
-$ cd /volume1/docker/gitlab
+<pre class="literal-block">$ cd /volume1/docker/gitlab
 $ cat logs/nginx/gitlab_registry_access.log
-xxx.xx.x.x - - [21/Sep/2016:14:24:57 +0000] "GET /v1/users/ HTTP/1.1" 404 19 "-" "curl/7.43.0"
-</pre>
+xxx.xx.x.x - - [21/Sep/2016:14:24:57 +0000] "GET /v1/users/ HTTP/1.1" 404 19 "-" "curl/7.43.0"</pre>
 <p>So, docker and nginx seem to be configured properly...
 It looks like <cite>docker login</cite> is not even trying to access my host...</p>
 <p>Let's try with a dummy host:</p>
-<pre class="literal-block">
-$ docker login foo
+<pre class="literal-block">$ docker login foo
 Username: user
 Password:
-Error response from daemon: Get https://mygitlab.example.com:4567/v1/users/: Service Unavailable
-</pre>
+Error response from daemon: Get https://mygitlab.example.com:4567/v1/users/: Service Unavailable</pre>
 <p>Same error!
 Why is that? I can ping <cite>mygitlab.example.com</cite> and even access nginx on port 4567 (using curl)
 inside the docker container...
 My machine is on the same network. It can't be a proxy problem. Wait. Proxy?</p>
 <p>That's when I remembered I had configured my docker daemon to use a proxy to access the internet!
 I created the file <cite>/etc/systemd/system/docker.service.d/http-proxy.conf</cite> with:</p>
-<pre class="literal-block">
-[Service]
-Environment="HTTP_PROXY=http://proxy.example.com:8080/"
-</pre>
+<pre class="literal-block">[Service]
+Environment="HTTP_PROXY=http://proxy.example.com:8080/"</pre>
 <p>Reading the <a class="reference external" href="https://docs.docker.com/engine/admin/systemd/">docker documentation</a>, it's very clear:
 <strong>If you have internal Docker registries that you need to contact without proxying you can specify them via the NO_PROXY environment variable</strong></p>
 <p>Let's add the NO_PROXY variable:</p>
-<pre class="literal-block">
-[Service]
-Environment="HTTP_PROXY=http://proxy.example.com:8080/" "NO_PROXY=localhost,127.0.0.1,mygitlab.example.com"
-</pre>
+<pre class="literal-block">[Service]
+Environment="HTTP_PROXY=http://proxy.example.com:8080/" "NO_PROXY=localhost,127.0.0.1,mygitlab.example.com"</pre>
 <p>Flush the changes and restart the docker daemon:</p>
-<pre class="literal-block">
-$ sudo systemctl daemon-reload
-$ sudo systemctl restart docker
-</pre>
+<pre class="literal-block">$ sudo systemctl daemon-reload
+$ sudo systemctl restart docker</pre>
 <p>Now let's try to login again:</p>
-<pre class="literal-block">
-$ docker login mygitlab.example.com:4567
+<pre class="literal-block">$ docker login mygitlab.example.com:4567
 Username: user
 Password:
-Error response from daemon: Get https://mygitlab.example.com:4567/v1/users/: x509: certificate signed by unknown authority
-</pre>
+Error response from daemon: Get https://mygitlab.example.com:4567/v1/users/: x509: certificate signed by unknown authority</pre>
 <p>This error is easy to fix (after googling). I have to add the self-signed certificate at the OS level.
 On my Ubuntu machine:</p>
-<pre class="literal-block">
-$ sudo cp mygitlab.example.com.crt /usr/local/share/ca-certificates/
+<pre class="literal-block">$ sudo cp mygitlab.example.com.crt /usr/local/share/ca-certificates/
 $ sudo update-ca-certificates
 $ sudo systemctl restart docker
 
 $ docker login mygitlab.example.com:4567
 Username: user
 Password:
-Login Succeeded
-</pre>
+Login Succeeded</pre>
 <p>Yes! :-)</p>
 <p>I can now push docker images to my GitLab Container Registry!</p>
 </div>
@@ -276,14 +249,12 @@ settings made me lost quite some time... The proxy environment variables (HTTP_P
 are not taken into account by the docker commands. The docker daemon has to be configured
 specifically. Something to remember!</p>
 <p>Note that this was with docker 1.11.2. When trying the same command on my Mac with docker 1.12.1, I got a nicer error message:</p>
-<pre class="literal-block">
-$ docker --version
+<pre class="literal-block">$ docker --version
 Docker version 1.12.1, build 6f9534c
 $ docker login foo
 Username: user
 Password:
-Error response from daemon: Get https://foo/v1/users/: dial tcp: lookup foo on xxx.xxx.xx.x:53: no such host
-</pre>
+Error response from daemon: Get https://foo/v1/users/: dial tcp: lookup foo on xxx.xxx.xx.x:53: no such host</pre>
 </div>
 </div>
     </div>
@@ -324,19 +295,17 @@ Error response from daemon: Get https://foo/v1/users/: dial tcp: lookup foo on x
 
 
         </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
-            Contents © 2019         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2020         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
             
         </footer>
 </div>
 </div>
 
 
-        <script src="../../assets/js/all-nocdn.js"></script><!-- fancy dates --><script>
-    moment.locale("en");
-    fancydates(0, "YYYY-MM-DD HH:mm");
-    </script><!-- end fancy dates --><script>
+        <script src="../../assets/js/all-nocdn.js"></script><script>
     baguetteBox.run('div#content', {
         ignoreClass: 'islink',
         captions: function(element) {

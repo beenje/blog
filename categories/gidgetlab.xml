@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about gidgetlab)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/gidgetlab.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Tue, 18 Sep 2018 20:09:33 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Building a GitLab bot using gidgetlab and aiohttp</title><link>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;At PyCon 2018, &lt;a class="reference external" href="https://github.com/Mariatta"&gt;Mariatta&lt;/a&gt; held a &lt;a class="reference external" href="https://us.pycon.org/2018/schedule/presentation/41/"&gt;Build-a-GitHub-Bot Workshop&lt;/a&gt;. The full
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about gidgetlab)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/gidgetlab.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2020 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
+&lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
+&lt;img alt="Creative Commons License BY-NC-SA"
+style="border-width:0; margin-bottom:12px;"
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 11 Mar 2020 18:05:02 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Building a GitLab bot using gidgetlab and aiohttp</title><link>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;At PyCon 2018, &lt;a class="reference external" href="https://github.com/Mariatta"&gt;Mariatta&lt;/a&gt; held a &lt;a class="reference external" href="https://us.pycon.org/2018/schedule/presentation/41/"&gt;Build-a-GitHub-Bot Workshop&lt;/a&gt;. The full
 documentation can be found on &lt;a class="reference external" href="https://github.com/Mariatta/github-bot-tutorial"&gt;GitHub&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;I went through the tutorial and really enjoyed it.
 This is how I discovered &lt;a class="reference external" href="https://gidgethub.readthedocs.io/en/latest/"&gt;gidgethub&lt;/a&gt; from &lt;a class="reference external" href="https://github.com/brettcannon"&gt;Brett Cannon&lt;/a&gt;, an async GitHub
@@ -18,28 +22,24 @@ gidgetlab can of course be used with a private GitLab instance!&lt;/p&gt;
 So let's create an issue on GitLab using the API via the command line, instead of the GitLab website.&lt;/p&gt;
 &lt;div class="section" id="install-gidgetlab-and-aiohttp"&gt;
 &lt;h3&gt;Install gidgetlab and aiohttp&lt;/h3&gt;
-&lt;p&gt;Install &lt;tt class="docutils literal"&gt;gidgetlab&lt;/tt&gt; and &lt;tt class="docutils literal"&gt;aiohttp&lt;/tt&gt; if you have not already. Using a virtual environment
+&lt;p&gt;Install &lt;code class="docutils literal"&gt;gidgetlab&lt;/code&gt; and &lt;code class="docutils literal"&gt;aiohttp&lt;/code&gt; if you have not already. Using a virtual environment
 is recommended.&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-python3.6 -m pip install gidgetlab[aiohttp]
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;python3.6 -m pip install gidgetlab[aiohttp]&lt;/pre&gt;
 &lt;/div&gt;
 &lt;div class="section" id="create-a-gitlab-personal-access-token"&gt;
 &lt;h3&gt;Create a GitLab Personal Access Token&lt;/h3&gt;
 &lt;p&gt;In order to use GitLab's API, you'll need to create a personal access token
 that will be used to authenticate yourself to GitLab.&lt;/p&gt;
 &lt;ol class="arabic"&gt;
-&lt;li&gt;&lt;p class="first"&gt;Go to &lt;a class="reference external" href="https://gitlab.com/profile/personal_access_tokens"&gt;https://gitlab.com/profile/personal_access_tokens&lt;/a&gt;&lt;/p&gt;
+&lt;li&gt;&lt;p&gt;Go to &lt;a class="reference external" href="https://gitlab.com/profile/personal_access_tokens"&gt;https://gitlab.com/profile/personal_access_tokens&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;Or, from GitLab, go to your &lt;a class="reference external" href="https://gitlab.com/profile"&gt;Settings&lt;/a&gt; &amp;gt; &lt;a class="reference external" href="https://gitlab.com/profile/personal_access_tokens"&gt;Access Tokens&lt;/a&gt;.&lt;/p&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;Under &lt;tt class="docutils literal"&gt;Name&lt;/tt&gt;, enter a short description, to identify the purpose
-of this token. I recommend something like: &lt;tt class="docutils literal"&gt;bot tutorial&lt;/tt&gt;.&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Under &lt;code class="docutils literal"&gt;Name&lt;/code&gt;, enter a short description, to identify the purpose
+of this token. I recommend something like: &lt;code class="docutils literal"&gt;bot tutorial&lt;/code&gt;.&lt;/p&gt;&lt;/li&gt;
 &lt;/ol&gt;
 &lt;ol class="arabic" start="4"&gt;
-&lt;li&gt;&lt;p class="first"&gt;Under Scopes, check the &lt;tt class="docutils literal"&gt;api&lt;/tt&gt; scope.&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;Click &lt;tt class="docutils literal"&gt;Create personal access token&lt;/tt&gt;. You will see your new personal access token
+&lt;li&gt;&lt;p&gt;Under Scopes, check the &lt;code class="docutils literal"&gt;api&lt;/code&gt; scope.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Click &lt;code class="docutils literal"&gt;Create personal access token&lt;/code&gt;. You will see your new personal access token
 (a 21 characters string). Click on the copy to clipboard icon and and paste it locally
 in a text file for now. If you have a password manager like 1password, use that.&lt;/p&gt;
 &lt;p&gt;This is the only time you'll see this token in GitLab. If you lose it, you'll
@@ -50,23 +50,18 @@ need to revoke it and create another one.&lt;/p&gt;
 &lt;div class="section" id="store-the-personal-access-token-as-an-environment-variable"&gt;
 &lt;h3&gt;Store the Personal Access Token as an environment variable&lt;/h3&gt;
 &lt;p&gt;In Unix / Mac OS:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-export GL_ACCESS_TOKEN=your token
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;export GL_ACCESS_TOKEN=your token&lt;/pre&gt;
 &lt;p&gt;In Windows:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-set GL_ACCESS_TOKEN=your token
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;set GL_ACCESS_TOKEN=your token&lt;/pre&gt;
 &lt;p&gt;Note that these will only set the token for the current process. If you want
 this value stored permanently, you have to edit the bashrc file.&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="create-an-issue"&gt;
 &lt;h3&gt;Create an issue&lt;/h3&gt;
-&lt;p&gt;Open a new file, for example &lt;tt class="docutils literal"&gt;create_issue.py&lt;/tt&gt; in your favorite editor.&lt;/p&gt;
-&lt;p&gt;Copy the following into &lt;tt class="docutils literal"&gt;create_issue.py&lt;/tt&gt;.
+&lt;p&gt;Open a new file, for example &lt;code class="docutils literal"&gt;create_issue.py&lt;/code&gt; in your favorite editor.&lt;/p&gt;
+&lt;p&gt;Copy the following into &lt;code class="docutils literal"&gt;create_issue.py&lt;/code&gt;.
 Instead of "beenje" however, use your own GitLab username:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-import asyncio
+&lt;pre class="literal-block"&gt;import asyncio
 import os
 import aiohttp
 from gidgetlab.aiohttp import GitLabAPI
@@ -76,37 +71,31 @@ async def main():
         gl = GitLabAPI(session, "beenje", access_token=os.getenv("GL_ACCESS_TOKEN"))
 
 loop = asyncio.get_event_loop()
-loop.run_until_complete(main())
-&lt;/pre&gt;
+loop.run_until_complete(main())&lt;/pre&gt;
 &lt;p&gt;We only instantiate a GitLabAPI class from gidgetlab by passing who we are ("beenje" in this example)
-and our GitLab personal access token stored in the &lt;tt class="docutils literal"&gt;GL_ACCESS_TOKEN&lt;/tt&gt; environment variable.
+and our GitLab personal access token stored in the &lt;code class="docutils literal"&gt;GL_ACCESS_TOKEN&lt;/code&gt; environment variable.
 Note that to interact with a private GitLab instance, you just have to pass the url to GitLabAPI:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-gl = GitLabAPI(session, "beenje", access_token=os.getenv("GL_ACCESS_TOKEN"),
-               url="https://mygitlab.example.com")
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;gl = GitLabAPI(session, "beenje", access_token=os.getenv("GL_ACCESS_TOKEN"),
+               url="https://mygitlab.example.com")&lt;/pre&gt;
 &lt;p&gt;By default, the url is set to &lt;cite&gt;https://gitlab.com&lt;/cite&gt;.&lt;/p&gt;
 &lt;p&gt;So let's create an issue in one of my personal repo.
 Take a look at GitLab's documentation for &lt;a class="reference external" href="https://docs.gitlab.com/ee/api/issues.html#new-issue"&gt;creating a new issue&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;To create an issue, you should make a &lt;tt class="docutils literal"&gt;POST&lt;/tt&gt; request to the url
-&lt;tt class="docutils literal"&gt;&lt;span class="pre"&gt;/projects/:id/issues&lt;/span&gt;&lt;/tt&gt; and supply the parameters &lt;tt class="docutils literal"&gt;title&lt;/tt&gt; (required)
-and &lt;tt class="docutils literal"&gt;description&lt;/tt&gt;.
-The &lt;tt class="docutils literal"&gt;id&lt;/tt&gt; can be the project ID or &lt;a class="reference external" href="https://docs.gitlab.com/ee/api/README.html#namespaced-path-encoding"&gt;URL-encoded path of the project&lt;/a&gt; owned by the authenticated user.&lt;/p&gt;
+&lt;p&gt;To create an issue, you should make a &lt;code class="docutils literal"&gt;POST&lt;/code&gt; request to the url
+&lt;code class="docutils literal"&gt;&lt;span class="pre"&gt;/projects/:id/issues&lt;/span&gt;&lt;/code&gt; and supply the parameters &lt;code class="docutils literal"&gt;title&lt;/code&gt; (required)
+and &lt;code class="docutils literal"&gt;description&lt;/code&gt;.
+The &lt;code class="docutils literal"&gt;id&lt;/code&gt; can be the project ID or &lt;a class="reference external" href="https://docs.gitlab.com/ee/api/README.html#namespaced-path-encoding"&gt;URL-encoded path of the project&lt;/a&gt; owned by the authenticated user.&lt;/p&gt;
 &lt;p&gt;With gidgetlab, this looks like the following:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-await gl.post(
+&lt;pre class="literal-block"&gt;await gl.post(
     "/projects/beenje%2Fstrange-relationship/issues",
     data={
         "title": "We got a problem",
         "description": "Use more emoji!",
-    })
-&lt;/pre&gt;
-&lt;p&gt;&lt;tt class="docutils literal"&gt;&lt;span class="pre"&gt;beenje%2Fstrange-relationship&lt;/span&gt;&lt;/tt&gt; is the &lt;a class="reference external" href="https://docs.gitlab.com/ee/api/README.html#namespaced-path-encoding"&gt;URL-encoded path of the project&lt;/a&gt;. We could have used the id &lt;tt class="docutils literal"&gt;7898119&lt;/tt&gt; instead.
+    })&lt;/pre&gt;
+&lt;p&gt;&lt;code class="docutils literal"&gt;&lt;span class="pre"&gt;beenje%2Fstrange-relationship&lt;/span&gt;&lt;/code&gt; is the &lt;a class="reference external" href="https://docs.gitlab.com/ee/api/README.html#namespaced-path-encoding"&gt;URL-encoded path of the project&lt;/a&gt;. We could have used the id &lt;code class="docutils literal"&gt;7898119&lt;/code&gt; instead.
 The project ID can be found on the project main page.&lt;/p&gt;
 &lt;p&gt;Add the above code right after you instantiate GitLabAPI.
 Your file should now look like the following:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-import asyncio
+&lt;pre class="literal-block"&gt;import asyncio
 import os
 import aiohttp
 from gidgetlab.aiohttp import GitLabAPI
@@ -124,44 +113,37 @@ async def main():
 
 
 loop = asyncio.get_event_loop()
-loop.run_until_complete(main())
-&lt;/pre&gt;
+loop.run_until_complete(main())&lt;/pre&gt;
 &lt;p&gt;Feel free to change the title and the body of the message.
 Save and run it in the command line:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-python3.6 -m create_issue
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;python3.6 -m create_issue&lt;/pre&gt;
 &lt;p&gt;There should be a new issue created in the strange-relationship project. Check it out:
 &lt;a class="reference external" href="https://gitlab.com/beenje/strange-relationship/issues"&gt;https://gitlab.com/beenje/strange-relationship/issues&lt;/a&gt;&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="comment-on-issue"&gt;
 &lt;h3&gt;Comment on issue&lt;/h3&gt;
 &lt;p&gt;Let's try a different exercise, to get ourselves more familiar with GitLab's API.
-Take a look at GitLab's &lt;a class="reference external" href="https://docs.gitlab.com/ee/api/issues.html#comments-on-issues"&gt;create a comment&lt;/a&gt; documentation: &lt;tt class="docutils literal"&gt;POST &lt;span class="pre"&gt;/projects/:id/issues/:issue_iid/notes&lt;/span&gt;&lt;/tt&gt;&lt;/p&gt;
+Take a look at GitLab's &lt;a class="reference external" href="https://docs.gitlab.com/ee/api/issues.html#comments-on-issues"&gt;create a comment&lt;/a&gt; documentation: &lt;code class="docutils literal"&gt;POST &lt;span class="pre"&gt;/projects/:id/issues/:issue_iid/notes&lt;/span&gt;&lt;/code&gt;&lt;/p&gt;
 &lt;p&gt;Leave a comment in the issue you just created:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-await gl.post(
+&lt;pre class="literal-block"&gt;await gl.post(
     "/projects/beenje%2Fstrange-relationship/issues/1/notes",
     data={"body": "This is a comment"},
-)
-&lt;/pre&gt;
-&lt;p&gt;Replace &lt;tt class="docutils literal"&gt;1&lt;/tt&gt; with the issue number you created.&lt;/p&gt;
+)&lt;/pre&gt;
+&lt;p&gt;Replace &lt;code class="docutils literal"&gt;1&lt;/code&gt; with the issue number you created.&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="close-the-issue"&gt;
 &lt;h3&gt;Close the issue&lt;/h3&gt;
 &lt;p&gt;Let's now close the issue that you've just created.&lt;/p&gt;
 &lt;p&gt;Take a look at the documentation to &lt;a class="reference external" href="https://docs.gitlab.com/ee/api/issues.html#edit-issue"&gt;edit an issue&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;The method for editing an issue is &lt;tt class="docutils literal"&gt;PUT&lt;/tt&gt; instead of &lt;tt class="docutils literal"&gt;POST&lt;/tt&gt;, which we've
+&lt;p&gt;The method for editing an issue is &lt;code class="docutils literal"&gt;PUT&lt;/code&gt; instead of &lt;code class="docutils literal"&gt;POST&lt;/code&gt;, which we've
 seen in the previous two examples. In addition, to close an issue, you're basically
-editing an issue, and setting the &lt;tt class="docutils literal"&gt;state_event&lt;/tt&gt; to &lt;tt class="docutils literal"&gt;close&lt;/tt&gt;.&lt;/p&gt;
+editing an issue, and setting the &lt;code class="docutils literal"&gt;state_event&lt;/code&gt; to &lt;code class="docutils literal"&gt;close&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;Use gidgetlab to close the issue:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-await gl.put(
+&lt;pre class="literal-block"&gt;await gl.put(
     "/projects/beenje%2Fstrange-relationship/issues/1",
     data={"state_event": "close"},
-)
-&lt;/pre&gt;
-&lt;p&gt;Replace &lt;tt class="docutils literal"&gt;1&lt;/tt&gt; with the issue number you created.&lt;/p&gt;
+)&lt;/pre&gt;
+&lt;p&gt;Replace &lt;code class="docutils literal"&gt;1&lt;/code&gt; with the issue number you created.&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;div class="section" id="using-gidgetlab-to-respond-to-webhooks"&gt;
@@ -174,22 +156,18 @@ a webserver that responds to GitLab webhook events.&lt;/p&gt;
 &lt;h3&gt;GitLabBot&lt;/h3&gt;
 &lt;p&gt;&lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/"&gt;gidgetlab&lt;/a&gt; actually provides a &lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/aiohttp.html"&gt;GitLabBot class&lt;/a&gt; to easily create an aiohttp
 web server that reponds to GitLab webhooks.&lt;/p&gt;
-&lt;p&gt;Save the following in a file named &lt;tt class="docutils literal"&gt;bot.py&lt;/tt&gt;:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-from gidgetlab.aiohttp import GitLabBot
+&lt;p&gt;Save the following in a file named &lt;code class="docutils literal"&gt;bot.py&lt;/code&gt;:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;from gidgetlab.aiohttp import GitLabBot
 
 bot = GitLabBot("beenje")
 
 
 if __name__ == "__main__":
-    bot.run()
-&lt;/pre&gt;
+    bot.run()&lt;/pre&gt;
 &lt;p&gt;And run:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-python3 bot.py
+&lt;pre class="literal-block"&gt;python3 bot.py
 ======== Running on http://0.0.0.0:8080 ========
-(Press CTRL+C to quit)
-&lt;/pre&gt;
+(Press CTRL+C to quit)&lt;/pre&gt;
 &lt;p&gt;That's it. You have an aiohttp web server running on port 8080.
 Of course, it won't do that much. You'll have to register some events if
 you want the bot to perform some actions. We'll see that later.&lt;/p&gt;
@@ -198,12 +176,12 @@ you want the bot to perform some actions. We'll see that later.&lt;/p&gt;
 &lt;h3&gt;Webhook events&lt;/h3&gt;
 &lt;p&gt;When an event is triggered in GitLab, GitLab can notify you about the event by
 sending a POST request along with the payload.&lt;/p&gt;
-&lt;p&gt;Some example &lt;tt class="docutils literal"&gt;events&lt;/tt&gt; are:&lt;/p&gt;
+&lt;p&gt;Some example &lt;code class="docutils literal"&gt;events&lt;/code&gt; are:&lt;/p&gt;
 &lt;ul class="simple"&gt;
-&lt;li&gt;Issues events: any time an issue is created or an existing issue was updated/closed/reopened&lt;/li&gt;
-&lt;li&gt;Push events: when you push to the repository except when pushing tags&lt;/li&gt;
-&lt;li&gt;Tag events: when you create (or delete) tags to the repository&lt;/li&gt;
-&lt;li&gt;Build events: triggered on status change of a Build&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Issues events: any time an issue is created or an existing issue was updated/closed/reopened&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Push events: when you push to the repository except when pushing tags&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Tag events: when you create (or delete) tags to the repository&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Build events: triggered on status change of a Build&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;The complete list of events is listed &lt;a class="reference external" href="https://docs.gitlab.com/ee/user/project/integrations/webhooks.html#events"&gt;here&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;Since GitLab needs to send you POST requests for the webhook, you should have a service running somewhere that GitLab can reach.
@@ -220,12 +198,9 @@ It's an easy way to test locally a webservice.&lt;/p&gt;
 &lt;p&gt;Check the installation instructions from the &lt;a class="reference external" href="https://ngrok.com/download"&gt;website&lt;/a&gt;.
 Note that for simple tests, you don't have to register an account.&lt;/p&gt;
 &lt;p&gt;If you have a webserver running locally on port 8080, you can expose it by running:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-ngrok http 8080
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;ngrok http 8080&lt;/pre&gt;
 &lt;p&gt;Something similar will appear:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-ngrok by @inconshreveable                                       (Ctrl+C to quit)
+&lt;pre class="literal-block"&gt;ngrok by @inconshreveable                                       (Ctrl+C to quit)
 
 Session Status                online
 Session Expires               7 hours, 59 minutes
@@ -233,12 +208,9 @@ Version                       2.2.8
 Region                        United States (us)
 Web Interface                 http://127.0.0.1:4040
 Forwarding                    http://fb7fec7c.ngrok.io -&amp;gt; localhost:8080
-Forwarding                    https://fb7fec7c.ngrok.io -&amp;gt; localhost:8080
-&lt;/pre&gt;
+Forwarding                    https://fb7fec7c.ngrok.io -&amp;gt; localhost:8080&lt;/pre&gt;
 &lt;p&gt;You can access your local webservice using HTTP and even HTTPS!&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-curl -X GET https://fb7fec7c.ngrok.io
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;curl -X GET https://fb7fec7c.ngrok.io&lt;/pre&gt;
 &lt;p&gt;This address can be accessed from anywhere!. You could give it to a friend or use it as a GitLab webhook.&lt;/p&gt;
 &lt;p&gt;Ngrok even gives you a web interface on the port 4040 that allows you to inspect all the requests made to the service.
 Just open &lt;a class="reference external" href="http://127.0.0.1:4040"&gt;http://127.0.0.1:4040&lt;/a&gt; in your browser.&lt;/p&gt;
@@ -255,23 +227,19 @@ let's create a webhook on GitLab. If you haven't done so yet, create your
 own project on GitLab.&lt;/p&gt;
 &lt;p&gt;Go to your project settings and select Integrations to create a webhook:&lt;/p&gt;
 &lt;ul class="simple"&gt;
-&lt;li&gt;In the &lt;strong&gt;URL&lt;/strong&gt; field, enter the ngrok URL you got earlier.&lt;/li&gt;
-&lt;li&gt;For security reasons, type in some random characters under &lt;strong&gt;Secret Token&lt;/strong&gt; (you can use Python &lt;cite&gt;secrets.token_hex(16)&lt;/cite&gt; function)&lt;/li&gt;
-&lt;li&gt;Under &lt;strong&gt;Trigger&lt;/strong&gt;, select Issues events, Comments and Merge request events&lt;/li&gt;
-&lt;li&gt;Leave &lt;strong&gt;Enable SSL verification&lt;/strong&gt; enabled&lt;/li&gt;
-&lt;li&gt;Click &lt;strong&gt;Add webhook&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;In the &lt;strong&gt;URL&lt;/strong&gt; field, enter the ngrok URL you got earlier.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;For security reasons, type in some random characters under &lt;strong&gt;Secret Token&lt;/strong&gt; (you can use Python &lt;cite&gt;secrets.token_hex(16)&lt;/cite&gt; function)&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Under &lt;strong&gt;Trigger&lt;/strong&gt;, select Issues events, Comments and Merge request events&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Leave &lt;strong&gt;Enable SSL verification&lt;/strong&gt; enabled&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Click &lt;strong&gt;Add webhook&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
 &lt;div class="section" id="update-the-config-variables-in-your-environment"&gt;
 &lt;h3&gt;Update the Config Variables in your environment&lt;/h3&gt;
 &lt;p&gt;First, export the secret webhook token you just created:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-export GL_SECRET=&amp;lt;secret token&amp;gt;
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;export GL_SECRET=&amp;lt;secret token&amp;gt;&lt;/pre&gt;
 &lt;p&gt;Then, if not already done, export your GitLab personal access token:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-export GL_ACCESS_TOKEN=&amp;lt;acess token&amp;gt;
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;export GL_ACCESS_TOKEN=&amp;lt;acess token&amp;gt;&lt;/pre&gt;
 &lt;/div&gt;
 &lt;div class="section" id="your-first-gitlab-bot"&gt;
 &lt;h3&gt;Your first GitLab bot!&lt;/h3&gt;
@@ -279,25 +247,22 @@ export GL_ACCESS_TOKEN=&amp;lt;acess token&amp;gt;
 For example, whenever someone creates an issue, the bot will automatically say something like:
 "Thanks for the report, @user. I will look into this ASAP!"&lt;/p&gt;
 &lt;p&gt;To respond to webhooks events, we have to register a coroutine using the
-&lt;tt class="docutils literal"&gt;@bot.router.register&lt;/tt&gt; decorator:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-@bot.router.register("Issue Hook", action="open")
+&lt;code class="docutils literal"&gt;@bot.router.register&lt;/code&gt; decorator:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;@bot.router.register("Issue Hook", action="open")
 async def issue_opened_event(event, gl, *args, **kwargs):
-    pass
-&lt;/pre&gt;
-&lt;p&gt;In this example we subscribe to the GitLab &lt;tt class="docutils literal"&gt;Issue Hook&lt;/tt&gt; events, and
+    pass&lt;/pre&gt;
+&lt;p&gt;In this example we subscribe to the GitLab &lt;code class="docutils literal"&gt;Issue Hook&lt;/code&gt; events, and
 more specifically to the "open" issues event.&lt;/p&gt;
-&lt;p&gt;The two important parameters here are: &lt;tt class="docutils literal"&gt;event&lt;/tt&gt; and &lt;tt class="docutils literal"&gt;gl&lt;/tt&gt;.&lt;/p&gt;
+&lt;p&gt;The two important parameters here are: &lt;code class="docutils literal"&gt;event&lt;/code&gt; and &lt;code class="docutils literal"&gt;gl&lt;/code&gt;.&lt;/p&gt;
 &lt;ul class="simple"&gt;
-&lt;li&gt;&lt;tt class="docutils literal"&gt;event&lt;/tt&gt; here is the representation of GitLab's webhook event. We can access the
-event payload by doing &lt;tt class="docutils literal"&gt;event.data&lt;/tt&gt;.&lt;/li&gt;
-&lt;li&gt;&lt;tt class="docutils literal"&gt;gl&lt;/tt&gt; is the gidgetlab GitLabAPI instance, which we can use to make API calls to GitLab, as in the first section.&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;code class="docutils literal"&gt;event&lt;/code&gt; here is the representation of GitLab's webhook event. We can access the
+event payload by doing &lt;code class="docutils literal"&gt;event.data&lt;/code&gt;.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;code class="docutils literal"&gt;gl&lt;/code&gt; is the gidgetlab GitLabAPI instance, which we can use to make API calls to GitLab, as in the first section.&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;We already saw that to &lt;a class="reference external" href="https://docs.gitlab.com/ee/api/issues.html#comments-on-issues"&gt;create a comment&lt;/a&gt; on an issue, we need to send: &lt;tt class="docutils literal"&gt;POST &lt;span class="pre"&gt;/projects/:id/issues/:issue_iid/notes&lt;/span&gt;&lt;/tt&gt;.&lt;/p&gt;
+&lt;p&gt;We already saw that to &lt;a class="reference external" href="https://docs.gitlab.com/ee/api/issues.html#comments-on-issues"&gt;create a comment&lt;/a&gt; on an issue, we need to send: &lt;code class="docutils literal"&gt;POST &lt;span class="pre"&gt;/projects/:id/issues/:issue_iid/notes&lt;/span&gt;&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;Let's look at the &lt;a class="reference external" href="https://docs.gitlab.com/ee/user/project/integrations/webhooks.html#issues-events"&gt;Issues events&lt;/a&gt;
 payload to see how we can retrieve the required information:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-{
+&lt;pre class="literal-block"&gt;{
   "object_kind": "issue",
   "user": {
     "name": "Administrator",
@@ -331,30 +296,24 @@ payload to see how we can retrieve the required information:&lt;/p&gt;
     "action": "open"
   },
   ...
-}
-&lt;/pre&gt;
-&lt;p&gt;The project id can be retrieved as &lt;tt class="docutils literal"&gt;&lt;span class="pre"&gt;event.data["project"]["id"]&lt;/span&gt;&lt;/tt&gt;.
-As this is quite common, &lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/"&gt;gidgetlab&lt;/a&gt; procures a &lt;em&gt;project_id&lt;/em&gt; property to access it directly: &lt;tt class="docutils literal"&gt;event.project_id&lt;/tt&gt;.&lt;/p&gt;
-&lt;p&gt;To get the issue id, we can use &lt;tt class="docutils literal"&gt;&lt;span class="pre"&gt;event.data["object_attributes"]["iid"]&lt;/span&gt;&lt;/tt&gt;. Again as accessing &lt;tt class="docutils literal"&gt;&lt;span class="pre"&gt;event.data["object_attributes"]&lt;/span&gt;&lt;/tt&gt; is quite common,
-we can use the &lt;em&gt;object_attributes&lt;/em&gt; property: &lt;tt class="docutils literal"&gt;&lt;span class="pre"&gt;event.object_attributes["iid"]&lt;/span&gt;&lt;/tt&gt;.&lt;/p&gt;
+}&lt;/pre&gt;
+&lt;p&gt;The project id can be retrieved as &lt;code class="docutils literal"&gt;&lt;span class="pre"&gt;event.data["project"]["id"]&lt;/span&gt;&lt;/code&gt;.
+As this is quite common, &lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/"&gt;gidgetlab&lt;/a&gt; procures a &lt;em&gt;project_id&lt;/em&gt; property to access it directly: &lt;code class="docutils literal"&gt;event.project_id&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;To get the issue id, we can use &lt;code class="docutils literal"&gt;&lt;span class="pre"&gt;event.data["object_attributes"]["iid"]&lt;/span&gt;&lt;/code&gt;. Again as accessing &lt;code class="docutils literal"&gt;&lt;span class="pre"&gt;event.data["object_attributes"]&lt;/span&gt;&lt;/code&gt; is quite common,
+we can use the &lt;em&gt;object_attributes&lt;/em&gt; property: &lt;code class="docutils literal"&gt;&lt;span class="pre"&gt;event.object_attributes["iid"]&lt;/span&gt;&lt;/code&gt;.&lt;/p&gt;
 &lt;p&gt;The url to use is thus:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-url = f"/projects/{event.project_id}/issues/{event.object_attributes['iid']}/notes"
-&lt;/pre&gt;
-&lt;p&gt;To greet the author, we have to retrieve the username from the event: &lt;tt class="docutils literal"&gt;&lt;span class="pre"&gt;event.data["user"]["username"]&lt;/span&gt;&lt;/tt&gt;&lt;/p&gt;
-&lt;p&gt;Open your &lt;tt class="docutils literal"&gt;bot.py&lt;/tt&gt; file and add the following coroutine to be called when
+&lt;pre class="literal-block"&gt;url = f"/projects/{event.project_id}/issues/{event.object_attributes['iid']}/notes"&lt;/pre&gt;
+&lt;p&gt;To greet the author, we have to retrieve the username from the event: &lt;code class="docutils literal"&gt;&lt;span class="pre"&gt;event.data["user"]["username"]&lt;/span&gt;&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Open your &lt;code class="docutils literal"&gt;bot.py&lt;/code&gt; file and add the following coroutine to be called when
 a new issue is opened:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-@bot.router.register("Issue Hook", action="open")
+&lt;pre class="literal-block"&gt;@bot.router.register("Issue Hook", action="open")
 async def issue_opened_event(event, gl, *args, **kwargs):
     """Whenever an issue is opened, greet the author and say thanks."""
     url = f"/projects/{event.project_id}/issues/{event.object_attributes['iid']}/notes"
     message = f"Thanks for the report @{event.data['user']['username']}! I will look into it ASAP! (I'm a bot)."
-    await gl.post(url, data={"body": message})
-&lt;/pre&gt;
+    await gl.post(url, data={"body": message})&lt;/pre&gt;
 &lt;p&gt;The full file should look like:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-from gidgetlab.aiohttp import GitLabBot
+&lt;pre class="literal-block"&gt;from gidgetlab.aiohttp import GitLabBot
 
 bot = GitLabBot("beenje")
 
@@ -368,12 +327,9 @@ async def issue_opened_event(event, gl, *args, **kwargs):
 
 
 if __name__ == "__main__":
-    bot.run()
-&lt;/pre&gt;
+    bot.run()&lt;/pre&gt;
 &lt;p&gt;Run:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-python3 bot.py
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;python3 bot.py&lt;/pre&gt;
 &lt;p&gt;Go to your project and open an issue. Wait a few seconds and refresh the
 page. You should see a new comment added to the issue!&lt;/p&gt;
 &lt;img alt="/images/gitlab-bot/gitlab-bot-say-thanks.png" src="http://beenje.github.io/blog/images/gitlab-bot/gitlab-bot-say-thanks.png"&gt;

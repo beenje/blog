@@ -80,10 +80,11 @@ navbar-dark bg-dark
         <!--Body content-->
         
         
+        
 <article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Control your accessories from Home Assistant with Siri and HomeKit</a></h1>
 
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
                     Benjamin Bertrand
             </span></p>
             <p class="dateline">
@@ -113,55 +114,40 @@ the <a class="reference external" href="https://github.com/home-assistant/homebr
 <h2>Install Homebridge</h2>
 <p>Homebridge is a lightweight NodeJS server that emulates the iOS HomeKit
 API. Let's install it in the same <a class="reference external" href="../home-assistant-on-turris-omnia-via-lxc-container">LXC container as Home Assistant</a>:</p>
-<pre class="literal-block">
-root@turris:~# lxc-attach -n homeassistant
-</pre>
+<pre class="literal-block">root@turris:~# lxc-attach -n homeassistant</pre>
 <p>I followed the <a class="reference external" href="https://github.com/nfarina/homebridge/wiki/Running-HomeBridge-on-a-Raspberry-Pi">Running HomeBridge on a Raspberry Pi page</a>.</p>
 <p>We need curl and git:</p>
-<pre class="literal-block">
-root@homeassistant:~# apt-get install -y curl git
-</pre>
+<pre class="literal-block">root@homeassistant:~# apt-get install -y curl git</pre>
 <p>Install Node:</p>
-<pre class="literal-block">
-root@homeassistant:~# curl -sL https://deb.nodesource.com/setup_6.x | bash -
+<pre class="literal-block">root@homeassistant:~# curl -sL https://deb.nodesource.com/setup_6.x | bash -
 ## Installing the NodeSource Node.js v6.x repo...
 
 ## Populating apt-get cache...
 
-root@homeassistant:~# apt-get install -y nodejs
-</pre>
+root@homeassistant:~# apt-get install -y nodejs</pre>
 <p>Install avahi and other dependencies:</p>
-<pre class="literal-block">
-root@homeassistant:~# apt-get install -y libavahi-compat-libdnssd-dev
-</pre>
+<pre class="literal-block">root@homeassistant:~# apt-get install -y libavahi-compat-libdnssd-dev</pre>
 <p>Install Homebridge and dependencies still following this <a class="reference external" href="https://github.com/nfarina/homebridge/wiki/Running-HomeBridge-on-a-Raspberry-Pi#install-homebridge-and-dependencies">page</a>.
 Note that I had a strange problem here. The <em>npm</em> command didn't produce
 any output. I found the same issue on <a class="reference external" href="http://stackoverflow.com/questions/40755598/containers-lxc-attach-and-npm-no-output">stackoverflow</a>
 and even an <a class="reference external" href="https://github.com/npm/npm/issues/15681">issue on github</a>.
 The workaround is just to open a new terminal...</p>
-<pre class="literal-block">
-root@homeassistant:~# npm install -g --unsafe-perm homebridge hap-nodejs node-gyp
+<pre class="literal-block">root@homeassistant:~# npm install -g --unsafe-perm homebridge hap-nodejs node-gyp
 root@homeassistant:~# cd /usr/lib/node_modules/homebridge/
 root@homeassistant:/usr/lib/node_modules/homebridge# npm install --unsafe-perm bignum
 root@homeassistant:/usr/lib/node_modules/homebridge# cd ../hap-nodejs/node_modules/mdns/
-root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# node-gyp BUILDTYPE=Release rebuild
-</pre>
+root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# node-gyp BUILDTYPE=Release rebuild</pre>
 </div>
 <div class="section" id="install-and-configure-homebridge-homeassistant-plugin">
 <h2>Install and configure homebridge-homeassistant plugin</h2>
-<pre class="literal-block">
-root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# cd
-root@homeassistant:~# npm install -g --unsafe-perm homebridge-homeassistant
-</pre>
+<pre class="literal-block">root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# cd
+root@homeassistant:~# npm install -g --unsafe-perm homebridge-homeassistant</pre>
 <p>Try to start Homebridge:</p>
-<pre class="literal-block">
-root@homeassistant:~# su -s /bin/bash homeassistant
-homeassistant@homeassistant:~$ homebridge
-</pre>
+<pre class="literal-block">root@homeassistant:~# su -s /bin/bash homeassistant
+homeassistant@homeassistant:~$ homebridge</pre>
 <p>Homebridge won't do anything until you've created a configuration file.
 So press CTRL-C and create the file <cite>~/.homebridge/config.json</cite>:</p>
-<pre class="literal-block">
-homeassistant@homeassistant:~$ cat &lt;&lt;EOF &gt;&gt; ~/.homebridge/config.json
+<pre class="literal-block">homeassistant@homeassistant:~$ cat &lt;&lt;EOF &gt;&gt; ~/.homebridge/config.json
 {
   "bridge": {
     "name": "Homebridge",
@@ -179,8 +165,7 @@ homeassistant@homeassistant:~$ cat &lt;&lt;EOF &gt;&gt; ~/.homebridge/config.jso
     }
  ]
 }
-EOF
-</pre>
+EOF</pre>
 <p>Note that you can change the username and pin code.
 You will need the PIN code to add the Homebridge accessory to HomeKit.</p>
 <p>Check the <a class="reference external" href="https://github.com/home-assistant/homebridge-homeassistant#configuration">Home Assistant plugin page</a>
@@ -190,8 +175,7 @@ for more information on how to configure the plugin.</p>
 <h2>Automatically start Homebridge</h2>
 <p>Let's configure systemd.
 Create the file <cite>/etc/systemd/system/home-assistant@homebridge.service</cite>:</p>
-<pre class="literal-block">
-root@homeassistant:~# cat &lt;&lt;EOF &gt;&gt; /etc/systemd/system/home-assistant@homebridge.service
+<pre class="literal-block">root@homeassistant:~# cat &lt;&lt;EOF &gt;&gt; /etc/systemd/system/home-assistant@homebridge.service
 [Unit]
 Description=Node.js HomeKit Server
 After=syslog.target network-online.target
@@ -206,15 +190,12 @@ KillMode=process
 
 [Install]
 WantedBy=multi-user.target
-EOF
-</pre>
+EOF</pre>
 <p>Enable and launch Homebridge:</p>
-<pre class="literal-block">
-root@homeassistant:~# systemctl --system daemon-reload
+<pre class="literal-block">root@homeassistant:~# systemctl --system daemon-reload
 root@homeassistant:~# systemctl enable home-assistant@homebridge
 Created symlink from /etc/systemd/system/multi-user.target.wants/home-assistant@homebridge.service to /etc/systemd/system/home-assistant@homebridge.service.
-root@homeassistant:~# systemctl start home-assistant@homebridge
-</pre>
+root@homeassistant:~# systemctl start home-assistant@homebridge</pre>
 </div>
 <div class="section" id="adding-homebridge-to-ios">
 <h2>Adding Homebridge to iOS</h2>
@@ -269,19 +250,17 @@ avoid names usually used by Siri like "Radio" or "Sonos".</p>
 
 
         </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
-            Contents © 2019         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2020         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
             
         </footer>
 </div>
 </div>
 
 
-        <script src="../../assets/js/all-nocdn.js"></script><!-- fancy dates --><script>
-    moment.locale("en");
-    fancydates(0, "YYYY-MM-DD HH:mm");
-    </script><!-- end fancy dates --><script>
+        <script src="../../assets/js/all-nocdn.js"></script><script>
     baguetteBox.run('div#content', {
         ignoreClass: 'islink',
         captions: function(element) {

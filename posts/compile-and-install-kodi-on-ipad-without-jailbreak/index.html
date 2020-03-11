@@ -82,10 +82,11 @@ navbar-dark bg-dark
         <!--Body content-->
         
         
+        
 <article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Compile and install Kodi on iPad without jailbreak</a></h1>
 
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
                     Benjamin Bertrand
             </span></p>
             <p class="dateline">
@@ -115,16 +116,13 @@ So here are my notes:</p>
 <p>First thanks to memphiz for the <a class="reference external" href="http://forum.kodi.tv/showthread.php?tid=239610">iOS9 support</a>!</p>
 <p>I compiled from his ios9_workaround branch, but it has been <a class="reference external" href="https://github.com/xbmc/xbmc/pull/8250">merged</a> to
 master since:</p>
-<pre class="literal-block">
-$ git clone https://github.com/xbmc/xbmc.git Kodi
+<pre class="literal-block">$ git clone https://github.com/xbmc/xbmc.git Kodi
 $ cd Kodi
 $ git remote add memphiz https://github.com/Memphiz/xbmc.git
 $ git fetch memphiz
-$ git checkout -b ios9_workaround memphiz/ios9_workaround
-</pre>
+$ git checkout -b ios9_workaround memphiz/ios9_workaround</pre>
 <p>Follow the instructions from the README.ios file:</p>
-<pre class="literal-block">
-$ git submodule update --init addons/skin.re-touched
+<pre class="literal-block">$ git submodule update --init addons/skin.re-touched
 $ cd tools/depends
 $ ./bootstrap
 $ ./configure --host=arm-apple-darwin
@@ -133,8 +131,7 @@ $ make -j4 -C target/binary-addons
 $ cd ../..
 $ make -j4 -C tools/depends/target/xbmc
 $ make clean
-$ make -j4 xcode_depends
-</pre>
+$ make -j4 xcode_depends</pre>
 <p>Start Xcode and open the Kodi project.
 Open the Preferences, and add your Apple ID if not already
 done:</p>
@@ -181,19 +178,17 @@ to create a provisioning profile.</p>
 
 
         </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
-            Contents © 2019         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2020         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
             
         </footer>
 </div>
 </div>
 
 
-        <script src="../../assets/js/all-nocdn.js"></script><!-- fancy dates --><script>
-    moment.locale("en");
-    fancydates(0, "YYYY-MM-DD HH:mm");
-    </script><!-- end fancy dates --><script>
+        <script src="../../assets/js/all-nocdn.js"></script><script>
     baguetteBox.run('div#content', {
         ignoreClass: 'islink',
         captions: function(element) {

@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about home-assistant)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/home-assistant.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Tue, 18 Sep 2018 20:09:33 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Control your accessories from Home Assistant with Siri and HomeKit</title><link>http://beenje.github.io/blog/posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;While reading more about &lt;a class="reference external" href="https://home-assistant.io"&gt;Home Assistant&lt;/a&gt;, I
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about home-assistant)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/home-assistant.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2020 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
+&lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
+&lt;img alt="Creative Commons License BY-NC-SA"
+style="border-width:0; margin-bottom:12px;"
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 11 Mar 2020 18:05:02 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Control your accessories from Home Assistant with Siri and HomeKit</title><link>http://beenje.github.io/blog/posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;While reading more about &lt;a class="reference external" href="https://home-assistant.io"&gt;Home Assistant&lt;/a&gt;, I
 discovered it was possible to control your accessories from Home Assistant
 with Siri and HomeKit. I decided to give that a try.&lt;/p&gt;
 &lt;p&gt;This requires to install &lt;a class="reference external" href="https://github.com/nfarina/homebridge"&gt;Homebridge&lt;/a&gt; and
@@ -8,55 +12,40 @@ the &lt;a class="reference external" href="https://github.com/home-assistant/hom
 &lt;h2&gt;Install Homebridge&lt;/h2&gt;
 &lt;p&gt;Homebridge is a lightweight NodeJS server that emulates the iOS HomeKit
 API. Let's install it in the same &lt;a class="reference external" href="http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container"&gt;LXC container as Home Assistant&lt;/a&gt;:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@turris:~# lxc-attach -n homeassistant
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;root@turris:~# lxc-attach -n homeassistant&lt;/pre&gt;
 &lt;p&gt;I followed the &lt;a class="reference external" href="https://github.com/nfarina/homebridge/wiki/Running-HomeBridge-on-a-Raspberry-Pi"&gt;Running HomeBridge on a Raspberry Pi page&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;We need curl and git:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# apt-get install -y curl git
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;root@homeassistant:~# apt-get install -y curl git&lt;/pre&gt;
 &lt;p&gt;Install Node:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# curl -sL https://deb.nodesource.com/setup_6.x | bash -
+&lt;pre class="literal-block"&gt;root@homeassistant:~# curl -sL https://deb.nodesource.com/setup_6.x | bash -
 ## Installing the NodeSource Node.js v6.x repo...
 
 ## Populating apt-get cache...
 
-root@homeassistant:~# apt-get install -y nodejs
-&lt;/pre&gt;
+root@homeassistant:~# apt-get install -y nodejs&lt;/pre&gt;
 &lt;p&gt;Install avahi and other dependencies:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# apt-get install -y libavahi-compat-libdnssd-dev
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;root@homeassistant:~# apt-get install -y libavahi-compat-libdnssd-dev&lt;/pre&gt;
 &lt;p&gt;Install Homebridge and dependencies still following this &lt;a class="reference external" href="https://github.com/nfarina/homebridge/wiki/Running-HomeBridge-on-a-Raspberry-Pi#install-homebridge-and-dependencies"&gt;page&lt;/a&gt;.
 Note that I had a strange problem here. The &lt;em&gt;npm&lt;/em&gt; command didn't produce
 any output. I found the same issue on &lt;a class="reference external" href="http://stackoverflow.com/questions/40755598/containers-lxc-attach-and-npm-no-output"&gt;stackoverflow&lt;/a&gt;
 and even an &lt;a class="reference external" href="https://github.com/npm/npm/issues/15681"&gt;issue on github&lt;/a&gt;.
 The workaround is just to open a new terminal...&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# npm install -g --unsafe-perm homebridge hap-nodejs node-gyp
+&lt;pre class="literal-block"&gt;root@homeassistant:~# npm install -g --unsafe-perm homebridge hap-nodejs node-gyp
 root@homeassistant:~# cd /usr/lib/node_modules/homebridge/
 root@homeassistant:/usr/lib/node_modules/homebridge# npm install --unsafe-perm bignum
 root@homeassistant:/usr/lib/node_modules/homebridge# cd ../hap-nodejs/node_modules/mdns/
-root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# node-gyp BUILDTYPE=Release rebuild
-&lt;/pre&gt;
+root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# node-gyp BUILDTYPE=Release rebuild&lt;/pre&gt;
 &lt;/div&gt;
 &lt;div class="section" id="install-and-configure-homebridge-homeassistant-plugin"&gt;
 &lt;h2&gt;Install and configure homebridge-homeassistant plugin&lt;/h2&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# cd
-root@homeassistant:~# npm install -g --unsafe-perm homebridge-homeassistant
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# cd
+root@homeassistant:~# npm install -g --unsafe-perm homebridge-homeassistant&lt;/pre&gt;
 &lt;p&gt;Try to start Homebridge:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# su -s /bin/bash homeassistant
-homeassistant@homeassistant:~$ homebridge
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;root@homeassistant:~# su -s /bin/bash homeassistant
+homeassistant@homeassistant:~$ homebridge&lt;/pre&gt;
 &lt;p&gt;Homebridge won't do anything until you've created a configuration file.
 So press CTRL-C and create the file &lt;cite&gt;~/.homebridge/config.json&lt;/cite&gt;:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-homeassistant@homeassistant:~$ cat &amp;lt;&amp;lt;EOF &amp;gt;&amp;gt; ~/.homebridge/config.json
+&lt;pre class="literal-block"&gt;homeassistant@homeassistant:~$ cat &amp;lt;&amp;lt;EOF &amp;gt;&amp;gt; ~/.homebridge/config.json
 {
   "bridge": {
     "name": "Homebridge",
@@ -74,8 +63,7 @@ homeassistant@homeassistant:~$ cat &amp;lt;&amp;lt;EOF &amp;gt;&amp;gt; ~/.homeb
     }
  ]
 }
-EOF
-&lt;/pre&gt;
+EOF&lt;/pre&gt;
 &lt;p&gt;Note that you can change the username and pin code.
 You will need the PIN code to add the Homebridge accessory to HomeKit.&lt;/p&gt;
 &lt;p&gt;Check the &lt;a class="reference external" href="https://github.com/home-assistant/homebridge-homeassistant#configuration"&gt;Home Assistant plugin page&lt;/a&gt;
@@ -85,8 +73,7 @@ for more information on how to configure the plugin.&lt;/p&gt;
 &lt;h2&gt;Automatically start Homebridge&lt;/h2&gt;
 &lt;p&gt;Let's configure systemd.
 Create the file &lt;cite&gt;/etc/systemd/system/home-assistant@homebridge.service&lt;/cite&gt;:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# cat &amp;lt;&amp;lt;EOF &amp;gt;&amp;gt; /etc/systemd/system/home-assistant@homebridge.service
+&lt;pre class="literal-block"&gt;root@homeassistant:~# cat &amp;lt;&amp;lt;EOF &amp;gt;&amp;gt; /etc/systemd/system/home-assistant@homebridge.service
 [Unit]
 Description=Node.js HomeKit Server
 After=syslog.target network-online.target
@@ -101,15 +88,12 @@ KillMode=process
 
 [Install]
 WantedBy=multi-user.target
-EOF
-&lt;/pre&gt;
+EOF&lt;/pre&gt;
 &lt;p&gt;Enable and launch Homebridge:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# systemctl --system daemon-reload
+&lt;pre class="literal-block"&gt;root@homeassistant:~# systemctl --system daemon-reload
 root@homeassistant:~# systemctl enable home-assistant@homebridge
 Created symlink from /etc/systemd/system/multi-user.target.wants/home-assistant@homebridge.service to /etc/systemd/system/home-assistant@homebridge.service.
-root@homeassistant:~# systemctl start home-assistant@homebridge
-&lt;/pre&gt;
+root@homeassistant:~# systemctl start home-assistant@homebridge&lt;/pre&gt;
 &lt;/div&gt;
 &lt;div class="section" id="adding-homebridge-to-ios"&gt;
 &lt;h2&gt;Adding Homebridge to iOS&lt;/h2&gt;
@@ -157,8 +141,7 @@ to easily keep the version up-to-date.&lt;/p&gt;
 &lt;p&gt;As described &lt;a class="reference external" href="https://www.turris.cz/doc/en/howto/lxc"&gt;here&lt;/a&gt;, you can
 create a LXC container via the LuCI web interface or via the command
 line:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@turris:~# lxc-create -t download -n homeassistant
+&lt;pre class="literal-block"&gt;root@turris:~# lxc-create -t download -n homeassistant
 Setting up the GPG keyring
 Downloading the image index
 WARNING: Failed to download the file over HTTPs.
@@ -195,52 +178,38 @@ WARNING: Failed to download the file over HTTPs.
  container.
 
  Content of the tarballs is provided by third party, thus there is
- no warranty of any kind.
-&lt;/pre&gt;
+ no warranty of any kind.&lt;/pre&gt;
 &lt;p&gt;As you can see above, I chose a Debian Jessie distribution.&lt;/p&gt;
 &lt;p&gt;Let's start and enter the container:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@turris:~# lxc-start -n homeassistant
-root@turris:~# lxc-attach -n homeassistant
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;root@turris:~# lxc-start -n homeassistant
+root@turris:~# lxc-attach -n homeassistant&lt;/pre&gt;
 &lt;p&gt;Now that we are inside the container, we can first set the root password:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@LXC_NAME:~# passwd
+&lt;pre class="literal-block"&gt;root@LXC_NAME:~# passwd
 Enter new UNIX password:
 Retype new UNIX password:
-passwd: password updated successfully
-&lt;/pre&gt;
+passwd: password updated successfully&lt;/pre&gt;
 &lt;p&gt;&lt;em&gt;LXC_NAME&lt;/em&gt; is not a super nice hostname. Let's update it:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@LXC_NAME:~# hostnamectl set-hostname homeassistant
-Failed to create bus connection: No such file or directory
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;root@LXC_NAME:~# hostnamectl set-hostname homeassistant
+Failed to create bus connection: No such file or directory&lt;/pre&gt;
 &lt;p&gt;Ok... We have to &lt;a class="reference external" href="http://serverfault.com/questions/685837/how-to-set-the-hostname-for-a-debian-jessie-system"&gt;install dbus&lt;/a&gt;.
 While we are at it, let's install vim because
 we'll need it to edit the homeassistant configuration:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@LXC_NAME:~# apt-get update
+&lt;pre class="literal-block"&gt;root@LXC_NAME:~# apt-get update
 root@LXC_NAME:~# apt-get upgrade
-root@LXC_NAME:~# apt-get install -y dbus vim
-&lt;/pre&gt;
+root@LXC_NAME:~# apt-get install -y dbus vim&lt;/pre&gt;
 &lt;p&gt;Setting the hostname now works properly:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@LXC_NAME:~# hostnamectl set-hostname homeassistant
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;root@LXC_NAME:~# hostnamectl set-hostname homeassistant&lt;/pre&gt;
 &lt;p&gt;We can exit and enter the container again to see the change:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@LXC_NAME:~# exit
+&lt;pre class="literal-block"&gt;root@LXC_NAME:~# exit
 root@turris:~# lxc-attach -n homeassistant
-root@homeassistant:~#
-&lt;/pre&gt;
+root@homeassistant:~#&lt;/pre&gt;
 &lt;/div&gt;
 &lt;div class="section" id="install-home-assistant"&gt;
 &lt;h2&gt;Install Home Assistant&lt;/h2&gt;
 &lt;p&gt;Next, we just have to follow the &lt;a class="reference external" href="https://home-assistant.io/getting-started/installation-virtualenv/"&gt;Home Assistant installation instructions&lt;/a&gt;.
 They are well detailed. I'll just quickly repeat them here to make it
 easier to follow but you should refer to the official page for any update:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# apt-get install python-pip python3-dev
+&lt;pre class="literal-block"&gt;root@homeassistant:~# apt-get install python-pip python3-dev
 root@homeassistant:~# pip install --upgrade virtualenv
 root@homeassistant:~# adduser --system homeassistant
 root@homeassistant:~# mkdir /srv/homeassistant
@@ -248,49 +217,40 @@ root@homeassistant:~# chown homeassistant /srv/homeassistant
 root@homeassistant:~# su -s /bin/bash homeassistant
 homeassistant@homeassistant:/root$ virtualenv -p python3 /srv/homeassistant
 homeassistant@homeassistant:/root$ source /srv/homeassistant/bin/activate
-(homeassistant) homeassistant@homeassistant:/root$ pip3 install --upgrade homeassistant
-&lt;/pre&gt;
+(homeassistant) homeassistant@homeassistant:/root$ pip3 install --upgrade homeassistant&lt;/pre&gt;
 &lt;p&gt;Just run &lt;em&gt;hass&lt;/em&gt; to start the application and create the default
 configuration:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-(homeassistant) homeassistant@homeassistant:/root$ hass
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;(homeassistant) homeassistant@homeassistant:/root$ hass&lt;/pre&gt;
 &lt;p&gt;Press CTRL-C to exit.
 Check the created configuration file:
 &lt;cite&gt;/home/homeassistant/.homeassistant/configuration.yaml&lt;/cite&gt;.&lt;/p&gt;
 &lt;p&gt;You can comment out the &lt;cite&gt;introduction:&lt;/cite&gt; line:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-# Show links to resources in log and frontend
-#introduction:
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;# Show links to resources in log and frontend
+#introduction:&lt;/pre&gt;
 &lt;/div&gt;
 &lt;div class="section" id="add-a-switch-to-home-assistant"&gt;
 &lt;h2&gt;Add a switch to Home Assistant&lt;/h2&gt;
 &lt;p&gt;To start and stop our VPN we define a &lt;a class="reference external" href="https://home-assistant.io/components/switch.command_line/"&gt;Command Line Switch&lt;/a&gt; that
 triggers the openvpn script on the router.
 Add the following at the end of the file:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-switch:
+&lt;pre class="literal-block"&gt;switch:
   platform: command_line
   switches:
         atv_vpn:
           command_on: 'ssh root@&amp;lt;router IP&amp;gt; "/etc/init.d/openvpn start"'
           command_off: 'ssh root@&amp;lt;router IP&amp;gt; "/etc/init.d/openvpn stop"'
-          friendly_name: ATV4 VPN
-&lt;/pre&gt;
+          friendly_name: ATV4 VPN&lt;/pre&gt;
 &lt;p&gt;The LXC container is just like another computer (a virtual one) on the local network.
 To access the router, we have to ssh to it. For this to work without
 requesting a password, we have to generate a ssh key and add the public
 key to the authorized_keys file on the router:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-homeassistant@homeassistant:~$ ssh-keygen
+&lt;pre class="literal-block"&gt;homeassistant@homeassistant:~$ ssh-keygen
 Generating public/private rsa key pair.
 Enter file in which to save the key (/home/homeassistant/.ssh/id_rsa):
 Enter passphrase (empty for no passphrase):
 Enter same passphrase again:
 Your identification has been saved in /home/homeassistant/.ssh/id_rsa.
-Your public key has been saved in /home/homeassistant/.ssh/id_rsa.pub.
-&lt;/pre&gt;
+Your public key has been saved in /home/homeassistant/.ssh/id_rsa.pub.&lt;/pre&gt;
 &lt;p&gt;Copy the content of &lt;cite&gt;/home/homeassistant/.ssh/id_rsa.pub&lt;/cite&gt; to
 &lt;cite&gt;/root/.ssh/authorized_keys&lt;/cite&gt; (on the router not inside the container).&lt;/p&gt;
 &lt;p&gt;With this configuration, the switch will always be off when you restart
@@ -301,16 +261,14 @@ command shall return a result code &lt;em&gt;0&lt;/em&gt; if the switch is on.
 The openvpn init script on the Turris Omnia doesn't take "status" as
 argument. An easy way to check if openvpn is running is to use pgrep.
 Our new configuration becomes:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-switch:
+&lt;pre class="literal-block"&gt;switch:
   platform: command_line
   switches:
         atv_vpn:
           command_on: 'ssh root@&amp;lt;router IP&amp;gt; "/etc/init.d/openvpn start"'
           command_off: 'ssh root@&amp;lt;router IP&amp;gt; "/etc/init.d/openvpn stop"'
           command_state: 'ssh root@&amp;lt;router IP&amp;gt; "pgrep /usr/sbin/openvpn"'
-          friendly_name: ATV4 VPN
-&lt;/pre&gt;
+          friendly_name: ATV4 VPN&lt;/pre&gt;
 &lt;p&gt;That's it. The switch state will now properly be updated
 even if the VPN is started or stopped without using the application.&lt;/p&gt;
 &lt;p&gt;If you go to &lt;em&gt;http://&amp;lt;container IP&amp;gt;:8123&lt;/em&gt;, you should see something like
@@ -322,8 +280,7 @@ that:&lt;/p&gt;
 &lt;p&gt;Let's configure &lt;a class="reference external" href="https://home-assistant.io/getting-started/autostart-systemd/"&gt;systemd&lt;/a&gt; to automatically
 start the application.
 Create the file &lt;cite&gt;/etc/systemd/system/home-assistant@homeassistant.service&lt;/cite&gt;:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# cat &amp;lt;&amp;lt;EOF &amp;gt;&amp;gt; /etc/systemd/system/home-assistant@homeassistant.service
+&lt;pre class="literal-block"&gt;root@homeassistant:~# cat &amp;lt;&amp;lt;EOF &amp;gt;&amp;gt; /etc/systemd/system/home-assistant@homeassistant.service
 [Unit]
 Description=Home Assistant
 After=network.target
@@ -335,28 +292,21 @@ ExecStart=/srv/homeassistant/bin/hass -c "/home/homeassistant/.homeassistant"
 
 [Install]
 WantedBy=multi-user.target
-EOF
-&lt;/pre&gt;
+EOF&lt;/pre&gt;
 &lt;p&gt;Enable and launch Home Assistant:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# systemctl --system daemon-reload
+&lt;pre class="literal-block"&gt;root@homeassistant:~# systemctl --system daemon-reload
 root@homeassistant:~# systemctl enable home-assistant@homeassistant
 Created symlink from /etc/systemd/system/multi-user.target.wants/home-assistant@homeassistant.service to /etc/systemd/system/home-assistant@homeassistant.service.
-root@homeassistant:~# systemctl start home-assistant@homeassistant
-&lt;/pre&gt;
+root@homeassistant:~# systemctl start home-assistant@homeassistant&lt;/pre&gt;
 &lt;p&gt;You can check the logs with:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@homeassistant:~# journalctl -f -u home-assistant@homeassistant
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;root@homeassistant:~# journalctl -f -u home-assistant@homeassistant&lt;/pre&gt;
 &lt;p&gt;We just have to make sure the container starts automatically when we
 reboot the router.
 Set the following in &lt;cite&gt;/etc/config/lxc-auto&lt;/cite&gt;:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-root@turris:~# cat /etc/config/lxc-auto
+&lt;pre class="literal-block"&gt;root@turris:~# cat /etc/config/lxc-auto
 config container
   option name homeassistant
-  option timeout 60
-&lt;/pre&gt;
+  option timeout 60&lt;/pre&gt;
 &lt;/div&gt;
 &lt;div class="section" id="make-it-easy-to-access-home-assistant"&gt;
 &lt;h2&gt;Make it easy to access Home Assistant&lt;/h2&gt;

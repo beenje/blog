@@ -76,10 +76,11 @@ navbar-dark bg-dark
         <!--Body content-->
         
         
+        
 <article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Dockerfile anti-patterns and best practices</a></h1>
 
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
                     Benjamin Bertrand
             </span></p>
             <p class="dateline">
@@ -110,8 +111,7 @@ You should definitively read that page.</p>
 <div class="section" id="avoid-invalidating-the-cache">
 <h2>Avoid invalidating the cache</h2>
 <p>Let's take a simple example with a Python application:</p>
-<pre class="literal-block">
-FROM python:3.6
+<pre class="literal-block">FROM python:3.6
 
 COPY . /app
 WORKDIR /app
@@ -119,8 +119,7 @@ WORKDIR /app
 RUN pip install -r requirements.txt
 
 ENTRYPOINT ["python"]
-CMD ["ap.py"]
-</pre>
+CMD ["ap.py"]</pre>
 <p>It's actually an example I have seen several times online.
 This looks fine, right?</p>
 <p>The problem is that the <em>COPY . /app</em> command will invalidate the cache as
@@ -130,8 +129,7 @@ Docker will have to re-install all the requirements because the
 <em>RUN pip</em> command is run after the <em>COPY</em> that invalidated the cache.</p>
 <p>The requirements should only be re-installed if the <em>requirements.txt</em>
 file changes:</p>
-<pre class="literal-block">
-FROM python:3.6
+<pre class="literal-block">FROM python:3.6
 
 WORKDIR /app
 
@@ -141,8 +139,7 @@ RUN pip install -r requirements.txt
 COPY . /app
 
 ENTRYPOINT ["python"]
-CMD ["ap.py"]
-</pre>
+CMD ["ap.py"]</pre>
 <p>With this Dockerfile, the <em>RUN pip</em> command will only be re-run when the
 <em>requirements.txt</em> file changes. It will use the cache otherwise.</p>
 <p>This is much more efficient and will save you quite some time if you have
@@ -155,17 +152,14 @@ many requirements to install.</p>
 filesystem differences. Every command in your Dockerfile will create a new
 layer.</p>
 <p>Let's use the following Dockerfile:</p>
-<pre class="literal-block">
-FROM centos:7
+<pre class="literal-block">FROM centos:7
 
 RUN yum update -y
 RUN yum install -y sudo
 RUN yum install -y git
-RUN yum clean all
-</pre>
+RUN yum clean all</pre>
 <p>Build the docker image and check the layers created with the <em>docker history</em> command:</p>
-<pre class="literal-block">
-$ docker build -t centos-test .
+<pre class="literal-block">$ docker build -t centos-test .
 ...
 $ docker images
 REPOSITORY                       TAG                 IMAGE ID            CREATED              SIZE
@@ -180,48 +174,40 @@ e0c7b450b7a8        3 minutes ago       /bin/sh -c yum update -y                
 98d35105a391        24 hours ago        /bin/sh -c #(nop)  CMD ["/bin/bash"]            0 B
 &lt;missing&gt;           24 hours ago        /bin/sh -c #(nop)  LABEL name=CentOS Base ...   0 B
 &lt;missing&gt;           24 hours ago        /bin/sh -c #(nop) ADD file:29f66b8b4bafd0f...   193 MB
-&lt;missing&gt;           6 months ago        /bin/sh -c #(nop)  MAINTAINER https://gith...   0 B
-</pre>
+&lt;missing&gt;           6 months ago        /bin/sh -c #(nop)  MAINTAINER https://gith...   0 B</pre>
 <p>There are two problems with this Dockerfile:</p>
 <ol class="arabic simple">
-<li>We added too many layers for nothing.</li>
-<li>The <em>yum clean all</em> command is meant to reduce the size of the image but it
-actually does the opposite by adding a new layer!</li>
+<li><p>We added too many layers for nothing.</p></li>
+<li><p>The <em>yum clean all</em> command is meant to reduce the size of the image but it
+actually does the opposite by adding a new layer!</p></li>
 </ol>
 <p>Let's check that by removing the latest command and running the build
 again:</p>
-<pre class="literal-block">
-FROM centos:7
+<pre class="literal-block">FROM centos:7
 
 RUN yum update -y
 RUN yum install -y sudo
 RUN yum install -y git
-# RUN yum clean all
-</pre>
-<pre class="literal-block">
-$ docker build -t centos-test .
+# RUN yum clean all</pre>
+<pre class="literal-block">$ docker build -t centos-test .
 ...
 $ docker images
 REPOSITORY                       TAG                 IMAGE ID            CREATED             SIZE
 centos-test                      latest              999e7c7c0e14        11 minutes ago      469 MB
-centos                           7                   98d35105a391        24 hours ago        193 MB
-</pre>
+centos                           7                   98d35105a391        24 hours ago        193 MB</pre>
 <p>The new image without the <em>yum clean all</em> command is indeed smaller than the previous image (1.67 MB smaller)!</p>
 <p>If you want to remove files, it's important to do that in the same RUN command that created those files.
 Otherwise there is no point.</p>
 <p>Here is the proper way to do it:</p>
-<pre class="literal-block">
-FROM centos:7
+<pre class="literal-block">FROM centos:7
 
 RUN yum update -y \
   &amp;&amp; yum install -y \
   sudo \
   git \
-  &amp;&amp; yum clean all
-</pre>
+  &amp;&amp; yum clean all</pre>
 <p>Let's build this new image:</p>
-<pre class="literal-block">
-$ docker build -t centos-test .
+<pre class="literal-block">$ docker build -t centos-test .
 ...
 $ docker images
 REPOSITORY                       TAG                 IMAGE ID            CREATED             SIZE
@@ -233,8 +219,7 @@ IMAGE               CREATED              CREATED BY                             
 98d35105a391        24 hours ago         /bin/sh -c #(nop)  CMD ["/bin/bash"]            0 B
 &lt;missing&gt;           24 hours ago         /bin/sh -c #(nop)  LABEL name=CentOS Base ...   0 B
 &lt;missing&gt;           24 hours ago         /bin/sh -c #(nop) ADD file:29f66b8b4bafd0f...   193 MB
-&lt;missing&gt;           6 months ago         /bin/sh -c #(nop)  MAINTAINER https://gith...   0 B
-</pre>
+&lt;missing&gt;           6 months ago         /bin/sh -c #(nop)  MAINTAINER https://gith...   0 B</pre>
 <p>The new image is only 265 MB compared to the 470 MB of the original image.
 There isn't much more to say :-)</p>
 <p>If you want to know more about images and layers, you should read the
@@ -244,15 +229,15 @@ documentation: <a class="reference external" href="https://docs.docker.com/engin
 <h2>Conclusion</h2>
 <p>Avoid invalidating the cache:</p>
 <ul class="simple">
-<li>start your Dockerfile with commands that should not change often</li>
-<li>put commands that can often invalidate the cache (like COPY .) as
-late as possible</li>
-<li>only add the needed files (use a .dockerignore file)</li>
+<li><p>start your Dockerfile with commands that should not change often</p></li>
+<li><p>put commands that can often invalidate the cache (like COPY .) as
+late as possible</p></li>
+<li><p>only add the needed files (use a .dockerignore file)</p></li>
 </ul>
 <p>Minimize the number of layers:</p>
 <ul class="simple">
-<li>put related commands in the same RUN instruction</li>
-<li>remove files in the same RUN command that created them</li>
+<li><p>put related commands in the same RUN instruction</p></li>
+<li><p>remove files in the same RUN command that created them</p></li>
 </ul>
 </div>
 </div>
@@ -290,19 +275,17 @@ late as possible</li>
 
 
         </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
-            Contents © 2019         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2020         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
             
         </footer>
 </div>
 </div>
 
 
-        <script src="../../assets/js/all-nocdn.js"></script><!-- fancy dates --><script>
-    moment.locale("en");
-    fancydates(0, "YYYY-MM-DD HH:mm");
-    </script><!-- end fancy dates --><script>
+        <script src="../../assets/js/all-nocdn.js"></script><script>
     baguetteBox.run('div#content', {
         ignoreClass: 'islink',
         captions: function(element) {

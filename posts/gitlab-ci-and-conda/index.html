@@ -80,10 +80,11 @@ navbar-dark bg-dark
         <!--Body content-->
         
         
+        
 <article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">GitLab CI and conda</a></h1>
 
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
                     Benjamin Bertrand
             </span></p>
             <p class="dateline">
@@ -112,8 +113,7 @@ sphinx documentation.</p>
 to setup a runner so I won't go into details here. I chose the <a class="reference external" href="https://gitlab.com/gitlab-org/gitlab-ci-multi-runner/blob/master/docs/executors/docker.md">Docker
 executor</a>.</p>
 <p>Here is my first <cite>.gitlab-ci.yml</cite> test:</p>
-<pre class="literal-block">
-image: python:3.4
+<pre class="literal-block">image: python:3.4
 
 before_script:
   - pip install -r requirements.txt
@@ -121,15 +121,13 @@ before_script:
 tests:
   stage: test
   script:
-    - python -m unittest discover -v
-</pre>
+    - python -m unittest discover -v</pre>
 <p>Success, it works! Nice. But... 8 minutes 33 seconds build time for a test suite that
 runs in less than 1 second... that's a bit long.</p>
 <p>Let's try using some caching to avoid having to download all the pip
 requirements every time. After googling, I found this <a class="reference external" href="https://fleschenberg.net/gitlab-pip-cache/">post</a> explaining that the cache
 path must be inside the build directory:</p>
-<pre class="literal-block">
-image: python:3.4
+<pre class="literal-block">image: python:3.4
 
 before_script:
   - export PIP_CACHE_DIR="pip-cache"
@@ -142,8 +140,7 @@ cache:
 tests:
   stage: test
   script:
-    - python -m unittest discover -v
-</pre>
+    - python -m unittest discover -v</pre>
 <p>With the pip cache, the build time went down to about 6 minutes. A bit
 better, but far from acceptable.</p>
 <p>Of course I knew the problem was not the download, but the
@@ -152,8 +149,7 @@ which explains why it takes a while to compile.</p>
 <p>So how do you install <a class="reference external" href="http://pandas.pydata.org">pandas</a> easily? With <a class="reference external" href="http://conda.pydata.org/docs/">conda</a> of course!
 There are even some nice <a class="reference external" href="https://github.com/ContinuumIO/docker-images">docker images</a>  created by Continuum Analytics ready to be used.</p>
 <p>So let's try again:</p>
-<pre class="literal-block">
-image: continuumio/miniconda3:latest
+<pre class="literal-block">image: continuumio/miniconda3:latest
 
 before_script:
   - conda env create -f environment.yml
@@ -162,8 +158,7 @@ before_script:
 tests:
   stage: test
   script:
-    - python -m unittest discover -v
-</pre>
+    - python -m unittest discover -v</pre>
 <p>Build time: 2 minutes 55 seconds. Nice but we need some cache to avoid
 downloading all the packages everytime.
 The first problem is that the cache path has to be in the build directory.
@@ -173,18 +168,15 @@ problem is that Gitlab makes a compressed archive to save and restore the
 cache which takes quite some time in this case...</p>
 <p>How to get a fast cache? Let's use a docker volume!
 I modified my <cite>/etc/gitlab-runner/config.toml</cite> to add two volumes:</p>
-<pre class="literal-block">
-[runners.docker]
+<pre class="literal-block">[runners.docker]
   tls_verify = false
   image = "continuumio/miniconda3:latest"
   privileged = false
   disable_cache = false
-  volumes = ["/cache", "/opt/cache/conda/pkgs:/opt/conda/pkgs:rw", "/opt/cache/pip:/opt/cache/pip:rw"]
-</pre>
+  volumes = ["/cache", "/opt/cache/conda/pkgs:/opt/conda/pkgs:rw", "/opt/cache/pip:/opt/cache/pip:rw"]</pre>
 <p>One volume for <a class="reference external" href="http://conda.pydata.org/docs/">conda</a> packages and one for <cite>pip</cite>.
 My new <cite>.gitlab-ci.yml</cite>:</p>
-<pre class="literal-block">
-image: continuumio/miniconda3:latest
+<pre class="literal-block">image: continuumio/miniconda3:latest
 
 before_script:
   - export PIP_CACHE_DIR="/opt/cache/pip"
@@ -194,8 +186,7 @@ before_script:
 tests:
   stage: test
   script:
-    - python -m unittest discover -v
-</pre>
+    - python -m unittest discover -v</pre>
 <p>The build time is about 10 seconds!</p>
 <p>Just a few days after my tests, GitLab announced <a class="reference external" href="https://about.gitlab.com/2016/05/23/gitlab-container-registry/">GitLab Container
 Registry</a>.
@@ -242,19 +233,17 @@ current solution.</p>
 
 
         </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
-            Contents © 2019         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2020         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
             
         </footer>
 </div>
 </div>
 
 
-        <script src="../../assets/js/all-nocdn.js"></script><!-- fancy dates --><script>
-    moment.locale("en");
-    fancydates(0, "YYYY-MM-DD HH:mm");
-    </script><!-- end fancy dates --><script>
+        <script src="../../assets/js/all-nocdn.js"></script><script>
     baguetteBox.run('div#content', {
         ignoreClass: 'islink',
         captions: function(element) {

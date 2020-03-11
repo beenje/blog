@@ -25,8 +25,6 @@
 
 
 
-
-
 Where is my table?¶
 
 
@@ -34,9 +32,7 @@ Where is my table?¶
 
 
 
-
-
-I already wrote a blog post about Parsing HTML Tables in Python with pandas. Using requests or even dire">
+I already wrote a blog post about Parsing HTML Tables in Python with pandas. Using requests or even directly">
 <meta property="og:type" content="article">
 <meta property="article:published_time" content="2018-06-02T22:54:45+02:00">
 <meta property="article:tag" content="javascript">
@@ -97,10 +93,11 @@ navbar-dark bg-dark
         <!--Body content-->
         
         
+        
 <article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Parsing JavaScript rendered pages in Python with pyppeteer</a></h1>
 
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
                     Benjamin Bertrand
             </span></p>
             <p class="dateline">
@@ -120,9 +117,7 @@ navbar-dark bg-dark
         
 
     </header><div class="e-content entry-content" itemprop="articleBody text">
-    <div tabindex="-1" id="notebook" class="border-box-sizing">
-    <div class="container" id="notebook-container">
-
+    <div>
 <div class="cell border-box-sizing text_cell rendered">
 <div class="prompt input_prompt">
 </div>
@@ -165,7 +160,7 @@ The results are available here: <a href="http://results.neptron.se/#/lundaloppet
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -178,7 +173,7 @@ The results are available here: <a href="http://results.neptron.se/#/lundaloppet
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">dfs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="s1">'http://results.neptron.se/#/lundaloppet2018/?sortOrder=Place&amp;raceId=99&amp;page=0&amp;pageSize=25'</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -187,7 +182,10 @@ The results are available here: <a href="http://results.neptron.se/#/lundaloppet
 
 
 <div class="output_area">
-<div class="prompt"></div>
+
+    <div class="prompt"></div>
+
+
 <div class="output_subarea output_text output_error">
 <pre>
 <span class="ansi-red-fg">---------------------------------------------------------------------------</span>
@@ -238,10 +236,10 @@ The results are available here: <a href="http://results.neptron.se/#/lundaloppet
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="k">import</span> <span class="n">display_html</span>
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display_html</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -255,7 +253,7 @@ The results are available here: <a href="http://results.neptron.se/#/lundaloppet
 <span class="n">r</span><span class="o">.</span><span class="n">text</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -264,7 +262,10 @@ The results are available here: <a href="http://results.neptron.se/#/lundaloppet
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[4]:</div>
+
+    <div class="prompt output_prompt">Out[4]:</div>
+
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -285,7 +286,7 @@ The results are available here: <a href="http://results.neptron.se/#/lundaloppet
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">display_html</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -294,7 +295,10 @@ The results are available here: <a href="http://results.neptron.se/#/lundaloppet
 
 
 <div class="output_area">
-<div class="prompt"></div>
+
+    <div class="prompt"></div>
+
+
 
 <div class="output_html rendered_html output_subarea ">
 ï»¿
@@ -424,10 +428,10 @@ By googling, I found <a href="https://github.com/kennethreitz/requests-html">Req
 <div class="prompt input_prompt">In [6]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">requests_html</span> <span class="k">import</span> <span class="n">HTMLSession</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">requests_html</span> <span class="kn">import</span> <span class="n">HTMLSession</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -443,7 +447,7 @@ By googling, I found <a href="https://github.com/kennethreitz/requests-html">Req
 <span class="n">table</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">'table'</span><span class="p">,</span> <span class="n">first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -456,7 +460,7 @@ By googling, I found <a href="https://github.com/kennethreitz/requests-html">Req
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">display_html</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">html</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -465,7 +469,10 @@ By googling, I found <a href="https://github.com/kennethreitz/requests-html">Req
 
 
 <div class="output_area">
-<div class="prompt"></div>
+
+    <div class="prompt"></div>
+
+
 
 <div class="output_html rendered_html output_subarea ">
 <table>
@@ -868,7 +875,7 @@ By googling, I found <a href="https://github.com/kennethreitz/requests-html">Req
 <span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">html</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -877,7 +884,10 @@ By googling, I found <a href="https://github.com/kennethreitz/requests-html">Req
 
 
 <div class="output_area">
-<div class="prompt"></div>
+
+    <div class="prompt"></div>
+
+
 <div class="output_subarea output_text output_error">
 <pre>
 <span class="ansi-red-fg">---------------------------------------------------------------------------</span>
@@ -933,12 +943,12 @@ So there is no <em>magic</em>. You just let Chromium load and render the page wi
 <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">from</span> <span class="nn">pyppeteer</span> <span class="kn">import</span> <span class="n">launch</span>
 
-<span class="n">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="n">browser</span> <span class="o">=</span> <span class="n">await</span> <span class="n">launch</span><span class="p">()</span>
-    <span class="n">page</span> <span class="o">=</span> <span class="n">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">newPage</span><span class="p">()</span>
-    <span class="n">await</span> <span class="n">page</span><span class="o">.</span><span class="n">goto</span><span class="p">(</span><span class="s1">'http://example.com'</span><span class="p">)</span>
-    <span class="n">await</span> <span class="n">page</span><span class="o">.</span><span class="n">screenshot</span><span class="p">({</span><span class="s1">'path'</span><span class="p">:</span> <span class="s1">'example.png'</span><span class="p">})</span>
-    <span class="n">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">browser</span> <span class="o">=</span> <span class="k">await</span> <span class="n">launch</span><span class="p">()</span>
+    <span class="n">page</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">newPage</span><span class="p">()</span>
+    <span class="k">await</span> <span class="n">page</span><span class="o">.</span><span class="n">goto</span><span class="p">(</span><span class="s1">'http://example.com'</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">page</span><span class="o">.</span><span class="n">screenshot</span><span class="p">({</span><span class="s1">'path'</span><span class="p">:</span> <span class="s1">'example.png'</span><span class="p">})</span>
+    <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </pre></div>
@@ -953,7 +963,7 @@ So there is no <em>magic</em>. You just let Chromium load and render the page wi
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">asyncio</span>
-<span class="kn">from</span> <span class="nn">pyppeteer</span> <span class="k">import</span> <span class="n">launch</span>
+<span class="kn">from</span> <span class="nn">pyppeteer</span> <span class="kn">import</span> <span class="n">launch</span>
 
 
 <span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
@@ -966,7 +976,7 @@ So there is no <em>magic</em>. You just let Chromium load and render the page wi
 <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -995,7 +1005,7 @@ This example showed us how to load a page:</p>
 <li>goto a page</li>
 </ul>
 <p>There are several functions that can be used to retrieve elements from the page, like <a href="https://miyakogi.github.io/pyppeteer/reference.html#pyppeteer.page.Page.querySelector">querySelector</a> or <a href="https://miyakogi.github.io/pyppeteer/reference.html#pyppeteer.page.Page.querySelectorEval">querySelectorEval</a>. This is the function we gonna use to retrieve the table. We use the <code>table</code> selector and apply the <code>outerHTML</code> function to get the HTML representation of the table:</p>
-<div class="highlight"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="n">await</span> <span class="n">page</span><span class="o">.</span><span class="n">querySelectorEval</span><span class="p">(</span><span class="s1">'table'</span><span class="p">,</span> <span class="s1">'(element) =&gt; element.outerHTML'</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="k">await</span> <span class="n">page</span><span class="o">.</span><span class="n">querySelectorEval</span><span class="p">(</span><span class="s1">'table'</span><span class="p">,</span> <span class="s1">'(element) =&gt; element.outerHTML'</span><span class="p">)</span>
 </pre></div>
 <p>We can then pass that to pandas.</p>
 <p>One thing we wanted is to wait for the table to be rendered before trying to retrieve it. We can use the <a href="https://miyakogi.github.io/pyppeteer/reference.html#pyppeteer.page.Page.waitForSelector">waitForSelector</a> function for that.
@@ -1011,7 +1021,7 @@ I initially tried to use the <code>table</code> selector but that sometimes retu
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">pyppeteer</span> <span class="k">import</span> <span class="n">launch</span>
+<span class="kn">from</span> <span class="nn">pyppeteer</span> <span class="kn">import</span> <span class="n">launch</span>
 
 
 <span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
@@ -1027,7 +1037,7 @@ I initially tried to use the <code>table</code> selector but that sometimes retu
 <span class="n">df</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1036,7 +1046,10 @@ I initially tried to use the <code>table</code> selector but that sometimes retu
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[11]:</div>
+
+    <div class="prompt output_prompt">Out[11]:</div>
+
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -1448,7 +1461,7 @@ Let's refactor that code to retrieve all the results of the race.</p>
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">pyppeteer</span> <span class="k">import</span> <span class="n">launch</span>
+<span class="kn">from</span> <span class="nn">pyppeteer</span> <span class="kn">import</span> <span class="n">launch</span>
 
 <span class="n">URL</span> <span class="o">=</span> <span class="s1">'http://results.neptron.se/#/lundaloppet2018/results?sortOrder=Place&amp;raceId=99&amp;pageSize=25&amp;page=</span><span class="si">{}</span><span class="s1">'</span>
 
@@ -1472,7 +1485,7 @@ Let's refactor that code to retrieve all the results of the race.</p>
 
 <span class="k">async</span> <span class="k">def</span> <span class="nf">get_table</span><span class="p">(</span><span class="n">browser</span><span class="p">,</span> <span class="n">page_nb</span><span class="p">):</span>
     <span class="sd">"""Return the table from the given page number as a pandas dataframe"""</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">'Get table from page </span><span class="si">{page_nb}</span><span class="s1">'</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Get table from page </span><span class="si">{page_nb}</span><span class="s1">'</span><span class="p">)</span>
     <span class="n">page</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_page</span><span class="p">(</span><span class="n">browser</span><span class="p">,</span> <span class="n">URL</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page_nb</span><span class="p">),</span> <span class="s1">'td.res-startNo'</span><span class="p">)</span>
     <span class="n">table</span> <span class="o">=</span> <span class="k">await</span> <span class="n">page</span><span class="o">.</span><span class="n">querySelectorEval</span><span class="p">(</span><span class="s1">'table'</span><span class="p">,</span> <span class="s1">'(element) =&gt; element.outerHTML'</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="n">table</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -1482,7 +1495,7 @@ Let's refactor that code to retrieve all the results of the race.</p>
     <span class="sd">"""Return all the results as a pandas dataframe"""</span>
     <span class="n">browser</span> <span class="o">=</span> <span class="k">await</span> <span class="n">launch</span><span class="p">()</span>
     <span class="n">num_pages</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_num_pages</span><span class="p">(</span><span class="n">browser</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">'Number of pages: </span><span class="si">{num_pages}</span><span class="s1">'</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Number of pages: </span><span class="si">{num_pages}</span><span class="s1">'</span><span class="p">)</span>
     <span class="c1"># Python 3.6 asynchronous comprehensions! Nice!</span>
     <span class="n">dfs</span> <span class="o">=</span> <span class="p">[</span><span class="k">await</span> <span class="n">get_table</span><span class="p">(</span><span class="n">browser</span><span class="p">,</span> <span class="n">page_nb</span><span class="p">)</span> <span class="k">for</span> <span class="n">page_nb</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_pages</span><span class="p">)]</span>
     <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -1490,7 +1503,7 @@ Let's refactor that code to retrieve all the results of the race.</p>
     <span class="k">return</span> <span class="n">df</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1504,7 +1517,7 @@ Let's refactor that code to retrieve all the results of the race.</p>
 I think it's quite straightforward. We first get the total number of pages and then load each page to retrieve the table.
 Once done, we just have to concatenate all those tables in one.</p>
 <p>One thing to note is the use of Python <a href="https://www.python.org/dev/peps/pep-0530/">asynchronous comprehensions</a>. This is a Python 3.6 feature and makes it really Pythonic. It just works as it would with synchronous functions:</p>
-<div class="highlight"><pre><span></span><span class="n">dfs</span> <span class="o">=</span> <span class="p">[</span><span class="n">await</span> <span class="n">get_table</span><span class="p">(</span><span class="n">browser</span><span class="p">,</span> <span class="n">page_nb</span><span class="p">)</span> <span class="k">for</span> <span class="n">page_nb</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_pages</span><span class="p">)]</span>
+<div class="highlight"><pre><span></span><span class="n">dfs</span> <span class="o">=</span> <span class="p">[</span><span class="k">await</span> <span class="n">get_table</span><span class="p">(</span><span class="n">browser</span><span class="p">,</span> <span class="n">page_nb</span><span class="p">)</span> <span class="k">for</span> <span class="n">page_nb</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_pages</span><span class="p">)]</span>
 </pre></div>
 <p>Let's run that code!</p>
 
@@ -1519,7 +1532,7 @@ Once done, we just have to concatenate all those tables in one.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">get_results</span><span class="p">())</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1528,7 +1541,10 @@ Once done, we just have to concatenate all those tables in one.</p>
 
 
 <div class="output_area">
-<div class="prompt"></div>
+
+    <div class="prompt"></div>
+
+
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Number of pages: 115
 Get table from page 0
@@ -1672,7 +1688,7 @@ Get table from page 114
 <div class=" highlight hl-ipython3"><pre><span></span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1681,7 +1697,10 @@ Get table from page 114
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[14]:</div>
+
+    <div class="prompt output_prompt">Out[14]:</div>
+
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -1702,7 +1721,7 @@ Get table from page 114
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1711,7 +1730,10 @@ Get table from page 114
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[15]:</div>
+
+    <div class="prompt output_prompt">Out[15]:</div>
+
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -1833,7 +1855,7 @@ Get table from page 114
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">tail</span><span class="p">()</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1842,7 +1864,10 @@ Get table from page 114
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[16]:</div>
+
+    <div class="prompt output_prompt">Out[16]:</div>
+
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -1974,7 +1999,7 @@ Get table from page 114
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">'lundaloppet2018.csv'</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -2005,9 +2030,7 @@ Anyway, I'll probably look more at Pyppeteer for web application testing.</p>
 </div>
 </div>
 </div>
-    </div>
-  </div>
-
+</div>
     </div>
     <aside class="postpromonav"><nav><ul itemprop="keywords" class="tags">
 <li><a class="tag p-category" href="../../categories/javascript/" rel="tag">javascript</a></li>
@@ -2046,22 +2069,20 @@ Anyway, I'll probably look more at Pyppeteer for web application testing.</p>
     <a href="https://disqus.com" class="dsq-brlink" rel="nofollow">Comments powered by <span class="logo-disqus">Disqus</span></a>
 
 
-        </section><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity="sha256-SDRP1VVYu+tgAGKhddBSl5+ezofHKZeI+OzxakbIe/Y=" crossorigin="anonymous"></script><script type="text/x-mathjax-config">
+        </section><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity="sha384-3lJUsx1TJHt7BA4udB5KPnDrlkO8T6J6v/op7ui0BbCjvZ9WqV4Xm6DTP6kQ/iBH" crossorigin="anonymous"></script><script type="text/x-mathjax-config">
         MathJax.Hub.Config({tex2jax: {inlineMath: [['$latex ','$'], ['\\(','\\)']]}});
         </script></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
-            Contents © 2019         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2020         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
             
         </footer>
 </div>
 </div>
 
 
-        <script src="../../assets/js/all-nocdn.js"></script><!-- fancy dates --><script>
-    moment.locale("en");
-    fancydates(0, "YYYY-MM-DD HH:mm");
-    </script><!-- end fancy dates --><script>
+        <script src="../../assets/js/all-nocdn.js"></script><script>
     baguetteBox.run('div#content', {
         ignoreClass: 'islink',
         captions: function(element) {

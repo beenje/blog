@@ -82,10 +82,11 @@ navbar-dark bg-dark
         <!--Body content-->
         
         
+        
 <article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Home Assistant on Turris Omnia via LXC container</a></h1>
 
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
                     Benjamin Bertrand
             </span></p>
             <p class="dateline">
@@ -135,8 +136,7 @@ to easily keep the version up-to-date.</p>
 <p>As described <a class="reference external" href="https://www.turris.cz/doc/en/howto/lxc">here</a>, you can
 create a LXC container via the LuCI web interface or via the command
 line:</p>
-<pre class="literal-block">
-root@turris:~# lxc-create -t download -n homeassistant
+<pre class="literal-block">root@turris:~# lxc-create -t download -n homeassistant
 Setting up the GPG keyring
 Downloading the image index
 WARNING: Failed to download the file over HTTPs.
@@ -173,52 +173,38 @@ WARNING: Failed to download the file over HTTPs.
  container.
 
  Content of the tarballs is provided by third party, thus there is
- no warranty of any kind.
-</pre>
+ no warranty of any kind.</pre>
 <p>As you can see above, I chose a Debian Jessie distribution.</p>
 <p>Let's start and enter the container:</p>
-<pre class="literal-block">
-root@turris:~# lxc-start -n homeassistant
-root@turris:~# lxc-attach -n homeassistant
-</pre>
+<pre class="literal-block">root@turris:~# lxc-start -n homeassistant
+root@turris:~# lxc-attach -n homeassistant</pre>
 <p>Now that we are inside the container, we can first set the root password:</p>
-<pre class="literal-block">
-root@LXC_NAME:~# passwd
+<pre class="literal-block">root@LXC_NAME:~# passwd
 Enter new UNIX password:
 Retype new UNIX password:
-passwd: password updated successfully
-</pre>
+passwd: password updated successfully</pre>
 <p><em>LXC_NAME</em> is not a super nice hostname. Let's update it:</p>
-<pre class="literal-block">
-root@LXC_NAME:~# hostnamectl set-hostname homeassistant
-Failed to create bus connection: No such file or directory
-</pre>
+<pre class="literal-block">root@LXC_NAME:~# hostnamectl set-hostname homeassistant
+Failed to create bus connection: No such file or directory</pre>
 <p>Ok... We have to <a class="reference external" href="http://serverfault.com/questions/685837/how-to-set-the-hostname-for-a-debian-jessie-system">install dbus</a>.
 While we are at it, let's install vim because
 we'll need it to edit the homeassistant configuration:</p>
-<pre class="literal-block">
-root@LXC_NAME:~# apt-get update
+<pre class="literal-block">root@LXC_NAME:~# apt-get update
 root@LXC_NAME:~# apt-get upgrade
-root@LXC_NAME:~# apt-get install -y dbus vim
-</pre>
+root@LXC_NAME:~# apt-get install -y dbus vim</pre>
 <p>Setting the hostname now works properly:</p>
-<pre class="literal-block">
-root@LXC_NAME:~# hostnamectl set-hostname homeassistant
-</pre>
+<pre class="literal-block">root@LXC_NAME:~# hostnamectl set-hostname homeassistant</pre>
 <p>We can exit and enter the container again to see the change:</p>
-<pre class="literal-block">
-root@LXC_NAME:~# exit
+<pre class="literal-block">root@LXC_NAME:~# exit
 root@turris:~# lxc-attach -n homeassistant
-root@homeassistant:~#
-</pre>
+root@homeassistant:~#</pre>
 </div>
 <div class="section" id="install-home-assistant">
 <h2>Install Home Assistant</h2>
 <p>Next, we just have to follow the <a class="reference external" href="https://home-assistant.io/getting-started/installation-virtualenv/">Home Assistant installation instructions</a>.
 They are well detailed. I'll just quickly repeat them here to make it
 easier to follow but you should refer to the official page for any update:</p>
-<pre class="literal-block">
-root@homeassistant:~# apt-get install python-pip python3-dev
+<pre class="literal-block">root@homeassistant:~# apt-get install python-pip python3-dev
 root@homeassistant:~# pip install --upgrade virtualenv
 root@homeassistant:~# adduser --system homeassistant
 root@homeassistant:~# mkdir /srv/homeassistant
@@ -226,49 +212,40 @@ root@homeassistant:~# chown homeassistant /srv/homeassistant
 root@homeassistant:~# su -s /bin/bash homeassistant
 homeassistant@homeassistant:/root$ virtualenv -p python3 /srv/homeassistant
 homeassistant@homeassistant:/root$ source /srv/homeassistant/bin/activate
-(homeassistant) homeassistant@homeassistant:/root$ pip3 install --upgrade homeassistant
-</pre>
+(homeassistant) homeassistant@homeassistant:/root$ pip3 install --upgrade homeassistant</pre>
 <p>Just run <em>hass</em> to start the application and create the default
 configuration:</p>
-<pre class="literal-block">
-(homeassistant) homeassistant@homeassistant:/root$ hass
-</pre>
+<pre class="literal-block">(homeassistant) homeassistant@homeassistant:/root$ hass</pre>
 <p>Press CTRL-C to exit.
 Check the created configuration file:
 <cite>/home/homeassistant/.homeassistant/configuration.yaml</cite>.</p>
 <p>You can comment out the <cite>introduction:</cite> line:</p>
-<pre class="literal-block">
-# Show links to resources in log and frontend
-#introduction:
-</pre>
+<pre class="literal-block"># Show links to resources in log and frontend
+#introduction:</pre>
 </div>
 <div class="section" id="add-a-switch-to-home-assistant">
 <h2>Add a switch to Home Assistant</h2>
 <p>To start and stop our VPN we define a <a class="reference external" href="https://home-assistant.io/components/switch.command_line/">Command Line Switch</a> that
 triggers the openvpn script on the router.
 Add the following at the end of the file:</p>
-<pre class="literal-block">
-switch:
+<pre class="literal-block">switch:
   platform: command_line
   switches:
         atv_vpn:
           command_on: 'ssh root@&lt;router IP&gt; "/etc/init.d/openvpn start"'
           command_off: 'ssh root@&lt;router IP&gt; "/etc/init.d/openvpn stop"'
-          friendly_name: ATV4 VPN
-</pre>
+          friendly_name: ATV4 VPN</pre>
 <p>The LXC container is just like another computer (a virtual one) on the local network.
 To access the router, we have to ssh to it. For this to work without
 requesting a password, we have to generate a ssh key and add the public
 key to the authorized_keys file on the router:</p>
-<pre class="literal-block">
-homeassistant@homeassistant:~$ ssh-keygen
+<pre class="literal-block">homeassistant@homeassistant:~$ ssh-keygen
 Generating public/private rsa key pair.
 Enter file in which to save the key (/home/homeassistant/.ssh/id_rsa):
 Enter passphrase (empty for no passphrase):
 Enter same passphrase again:
 Your identification has been saved in /home/homeassistant/.ssh/id_rsa.
-Your public key has been saved in /home/homeassistant/.ssh/id_rsa.pub.
-</pre>
+Your public key has been saved in /home/homeassistant/.ssh/id_rsa.pub.</pre>
 <p>Copy the content of <cite>/home/homeassistant/.ssh/id_rsa.pub</cite> to
 <cite>/root/.ssh/authorized_keys</cite> (on the router not inside the container).</p>
 <p>With this configuration, the switch will always be off when you restart
@@ -279,16 +256,14 @@ command shall return a result code <em>0</em> if the switch is on.
 The openvpn init script on the Turris Omnia doesn't take "status" as
 argument. An easy way to check if openvpn is running is to use pgrep.
 Our new configuration becomes:</p>
-<pre class="literal-block">
-switch:
+<pre class="literal-block">switch:
   platform: command_line
   switches:
         atv_vpn:
           command_on: 'ssh root@&lt;router IP&gt; "/etc/init.d/openvpn start"'
           command_off: 'ssh root@&lt;router IP&gt; "/etc/init.d/openvpn stop"'
           command_state: 'ssh root@&lt;router IP&gt; "pgrep /usr/sbin/openvpn"'
-          friendly_name: ATV4 VPN
-</pre>
+          friendly_name: ATV4 VPN</pre>
 <p>That's it. The switch state will now properly be updated
 even if the VPN is started or stopped without using the application.</p>
 <p>If you go to <em>http://&lt;container IP&gt;:8123</em>, you should see something like
@@ -300,8 +275,7 @@ that:</p>
 <p>Let's configure <a class="reference external" href="https://home-assistant.io/getting-started/autostart-systemd/">systemd</a> to automatically
 start the application.
 Create the file <cite>/etc/systemd/system/home-assistant@homeassistant.service</cite>:</p>
-<pre class="literal-block">
-root@homeassistant:~# cat &lt;&lt;EOF &gt;&gt; /etc/systemd/system/home-assistant@homeassistant.service
+<pre class="literal-block">root@homeassistant:~# cat &lt;&lt;EOF &gt;&gt; /etc/systemd/system/home-assistant@homeassistant.service
 [Unit]
 Description=Home Assistant
 After=network.target
@@ -313,28 +287,21 @@ ExecStart=/srv/homeassistant/bin/hass -c "/home/homeassistant/.homeassistant"
 
 [Install]
 WantedBy=multi-user.target
-EOF
-</pre>
+EOF</pre>
 <p>Enable and launch Home Assistant:</p>
-<pre class="literal-block">
-root@homeassistant:~# systemctl --system daemon-reload
+<pre class="literal-block">root@homeassistant:~# systemctl --system daemon-reload
 root@homeassistant:~# systemctl enable home-assistant@homeassistant
 Created symlink from /etc/systemd/system/multi-user.target.wants/home-assistant@homeassistant.service to /etc/systemd/system/home-assistant@homeassistant.service.
-root@homeassistant:~# systemctl start home-assistant@homeassistant
-</pre>
+root@homeassistant:~# systemctl start home-assistant@homeassistant</pre>
 <p>You can check the logs with:</p>
-<pre class="literal-block">
-root@homeassistant:~# journalctl -f -u home-assistant@homeassistant
-</pre>
+<pre class="literal-block">root@homeassistant:~# journalctl -f -u home-assistant@homeassistant</pre>
 <p>We just have to make sure the container starts automatically when we
 reboot the router.
 Set the following in <cite>/etc/config/lxc-auto</cite>:</p>
-<pre class="literal-block">
-root@turris:~# cat /etc/config/lxc-auto
+<pre class="literal-block">root@turris:~# cat /etc/config/lxc-auto
 config container
   option name homeassistant
-  option timeout 60
-</pre>
+  option timeout 60</pre>
 </div>
 <div class="section" id="make-it-easy-to-access-home-assistant">
 <h2>Make it easy to access Home Assistant</h2>
@@ -385,19 +352,17 @@ This makes it easy for anyone at home to turn the VPN on and off!</p>
 
 
         </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
-            Contents © 2019         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2020         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
             
         </footer>
 </div>
 </div>
 
 
-        <script src="../../assets/js/all-nocdn.js"></script><!-- fancy dates --><script>
-    moment.locale("en");
-    fancydates(0, "YYYY-MM-DD HH:mm");
-    </script><!-- end fancy dates --><script>
+        <script src="../../assets/js/all-nocdn.js"></script><script>
     baguetteBox.run('div#content', {
         ignoreClass: 'islink',
         captions: function(element) {

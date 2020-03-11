@@ -79,10 +79,11 @@ navbar-dark bg-dark
         <!--Body content-->
         
         
+        
 <article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Logging to a Tkinter ScrolledText Widget</a></h1>
 
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
                     Benjamin Bertrand
             </span></p>
             <p class="dateline">
@@ -121,8 +122,7 @@ I wanted to have a kind of console where to display log messages.</p>
 <p>I quickly found an <a class="reference external" href="https://gist.github.com/moshekaplan/c425f861de7bbf28ef06">example</a> on
 <a class="reference external" href="https://stackoverflow.com/questions/13318742/python-logging-to-tkinter-text-widget">StackOverflow</a>
 to send Python logging to a tkinter Text widget:</p>
-<pre class="literal-block">
-class TextHandler(logging.Handler):
+<pre class="literal-block">class TextHandler(logging.Handler):
     """This class allows you to log to a Tkinter Text or ScrolledText widget"""
 
     def __init__(self, text):
@@ -141,8 +141,7 @@ class TextHandler(logging.Handler):
             # Autoscroll to the bottom
             self.text.yview(tk.END)
         # This is necessary because we can't modify the Text from other threads
-        self.text.after(0, append)
-</pre>
+        self.text.after(0, append)</pre>
 <p>This looks nice but doesn't work if you try to send a log message from another thread
 (despite the comment)...
 because we are passing the text widget with the logging handler to the other thread.
@@ -155,8 +154,7 @@ If you implement specific methods as explained (<cite>put_line_to_queue</cite>),
 <h2>QueueHandler</h2>
 <p>Using a <a class="reference external" href="https://docs.python.org/3/library/queue.html">Queue</a> is indeed the way to share data between threads.
 So I implemented a simple QueueHandler:</p>
-<pre class="literal-block">
-class QueueHandler(logging.Handler):
+<pre class="literal-block">class QueueHandler(logging.Handler):
     """Class to send logging records to a queue
 
     It can be used from different threads
@@ -167,13 +165,11 @@ class QueueHandler(logging.Handler):
         self.log_queue = log_queue
 
     def emit(self, record):
-        self.log_queue.put(record)
-</pre>
+        self.log_queue.put(record)</pre>
 <p>The handler only puts the message in a queue.
 I created a <cite>ConsoleUi</cite> class to poll the messages from the queue and display them in a scrolled
 text widget:</p>
-<pre class="literal-block">
-logger = logging.getLogger(__name__)
+<pre class="literal-block">logger = logging.getLogger(__name__)
 
 
 class ConsoleUi:
@@ -216,12 +212,10 @@ class ConsoleUi:
                 break
             else:
                 self.display(record)
-        self.frame.after(100, self.poll_log_queue)
-</pre>
+        self.frame.after(100, self.poll_log_queue)</pre>
 <p>I can safely use the logger from different threads because only a queue is passed with the handler, no tkinter widget.</p>
 <p>To demonstrate that, I created a separate thread to display the time every seconds:</p>
-<pre class="literal-block">
-class Clock(threading.Thread):
+<pre class="literal-block">class Clock(threading.Thread):
     """Class to display the time every seconds
 
     Every 5 seconds, the time is displayed using the logging.ERROR level
@@ -249,8 +243,7 @@ class Clock(threading.Thread):
             time.sleep(0.2)
 
     def stop(self):
-        self._stop_event.set()
-</pre>
+        self._stop_event.set()</pre>
 <p>The full code is available on <a class="reference external" href="https://github.com/beenje/tkinter-logging-text-widget">github</a>.
 If you checkout the version v0.1.0 and run it, you'll see something like that:</p>
 <img alt="/images/tkinter/logging_handler.png" src="../../images/tkinter/logging_handler.png">
@@ -264,8 +257,7 @@ implement the common 3-pane layout.</p>
 <p>Let's first create two new classes. The first one will be used to display
 a simple form to send a message via logging. The user can select the
 desired logging level:</p>
-<pre class="literal-block">
-class FormUi:
+<pre class="literal-block">class FormUi:
 
     def __init__(self, frame):
         self.frame = frame
@@ -293,22 +285,18 @@ class FormUi:
     def submit_message(self):
         # Get the logging level numeric value
         lvl = getattr(logging, self.level.get())
-        logger.log(lvl, self.message.get())
-</pre>
+        logger.log(lvl, self.message.get())</pre>
 <p>The other class is a dummy one to show the 3-pane layout:</p>
-<pre class="literal-block">
-class ThirdUi:
+<pre class="literal-block">class ThirdUi:
 
     def __init__(self, frame):
         self.frame = frame
         ttk.Label(self.frame, text='This is just an example of a third frame').grid(column=0, row=1, sticky=W)
-        ttk.Label(self.frame, text='With another line here!').grid(column=0, row=4, sticky=W)
-</pre>
+        ttk.Label(self.frame, text='With another line here!').grid(column=0, row=4, sticky=W)</pre>
 <p>With those new classes, the only change required is in the <cite>App</cite> class to
 create a vertical and horizontal <cite>ttk.PanedWindow</cite>.
 The horizontal pane is splitted in two frames (the form and console):</p>
-<pre class="literal-block">
- class App:
+<pre class="literal-block"> class App:
 
      def __init__(self, root):
 @@ -109,11 +148,24 @@ class App:
@@ -337,8 +325,7 @@ The horizontal pane is splitted in two frames (the form and console):</p>
 +        self.third = ThirdUi(third_frame)
          self.clock = Clock()
          self.clock.start()
-         self.root.protocol('WM_DELETE_WINDOW', self.quit)
-</pre>
+         self.root.protocol('WM_DELETE_WINDOW', self.quit)</pre>
 <p>Note that the <cite>Clock</cite> and <cite>ConsoleUi</cite> classes were left untouched.
 We just pass a <cite>ttk.LabelFrame</cite> instead of a <cite>ttk.Frame</cite> to the <cite>ConsoleUi</cite>
 class.</p>
@@ -391,19 +378,17 @@ That being said, I'll probably try to dive more in <a class="reference external"
 
 
         </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
-            Contents © 2019         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2020         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
             
         </footer>
 </div>
 </div>
 
 
-        <script src="../../assets/js/all-nocdn.js"></script><!-- fancy dates --><script>
-    moment.locale("en");
-    fancydates(0, "YYYY-MM-DD HH:mm");
-    </script><!-- end fancy dates --><script>
+        <script src="../../assets/js/all-nocdn.js"></script><script>
     baguetteBox.run('div#content', {
         ignoreClass: 'islink',
         captions: function(element) {

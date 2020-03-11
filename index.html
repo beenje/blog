@@ -14,7 +14,7 @@
 <link rel="alternate" type="application/rss+xml" title="RSS" href="rss.xml">
 <link rel="canonical" href="http://beenje.github.io/blog/">
 <link rel="next" href="index-2.html" type="text/html">
-<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp/" type="text/html">
+<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/searching-by-date-in-elasticsearch/" type="text/html">
 </head>
 <body>
 <a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
@@ -60,13 +60,1226 @@ navbar-dark bg-dark
         <!--Body content-->
         
         
+        
 
     
 
 
     
 <div class="postindex">
-    <article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp/" class="u-url">Building a GitLab bot using gidgetlab and aiohttp</a></h1>
+    <article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/searching-by-date-in-elasticsearch/" class="u-url">Searching by date in Elasticsearch</a></h1>
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                Benjamin Bertrand
+            </span></p>
+            <p class="dateline">
+            <a href="posts/searching-by-date-in-elasticsearch/" rel="bookmark">
+            <time class="published dt-published" datetime="2020-03-11T19:08:16+01:00" itemprop="datePublished" title="2020-03-11 19:08">2020-03-11 19:08</time></a>
+            </p>
+                <p class="commentline">
+        
+    <a href="posts/searching-by-date-in-elasticsearch/#disqus_thread" data-disqus-identifier="cache/posts/searching-by-date-in-elasticsearch.html">Comments</a>
+
+
+        </p>
+</div>
+    </header><div class="e-content entry-content">
+    <div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>I recently indexed some documents in Elasticsearch at work and had issues retrieving what I wanted by date. Googling didn't get me very useful results, except the official <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html">documentation</a>. I thought it was worth sharing what wasn't obvious to me by reading the documentation.</p>
+<p>Let's start a single-node Elasticsearch cluster for test:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span>docker run -d -p <span class="m">9200</span>:9200 -p <span class="m">9300</span>:9300 -e <span class="s2">"discovery.type=single-node"</span> docker.elastic.co/elasticsearch/elasticsearch:7.6.0
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>b7c18b6079414f728d2dbacd8c913fbb212026bc513808e03e75e7a81eda0753
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Indexing-documents-in-Elasticsearch">Indexing documents in Elasticsearch<a class="anchor-link" href="posts/searching-by-date-in-elasticsearch/#Indexing-documents-in-Elasticsearch">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Like in a previous <a href="posts/parsing-and-indexing-pdf-in-python/">blog post</a>, I'll use the <a href="https://elasticsearch-py.readthedocs.io/en/master/">Python Elasticsearch client</a>.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">elasticsearch</span> <span class="kn">import</span> <span class="n">Elasticsearch</span>
+<span class="n">es</span> <span class="o">=</span> <span class="n">Elasticsearch</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's first check the cluster is alive:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">es</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">health</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[3]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>'1583959014 20:36:54 docker-cluster green 1 1 0 0 0 0 0 17 1.2s 100.0%\n'</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Here is the list of messages we want to index:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">messages</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">"date"</span><span class="p">:</span> <span class="s2">"Fri, 11 Oct 2019 10:30:00 +0200"</span><span class="p">,</span>
+    <span class="s2">"subject"</span><span class="p">:</span> <span class="s2">"Beautiful is better than ugly"</span>
+    <span class="p">},</span>
+    <span class="p">{</span><span class="s2">"date"</span><span class="p">:</span> <span class="s2">"Wed, 09 Oct 2019 11:36:05 +0200"</span><span class="p">,</span>
+    <span class="s2">"subject"</span><span class="p">:</span> <span class="s2">"Explicit is better than implicit"</span>
+    <span class="p">},</span>
+    <span class="p">{</span><span class="s2">"date"</span><span class="p">:</span> <span class="s2">"Thu, 10 Oct 2019 19:16:25 +0200"</span><span class="p">,</span>
+    <span class="s2">"subject"</span><span class="p">:</span> <span class="s2">"Simple is better than complex"</span>
+    <span class="p">},</span>
+    <span class="p">{</span><span class="s2">"date"</span><span class="p">:</span> <span class="s2">"Fri, 01 Nov 2019 18:12:00 +0200"</span><span class="p">,</span>
+    <span class="s2">"subject"</span><span class="p">:</span> <span class="s2">"Complex is better than complicated"</span>
+    <span class="p">},</span>
+    <span class="p">{</span><span class="s2">"date"</span><span class="p">:</span> <span class="s2">"Wed, 09 Oct 2019 21:30:10 +0200"</span><span class="p">,</span>
+    <span class="s2">"subject"</span><span class="p">:</span> <span class="s2">"Flat is better than nested"</span>
+    <span class="p">},</span>
+    <span class="p">{</span><span class="s2">"date"</span><span class="p">:</span> <span class="s2">"Wed, 01 Jan 2020 09:23:00 +0200"</span><span class="p">,</span>
+    <span class="s2">"subject"</span><span class="p">:</span> <span class="s2">"Sparse is better than dense"</span>
+    <span class="p">},</span>
+    <span class="p">{</span><span class="s2">"date"</span><span class="p">:</span> <span class="s2">"Wed, 15 Jan 2020 14:06:07 +0200"</span><span class="p">,</span>
+    <span class="s2">"subject"</span><span class="p">:</span> <span class="s2">"Readability counts"</span>
+    <span class="p">},</span>
+    <span class="p">{</span><span class="s2">"date"</span><span class="p">:</span> <span class="s2">"Sat, 01 Feb 2020 12:00:00 +0200"</span><span class="p">,</span>
+    <span class="s2">"subject"</span><span class="p">:</span> <span class="s2">"Now is better than never"</span>
+    <span class="p">},</span>
+<span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's index those messages. Note that we delete the index first to make sure it doesn't exist when running this notebook several times.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">es</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">"test-index"</span><span class="p">,</span> <span class="n">ignore_unavailable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">id_</span><span class="p">,</span> <span class="n">message</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">messages</span><span class="p">):</span>
+    <span class="n">es</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">"test-index"</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">id_</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">message</span><span class="p">,</span> <span class="n">refresh</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">es</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">get_mapping</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">"test-index"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[6]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>{'test-index': {'mappings': {'properties': {'date': {'type': 'text',
+     'fields': {'keyword': {'type': 'keyword', 'ignore_above': 256}}},
+    'subject': {'type': 'text',
+     'fields': {'keyword': {'type': 'keyword', 'ignore_above': 256}}}}}}}</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Looking at the mapping, we see that the <code>date</code> field was indexed as <code>text</code> and not <code>date</code> datatype. Formatting the field to the isoformat should help.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">:</span>
+    <span class="n">message</span><span class="p">[</span><span class="s2">"date"</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s2">"date"</span><span class="p">],</span> <span class="s2">"</span><span class="si">%a</span><span class="s2">, </span><span class="si">%d</span><span class="s2"> %b %Y %H:%M:%S %z"</span><span class="p">)</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+<span class="n">messages</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[7]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[{'date': '2019-10-11T10:30:00+02:00',
+  'subject': 'Beautiful is better than ugly'},
+ {'date': '2019-10-09T11:36:05+02:00',
+  'subject': 'Explicit is better than implicit'},
+ {'date': '2019-10-10T19:16:25+02:00',
+  'subject': 'Simple is better than complex'},
+ {'date': '2019-11-01T18:12:00+02:00',
+  'subject': 'Complex is better than complicated'},
+ {'date': '2019-10-09T21:30:10+02:00',
+  'subject': 'Flat is better than nested'},
+ {'date': '2020-01-01T09:23:00+02:00',
+  'subject': 'Sparse is better than dense'},
+ {'date': '2020-01-15T14:06:07+02:00', 'subject': 'Readability counts'},
+ {'date': '2020-02-01T12:00:00+02:00', 'subject': 'Now is better than never'}]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">es</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">"test-index"</span><span class="p">,</span> <span class="n">ignore_unavailable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">id_</span><span class="p">,</span> <span class="n">message</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">messages</span><span class="p">):</span>
+    <span class="n">es</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">"test-index"</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">id_</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">message</span><span class="p">,</span> <span class="n">refresh</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">es</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">get_mapping</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">"test-index"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[8]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>{'test-index': {'mappings': {'properties': {'date': {'type': 'date'},
+    'subject': {'type': 'text',
+     'fields': {'keyword': {'type': 'keyword', 'ignore_above': 256}}}}}}}</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This looks better. The date field was properly recognized thanks to the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/dynamic-field-mapping.html#date-detection">date detection</a> that is enabled by default.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Searching">Searching<a class="anchor-link" href="posts/searching-by-date-in-elasticsearch/#Searching">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>We can first check that simple queries work as expected. Note that I'll use the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/7.6/query-dsl-query-string-query.html#query-string-syntax">query string syntax</a>. I find it more natural and easier to integrate in a web application search box.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">es</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">"test-index"</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="s2">"complex"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[9]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>{'took': 140,
+ 'timed_out': False,
+ '_shards': {'total': 1, 'successful': 1, 'skipped': 0, 'failed': 0},
+ 'hits': {'total': {'value': 2, 'relation': 'eq'},
+  'max_score': 1.2398099,
+  'hits': [{'_index': 'test-index',
+    '_type': '_doc',
+    '_id': '2',
+    '_score': 1.2398099,
+    '_source': {'date': '2019-10-10T19:16:25+02:00',
+     'subject': 'Simple is better than complex'}},
+   {'_index': 'test-index',
+    '_type': '_doc',
+    '_id': '3',
+    '_score': 1.2398099,
+    '_source': {'date': '2019-11-01T18:12:00+02:00',
+     'subject': 'Complex is better than complicated'}}]}}</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's define a function that just returns the list of hits.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">es</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">"test-index"</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="n">query</span><span class="p">)[</span><span class="s2">"hits"</span><span class="p">][</span><span class="s2">"hits"</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">search</span><span class="p">(</span><span class="s2">"complex"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[11]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[{'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '2',
+  '_score': 1.2398099,
+  '_source': {'date': '2019-10-10T19:16:25+02:00',
+   'subject': 'Simple is better than complex'}},
+ {'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '3',
+  '_score': 1.2398099,
+  '_source': {'date': '2019-11-01T18:12:00+02:00',
+   'subject': 'Complex is better than complicated'}}]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Let's now try to search by date to retrieve the messages from the 9th of October 2019.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [12]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">search</span><span class="p">(</span><span class="s2">"20191009"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[12]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Nothing... The date format is probably not recognized.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [13]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">search</span><span class="p">(</span><span class="s2">"2019-10-09"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[13]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[{'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '1',
+  '_score': 1.0,
+  '_source': {'date': '2019-10-09T11:36:05+02:00',
+   'subject': 'Explicit is better than implicit'}},
+ {'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '4',
+  '_score': 1.0,
+  '_source': {'date': '2019-10-09T21:30:10+02:00',
+   'subject': 'Flat is better than nested'}}]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>So we have to use <code>-</code>. OK, let's try to retrieve all messages from January 2020.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">search</span><span class="p">(</span><span class="s2">"2020-01"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[14]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[{'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '5',
+  '_score': 1.0,
+  '_source': {'date': '2020-01-01T09:23:00+02:00',
+   'subject': 'Sparse is better than dense'}}]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>That's not really what we expected. There is a message the 15th of January. This shows that <code>2020-01</code> is in fact equivalent to <code>2020-01-01</code>. This would be the same with <code>2020</code>.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [15]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">search</span><span class="p">(</span><span class="s2">"date:2020"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[15]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[{'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '5',
+  '_score': 1.0,
+  '_source': {'date': '2020-01-01T09:23:00+02:00',
+   'subject': 'Sparse is better than dense'}}]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>To get the full month, we have to use a range query.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [16]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">search</span><span class="p">(</span><span class="s2">"[2020-01-01 TO 2020-01-31]"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[16]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[{'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '5',
+  '_score': 1.0,
+  '_source': {'date': '2020-01-01T09:23:00+02:00',
+   'subject': 'Sparse is better than dense'}},
+ {'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '6',
+  '_score': 1.0,
+  '_source': {'date': '2020-01-15T14:06:07+02:00',
+   'subject': 'Readability counts'}}]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Which is equivalent to:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [17]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">search</span><span class="p">(</span><span class="s2">"[2020-01 TO 2020-02}"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[17]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[{'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '5',
+  '_score': 1.0,
+  '_source': {'date': '2020-01-01T09:23:00+02:00',
+   'subject': 'Sparse is better than dense'}},
+ {'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '6',
+  '_score': 1.0,
+  '_source': {'date': '2020-01-15T14:06:07+02:00',
+   'subject': 'Readability counts'}}]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Note that <code>}</code>, in the range query, excludes the 1st of February. Using <code>]</code> would give us an additional message:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [18]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">search</span><span class="p">(</span><span class="s2">"[2020-01 TO 2020-02]"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[18]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[{'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '5',
+  '_score': 1.0,
+  '_source': {'date': '2020-01-01T09:23:00+02:00',
+   'subject': 'Sparse is better than dense'}},
+ {'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '6',
+  '_score': 1.0,
+  '_source': {'date': '2020-01-15T14:06:07+02:00',
+   'subject': 'Readability counts'}},
+ {'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '7',
+  '_score': 1.0,
+  '_source': {'date': '2020-02-01T12:00:00+02:00',
+   'subject': 'Now is better than never'}}]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Another way to retrieve messages from a specific period is to use <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/common-options.html#date-math">date math</a>:</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [19]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">search</span><span class="p">(</span><span class="s2">"2020-01\|\|\/M"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[19]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[{'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '5',
+  '_score': 1.0,
+  '_source': {'date': '2020-01-01T09:23:00+02:00',
+   'subject': 'Sparse is better than dense'}},
+ {'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '6',
+  '_score': 1.0,
+  '_source': {'date': '2020-01-15T14:06:07+02:00',
+   'subject': 'Readability counts'}}]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [20]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">search</span><span class="p">(</span><span class="s2">"date:2020\|\|\/y"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[20]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[{'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '5',
+  '_score': 1.0,
+  '_source': {'date': '2020-01-01T09:23:00+02:00',
+   'subject': 'Sparse is better than dense'}},
+ {'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '6',
+  '_score': 1.0,
+  '_source': {'date': '2020-01-15T14:06:07+02:00',
+   'subject': 'Readability counts'}},
+ {'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '7',
+  '_score': 1.0,
+  '_source': {'date': '2020-02-01T12:00:00+02:00',
+   'subject': 'Now is better than never'}}]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This is a nice solution but it's not super easy to make occasional users remember the syntax, especially the quoting of the <code>|</code> and <code>/</code> characters. Range queries are probably more natural.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>One thing that could be nice is if both <code>2019-10-09</code> and <code>20191009</code> were recognized. This is possible by adding the format we want to accept in the mapping.</p>
+<p>Let's recreate the index with the new mapping.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [21]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"date"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"date"</span><span class="p">,</span>
+        <span class="s2">"format"</span><span class="p">:</span> <span class="s2">"strict_date_optional_time||yyyyMMdd||yyyyMM"</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">"subject"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span> <span class="s2">"fields"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"keyword"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"keyword"</span><span class="p">}}},</span>
+<span class="p">}</span>
+<span class="n">es</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">"test-index"</span><span class="p">,</span> <span class="n">ignore_unavailable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">es</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">"test-index"</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="p">{</span><span class="s2">"mappings"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"dynamic"</span><span class="p">:</span> <span class="s2">"strict"</span><span class="p">,</span> <span class="s2">"properties"</span><span class="p">:</span> <span class="n">mapping</span><span class="p">}})</span>
+<span class="k">for</span> <span class="n">id_</span><span class="p">,</span> <span class="n">message</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">messages</span><span class="p">):</span>
+    <span class="n">es</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">"test-index"</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">id_</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">message</span><span class="p">,</span> <span class="n">refresh</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [22]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">search</span><span class="p">(</span><span class="s2">"20191009"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[22]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[{'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '1',
+  '_score': 1.0,
+  '_source': {'date': '2019-10-09T11:36:05+02:00',
+   'subject': 'Explicit is better than implicit'}},
+ {'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '4',
+  '_score': 1.0,
+  '_source': {'date': '2019-10-09T21:30:10+02:00',
+   'subject': 'Flat is better than nested'}}]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [23]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">search</span><span class="p">(</span><span class="s2">"2019-10-09"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[23]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[{'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '1',
+  '_score': 1.0,
+  '_source': {'date': '2019-10-09T11:36:05+02:00',
+   'subject': 'Explicit is better than implicit'}},
+ {'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '4',
+  '_score': 1.0,
+  '_source': {'date': '2019-10-09T21:30:10+02:00',
+   'subject': 'Flat is better than nested'}}]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [24]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">search</span><span class="p">(</span><span class="s2">"date:[202002 TO now]"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[24]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[{'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '7',
+  '_score': 1.0,
+  '_source': {'date': '2020-02-01T12:00:00+02:00',
+   'subject': 'Now is better than never'}}]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [25]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">search</span><span class="p">(</span><span class="s2">"date:[2020-02 TO now]"</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[25]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[{'_index': 'test-index',
+  '_type': '_doc',
+  '_id': '7',
+  '_score': 1.0,
+  '_source': {'date': '2020-02-01T12:00:00+02:00',
+   'subject': 'Now is better than never'}}]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>As seen above, both formats work now.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Conclusion">Conclusion<a class="anchor-link" href="posts/searching-by-date-in-elasticsearch/#Conclusion">¶</a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<ul>
+<li>The mapping is used when indexing new documents. It's also used by the search. Define in the mapping all the date formats you want the search to support (not only the ones required to ingest documents).</li>
+<li>A year <code>2020</code> or month <code>2020-01</code> is converted to the first day of the year/month: <code>2020-01-01</code>.</li>
+<li>To search by period, use either date math <code>2020-01\|\|\/M</code> or a range query <code>[2020-01-01 TO 2020-01-31]</code>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [ ]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+</div>
+    </div>
+    </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp/" class="u-url">Building a GitLab bot using gidgetlab and aiohttp</a></h1>
         <div class="metadata">
             <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
                 Benjamin Bertrand
@@ -103,11 +1316,9 @@ gidgetlab can of course be used with a private GitLab instance!</p>
 So let's create an issue on GitLab using the API via the command line, instead of the GitLab website.</p>
 <div class="section" id="install-gidgetlab-and-aiohttp">
 <h3>Install gidgetlab and aiohttp</h3>
-<p>Install <tt class="docutils literal">gidgetlab</tt> and <tt class="docutils literal">aiohttp</tt> if you have not already. Using a virtual environment
+<p>Install <code class="docutils literal">gidgetlab</code> and <code class="docutils literal">aiohttp</code> if you have not already. Using a virtual environment
 is recommended.</p>
-<pre class="literal-block">
-python3.6 -m pip install gidgetlab[aiohttp]
-</pre>
+<pre class="literal-block">python3.6 -m pip install gidgetlab[aiohttp]</pre>
 </div>
 <div class="section" id="create-a-gitlab-personal-access-token">
 <h3>Create a GitLab Personal Access Token</h3>
@@ -115,20 +1326,16 @@ python3.6 -m pip install gidgetlab[aiohttp]
 that will be used to authenticate yourself to GitLab.</p>
 <ol class="arabic">
 <li>
-<p class="first">Go to <a class="reference external" href="https://gitlab.com/profile/personal_access_tokens">https://gitlab.com/profile/personal_access_tokens</a></p>
+<p>Go to <a class="reference external" href="https://gitlab.com/profile/personal_access_tokens">https://gitlab.com/profile/personal_access_tokens</a></p>
 <p>Or, from GitLab, go to your <a class="reference external" href="https://gitlab.com/profile">Settings</a> &gt; <a class="reference external" href="https://gitlab.com/profile/personal_access_tokens">Access Tokens</a>.</p>
 </li>
-<li>
-<p class="first">Under <tt class="docutils literal">Name</tt>, enter a short description, to identify the purpose
-of this token. I recommend something like: <tt class="docutils literal">bot tutorial</tt>.</p>
-</li>
+<li><p>Under <code class="docutils literal">Name</code>, enter a short description, to identify the purpose
+of this token. I recommend something like: <code class="docutils literal">bot tutorial</code>.</p></li>
 </ol>
 <ol class="arabic" start="4">
+<li><p>Under Scopes, check the <code class="docutils literal">api</code> scope.</p></li>
 <li>
-<p class="first">Under Scopes, check the <tt class="docutils literal">api</tt> scope.</p>
-</li>
-<li>
-<p class="first">Click <tt class="docutils literal">Create personal access token</tt>. You will see your new personal access token
+<p>Click <code class="docutils literal">Create personal access token</code>. You will see your new personal access token
 (a 21 characters string). Click on the copy to clipboard icon and and paste it locally
 in a text file for now. If you have a password manager like 1password, use that.</p>
 <p>This is the only time you'll see this token in GitLab. If you lose it, you'll
@@ -139,23 +1346,18 @@ need to revoke it and create another one.</p>
 <div class="section" id="store-the-personal-access-token-as-an-environment-variable">
 <h3>Store the Personal Access Token as an environment variable</h3>
 <p>In Unix / Mac OS:</p>
-<pre class="literal-block">
-export GL_ACCESS_TOKEN=your token
-</pre>
+<pre class="literal-block">export GL_ACCESS_TOKEN=your token</pre>
 <p>In Windows:</p>
-<pre class="literal-block">
-set GL_ACCESS_TOKEN=your token
-</pre>
+<pre class="literal-block">set GL_ACCESS_TOKEN=your token</pre>
 <p>Note that these will only set the token for the current process. If you want
 this value stored permanently, you have to edit the bashrc file.</p>
 </div>
 <div class="section" id="create-an-issue">
 <h3>Create an issue</h3>
-<p>Open a new file, for example <tt class="docutils literal">create_issue.py</tt> in your favorite editor.</p>
-<p>Copy the following into <tt class="docutils literal">create_issue.py</tt>.
+<p>Open a new file, for example <code class="docutils literal">create_issue.py</code> in your favorite editor.</p>
+<p>Copy the following into <code class="docutils literal">create_issue.py</code>.
 Instead of "beenje" however, use your own GitLab username:</p>
-<pre class="literal-block">
-import asyncio
+<pre class="literal-block">import asyncio
 import os
 import aiohttp
 from gidgetlab.aiohttp import GitLabAPI
@@ -165,37 +1367,31 @@ async def main():
         gl = GitLabAPI(session, "beenje", access_token=os.getenv("GL_ACCESS_TOKEN"))
 
 loop = asyncio.get_event_loop()
-loop.run_until_complete(main())
-</pre>
+loop.run_until_complete(main())</pre>
 <p>We only instantiate a GitLabAPI class from gidgetlab by passing who we are ("beenje" in this example)
-and our GitLab personal access token stored in the <tt class="docutils literal">GL_ACCESS_TOKEN</tt> environment variable.
+and our GitLab personal access token stored in the <code class="docutils literal">GL_ACCESS_TOKEN</code> environment variable.
 Note that to interact with a private GitLab instance, you just have to pass the url to GitLabAPI:</p>
-<pre class="literal-block">
-gl = GitLabAPI(session, "beenje", access_token=os.getenv("GL_ACCESS_TOKEN"),
-               url="https://mygitlab.example.com")
-</pre>
+<pre class="literal-block">gl = GitLabAPI(session, "beenje", access_token=os.getenv("GL_ACCESS_TOKEN"),
+               url="https://mygitlab.example.com")</pre>
 <p>By default, the url is set to <cite>https://gitlab.com</cite>.</p>
 <p>So let's create an issue in one of my personal repo.
 Take a look at GitLab's documentation for <a class="reference external" href="https://docs.gitlab.com/ee/api/issues.html#new-issue">creating a new issue</a>.</p>
-<p>To create an issue, you should make a <tt class="docutils literal">POST</tt> request to the url
-<tt class="docutils literal"><span class="pre">/projects/:id/issues</span></tt> and supply the parameters <tt class="docutils literal">title</tt> (required)
-and <tt class="docutils literal">description</tt>.
-The <tt class="docutils literal">id</tt> can be the project ID or <a class="reference external" href="https://docs.gitlab.com/ee/api/README.html#namespaced-path-encoding">URL-encoded path of the project</a> owned by the authenticated user.</p>
+<p>To create an issue, you should make a <code class="docutils literal">POST</code> request to the url
+<code class="docutils literal"><span class="pre">/projects/:id/issues</span></code> and supply the parameters <code class="docutils literal">title</code> (required)
+and <code class="docutils literal">description</code>.
+The <code class="docutils literal">id</code> can be the project ID or <a class="reference external" href="https://docs.gitlab.com/ee/api/README.html#namespaced-path-encoding">URL-encoded path of the project</a> owned by the authenticated user.</p>
 <p>With gidgetlab, this looks like the following:</p>
-<pre class="literal-block">
-await gl.post(
+<pre class="literal-block">await gl.post(
     "/projects/beenje%2Fstrange-relationship/issues",
     data={
         "title": "We got a problem",
         "description": "Use more emoji!",
-    })
-</pre>
-<p><tt class="docutils literal"><span class="pre">beenje%2Fstrange-relationship</span></tt> is the <a class="reference external" href="https://docs.gitlab.com/ee/api/README.html#namespaced-path-encoding">URL-encoded path of the project</a>. We could have used the id <tt class="docutils literal">7898119</tt> instead.
+    })</pre>
+<p><code class="docutils literal"><span class="pre">beenje%2Fstrange-relationship</span></code> is the <a class="reference external" href="https://docs.gitlab.com/ee/api/README.html#namespaced-path-encoding">URL-encoded path of the project</a>. We could have used the id <code class="docutils literal">7898119</code> instead.
 The project ID can be found on the project main page.</p>
 <p>Add the above code right after you instantiate GitLabAPI.
 Your file should now look like the following:</p>
-<pre class="literal-block">
-import asyncio
+<pre class="literal-block">import asyncio
 import os
 import aiohttp
 from gidgetlab.aiohttp import GitLabAPI
@@ -213,44 +1409,37 @@ async def main():
 
 
 loop = asyncio.get_event_loop()
-loop.run_until_complete(main())
-</pre>
+loop.run_until_complete(main())</pre>
 <p>Feel free to change the title and the body of the message.
 Save and run it in the command line:</p>
-<pre class="literal-block">
-python3.6 -m create_issue
-</pre>
+<pre class="literal-block">python3.6 -m create_issue</pre>
 <p>There should be a new issue created in the strange-relationship project. Check it out:
 <a class="reference external" href="https://gitlab.com/beenje/strange-relationship/issues">https://gitlab.com/beenje/strange-relationship/issues</a></p>
 </div>
 <div class="section" id="comment-on-issue">
 <h3>Comment on issue</h3>
 <p>Let's try a different exercise, to get ourselves more familiar with GitLab's API.
-Take a look at GitLab's <a class="reference external" href="https://docs.gitlab.com/ee/api/issues.html#comments-on-issues">create a comment</a> documentation: <tt class="docutils literal">POST <span class="pre">/projects/:id/issues/:issue_iid/notes</span></tt></p>
+Take a look at GitLab's <a class="reference external" href="https://docs.gitlab.com/ee/api/issues.html#comments-on-issues">create a comment</a> documentation: <code class="docutils literal">POST <span class="pre">/projects/:id/issues/:issue_iid/notes</span></code></p>
 <p>Leave a comment in the issue you just created:</p>
-<pre class="literal-block">
-await gl.post(
+<pre class="literal-block">await gl.post(
     "/projects/beenje%2Fstrange-relationship/issues/1/notes",
     data={"body": "This is a comment"},
-)
-</pre>
-<p>Replace <tt class="docutils literal">1</tt> with the issue number you created.</p>
+)</pre>
+<p>Replace <code class="docutils literal">1</code> with the issue number you created.</p>
 </div>
 <div class="section" id="close-the-issue">
 <h3>Close the issue</h3>
 <p>Let's now close the issue that you've just created.</p>
 <p>Take a look at the documentation to <a class="reference external" href="https://docs.gitlab.com/ee/api/issues.html#edit-issue">edit an issue</a>.</p>
-<p>The method for editing an issue is <tt class="docutils literal">PUT</tt> instead of <tt class="docutils literal">POST</tt>, which we've
+<p>The method for editing an issue is <code class="docutils literal">PUT</code> instead of <code class="docutils literal">POST</code>, which we've
 seen in the previous two examples. In addition, to close an issue, you're basically
-editing an issue, and setting the <tt class="docutils literal">state_event</tt> to <tt class="docutils literal">close</tt>.</p>
+editing an issue, and setting the <code class="docutils literal">state_event</code> to <code class="docutils literal">close</code>.</p>
 <p>Use gidgetlab to close the issue:</p>
-<pre class="literal-block">
-await gl.put(
+<pre class="literal-block">await gl.put(
     "/projects/beenje%2Fstrange-relationship/issues/1",
     data={"state_event": "close"},
-)
-</pre>
-<p>Replace <tt class="docutils literal">1</tt> with the issue number you created.</p>
+)</pre>
+<p>Replace <code class="docutils literal">1</code> with the issue number you created.</p>
 </div>
 </div>
 <div class="section" id="using-gidgetlab-to-respond-to-webhooks">
@@ -263,22 +1452,18 @@ a webserver that responds to GitLab webhook events.</p>
 <h3>GitLabBot</h3>
 <p><a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/">gidgetlab</a> actually provides a <a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/aiohttp.html">GitLabBot class</a> to easily create an aiohttp
 web server that reponds to GitLab webhooks.</p>
-<p>Save the following in a file named <tt class="docutils literal">bot.py</tt>:</p>
-<pre class="literal-block">
-from gidgetlab.aiohttp import GitLabBot
+<p>Save the following in a file named <code class="docutils literal">bot.py</code>:</p>
+<pre class="literal-block">from gidgetlab.aiohttp import GitLabBot
 
 bot = GitLabBot("beenje")
 
 
 if __name__ == "__main__":
-    bot.run()
-</pre>
+    bot.run()</pre>
 <p>And run:</p>
-<pre class="literal-block">
-python3 bot.py
+<pre class="literal-block">python3 bot.py
 ======== Running on http://0.0.0.0:8080 ========
-(Press CTRL+C to quit)
-</pre>
+(Press CTRL+C to quit)</pre>
 <p>That's it. You have an aiohttp web server running on port 8080.
 Of course, it won't do that much. You'll have to register some events if
 you want the bot to perform some actions. We'll see that later.</p>
@@ -287,12 +1472,12 @@ you want the bot to perform some actions. We'll see that later.</p>
 <h3>Webhook events</h3>
 <p>When an event is triggered in GitLab, GitLab can notify you about the event by
 sending a POST request along with the payload.</p>
-<p>Some example <tt class="docutils literal">events</tt> are:</p>
+<p>Some example <code class="docutils literal">events</code> are:</p>
 <ul class="simple">
-<li>Issues events: any time an issue is created or an existing issue was updated/closed/reopened</li>
-<li>Push events: when you push to the repository except when pushing tags</li>
-<li>Tag events: when you create (or delete) tags to the repository</li>
-<li>Build events: triggered on status change of a Build</li>
+<li><p>Issues events: any time an issue is created or an existing issue was updated/closed/reopened</p></li>
+<li><p>Push events: when you push to the repository except when pushing tags</p></li>
+<li><p>Tag events: when you create (or delete) tags to the repository</p></li>
+<li><p>Build events: triggered on status change of a Build</p></li>
 </ul>
 <p>The complete list of events is listed <a class="reference external" href="https://docs.gitlab.com/ee/user/project/integrations/webhooks.html#events">here</a>.</p>
 <p>Since GitLab needs to send you POST requests for the webhook, you should have a service running somewhere that GitLab can reach.
@@ -309,12 +1494,9 @@ It's an easy way to test locally a webservice.</p>
 <p>Check the installation instructions from the <a class="reference external" href="https://ngrok.com/download">website</a>.
 Note that for simple tests, you don't have to register an account.</p>
 <p>If you have a webserver running locally on port 8080, you can expose it by running:</p>
-<pre class="literal-block">
-ngrok http 8080
-</pre>
+<pre class="literal-block">ngrok http 8080</pre>
 <p>Something similar will appear:</p>
-<pre class="literal-block">
-ngrok by @inconshreveable                                       (Ctrl+C to quit)
+<pre class="literal-block">ngrok by @inconshreveable                                       (Ctrl+C to quit)
 
 Session Status                online
 Session Expires               7 hours, 59 minutes
@@ -322,12 +1504,9 @@ Version                       2.2.8
 Region                        United States (us)
 Web Interface                 http://127.0.0.1:4040
 Forwarding                    http://fb7fec7c.ngrok.io -&gt; localhost:8080
-Forwarding                    https://fb7fec7c.ngrok.io -&gt; localhost:8080
-</pre>
+Forwarding                    https://fb7fec7c.ngrok.io -&gt; localhost:8080</pre>
 <p>You can access your local webservice using HTTP and even HTTPS!</p>
-<pre class="literal-block">
-curl -X GET https://fb7fec7c.ngrok.io
-</pre>
+<pre class="literal-block">curl -X GET https://fb7fec7c.ngrok.io</pre>
 <p>This address can be accessed from anywhere!. You could give it to a friend or use it as a GitLab webhook.</p>
 <p>Ngrok even gives you a web interface on the port 4040 that allows you to inspect all the requests made to the service.
 Just open <a class="reference external" href="http://127.0.0.1:4040">http://127.0.0.1:4040</a> in your browser.</p>
@@ -343,24 +1522,19 @@ let's create a webhook on GitLab. If you haven't done so yet, create your
 own project on GitLab.</p>
 <p>Go to your project settings and select Integrations to create a webhook:</p>
 <ul class="simple">
-<li>In the <strong>URL</strong> field, enter the ngrok URL you got earlier.</li>
-<li>For security reasons, type in some random characters under <strong>Secret Token</strong> (you can use Python <cite>secrets.token_hex(16)</cite> function)</li>
-<li>Under <strong>Trigger</strong>, select Issues events, Comments and Merge request events</li>
-<li>Leave <strong>Enable SSL verification</strong> enabled</li>
-<li>Click <strong>Add webhook</strong>
-</li>
+<li><p>In the <strong>URL</strong> field, enter the ngrok URL you got earlier.</p></li>
+<li><p>For security reasons, type in some random characters under <strong>Secret Token</strong> (you can use Python <cite>secrets.token_hex(16)</cite> function)</p></li>
+<li><p>Under <strong>Trigger</strong>, select Issues events, Comments and Merge request events</p></li>
+<li><p>Leave <strong>Enable SSL verification</strong> enabled</p></li>
+<li><p>Click <strong>Add webhook</strong></p></li>
 </ul>
 </div>
 <div class="section" id="update-the-config-variables-in-your-environment">
 <h3>Update the Config Variables in your environment</h3>
 <p>First, export the secret webhook token you just created:</p>
-<pre class="literal-block">
-export GL_SECRET=&lt;secret token&gt;
-</pre>
+<pre class="literal-block">export GL_SECRET=&lt;secret token&gt;</pre>
 <p>Then, if not already done, export your GitLab personal access token:</p>
-<pre class="literal-block">
-export GL_ACCESS_TOKEN=&lt;acess token&gt;
-</pre>
+<pre class="literal-block">export GL_ACCESS_TOKEN=&lt;acess token&gt;</pre>
 </div>
 <div class="section" id="your-first-gitlab-bot">
 <h3>Your first GitLab bot!</h3>
@@ -368,27 +1542,22 @@ export GL_ACCESS_TOKEN=&lt;acess token&gt;
 For example, whenever someone creates an issue, the bot will automatically say something like:
 "Thanks for the report, @user. I will look into this ASAP!"</p>
 <p>To respond to webhooks events, we have to register a coroutine using the
-<tt class="docutils literal">@bot.router.register</tt> decorator:</p>
-<pre class="literal-block">
-@bot.router.register("Issue Hook", action="open")
+<code class="docutils literal">@bot.router.register</code> decorator:</p>
+<pre class="literal-block">@bot.router.register("Issue Hook", action="open")
 async def issue_opened_event(event, gl, *args, **kwargs):
-    pass
-</pre>
-<p>In this example we subscribe to the GitLab <tt class="docutils literal">Issue Hook</tt> events, and
+    pass</pre>
+<p>In this example we subscribe to the GitLab <code class="docutils literal">Issue Hook</code> events, and
 more specifically to the "open" issues event.</p>
-<p>The two important parameters here are: <tt class="docutils literal">event</tt> and <tt class="docutils literal">gl</tt>.</p>
+<p>The two important parameters here are: <code class="docutils literal">event</code> and <code class="docutils literal">gl</code>.</p>
 <ul class="simple">
-<li>
-<tt class="docutils literal">event</tt> here is the representation of GitLab's webhook event. We can access the
-event payload by doing <tt class="docutils literal">event.data</tt>.</li>
-<li>
-<tt class="docutils literal">gl</tt> is the gidgetlab GitLabAPI instance, which we can use to make API calls to GitLab, as in the first section.</li>
+<li><p><code class="docutils literal">event</code> here is the representation of GitLab's webhook event. We can access the
+event payload by doing <code class="docutils literal">event.data</code>.</p></li>
+<li><p><code class="docutils literal">gl</code> is the gidgetlab GitLabAPI instance, which we can use to make API calls to GitLab, as in the first section.</p></li>
 </ul>
-<p>We already saw that to <a class="reference external" href="https://docs.gitlab.com/ee/api/issues.html#comments-on-issues">create a comment</a> on an issue, we need to send: <tt class="docutils literal">POST <span class="pre">/projects/:id/issues/:issue_iid/notes</span></tt>.</p>
+<p>We already saw that to <a class="reference external" href="https://docs.gitlab.com/ee/api/issues.html#comments-on-issues">create a comment</a> on an issue, we need to send: <code class="docutils literal">POST <span class="pre">/projects/:id/issues/:issue_iid/notes</span></code>.</p>
 <p>Let's look at the <a class="reference external" href="https://docs.gitlab.com/ee/user/project/integrations/webhooks.html#issues-events">Issues events</a>
 payload to see how we can retrieve the required information:</p>
-<pre class="literal-block">
-{
+<pre class="literal-block">{
   "object_kind": "issue",
   "user": {
     "name": "Administrator",
@@ -422,30 +1591,24 @@ payload to see how we can retrieve the required information:</p>
     "action": "open"
   },
   ...
-}
-</pre>
-<p>The project id can be retrieved as <tt class="docutils literal"><span class="pre">event.data["project"]["id"]</span></tt>.
-As this is quite common, <a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/">gidgetlab</a> procures a <em>project_id</em> property to access it directly: <tt class="docutils literal">event.project_id</tt>.</p>
-<p>To get the issue id, we can use <tt class="docutils literal"><span class="pre">event.data["object_attributes"]["iid"]</span></tt>. Again as accessing <tt class="docutils literal"><span class="pre">event.data["object_attributes"]</span></tt> is quite common,
-we can use the <em>object_attributes</em> property: <tt class="docutils literal"><span class="pre">event.object_attributes["iid"]</span></tt>.</p>
+}</pre>
+<p>The project id can be retrieved as <code class="docutils literal"><span class="pre">event.data["project"]["id"]</span></code>.
+As this is quite common, <a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/">gidgetlab</a> procures a <em>project_id</em> property to access it directly: <code class="docutils literal">event.project_id</code>.</p>
+<p>To get the issue id, we can use <code class="docutils literal"><span class="pre">event.data["object_attributes"]["iid"]</span></code>. Again as accessing <code class="docutils literal"><span class="pre">event.data["object_attributes"]</span></code> is quite common,
+we can use the <em>object_attributes</em> property: <code class="docutils literal"><span class="pre">event.object_attributes["iid"]</span></code>.</p>
 <p>The url to use is thus:</p>
-<pre class="literal-block">
-url = f"/projects/{event.project_id}/issues/{event.object_attributes['iid']}/notes"
-</pre>
-<p>To greet the author, we have to retrieve the username from the event: <tt class="docutils literal"><span class="pre">event.data["user"]["username"]</span></tt></p>
-<p>Open your <tt class="docutils literal">bot.py</tt> file and add the following coroutine to be called when
+<pre class="literal-block">url = f"/projects/{event.project_id}/issues/{event.object_attributes['iid']}/notes"</pre>
+<p>To greet the author, we have to retrieve the username from the event: <code class="docutils literal"><span class="pre">event.data["user"]["username"]</span></code></p>
+<p>Open your <code class="docutils literal">bot.py</code> file and add the following coroutine to be called when
 a new issue is opened:</p>
-<pre class="literal-block">
-@bot.router.register("Issue Hook", action="open")
+<pre class="literal-block">@bot.router.register("Issue Hook", action="open")
 async def issue_opened_event(event, gl, *args, **kwargs):
     """Whenever an issue is opened, greet the author and say thanks."""
     url = f"/projects/{event.project_id}/issues/{event.object_attributes['iid']}/notes"
     message = f"Thanks for the report @{event.data['user']['username']}! I will look into it ASAP! (I'm a bot)."
-    await gl.post(url, data={"body": message})
-</pre>
+    await gl.post(url, data={"body": message})</pre>
 <p>The full file should look like:</p>
-<pre class="literal-block">
-from gidgetlab.aiohttp import GitLabBot
+<pre class="literal-block">from gidgetlab.aiohttp import GitLabBot
 
 bot = GitLabBot("beenje")
 
@@ -459,12 +1622,9 @@ async def issue_opened_event(event, gl, *args, **kwargs):
 
 
 if __name__ == "__main__":
-    bot.run()
-</pre>
+    bot.run()</pre>
 <p>Run:</p>
-<pre class="literal-block">
-python3 bot.py
-</pre>
+<pre class="literal-block">python3 bot.py</pre>
 <p>Go to your project and open an issue. Wait a few seconds and refresh the
 page. You should see a new comment added to the issue!</p>
 <img alt="/images/gitlab-bot/gitlab-bot-say-thanks.png" src="images/gitlab-bot/gitlab-bot-say-thanks.png"><p>Congrats! You wrote your first GitLab bot!</p>
@@ -501,9 +1661,7 @@ to build something cool :-)</p>
         </p>
 </div>
     </header><div class="e-content entry-content">
-    <div tabindex="-1" id="notebook" class="border-box-sizing">
-    <div class="container" id="notebook-container">
-
+    <div>
 <div class="cell border-box-sizing text_cell rendered">
 <div class="prompt input_prompt">
 </div>
@@ -546,7 +1704,7 @@ The results are available here: <a href="http://results.neptron.se/#/lundaloppet
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -559,7 +1717,7 @@ The results are available here: <a href="http://results.neptron.se/#/lundaloppet
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">dfs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="s1">'http://results.neptron.se/#/lundaloppet2018/?sortOrder=Place&amp;raceId=99&amp;page=0&amp;pageSize=25'</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -568,7 +1726,10 @@ The results are available here: <a href="http://results.neptron.se/#/lundaloppet
 
 
 <div class="output_area">
-<div class="prompt"></div>
+
+    <div class="prompt"></div>
+
+
 <div class="output_subarea output_text output_error">
 <pre>
 <span class="ansi-red-fg">---------------------------------------------------------------------------</span>
@@ -619,10 +1780,10 @@ The results are available here: <a href="http://results.neptron.se/#/lundaloppet
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="k">import</span> <span class="n">display_html</span>
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display_html</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -636,7 +1797,7 @@ The results are available here: <a href="http://results.neptron.se/#/lundaloppet
 <span class="n">r</span><span class="o">.</span><span class="n">text</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -645,7 +1806,10 @@ The results are available here: <a href="http://results.neptron.se/#/lundaloppet
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[4]:</div>
+
+    <div class="prompt output_prompt">Out[4]:</div>
+
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -666,7 +1830,7 @@ The results are available here: <a href="http://results.neptron.se/#/lundaloppet
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">display_html</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -675,7 +1839,10 @@ The results are available here: <a href="http://results.neptron.se/#/lundaloppet
 
 
 <div class="output_area">
-<div class="prompt"></div>
+
+    <div class="prompt"></div>
+
+
 
 <div class="output_html rendered_html output_subarea ">
 ï»¿
@@ -805,10 +1972,10 @@ By googling, I found <a href="https://github.com/kennethreitz/requests-html">Req
 <div class="prompt input_prompt">In [6]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">requests_html</span> <span class="k">import</span> <span class="n">HTMLSession</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">requests_html</span> <span class="kn">import</span> <span class="n">HTMLSession</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -824,7 +1991,7 @@ By googling, I found <a href="https://github.com/kennethreitz/requests-html">Req
 <span class="n">table</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">html</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">'table'</span><span class="p">,</span> <span class="n">first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -837,7 +2004,7 @@ By googling, I found <a href="https://github.com/kennethreitz/requests-html">Req
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">display_html</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">html</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -846,7 +2013,10 @@ By googling, I found <a href="https://github.com/kennethreitz/requests-html">Req
 
 
 <div class="output_area">
-<div class="prompt"></div>
+
+    <div class="prompt"></div>
+
+
 
 <div class="output_html rendered_html output_subarea ">
 <table>
@@ -1249,7 +2419,7 @@ By googling, I found <a href="https://github.com/kennethreitz/requests-html">Req
 <span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">html</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1258,7 +2428,10 @@ By googling, I found <a href="https://github.com/kennethreitz/requests-html">Req
 
 
 <div class="output_area">
-<div class="prompt"></div>
+
+    <div class="prompt"></div>
+
+
 <div class="output_subarea output_text output_error">
 <pre>
 <span class="ansi-red-fg">---------------------------------------------------------------------------</span>
@@ -1314,12 +2487,12 @@ So there is no <em>magic</em>. You just let Chromium load and render the page wi
 <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">from</span> <span class="nn">pyppeteer</span> <span class="kn">import</span> <span class="n">launch</span>
 
-<span class="n">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="n">browser</span> <span class="o">=</span> <span class="n">await</span> <span class="n">launch</span><span class="p">()</span>
-    <span class="n">page</span> <span class="o">=</span> <span class="n">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">newPage</span><span class="p">()</span>
-    <span class="n">await</span> <span class="n">page</span><span class="o">.</span><span class="n">goto</span><span class="p">(</span><span class="s1">'http://example.com'</span><span class="p">)</span>
-    <span class="n">await</span> <span class="n">page</span><span class="o">.</span><span class="n">screenshot</span><span class="p">({</span><span class="s1">'path'</span><span class="p">:</span> <span class="s1">'example.png'</span><span class="p">})</span>
-    <span class="n">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">browser</span> <span class="o">=</span> <span class="k">await</span> <span class="n">launch</span><span class="p">()</span>
+    <span class="n">page</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">newPage</span><span class="p">()</span>
+    <span class="k">await</span> <span class="n">page</span><span class="o">.</span><span class="n">goto</span><span class="p">(</span><span class="s1">'http://example.com'</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">page</span><span class="o">.</span><span class="n">screenshot</span><span class="p">({</span><span class="s1">'path'</span><span class="p">:</span> <span class="s1">'example.png'</span><span class="p">})</span>
+    <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </pre></div>
@@ -1334,7 +2507,7 @@ So there is no <em>magic</em>. You just let Chromium load and render the page wi
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">asyncio</span>
-<span class="kn">from</span> <span class="nn">pyppeteer</span> <span class="k">import</span> <span class="n">launch</span>
+<span class="kn">from</span> <span class="nn">pyppeteer</span> <span class="kn">import</span> <span class="n">launch</span>
 
 
 <span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
@@ -1347,7 +2520,7 @@ So there is no <em>magic</em>. You just let Chromium load and render the page wi
 <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1376,7 +2549,7 @@ This example showed us how to load a page:</p>
 <li>goto a page</li>
 </ul>
 <p>There are several functions that can be used to retrieve elements from the page, like <a href="https://miyakogi.github.io/pyppeteer/reference.html#pyppeteer.page.Page.querySelector">querySelector</a> or <a href="https://miyakogi.github.io/pyppeteer/reference.html#pyppeteer.page.Page.querySelectorEval">querySelectorEval</a>. This is the function we gonna use to retrieve the table. We use the <code>table</code> selector and apply the <code>outerHTML</code> function to get the HTML representation of the table:</p>
-<div class="highlight"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="n">await</span> <span class="n">page</span><span class="o">.</span><span class="n">querySelectorEval</span><span class="p">(</span><span class="s1">'table'</span><span class="p">,</span> <span class="s1">'(element) =&gt; element.outerHTML'</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="k">await</span> <span class="n">page</span><span class="o">.</span><span class="n">querySelectorEval</span><span class="p">(</span><span class="s1">'table'</span><span class="p">,</span> <span class="s1">'(element) =&gt; element.outerHTML'</span><span class="p">)</span>
 </pre></div>
 <p>We can then pass that to pandas.</p>
 <p>One thing we wanted is to wait for the table to be rendered before trying to retrieve it. We can use the <a href="https://miyakogi.github.io/pyppeteer/reference.html#pyppeteer.page.Page.waitForSelector">waitForSelector</a> function for that.
@@ -1392,7 +2565,7 @@ I initially tried to use the <code>table</code> selector but that sometimes retu
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">pyppeteer</span> <span class="k">import</span> <span class="n">launch</span>
+<span class="kn">from</span> <span class="nn">pyppeteer</span> <span class="kn">import</span> <span class="n">launch</span>
 
 
 <span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
@@ -1408,7 +2581,7 @@ I initially tried to use the <code>table</code> selector but that sometimes retu
 <span class="n">df</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1417,7 +2590,10 @@ I initially tried to use the <code>table</code> selector but that sometimes retu
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[11]:</div>
+
+    <div class="prompt output_prompt">Out[11]:</div>
+
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -1829,7 +3005,7 @@ Let's refactor that code to retrieve all the results of the race.</p>
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">pyppeteer</span> <span class="k">import</span> <span class="n">launch</span>
+<span class="kn">from</span> <span class="nn">pyppeteer</span> <span class="kn">import</span> <span class="n">launch</span>
 
 <span class="n">URL</span> <span class="o">=</span> <span class="s1">'http://results.neptron.se/#/lundaloppet2018/results?sortOrder=Place&amp;raceId=99&amp;pageSize=25&amp;page=</span><span class="si">{}</span><span class="s1">'</span>
 
@@ -1853,7 +3029,7 @@ Let's refactor that code to retrieve all the results of the race.</p>
 
 <span class="k">async</span> <span class="k">def</span> <span class="nf">get_table</span><span class="p">(</span><span class="n">browser</span><span class="p">,</span> <span class="n">page_nb</span><span class="p">):</span>
     <span class="sd">"""Return the table from the given page number as a pandas dataframe"""</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">'Get table from page </span><span class="si">{page_nb}</span><span class="s1">'</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Get table from page </span><span class="si">{page_nb}</span><span class="s1">'</span><span class="p">)</span>
     <span class="n">page</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_page</span><span class="p">(</span><span class="n">browser</span><span class="p">,</span> <span class="n">URL</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">page_nb</span><span class="p">),</span> <span class="s1">'td.res-startNo'</span><span class="p">)</span>
     <span class="n">table</span> <span class="o">=</span> <span class="k">await</span> <span class="n">page</span><span class="o">.</span><span class="n">querySelectorEval</span><span class="p">(</span><span class="s1">'table'</span><span class="p">,</span> <span class="s1">'(element) =&gt; element.outerHTML'</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="n">table</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -1863,7 +3039,7 @@ Let's refactor that code to retrieve all the results of the race.</p>
     <span class="sd">"""Return all the results as a pandas dataframe"""</span>
     <span class="n">browser</span> <span class="o">=</span> <span class="k">await</span> <span class="n">launch</span><span class="p">()</span>
     <span class="n">num_pages</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_num_pages</span><span class="p">(</span><span class="n">browser</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">'Number of pages: </span><span class="si">{num_pages}</span><span class="s1">'</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Number of pages: </span><span class="si">{num_pages}</span><span class="s1">'</span><span class="p">)</span>
     <span class="c1"># Python 3.6 asynchronous comprehensions! Nice!</span>
     <span class="n">dfs</span> <span class="o">=</span> <span class="p">[</span><span class="k">await</span> <span class="n">get_table</span><span class="p">(</span><span class="n">browser</span><span class="p">,</span> <span class="n">page_nb</span><span class="p">)</span> <span class="k">for</span> <span class="n">page_nb</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_pages</span><span class="p">)]</span>
     <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -1871,7 +3047,7 @@ Let's refactor that code to retrieve all the results of the race.</p>
     <span class="k">return</span> <span class="n">df</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1885,7 +3061,7 @@ Let's refactor that code to retrieve all the results of the race.</p>
 I think it's quite straightforward. We first get the total number of pages and then load each page to retrieve the table.
 Once done, we just have to concatenate all those tables in one.</p>
 <p>One thing to note is the use of Python <a href="https://www.python.org/dev/peps/pep-0530/">asynchronous comprehensions</a>. This is a Python 3.6 feature and makes it really Pythonic. It just works as it would with synchronous functions:</p>
-<div class="highlight"><pre><span></span><span class="n">dfs</span> <span class="o">=</span> <span class="p">[</span><span class="n">await</span> <span class="n">get_table</span><span class="p">(</span><span class="n">browser</span><span class="p">,</span> <span class="n">page_nb</span><span class="p">)</span> <span class="k">for</span> <span class="n">page_nb</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_pages</span><span class="p">)]</span>
+<div class="highlight"><pre><span></span><span class="n">dfs</span> <span class="o">=</span> <span class="p">[</span><span class="k">await</span> <span class="n">get_table</span><span class="p">(</span><span class="n">browser</span><span class="p">,</span> <span class="n">page_nb</span><span class="p">)</span> <span class="k">for</span> <span class="n">page_nb</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_pages</span><span class="p">)]</span>
 </pre></div>
 <p>Let's run that code!</p>
 
@@ -1900,7 +3076,7 @@ Once done, we just have to concatenate all those tables in one.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">get_results</span><span class="p">())</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1909,7 +3085,10 @@ Once done, we just have to concatenate all those tables in one.</p>
 
 
 <div class="output_area">
-<div class="prompt"></div>
+
+    <div class="prompt"></div>
+
+
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Number of pages: 115
 Get table from page 0
@@ -2053,7 +3232,7 @@ Get table from page 114
 <div class=" highlight hl-ipython3"><pre><span></span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -2062,7 +3241,10 @@ Get table from page 114
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[14]:</div>
+
+    <div class="prompt output_prompt">Out[14]:</div>
+
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -2083,7 +3265,7 @@ Get table from page 114
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -2092,7 +3274,10 @@ Get table from page 114
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[15]:</div>
+
+    <div class="prompt output_prompt">Out[15]:</div>
+
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -2214,7 +3399,7 @@ Get table from page 114
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">tail</span><span class="p">()</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -2223,7 +3408,10 @@ Get table from page 114
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[16]:</div>
+
+    <div class="prompt output_prompt">Out[16]:</div>
+
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -2355,7 +3543,7 @@ Get table from page 114
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">'lundaloppet2018.csv'</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -2386,9 +3574,7 @@ Anyway, I'll probably look more at Pyppeteer for web application testing.</p>
 </div>
 </div>
 </div>
-    </div>
-  </div>
-
+</div>
     </div>
     </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/parsing-html-tables-in-python-with-pandas/" class="u-url">Parsing HTML Tables in Python with pandas</a></h1>
         <div class="metadata">
@@ -2407,9 +3593,7 @@ Anyway, I'll probably look more at Pyppeteer for web application testing.</p>
         </p>
 </div>
     </header><div class="e-content entry-content">
-    <div tabindex="-1" id="notebook" class="border-box-sizing">
-    <div class="container" id="notebook-container">
-
+    <div>
 <div class="cell border-box-sizing text_cell rendered">
 <div class="prompt input_prompt">
 </div>
@@ -2450,10 +3634,10 @@ Anyway, I'll probably look more at Pyppeteer for web application testing.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">io</span>
 <span class="kn">import</span> <span class="nn">requests</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">zipfile</span> <span class="k">import</span> <span class="n">ZipFile</span>
+<span class="kn">from</span> <span class="nn">zipfile</span> <span class="kn">import</span> <span class="n">ZipFile</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -2467,7 +3651,7 @@ Anyway, I'll probably look more at Pyppeteer for web application testing.</p>
 <span class="n">ZipFile</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">content</span><span class="p">))</span><span class="o">.</span><span class="n">extractall</span><span class="p">()</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -2492,7 +3676,7 @@ So let's read it.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="s1">'SampleData.xlsx'</span><span class="p">,</span> <span class="n">sheet_name</span><span class="o">=</span><span class="s1">'SalesOrders'</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -2505,7 +3689,7 @@ So let's read it.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -2514,7 +3698,10 @@ So let's read it.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[4]:</div>
+
+    <div class="prompt output_prompt">Out[4]:</div>
+
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -2684,7 +3871,7 @@ So let's read it.</p>
 <span class="s2">"""</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -2704,11 +3891,11 @@ So let's read it.</p>
 <div class="prompt input_prompt">In [6]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="k">import</span> <span class="n">display_html</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display_html</span>
 <span class="n">display_html</span><span class="p">(</span><span class="n">html_string</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -2717,7 +3904,10 @@ So let's read it.</p>
 
 
 <div class="output_area">
-<div class="prompt"></div>
+
+    <div class="prompt"></div>
+
+
 
 <div class="output_html rendered_html output_subarea ">
 
@@ -2772,7 +3962,7 @@ So let's read it.</p>
 <span class="n">dfs</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -2781,7 +3971,10 @@ So let's read it.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[7]:</div>
+
+    <div class="prompt output_prompt">Out[7]:</div>
+
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -2806,7 +3999,7 @@ So let's read it.</p>
 <span class="n">df</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -2815,7 +4008,10 @@ So let's read it.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[8]:</div>
+
+    <div class="prompt output_prompt">Out[8]:</div>
+
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -2887,7 +4083,7 @@ So let's read it.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">Year</span> <span class="o">&gt;</span> <span class="mi">1975</span><span class="p">]</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -2896,7 +4092,10 @@ So let's read it.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[9]:</div>
+
+    <div class="prompt output_prompt">Out[9]:</div>
+
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -2985,7 +4184,7 @@ So let's read it.</p>
 <span class="s2">"""</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -2998,7 +4197,7 @@ So let's read it.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="n">html_string</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -3007,7 +4206,10 @@ So let's read it.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[11]:</div>
+
+    <div class="prompt output_prompt">Out[11]:</div>
+
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -3085,7 +4287,7 @@ So let's read it.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="n">html_string</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -3094,7 +4296,10 @@ So let's read it.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[12]:</div>
+
+    <div class="prompt output_prompt">Out[12]:</div>
+
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -3177,7 +4382,7 @@ So let's read it.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">dfs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="s1">'http://www.contextures.com/xlSampleData01.html'</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -3190,7 +4395,7 @@ So let's read it.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">dfs</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -3199,7 +4404,10 @@ So let's read it.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[14]:</div>
+
+    <div class="prompt output_prompt">Out[14]:</div>
+
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -3275,7 +4483,7 @@ So let's read it.</p>
 <span class="n">dfs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -3284,7 +4492,10 @@ So let's read it.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[15]:</div>
+
+    <div class="prompt output_prompt">Out[15]:</div>
+
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -3416,7 +4627,7 @@ So let's read it.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="s1">'https://en.wikipedia.org/wiki/Python_(programming_language)'</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -3425,7 +4636,10 @@ So let's read it.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[16]:</div>
+
+    <div class="prompt output_prompt">Out[16]:</div>
+
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -3583,7 +4797,7 @@ So let's read it.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="s1">'https://httpbin.org/basic-auth/myuser/mypasswd'</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -3592,7 +4806,10 @@ So let's read it.</p>
 
 
 <div class="output_area">
-<div class="prompt"></div>
+
+    <div class="prompt"></div>
+
+
 <div class="output_subarea output_text output_error">
 <pre>
 <span class="ansi-red-fg">---------------------------------------------------------------------------</span>
@@ -3636,7 +4853,7 @@ So let's read it.</p>
 <span class="n">r</span><span class="o">.</span><span class="n">status_code</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -3660,7 +4877,7 @@ So let's read it.</p>
 <span class="n">r</span><span class="o">.</span><span class="n">status_code</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -3685,7 +4902,7 @@ So let's read it.</p>
 <span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -3694,7 +4911,10 @@ So let's read it.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[18]:</div>
+
+    <div class="prompt output_prompt">Out[18]:</div>
+
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -3850,7 +5070,7 @@ So let's read it.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">dfs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_html</span><span class="p">(</span><span class="s1">'https://en.wikipedia.org/wiki/Timeline_of_programming_languages'</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -3863,7 +5083,7 @@ So let's read it.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="nb">len</span><span class="p">(</span><span class="n">dfs</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -3872,7 +5092,10 @@ So let's read it.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[20]:</div>
+
+    <div class="prompt output_prompt">Out[20]:</div>
+
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -3904,7 +5127,7 @@ So let's read it.</p>
 <span class="n">dfs</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -3913,7 +5136,10 @@ So let's read it.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[21]:</div>
+
+    <div class="prompt output_prompt">Out[21]:</div>
+
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -4039,7 +5265,7 @@ So let's read it.</p>
 <span class="n">df</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -4048,7 +5274,10 @@ So let's read it.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[22]:</div>
+
+    <div class="prompt output_prompt">Out[22]:</div>
+
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -4532,7 +5761,7 @@ So let's read it.</p>
 <span class="n">prog_lang</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -4541,7 +5770,10 @@ So let's read it.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[23]:</div>
+
+    <div class="prompt output_prompt">Out[23]:</div>
+
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -5024,7 +6256,7 @@ So let's read it.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">prog_lang</span><span class="p">[</span><span class="n">prog_lang</span><span class="o">.</span><span class="n">Name</span> <span class="o">==</span> <span class="s1">'Python'</span><span class="p">]</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -5033,7 +6265,10 @@ So let's read it.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[24]:</div>
+
+    <div class="prompt output_prompt">Out[24]:</div>
+
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 <div>
@@ -5107,7 +6342,7 @@ So let's read it.</p>
 <span class="n">prog_lang</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">Year</span> <span class="o">!=</span> <span class="s1">'Year'</span><span class="p">]</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -5142,14 +6377,12 @@ You can find the notebook on <a href="https://github.com/beenje/blog/blob/master
 <div class=" highlight hl-ipython3"><pre><span></span> 
 </pre></div>
 
-</div>
-</div>
-</div>
-
-</div>
     </div>
-  </div>
+</div>
+</div>
 
+</div>
+</div>
     </div>
     </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/logging-to-a-tkinter-scrolledtext-widget/" class="u-url">Logging to a Tkinter ScrolledText Widget</a></h1>
         <div class="metadata">
@@ -5187,8 +6420,7 @@ I wanted to have a kind of console where to display log messages.</p>
 <p>I quickly found an <a class="reference external" href="https://gist.github.com/moshekaplan/c425f861de7bbf28ef06">example</a> on
 <a class="reference external" href="https://stackoverflow.com/questions/13318742/python-logging-to-tkinter-text-widget">StackOverflow</a>
 to send Python logging to a tkinter Text widget:</p>
-<pre class="literal-block">
-class TextHandler(logging.Handler):
+<pre class="literal-block">class TextHandler(logging.Handler):
     """This class allows you to log to a Tkinter Text or ScrolledText widget"""
 
     def __init__(self, text):
@@ -5207,8 +6439,7 @@ class TextHandler(logging.Handler):
             # Autoscroll to the bottom
             self.text.yview(tk.END)
         # This is necessary because we can't modify the Text from other threads
-        self.text.after(0, append)
-</pre>
+        self.text.after(0, append)</pre>
 <p>This looks nice but doesn't work if you try to send a log message from another thread
 (despite the comment)...
 because we are passing the text widget with the logging handler to the other thread.
@@ -5221,8 +6452,7 @@ If you implement specific methods as explained (<cite>put_line_to_queue</cite>),
 <h2>QueueHandler</h2>
 <p>Using a <a class="reference external" href="https://docs.python.org/3/library/queue.html">Queue</a> is indeed the way to share data between threads.
 So I implemented a simple QueueHandler:</p>
-<pre class="literal-block">
-class QueueHandler(logging.Handler):
+<pre class="literal-block">class QueueHandler(logging.Handler):
     """Class to send logging records to a queue
 
     It can be used from different threads
@@ -5233,13 +6463,11 @@ class QueueHandler(logging.Handler):
         self.log_queue = log_queue
 
     def emit(self, record):
-        self.log_queue.put(record)
-</pre>
+        self.log_queue.put(record)</pre>
 <p>The handler only puts the message in a queue.
 I created a <cite>ConsoleUi</cite> class to poll the messages from the queue and display them in a scrolled
 text widget:</p>
-<pre class="literal-block">
-logger = logging.getLogger(__name__)
+<pre class="literal-block">logger = logging.getLogger(__name__)
 
 
 class ConsoleUi:
@@ -5282,12 +6510,10 @@ class ConsoleUi:
                 break
             else:
                 self.display(record)
-        self.frame.after(100, self.poll_log_queue)
-</pre>
+        self.frame.after(100, self.poll_log_queue)</pre>
 <p>I can safely use the logger from different threads because only a queue is passed with the handler, no tkinter widget.</p>
 <p>To demonstrate that, I created a separate thread to display the time every seconds:</p>
-<pre class="literal-block">
-class Clock(threading.Thread):
+<pre class="literal-block">class Clock(threading.Thread):
     """Class to display the time every seconds
 
     Every 5 seconds, the time is displayed using the logging.ERROR level
@@ -5315,8 +6541,7 @@ class Clock(threading.Thread):
             time.sleep(0.2)
 
     def stop(self):
-        self._stop_event.set()
-</pre>
+        self._stop_event.set()</pre>
 <p>The full code is available on <a class="reference external" href="https://github.com/beenje/tkinter-logging-text-widget">github</a>.
 If you checkout the version v0.1.0 and run it, you'll see something like that:</p>
 <img alt="/images/tkinter/logging_handler.png" src="images/tkinter/logging_handler.png">
@@ -5330,8 +6555,7 @@ implement the common 3-pane layout.</p>
 <p>Let's first create two new classes. The first one will be used to display
 a simple form to send a message via logging. The user can select the
 desired logging level:</p>
-<pre class="literal-block">
-class FormUi:
+<pre class="literal-block">class FormUi:
 
     def __init__(self, frame):
         self.frame = frame
@@ -5359,22 +6583,18 @@ class FormUi:
     def submit_message(self):
         # Get the logging level numeric value
         lvl = getattr(logging, self.level.get())
-        logger.log(lvl, self.message.get())
-</pre>
+        logger.log(lvl, self.message.get())</pre>
 <p>The other class is a dummy one to show the 3-pane layout:</p>
-<pre class="literal-block">
-class ThirdUi:
+<pre class="literal-block">class ThirdUi:
 
     def __init__(self, frame):
         self.frame = frame
         ttk.Label(self.frame, text='This is just an example of a third frame').grid(column=0, row=1, sticky=W)
-        ttk.Label(self.frame, text='With another line here!').grid(column=0, row=4, sticky=W)
-</pre>
+        ttk.Label(self.frame, text='With another line here!').grid(column=0, row=4, sticky=W)</pre>
 <p>With those new classes, the only change required is in the <cite>App</cite> class to
 create a vertical and horizontal <cite>ttk.PanedWindow</cite>.
 The horizontal pane is splitted in two frames (the form and console):</p>
-<pre class="literal-block">
- class App:
+<pre class="literal-block"> class App:
 
      def __init__(self, root):
 @@ -109,11 +148,24 @@ class App:
@@ -5403,8 +6623,7 @@ The horizontal pane is splitted in two frames (the form and console):</p>
 +        self.third = ThirdUi(third_frame)
          self.clock = Clock()
          self.clock.start()
-         self.root.protocol('WM_DELETE_WINDOW', self.quit)
-</pre>
+         self.root.protocol('WM_DELETE_WINDOW', self.quit)</pre>
 <p>Note that the <cite>Clock</cite> and <cite>ConsoleUi</cite> classes were left untouched.
 We just pass a <cite>ttk.LabelFrame</cite> instead of a <cite>ttk.Frame</cite> to the <cite>ConsoleUi</cite>
 class.</p>
@@ -5449,9 +6668,9 @@ I also wanted to take advantage of the button I had integrated.</p>
 <p>One idea was to create a small web server so that I could receive and display
 messages. The application would basically:</p>
 <ul class="simple">
-<li>display the time (every minute)</li>
-<li>when receiving a message, stop the clock and display the message</li>
-<li>when the button is pressed, start the clock again</li>
+<li><p>display the time (every minute)</p></li>
+<li><p>when receiving a message, stop the clock and display the message</p></li>
+<li><p>when the button is pressed, start the clock again</p></li>
 </ul>
 <img alt="/images/legomac/press_button.gif" src="images/legomac/press_button.gif"><p>I don't know about you, but this really makes me think <strong>event loop</strong>!
 I learnt asynchronous programming with <a class="reference external" href="http://krondo.com/an-introduction-to-asynchronous-programming-and-twisted/">Dave Peticolas Twisted Introduction</a>
@@ -5469,22 +6688,16 @@ which is kind of the default one.</p>
 wrote a simple REST API using aiohttp. It uses JSON Web Tokens which is
 something else I have been wanted to try.</p>
 <p>The API has only 3 endpoints:</p>
-<pre class="literal-block">
-def setup_routes(app):
+<pre class="literal-block">def setup_routes(app):
     app.router.add_get('/', index)
     app.router.add_post('/login', login)
-    app.router.add_post('/messages', post_message)
-</pre>
+    app.router.add_post('/messages', post_message)</pre>
 <ul class="simple">
-<li>
-<cite>/</cite> to check that our token is valid</li>
-<li>
-<cite>/login</cite> to login</li>
-<li>
-<cite>/messages</cite> to post messages</li>
+<li><p><cite>/</cite> to check that our token is valid</p></li>
+<li><p><cite>/login</cite> to login</p></li>
+<li><p><cite>/messages</cite> to post messages</p></li>
 </ul>
-<pre class="literal-block">
-async def login(request):
+<pre class="literal-block">async def login(request):
     config = request.app['config']
     data = await request.json()
     try:
@@ -5519,8 +6732,7 @@ async def post_message(request):
 
 @login_required
 async def index(request):
-    return web.json_response({'message': 'Welcome to LegoMac {}!'.format(request.user)})
-</pre>
+    return web.json_response({'message': 'Welcome to LegoMac {}!'.format(request.user)})</pre>
 </div>
 <div class="section" id="raspberry-pi-gpio-and-asyncio">
 <h3>Raspberry Pi GPIO and asyncio</h3>
@@ -5547,16 +6759,13 @@ consists of writing to a file.</p>
 <p>There is a library to add file support to asyncio: <a class="reference external" href="https://github.com/Tinche/aiofiles">aiofiles</a>.
 The only thing I had to do was basically to wrap the file IO in <a class="reference external" href="https://github.com/embeddedartists/gratis/blob/master/PlatformWithOS/demo/EPD.py">EPD.py</a>
 with aiofiles:</p>
-<pre class="literal-block">
-async def _command(self, c):
+<pre class="literal-block">async def _command(self, c):
     async with aiofiles.open(os.path.join(self._epd_path, 'command'), 'wb') as f:
-        await f.write(c)
-</pre>
+        await f.write(c)</pre>
 <p>You can't use <cite>await</cite> in a class <cite>__init__</cite> method. So following some recommendations
 from <a class="reference external" href="https://stackoverflow.com/questions/33128325/how-to-set-class-attribute-with-await-in-init">stackoverflow</a>,
 I used the factory pattern and moved the actions requiring some IO to a classmethod:</p>
-<pre class="literal-block">
-@classmethod
+<pre class="literal-block">@classmethod
 async def create(cls, *args, **kwargs):
     self = EPD(*args, **kwargs)
     async with aiofiles.open(os.path.join(self._epd_path, 'version')) as f:
@@ -5567,12 +6776,9 @@ async def create(cls, *args, **kwargs):
         m = self.PANEL_RE.match(line.rstrip('\n'))
         if m is None:
             raise EPDError('invalid panel string')
-        ...
-</pre>
+        ...</pre>
 <p>To create an instance of the EPD class, use:</p>
-<pre class="literal-block">
-epd = await EPD.create([path='/path/to/epd'], [auto=boolean])
-</pre>
+<pre class="literal-block">epd = await EPD.create([path='/path/to/epd'], [auto=boolean])</pre>
 </div>
 </div>
 <div class="section" id="putting-everything-together-with-aiohttp">
@@ -5583,8 +6789,7 @@ epd = await EPD.create([path='/path/to/epd'], [auto=boolean])
 from Embedded Artists repository.</p>
 <p>As described in aiohttp documentation I created a <a class="reference external" href="http://aiohttp.readthedocs.io/en/stable/web.html#background-tasks">background task</a> to display the clock
 every minute:</p>
-<pre class="literal-block">
-async def display_clock(app):
+<pre class="literal-block">async def display_clock(app):
     """Background task to display clock every minute"""
     clock = Clock(app['epd'])
     first_start = True
@@ -5617,8 +6822,7 @@ def init_app():
     app = web.Application()
     app.on_startup.append(start_background_tasks)
     app.on_cleanup.append(cleanup_background_tasks)
-    ...
-</pre>
+    ...</pre>
 </div>
 <div class="section" id="stop-the-clock-and-display-a-message">
 <h3>Stop the clock and display a message</h3>
@@ -5626,8 +6830,7 @@ def init_app():
 send the messages to the e-paper display using <cite>ensure_future</cite> so that
 I can return a json response without having to wait for the message to be
 displayed as it takes about 5 seconds:</p>
-<pre class="literal-block">
-@login_required
+<pre class="literal-block">@login_required
 async def post_message(request):
     if request.content_type != 'application/json':
         return web.HTTPBadRequest()
@@ -5641,16 +6844,14 @@ async def post_message(request):
     logger.debug(f'Message received from {request.user}: {message}')
     now = datetime.datetime.now(request.app['timezone'])
     helpers.ensure_future(request.app['epd'].display_message(message, request.user, now))
-    return web.json_response({'message': message}, status=201)
-</pre>
+    return web.json_response({'message': message}, status=201)</pre>
 </div>
 <div class="section" id="start-the-clock-when-pressing-the-button">
 <h3>Start the clock when pressing the button</h3>
 <p>To be able to restart the clock when pressing the button, I connect to the
 pigpiod when starting the app (in <cite>start_background_tasks</cite>) and register
 the <cite>on_input</cite> callback:</p>
-<pre class="literal-block">
-async def start_background_tasks(app):
+<pre class="literal-block">async def start_background_tasks(app):
     app['pi'] = apigpio.Pi(app.loop)
     address = (app['config']['pigpiod_host'], app['config']['pigpiod_port'])
     await app['pi'].connect(address)
@@ -5659,18 +6860,15 @@ async def start_background_tasks(app):
             BUTTON_GPIO,
             edge=apigpio.RISING_EDGE,
             func=functools.partial(on_input, app))
-    ...
-</pre>
+    ...</pre>
 <p>In the <cite>on_input</cite> callback, I re-create the clock background task but only if the previous
 task is done:</p>
-<pre class="literal-block">
-def on_input(app, gpio, level, tick):
+<pre class="literal-block">def on_input(app, gpio, level, tick):
     """Callback called when pressing the button on the e-paper display"""
     logger.info('on_input {} {} {}'.format(gpio, level, tick))
     if app['clock'].done():
         logger.info('restart clock')
-        app['clock'] = app.loop.create_task(display_clock(app))
-</pre>
+        app['clock'] = app.loop.create_task(display_clock(app))</pre>
 </div>
 </div>
 <div class="section" id="running-on-the-pi">
@@ -5696,17 +6894,16 @@ HTTPS. As mentionned in another <a class="reference external" href="post/running
 that very easy if you use docker. So that's what I chose.</p>
 <p>I created 3 containers:</p>
 <ul class="simple">
-<li>traefik</li>
-<li>pigpiod</li>
-<li>aiolegomac</li>
+<li><p>traefik</p></li>
+<li><p>pigpiod</p></li>
+<li><p>aiolegomac</p></li>
 </ul>
 <div class="section" id="traefik">
 <h3>traefik</h3>
 <p>There are no official Traefik docker images for arm yet, but an <a class="reference external" href="https://github.com/containous/traefik/issues/1665">issue</a> is currently opened.
 So it should arrive soon!</p>
 <p>In the meantime I created my own:</p>
-<pre class="literal-block">
-FROM arm32v6/alpine:3.6
+<pre class="literal-block">FROM arm32v6/alpine:3.6
 
 RUN apk --update upgrade \
   &amp;&amp; apk --no-cache --no-progress add ca-certificates \
@@ -5716,16 +6913,14 @@ RUN apk --update upgrade \
 RUN wget -O /usr/local/bin/traefik https://github.com/containous/traefik/releases/download/v1.3.3/traefik_linux-arm \
   &amp;&amp; chmod a+x /usr/local/bin/traefik
 
-ENTRYPOINT ["/usr/local/bin/traefik"]
-</pre>
+ENTRYPOINT ["/usr/local/bin/traefik"]</pre>
 </div>
 <div class="section" id="pigpiod">
 <h3>pigpiod</h3>
 <p>For pigpiod, I first created an image based on <cite>arm32v6/alpine</cite> but I noticed I couldn't send
 a SIGTERM to the daemon to stop it properly... I'm not sure why. Alpine being based on <cite>musl</cite> instead
 of <cite>glibc</cite> might be the problem. Here is the Dockerfile I tried:</p>
-<pre class="literal-block">
-FROM arm32v6/alpine:3.6
+<pre class="literal-block">FROM arm32v6/alpine:3.6
 
 RUN apk add --no-cache --virtual .build-deps \
   gcc \
@@ -5742,13 +6937,11 @@ RUN apk add --no-cache --virtual .build-deps \
 
 EXPOSE 8888
 
-ENTRYPOINT ["/usr/local/bin/pigpiod", "-g"]
-</pre>
+ENTRYPOINT ["/usr/local/bin/pigpiod", "-g"]</pre>
 <p>I even tried using <a class="reference external" href="https://github.com/krallin/tini">tini</a> as entrypoint without luck.
 So if someone as the explanation, please share it in the comments.</p>
 <p>I tried with <cite>resin/rpi-raspbian</cite> image and I got it working properly right away:</p>
-<pre class="literal-block">
-FROM resin/rpi-raspbian:jessie
+<pre class="literal-block">FROM resin/rpi-raspbian:jessie
 
 RUN apt-get update \
   &amp;&amp; apt-get install -y \
@@ -5766,15 +6959,13 @@ RUN curl -o /tmp/pigpio.tar abyz.co.uk/rpi/pigpio/pigpio.tar \
 
 EXPOSE 8888
 
-ENTRYPOINT ["/usr/local/bin/pigpiod", "-g"]
-</pre>
+ENTRYPOINT ["/usr/local/bin/pigpiod", "-g"]</pre>
 <p>Note that the container has to run in privileged mode to access the GPIO.</p>
 </div>
 <div class="section" id="aiolegomac">
 <h3>aiolegomac</h3>
 <p>For the main application, the Dockerfile is quite standard for a Python application:</p>
-<pre class="literal-block">
-FROM resin/raspberry-pi-python:3.6
+<pre class="literal-block">FROM resin/raspberry-pi-python:3.6
 
 RUN apt-get update \
   &amp;&amp; apt-get install -y \
@@ -5800,8 +6991,7 @@ RUN python -m venv /opt/legomac \
 COPY . /app
 
 ENTRYPOINT ["/opt/legomac/bin/python"]
-CMD ["run.py"]
-</pre>
+CMD ["run.py"]</pre>
 <p>What about the EPD driver?
 As it uses libfuse to represent the e-paper display as a virtual directory of files,
 the easiest was to install it on the host and to mount it as a volume inside the docker
@@ -5812,32 +7002,24 @@ container.</p>
 <h2>Deployment</h2>
 <p>To install all that on the Pi, I wrote a small <a class="reference external" href="https://www.ansible.com">Ansible</a> playbook.</p>
 <ol class="arabic">
+<li><p>Configure the Pi as described in my <a class="reference external" href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display">previous post</a>.</p></li>
 <li>
-<p class="first">Configure the Pi as described in my <a class="reference external" href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display">previous post</a>.</p>
+<p>Clone the playbook:</p>
+<pre class="literal-block">$ git clone https://github.com/beenje/legomac.git
+$ cd legomac</pre>
 </li>
 <li>
-<p class="first">Clone the playbook:</p>
-<pre class="literal-block">
-$ git clone https://github.com/beenje/legomac.git
-$ cd legomac
-</pre>
-</li>
-<li>
-<p class="first">Create a file <cite>host_vars/legomac</cite> with your variables (assuming the hostname of the Pi is legomac):</p>
-<pre class="literal-block">
-aiolegomac_hostname: myhost.example.com
+<p>Create a file <cite>host_vars/legomac</cite> with your variables (assuming the hostname of the Pi is legomac):</p>
+<pre class="literal-block">aiolegomac_hostname: myhost.example.com
 aiolegomac_username: john
 aiolegomac_password: mypassword
 aiolegomac_jwt_secret: secret
 traefik_letsencrypt_email: youremail@example.com
-traefik_letsencrypt_production: true
-</pre>
+traefik_letsencrypt_production: true</pre>
 </li>
 <li>
-<p class="first">Run the playbook:</p>
-<pre class="literal-block">
-$ ansible-playbook -i hosts -k playbook.yml
-</pre>
+<p>Run the playbook:</p>
+<pre class="literal-block">$ ansible-playbook -i hosts -k playbook.yml</pre>
 </li>
 </ol>
 <p>This will install docker and the EPD driver, download the <a class="reference external" href="https://github.com/beenje/aiolegomac">aiolegomac repository</a>, build the 3 docker images
@@ -5856,8 +7038,7 @@ the clock every minute and you can send messages to it!</p>
 but I really like <a class="reference external" href="https://httpie.org">HTTPie</a>. It's much more user
 friendly.</p>
 <p>Let's try to access our new server:</p>
-<pre class="literal-block">
-$ http GET https://myhost.example.com
+<pre class="literal-block">$ http GET https://myhost.example.com
 HTTP/1.1 401 Unauthorized
 Content-Length: 25
 Content-Type: application/json; charset=utf-8
@@ -5866,11 +7047,9 @@ Server: Python/3.6 aiohttp/2.2.3
 
 {
     "error": "Unauthorized"
-}
-</pre>
+}</pre>
 <p>Good, we need to login:</p>
-<pre class="literal-block">
-$ http POST https://myhost.example.com/login username=john password=foo
+<pre class="literal-block">$ http POST https://myhost.example.com/login username=john password=foo
 HTTP/1.1 400 Bad Request
 Content-Length: 32
 Content-Type: application/json; charset=utf-8
@@ -5879,11 +7058,9 @@ Server: Python/3.6 aiohttp/2.2.3
 
 {
     "error": "Invalid credentials"
-}
-</pre>
+}</pre>
 <p>Oops, wrong password:</p>
-<pre class="literal-block">
-$ http POST https://myhost.example.com/login username=john password='mypassword'
+<pre class="literal-block">$ http POST https://myhost.example.com/login username=john password='mypassword'
 HTTP/1.1 200 OK
 Content-Length: 134
 Content-Type: application/json; charset=utf-8
@@ -5892,11 +7069,9 @@ Server: Python/3.6 aiohttp/2.2.3
 
 {
     "token": "eyK0eXAiOiJRV5QiLCJhbGciOiJIUzI1NiJ9.eyJ1c3VyX2lkIjoxLCJleHAiOjE1MDB5MTIwOTh9.hECnj4u2mxvZ2r8IEC-db1T-eKTplM4kWJKZoHhtLxQ"
-}
-</pre>
+}</pre>
 <p>We got a token that we can use:</p>
-<pre class="literal-block">
-$ http GET https://myhost.example.com 'Authorization: eyK0eXAiOiJRV5QiLCJhbGciOiJIUzI1NiJ9.eyJ1c3VyX2lkIjoxLCJleHAiOjE1MDB5MTIwOTh9.hECnj4u2mxvZ2r8IEC-db1T-eKTplM4kWJKZoHhtLxQ'
+<pre class="literal-block">$ http GET https://myhost.example.com 'Authorization: eyK0eXAiOiJRV5QiLCJhbGciOiJIUzI1NiJ9.eyJ1c3VyX2lkIjoxLCJleHAiOjE1MDB5MTIwOTh9.hECnj4u2mxvZ2r8IEC-db1T-eKTplM4kWJKZoHhtLxQ'
 HTTP/1.1 200 OK
 Content-Length: 43
 Content-Type: application/json; charset=utf-8
@@ -5905,11 +7080,9 @@ Server: Python/3.6 aiohttp/2.2.3
 
 {
     "message": "Welcome to LegoMac john!"
-}
-</pre>
+}</pre>
 <p>Authentication is working, so we can send a message:</p>
-<pre class="literal-block">
-$ http POST https://myhost.example.com/messages message='Hello World!' 'Authorization: eyK0eXAiOiJRV5QiLCJhbGciOiJIUzI1NiJ9.eyJ1c3VyX2lkIjoxLCJleHAiOjE1MDB5MTIwOTh9.hECnj4u2mxvZ2r8IEC-db1T-eKTplM4kWJKZoHhtLxQ'
+<pre class="literal-block">$ http POST https://myhost.example.com/messages message='Hello World!' 'Authorization: eyK0eXAiOiJRV5QiLCJhbGciOiJIUzI1NiJ9.eyJ1c3VyX2lkIjoxLCJleHAiOjE1MDB5MTIwOTh9.hECnj4u2mxvZ2r8IEC-db1T-eKTplM4kWJKZoHhtLxQ'
 HTTP/1.1 201 Created
 Content-Length: 27
 Content-Type: application/json; charset=utf-8
@@ -5918,8 +7091,7 @@ Server: Python/3.6 aiohttp/2.2.3
 
 {
     "message": "Hello World!"
-}
-</pre>
+}</pre>
 <p>Message sent!
 HTTPie is nice for testing, but we can make a small script to easily send messages from the command line.</p>
 </div>
@@ -5933,8 +7105,7 @@ the script will retrieve one after prompting us for a password.
 The token is saved in the configuration file for later use.</p>
 <p>The following script could be improved with some nicer error messages
 by catching exceptions. But it does the job:</p>
-<pre class="literal-block">
-import os
+<pre class="literal-block">import os
 import click
 import requests
 import yaml
@@ -5993,20 +7164,15 @@ def pylegomac(message, conf):
 
 
 if __name__ == '__main__':
-    pylegomac()
-</pre>
+    pylegomac()</pre>
 <p>Let's first create a configuration file:</p>
-<pre class="literal-block">
-$ cat ~/.pylegomac.yml
+<pre class="literal-block">$ cat ~/.pylegomac.yml
 url: https://myhost.example.com
-username: john
-</pre>
+username: john</pre>
 <p>Send a message:</p>
-<pre class="literal-block">
-$ python pylegomac.py 'Beautiful is better than ugly. Explicit is better than implicit. Simple is better than complex. Complex is better than complicated.'
+<pre class="literal-block">$ python pylegomac.py 'Beautiful is better than ugly. Explicit is better than implicit. Simple is better than complex. Complex is better than complicated.'
 Password:
-Message sent
-</pre>
+Message sent</pre>
 <img alt="/images/legomac/zen_of_python.jpg" src="images/legomac/zen_of_python.jpg"><p>Sending a new message won't request the password as the token was saved in the config file.</p>
 </div>
 </div>
@@ -6016,10 +7182,8 @@ Message sent
 asyncio is quite pleasant to work with. I really like the async/await syntax.</p>
 <p>All the code is on github:</p>
 <ul class="simple">
-<li>
-<a class="reference external" href="https://github.com/beenje/aiolegomac">aiolegomac</a> (the server and client script)</li>
-<li>
-<a class="reference external" href="https://github.com/beenje/legomac">legomac</a> (the Ansible playbook to deploy the server)</li>
+<li><p><a class="reference external" href="https://github.com/beenje/aiolegomac">aiolegomac</a> (the server and client script)</p></li>
+<li><p><a class="reference external" href="https://github.com/beenje/legomac">legomac</a> (the Ansible playbook to deploy the server)</p></li>
 </ul>
 <p>Why did I only write a command line script to send messages and no web interface?
 Don't worry, that's planned! I could have used Jinja2. But I'd like to try a javascript framework.
@@ -6070,8 +7234,7 @@ was impressed. It's written in go, so single binary. There is also a tiny docker
 image that makes it easy to deploy. It includes Let's Encrypt support (with automatic renewal),
 websocket support (no specific setup required)... And many other features.</p>
 <p>Here is a <cite>traefik.toml</cite> configuration example:</p>
-<pre class="literal-block">
-defaultEntryPoints = ["http", "https"]
+<pre class="literal-block">defaultEntryPoints = ["http", "https"]
 
 [web]
 # Port for the status page
@@ -6106,13 +7269,12 @@ OnHostRule = true
 endpoint = "unix:///var/run/docker.sock"
 domain = "example.com"
 watch = true
-exposedbydefault = false
-</pre>
+exposedbydefault = false</pre>
 <p>With this simple configuration, you get:</p>
 <ul class="simple">
-<li>HTTP redirect on HTTPS</li>
-<li>Let's Encrypt support</li>
-<li>Docker backend support</li>
+<li><p>HTTP redirect on HTTPS</p></li>
+<li><p>Let's Encrypt support</p></li>
+<li><p>Docker backend support</p></li>
 </ul>
 <p>UPDATE (2018-03-04): as mentioned by @jackminardi in the comments, Let's Encrypt <a class="reference external" href="https://community.letsencrypt.org/t/important-what-you-need-to-know-about-tls-sni-validation-issues/50811">disabled the TLS-SNI
 challenges for most new issuance</a>.
@@ -6126,8 +7288,7 @@ HTTPS with traefik and Let's Encrypt.
 Note that traefik is made to dynamically discover backends. So you usually
 don't run it with your app in the same docker-compose.yml file. It usually
 runs separately. But to make it easier, I put both in the same file:</p>
-<pre class="literal-block">
-version: '2'
+<pre class="literal-block">version: '2'
 services:
   flask:
     build: ./flask
@@ -6146,8 +7307,7 @@ services:
     ports:
      - "80:80"
      - "443:443"
-     - "8080:8080"
-</pre>
+     - "8080:8080"</pre>
 <p>Traefik requires access to the docker socket to listen for changes in the
 backends. It can thus automatically discover when you start and stop
 containers. You can ovverride default behaviour by using labels in your
@@ -6155,12 +7315,10 @@ container.</p>
 <p>Supposing you own the myhost.example.com domain and have access to ports 80 and 443
 (you can setup port forwarding if you run that on your machine behind a
 router at home), you can run:</p>
-<pre class="literal-block">
-$ git clone https://github.com/beenje/flask_traefik_letsencrypt.git
+<pre class="literal-block">$ git clone https://github.com/beenje/flask_traefik_letsencrypt.git
 $ cd flask_traefik_letsencrypt
 $ export TRAEFIK_FRONTEND_RULE=Host:myhost.example.com
-$ docker-compose up
-</pre>
+$ docker-compose up</pre>
 <p>Voilà! Our flask app is available over HTTPS with a real SSL certificate!</p>
 <img alt="/images/flask_traefik/hello_world.png" src="images/flask_traefik/hello_world.png"><p>Traefik discovered the flask docker container and requested a certificate for our domain.
 All that automatically!</p>
@@ -6175,8 +7333,7 @@ Especially considering there isn't any specific SSL setup.</p>
 <p>As I already mentioned, traefik is made to automatically discover backends (docker containers in my case).
 So you usually run it by itself.</p>
 <p>Here is an example how it can be deployed using <a class="reference external" href="http://docs.ansible.com/ansible/">Ansible</a>:</p>
-<pre class="literal-block">
----
+<pre class="literal-block">---
 - name: create traefik directories
   file:
     path: /etc/traefik/acme
@@ -6221,13 +7378,11 @@ So you usually run it by itself.</p>
       - name: "{{traefik_network}}"
 
 - name: force all notified handlers to run
-  meta: flush_handlers
-</pre>
+  meta: flush_handlers</pre>
 <p>Nothing strange here. It's quite similar to what we had in our docker-compose.yml file.
 We created a specific <cite>traefik_network</cite>. Our docker containers will have to be on that same network.</p>
 <p>Here is how we could deploy a flask application on the same server using another ansible role:</p>
-<pre class="literal-block">
-- name: launch flask container
+<pre class="literal-block">- name: launch flask container
   docker_container:
     name: flask
     image: flask
@@ -6241,8 +7396,7 @@ We created a specific <cite>traefik_network</cite>. Our docker containers will h
       traefik.enable: "true"
       traefik.backend: "flask"
       traefik.frontend.rule: "Host:myhost.example.com"
-      traefik.port: "5000"
-</pre>
+      traefik.port: "5000"</pre>
 <p>We make sure the container is on the same network as the traefik proxy.
 Note that the <cite>traefik.port</cite> label is only required if the container exposes multiple ports.
 It's thus not needed in our example.</p>
@@ -6318,7 +7472,7 @@ existing soldering iron when I discovered this <a class="reference external" hre
 I used the installation jig and it was really easy to install.
 There is a nice <a class="reference external" href="https://youtu.be/VDJ2-feg2lk">video</a> that explains how
 to proceed:</p>
-<iframe width="480" height="270" src="https://www.youtube.com/embed/VDJ2-feg2lk?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<a href="https://youtu.be/VDJ2-feg2lk">https://youtu.be/VDJ2-feg2lk</a>
 </div>
 <div class="section" id="connecting-the-display-to-the-pi">
 <h2>Connecting the display to the Pi</h2>
@@ -6368,15 +7522,12 @@ To flash the SD card, I recommend <a class="reference external" href="https://et
 I'm more a command line guy and I have used <cite>dd</cite> many times. But I was pleasantly surprised.
 It's easy to install and use.</p>
 <ol class="arabic simple">
-<li>Download and install <a class="reference external" href="https://etcher.io">Etcher</a>
-</li>
-<li>Download <a class="reference external" href="https://www.raspberrypi.org/downloads/raspbian/">Raspbian Buster Lite image</a>
-</li>
-<li>Flash the SD card using Etcher</li>
-<li>Mount the SD card to configure it:</li>
+<li><p>Download and install <a class="reference external" href="https://etcher.io">Etcher</a></p></li>
+<li><p>Download <a class="reference external" href="https://www.raspberrypi.org/downloads/raspbian/">Raspbian Buster Lite image</a></p></li>
+<li><p>Flash the SD card using Etcher</p></li>
+<li><p>Mount the SD card to configure it:</p></li>
 </ol>
-<pre class="literal-block">
-# Go to the boot partition
+<pre class="literal-block"># Go to the boot partition
 # This is an example on OSX (mount point will be different on Linux)
 $ cd /Volumes/boot
 
@@ -6399,15 +7550,13 @@ EOF
 $ vi config.txt
 
 # Leave the boot partition
-$ cd
-</pre>
+$ cd</pre>
 <ol class="arabic simple" start="5">
-<li>Unmount the SD card and put it in the Raspberry Pi</li>
-<li>Boot the Pi</li>
+<li><p>Unmount the SD card and put it in the Raspberry Pi</p></li>
+<li><p>Boot the Pi</p></li>
 </ol>
 <p>I wrote a small Ansible playbook to install the E-ink driver and the clock demo:</p>
-<pre class="literal-block">
-- name: install required dependencies
+<pre class="literal-block">- name: install required dependencies
   apt:
     name:
       - git
@@ -6457,17 +7606,14 @@ $ cd
     name: epd-clock.service
     daemon_reload: yes
     state: started
-    enabled: yes
-</pre>
+    enabled: yes</pre>
 <p>Note that commit <a class="reference external" href="https://github.com/embeddedartists/gratis/commit/282e88f8f642d8086d779c462d248063770482e3">282e88f</a> in embeddedartists/gratis repository added support
 for the RaspberryPi 3, but broke the PI Zero W.
 You currently have to use the commit 9b7accc68 if you have a PI Zero W.</p>
 <p>To run the playbook, clone the repository <a class="reference external" href="https://github.com/beenje/legomac">https://github.com/beenje/legomac</a>:</p>
-<pre class="literal-block">
-$ git clone https://github.com/beenje/legomac.git
+<pre class="literal-block">$ git clone https://github.com/beenje/legomac.git
 $ cd legomac
-$ ansible-playbook -i hosts -k epd-demo.yml
-</pre>
+$ ansible-playbook -i hosts -k epd-demo.yml</pre>
 <p>That's it!</p>
 <p>Of course don't forget to change the default password on your Pi.</p>
 </div>
@@ -6482,49 +7628,23 @@ you haven't yet.
 Thanks again to @mkennedy for the stickers!</p>
 <a class="reference external image-reference" href="images/legomac/talkpythontome.jpg"><img alt="/images/legomac/talkpythontome.thumbnail.jpg" src="images/legomac/talkpythontome.thumbnail.jpg"></a>
 <p>Below are a few pictures. You can see more on <a class="reference external" href="https://flic.kr/s/aHskVAadfo">flickr</a>.</p>
+<div class="system-message">
+<p class="system-message-title">System Message: ERROR/3 (<span class="docutils literal">&lt;string&gt;</span>, line 246)</p>
+<p>Unknown directive type "slides".</p>
+<pre class="literal-block">.. slides::
 
-<div id="slides_5b51e2787a8b4412a47b037f2a546f8b" class="carousel slide" data-ride="carousel">
-    <ol class="carousel-indicators">
-<li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="0" class="active">
-            </li>
-<li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="1">
-            </li>
-<li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="2">
-            </li>
-<li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="3">
-            </li>
-<li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="4">
-            </li>
-<li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="5">
-            </li>
-<li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="6">
-            </li>
-<li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="7">
-            </li>
-<li data-target="#slides_5b51e2787a8b4412a47b037f2a546f8b" data-slide-to="8">
-    </li>
-</ol>
-<div class="carousel-inner">
-                <div class="carousel-item active"><img class="d-block w-100" src="images/legomac/legomac.jpg" alt=""></div>
-                <div class="carousel-item"><img class="d-block w-100" src="images/legomac/legomac_front_close.jpg" alt=""></div>
-                <div class="carousel-item"><img class="d-block w-100" src="images/legomac/talkpythontome.jpg" alt=""></div>
-                <div class="carousel-item"><img class="d-block w-100" src="images/legomac/drilling_left.jpg" alt=""></div>
-                <div class="carousel-item"><img class="d-block w-100" src="images/legomac/drilling_right.jpg" alt=""></div>
-                <div class="carousel-item"><img class="d-block w-100" src="images/legomac/ribbon_cable.jpg" alt=""></div>
-                <div class="carousel-item"><img class="d-block w-100" src="images/legomac/display_front.jpg" alt=""></div>
-                <div class="carousel-item"><img class="d-block w-100" src="images/legomac/button_front.jpg" alt=""></div>
-                <div class="carousel-item"><img class="d-block w-100" src="images/legomac/button_top.jpg" alt=""></div>
-    </div>
-      <a class="carousel-control-prev" href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_5b51e2787a8b4412a47b037f2a546f8b" role="button" data-slide="prev">
-    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    <span class="sr-only">Previous</span>
-  </a>
-  <a class="carousel-control-next" href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_5b51e2787a8b4412a47b037f2a546f8b" role="button" data-slide="next">
-    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    <span class="sr-only">Next</span>
-  </a>
+    /images/legomac/legomac.jpg
+    /images/legomac/legomac_front_close.jpg
+    /images/legomac/talkpythontome.jpg
+    /images/legomac/drilling_left.jpg
+    /images/legomac/drilling_right.jpg
+    /images/legomac/ribbon_cable.jpg
+    /images/legomac/display_front.jpg
+    /images/legomac/button_front.jpg
+    /images/legomac/button_top.jpg
+
+</pre>
 </div>
-
 </div>
 <div class="section" id="next">
 <h2>Next</h2>
@@ -6562,8 +7682,7 @@ You should definitively read that page.</p>
 <div class="section" id="avoid-invalidating-the-cache">
 <h2>Avoid invalidating the cache</h2>
 <p>Let's take a simple example with a Python application:</p>
-<pre class="literal-block">
-FROM python:3.6
+<pre class="literal-block">FROM python:3.6
 
 COPY . /app
 WORKDIR /app
@@ -6571,8 +7690,7 @@ WORKDIR /app
 RUN pip install -r requirements.txt
 
 ENTRYPOINT ["python"]
-CMD ["ap.py"]
-</pre>
+CMD ["ap.py"]</pre>
 <p>It's actually an example I have seen several times online.
 This looks fine, right?</p>
 <p>The problem is that the <em>COPY . /app</em> command will invalidate the cache as
@@ -6582,8 +7700,7 @@ Docker will have to re-install all the requirements because the
 <em>RUN pip</em> command is run after the <em>COPY</em> that invalidated the cache.</p>
 <p>The requirements should only be re-installed if the <em>requirements.txt</em>
 file changes:</p>
-<pre class="literal-block">
-FROM python:3.6
+<pre class="literal-block">FROM python:3.6
 
 WORKDIR /app
 
@@ -6593,8 +7710,7 @@ RUN pip install -r requirements.txt
 COPY . /app
 
 ENTRYPOINT ["python"]
-CMD ["ap.py"]
-</pre>
+CMD ["ap.py"]</pre>
 <p>With this Dockerfile, the <em>RUN pip</em> command will only be re-run when the
 <em>requirements.txt</em> file changes. It will use the cache otherwise.</p>
 <p>This is much more efficient and will save you quite some time if you have
@@ -6607,17 +7723,14 @@ many requirements to install.</p>
 filesystem differences. Every command in your Dockerfile will create a new
 layer.</p>
 <p>Let's use the following Dockerfile:</p>
-<pre class="literal-block">
-FROM centos:7
+<pre class="literal-block">FROM centos:7
 
 RUN yum update -y
 RUN yum install -y sudo
 RUN yum install -y git
-RUN yum clean all
-</pre>
+RUN yum clean all</pre>
 <p>Build the docker image and check the layers created with the <em>docker history</em> command:</p>
-<pre class="literal-block">
-$ docker build -t centos-test .
+<pre class="literal-block">$ docker build -t centos-test .
 ...
 $ docker images
 REPOSITORY                       TAG                 IMAGE ID            CREATED              SIZE
@@ -6632,48 +7745,40 @@ e0c7b450b7a8        3 minutes ago       /bin/sh -c yum update -y                
 98d35105a391        24 hours ago        /bin/sh -c #(nop)  CMD ["/bin/bash"]            0 B
 &lt;missing&gt;           24 hours ago        /bin/sh -c #(nop)  LABEL name=CentOS Base ...   0 B
 &lt;missing&gt;           24 hours ago        /bin/sh -c #(nop) ADD file:29f66b8b4bafd0f...   193 MB
-&lt;missing&gt;           6 months ago        /bin/sh -c #(nop)  MAINTAINER https://gith...   0 B
-</pre>
+&lt;missing&gt;           6 months ago        /bin/sh -c #(nop)  MAINTAINER https://gith...   0 B</pre>
 <p>There are two problems with this Dockerfile:</p>
 <ol class="arabic simple">
-<li>We added too many layers for nothing.</li>
-<li>The <em>yum clean all</em> command is meant to reduce the size of the image but it
-actually does the opposite by adding a new layer!</li>
+<li><p>We added too many layers for nothing.</p></li>
+<li><p>The <em>yum clean all</em> command is meant to reduce the size of the image but it
+actually does the opposite by adding a new layer!</p></li>
 </ol>
 <p>Let's check that by removing the latest command and running the build
 again:</p>
-<pre class="literal-block">
-FROM centos:7
+<pre class="literal-block">FROM centos:7
 
 RUN yum update -y
 RUN yum install -y sudo
 RUN yum install -y git
-# RUN yum clean all
-</pre>
-<pre class="literal-block">
-$ docker build -t centos-test .
+# RUN yum clean all</pre>
+<pre class="literal-block">$ docker build -t centos-test .
 ...
 $ docker images
 REPOSITORY                       TAG                 IMAGE ID            CREATED             SIZE
 centos-test                      latest              999e7c7c0e14        11 minutes ago      469 MB
-centos                           7                   98d35105a391        24 hours ago        193 MB
-</pre>
+centos                           7                   98d35105a391        24 hours ago        193 MB</pre>
 <p>The new image without the <em>yum clean all</em> command is indeed smaller than the previous image (1.67 MB smaller)!</p>
 <p>If you want to remove files, it's important to do that in the same RUN command that created those files.
 Otherwise there is no point.</p>
 <p>Here is the proper way to do it:</p>
-<pre class="literal-block">
-FROM centos:7
+<pre class="literal-block">FROM centos:7
 
 RUN yum update -y \
   &amp;&amp; yum install -y \
   sudo \
   git \
-  &amp;&amp; yum clean all
-</pre>
+  &amp;&amp; yum clean all</pre>
 <p>Let's build this new image:</p>
-<pre class="literal-block">
-$ docker build -t centos-test .
+<pre class="literal-block">$ docker build -t centos-test .
 ...
 $ docker images
 REPOSITORY                       TAG                 IMAGE ID            CREATED             SIZE
@@ -6685,8 +7790,7 @@ IMAGE               CREATED              CREATED BY                             
 98d35105a391        24 hours ago         /bin/sh -c #(nop)  CMD ["/bin/bash"]            0 B
 &lt;missing&gt;           24 hours ago         /bin/sh -c #(nop)  LABEL name=CentOS Base ...   0 B
 &lt;missing&gt;           24 hours ago         /bin/sh -c #(nop) ADD file:29f66b8b4bafd0f...   193 MB
-&lt;missing&gt;           6 months ago         /bin/sh -c #(nop)  MAINTAINER https://gith...   0 B
-</pre>
+&lt;missing&gt;           6 months ago         /bin/sh -c #(nop)  MAINTAINER https://gith...   0 B</pre>
 <p>The new image is only 265 MB compared to the 470 MB of the original image.
 There isn't much more to say :-)</p>
 <p>If you want to know more about images and layers, you should read the
@@ -6696,15 +7800,15 @@ documentation: <a class="reference external" href="https://docs.docker.com/engin
 <h2>Conclusion</h2>
 <p>Avoid invalidating the cache:</p>
 <ul class="simple">
-<li>start your Dockerfile with commands that should not change often</li>
-<li>put commands that can often invalidate the cache (like COPY .) as
-late as possible</li>
-<li>only add the needed files (use a .dockerignore file)</li>
+<li><p>start your Dockerfile with commands that should not change often</p></li>
+<li><p>put commands that can often invalidate the cache (like COPY .) as
+late as possible</p></li>
+<li><p>only add the needed files (use a .dockerignore file)</p></li>
 </ul>
 <p>Minimize the number of layers:</p>
 <ul class="simple">
-<li>put related commands in the same RUN instruction</li>
-<li>remove files in the same RUN command that created them</li>
+<li><p>put related commands in the same RUN instruction</p></li>
+<li><p>remove files in the same RUN command that created them</p></li>
 </ul>
 </div>
 </div>
@@ -6736,55 +7840,40 @@ the <a class="reference external" href="https://github.com/home-assistant/homebr
 <h2>Install Homebridge</h2>
 <p>Homebridge is a lightweight NodeJS server that emulates the iOS HomeKit
 API. Let's install it in the same <a class="reference external" href="posts/home-assistant-on-turris-omnia-via-lxc-container">LXC container as Home Assistant</a>:</p>
-<pre class="literal-block">
-root@turris:~# lxc-attach -n homeassistant
-</pre>
+<pre class="literal-block">root@turris:~# lxc-attach -n homeassistant</pre>
 <p>I followed the <a class="reference external" href="https://github.com/nfarina/homebridge/wiki/Running-HomeBridge-on-a-Raspberry-Pi">Running HomeBridge on a Raspberry Pi page</a>.</p>
 <p>We need curl and git:</p>
-<pre class="literal-block">
-root@homeassistant:~# apt-get install -y curl git
-</pre>
+<pre class="literal-block">root@homeassistant:~# apt-get install -y curl git</pre>
 <p>Install Node:</p>
-<pre class="literal-block">
-root@homeassistant:~# curl -sL https://deb.nodesource.com/setup_6.x | bash -
+<pre class="literal-block">root@homeassistant:~# curl -sL https://deb.nodesource.com/setup_6.x | bash -
 ## Installing the NodeSource Node.js v6.x repo...
 
 ## Populating apt-get cache...
 
-root@homeassistant:~# apt-get install -y nodejs
-</pre>
+root@homeassistant:~# apt-get install -y nodejs</pre>
 <p>Install avahi and other dependencies:</p>
-<pre class="literal-block">
-root@homeassistant:~# apt-get install -y libavahi-compat-libdnssd-dev
-</pre>
+<pre class="literal-block">root@homeassistant:~# apt-get install -y libavahi-compat-libdnssd-dev</pre>
 <p>Install Homebridge and dependencies still following this <a class="reference external" href="https://github.com/nfarina/homebridge/wiki/Running-HomeBridge-on-a-Raspberry-Pi#install-homebridge-and-dependencies">page</a>.
 Note that I had a strange problem here. The <em>npm</em> command didn't produce
 any output. I found the same issue on <a class="reference external" href="http://stackoverflow.com/questions/40755598/containers-lxc-attach-and-npm-no-output">stackoverflow</a>
 and even an <a class="reference external" href="https://github.com/npm/npm/issues/15681">issue on github</a>.
 The workaround is just to open a new terminal...</p>
-<pre class="literal-block">
-root@homeassistant:~# npm install -g --unsafe-perm homebridge hap-nodejs node-gyp
+<pre class="literal-block">root@homeassistant:~# npm install -g --unsafe-perm homebridge hap-nodejs node-gyp
 root@homeassistant:~# cd /usr/lib/node_modules/homebridge/
 root@homeassistant:/usr/lib/node_modules/homebridge# npm install --unsafe-perm bignum
 root@homeassistant:/usr/lib/node_modules/homebridge# cd ../hap-nodejs/node_modules/mdns/
-root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# node-gyp BUILDTYPE=Release rebuild
-</pre>
+root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# node-gyp BUILDTYPE=Release rebuild</pre>
 </div>
 <div class="section" id="install-and-configure-homebridge-homeassistant-plugin">
 <h2>Install and configure homebridge-homeassistant plugin</h2>
-<pre class="literal-block">
-root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# cd
-root@homeassistant:~# npm install -g --unsafe-perm homebridge-homeassistant
-</pre>
+<pre class="literal-block">root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# cd
+root@homeassistant:~# npm install -g --unsafe-perm homebridge-homeassistant</pre>
 <p>Try to start Homebridge:</p>
-<pre class="literal-block">
-root@homeassistant:~# su -s /bin/bash homeassistant
-homeassistant@homeassistant:~$ homebridge
-</pre>
+<pre class="literal-block">root@homeassistant:~# su -s /bin/bash homeassistant
+homeassistant@homeassistant:~$ homebridge</pre>
 <p>Homebridge won't do anything until you've created a configuration file.
 So press CTRL-C and create the file <cite>~/.homebridge/config.json</cite>:</p>
-<pre class="literal-block">
-homeassistant@homeassistant:~$ cat &lt;&lt;EOF &gt;&gt; ~/.homebridge/config.json
+<pre class="literal-block">homeassistant@homeassistant:~$ cat &lt;&lt;EOF &gt;&gt; ~/.homebridge/config.json
 {
   "bridge": {
     "name": "Homebridge",
@@ -6802,8 +7891,7 @@ homeassistant@homeassistant:~$ cat &lt;&lt;EOF &gt;&gt; ~/.homebridge/config.jso
     }
  ]
 }
-EOF
-</pre>
+EOF</pre>
 <p>Note that you can change the username and pin code.
 You will need the PIN code to add the Homebridge accessory to HomeKit.</p>
 <p>Check the <a class="reference external" href="https://github.com/home-assistant/homebridge-homeassistant#configuration">Home Assistant plugin page</a>
@@ -6813,8 +7901,7 @@ for more information on how to configure the plugin.</p>
 <h2>Automatically start Homebridge</h2>
 <p>Let's configure systemd.
 Create the file <cite>/etc/systemd/system/home-assistant@homebridge.service</cite>:</p>
-<pre class="literal-block">
-root@homeassistant:~# cat &lt;&lt;EOF &gt;&gt; /etc/systemd/system/home-assistant@homebridge.service
+<pre class="literal-block">root@homeassistant:~# cat &lt;&lt;EOF &gt;&gt; /etc/systemd/system/home-assistant@homebridge.service
 [Unit]
 Description=Node.js HomeKit Server
 After=syslog.target network-online.target
@@ -6829,15 +7916,12 @@ KillMode=process
 
 [Install]
 WantedBy=multi-user.target
-EOF
-</pre>
+EOF</pre>
 <p>Enable and launch Homebridge:</p>
-<pre class="literal-block">
-root@homeassistant:~# systemctl --system daemon-reload
+<pre class="literal-block">root@homeassistant:~# systemctl --system daemon-reload
 root@homeassistant:~# systemctl enable home-assistant@homebridge
 Created symlink from /etc/systemd/system/multi-user.target.wants/home-assistant@homebridge.service to /etc/systemd/system/home-assistant@homebridge.service.
-root@homeassistant:~# systemctl start home-assistant@homebridge
-</pre>
+root@homeassistant:~# systemctl start home-assistant@homebridge</pre>
 </div>
 <div class="section" id="adding-homebridge-to-ios">
 <h2>Adding Homebridge to iOS</h2>
@@ -6856,97 +7940,26 @@ avoid names usually used by Siri like "Radio" or "Sonos".</p>
 </div>
 </div>
     </div>
-    </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/docker-and-conda/" class="u-url">Docker and conda</a></h1>
-        <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
-                Benjamin Bertrand
-            </span></p>
-            <p class="dateline">
-            <a href="posts/docker-and-conda/" rel="bookmark">
-            <time class="published dt-published" datetime="2017-01-28T23:32:56+01:00" itemprop="datePublished" title="2017-01-28 23:32">2017-01-28 23:32</time></a>
-            </p>
-                <p class="commentline">
-        
-    <a href="posts/docker-and-conda/#disqus_thread" data-disqus-identifier="cache/posts/docker-and-conda.html">Comments</a>
-
-
-        </p>
-</div>
-    </header><div class="e-content entry-content">
-    <div>
-<p>I just read a blog post about <a class="reference external" href="http://fmgdata.kinja.com/using-docker-with-conda-environments-1790901398">Using Docker with Conda Environments</a>.
-I do things slightly differently so I thought I would share an example of
-Dockerfile I use:</p>
-<pre class="literal-block">
-FROM continuumio/miniconda3:latest
-
-# Install extra packages if required
-RUN apt-get update &amp;&amp; apt-get install -y \
-    xxxxxx \
-    &amp;&amp; rm -rf /var/lib/apt/lists/*
-
-# Add the user that will run the app (no need to run as root)
-RUN groupadd -r myuser &amp;&amp; useradd -r -g myuser myuser
-
-WORKDIR /app
-
-# Install myapp requirements
-COPY environment.yml /app/environment.yml
-RUN conda config --add channels conda-forge \
-    &amp;&amp; conda env create -n myapp -f environment.yml \
-    &amp;&amp; rm -rf /opt/conda/pkgs/*
-
-# Install myapp
-COPY . /app/
-RUN chown -R myuser:myuser /app/*
-
-# activate the myapp environment
-ENV PATH /opt/conda/envs/myapp/bin:$PATH
-</pre>
-<p>I don't run <cite>source activate myapp</cite> but just use <cite>ENV</cite> to update the <cite>PATH</cite>
-variable. There is only one environment in the docker image. No need for the extra
-checks done by the activate script.</p>
-<p>With this Dockerfile, any command will be run in the <cite>myapp</cite>
-environment.</p>
-<p>Just a few additional notes:</p>
-<ol class="arabic simple">
-<li>Be sure to only copy the file <cite>environment.yml</cite> before to copy the full
-current directory. Otherwise any change in the directory would
-invalidate the docker cache.
-We only want to re-create the conda environment if <cite>environment.yml</cite>
-changes.</li>
-<li>I always add the <a class="reference external" href="https://conda-forge.github.io">conda-forge channel</a>.
-Check this <a class="reference external" href="https://www.continuum.io/blog/developer-blog/community-conda-forge">post</a>
-if you haven't heard of it yet.</li>
-<li>I clean some cache (<em>/var/lib/apt/lists/</em> and <em>/opt/conda/pkgs/</em>) to
-make the image a bit smaller.</li>
-</ol>
-<p>I switched from virtualenv to <a class="reference external" href="https://conda.io">conda</a> a while ago and I really enjoy it.
-A big thanks to <a class="reference external" href="https://www.continuum.io">Continuum Analytics</a>!</p>
-</div>
-    </div>
     </article>
 </div>
 
         <ul class="pager postindexpager clearfix">
 <li class="next"><a href="index-2.html" rel="next">Older posts</a></li>
         </ul>
-<script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity="sha256-SDRP1VVYu+tgAGKhddBSl5+ezofHKZeI+OzxakbIe/Y=" crossorigin="anonymous"></script><script type="text/x-mathjax-config">
+<script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity="sha384-3lJUsx1TJHt7BA4udB5KPnDrlkO8T6J6v/op7ui0BbCjvZ9WqV4Xm6DTP6kQ/iBH" crossorigin="anonymous"></script><script type="text/x-mathjax-config">
         MathJax.Hub.Config({tex2jax: {inlineMath: [['$latex ','$'], ['\\(','\\)']]}});
         </script><!--End of body content--><footer id="footer">
-            Contents © 2019         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2020         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
             
         </footer>
 </div>
 </div>
 
 
-        <script src="assets/js/all-nocdn.js"></script><!-- fancy dates --><script>
-    moment.locale("en");
-    fancydates(0, "YYYY-MM-DD HH:mm");
-    </script><!-- end fancy dates --><script>
+        <script src="assets/js/all-nocdn.js"></script><script>
     baguetteBox.run('div#content', {
         ignoreClass: 'islink',
         captions: function(element) {

@@ -7,334 +7,334 @@
                         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
  <url>
   <loc>http://beenje.github.io/blog/</loc>
-  <lastmod>2018-09-11T20:57:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/2016/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/2017/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/2018/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/2020/</loc>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/archive.html</loc>
-  <lastmod>2019-11-24T18:06:00Z</lastmod>
+  <lastmod>2020-03-11T18:04:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/</loc>
-  <lastmod>2018-09-18T20:27:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/aiohttp/</loc>
-  <lastmod>2018-09-11T20:57:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/ajax/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/ansible/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/appletv/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/bash/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/bot/</loc>
-  <lastmod>2018-09-11T20:57:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/cat_docker/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/cat_git/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/cat_gitlab/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/cat_linux/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/cat_pi/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/cat_python/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/ci/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/conda/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/cron/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/docker/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/elasticsearch/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/flask/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/gidgetlab/</loc>
-  <lastmod>2018-09-11T20:57:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/git/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/gitlab/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/gui/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/home-assistant/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/https/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/ios/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/ipad/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/iphone/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/javascript/</loc>
-  <lastmod>2018-06-02T21:54:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/kodi/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/lego/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/linux/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/lxc/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/mac/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/openwrt/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/osx/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/pandas/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/pi/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/pyppeteer/</loc>
-  <lastmod>2018-06-02T21:54:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/python/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/redis/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/request-html/</loc>
-  <lastmod>2018-06-02T21:54:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/requests/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/rq/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/synology/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/tika/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/tkinter/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/traefik/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/turris/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/uwsgi/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/vpn/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/xcode/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
- </url>
- <url>
-  <loc>http://beenje.github.io/blog/galleries/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/index-1.html</loc>
-  <lastmod>2019-11-24T18:06:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/index-2.html</loc>
-  <lastmod>2019-11-24T18:06:00Z</lastmod>
- </url>
- <url>
-  <loc>http://beenje.github.io/blog/listings/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp/</loc>
-  <lastmod>2018-09-11T20:57:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/compile-and-install-kodi-on-ipad-without-jailbreak/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/crontab-and-date/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/docker-and-conda/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/dockerfile-anti-patterns-and-best-practices/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/gitlab-ci-and-conda/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/gitlab-container-registry-and-proxy/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/logging-to-a-tkinter-scrolledtext-widget/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/parsing-and-indexing-pdf-in-python/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/parsing-html-tables-in-python-with-pandas/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/</loc>
-  <lastmod>2018-05-29T21:00:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/running-background-tasks-with-flask-and-rq/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/running-your-application-over-https-with-traefik/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/posts/searching-by-date-in-elasticsearch/</loc>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/switching-from-git-bigfile-to-git-lfs/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/uwsgi-send_file-and-python35/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/stories/about/</loc>
-  <lastmod>2018-03-31T18:53:00Z</lastmod>
+  <lastmod>2020-03-11T18:05:00Z</lastmod>
  </url>
 </urlset>

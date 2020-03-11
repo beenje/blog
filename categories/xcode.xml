@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about Xcode)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/xcode.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Tue, 18 Sep 2018 20:09:31 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Compile and install Kodi on iPad without jailbreak</title><link>http://beenje.github.io/blog/posts/compile-and-install-kodi-on-ipad-without-jailbreak/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;With iOS 9 and Xcode 7 it's finally possible to compile and deploy apps on
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about Xcode)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/xcode.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2020 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
+&lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
+&lt;img alt="Creative Commons License BY-NC-SA"
+style="border-width:0; margin-bottom:12px;"
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 11 Mar 2020 18:05:01 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Compile and install Kodi on iPad without jailbreak</title><link>http://beenje.github.io/blog/posts/compile-and-install-kodi-on-ipad-without-jailbreak/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;With iOS 9 and Xcode 7 it's finally possible to compile and deploy apps on
 your iPhone/iPad with a free Apple developer account (no paid membership
 required).&lt;/p&gt;
 &lt;p&gt;I compiled XBMC/Kodi many times on my mac but had never signed an app with
@@ -8,16 +12,13 @@ So here are my notes:&lt;/p&gt;
 &lt;p&gt;First thanks to memphiz for the &lt;a class="reference external" href="http://forum.kodi.tv/showthread.php?tid=239610"&gt;iOS9 support&lt;/a&gt;!&lt;/p&gt;
 &lt;p&gt;I compiled from his ios9_workaround branch, but it has been &lt;a class="reference external" href="https://github.com/xbmc/xbmc/pull/8250"&gt;merged&lt;/a&gt; to
 master since:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-$ git clone https://github.com/xbmc/xbmc.git Kodi
+&lt;pre class="literal-block"&gt;$ git clone https://github.com/xbmc/xbmc.git Kodi
 $ cd Kodi
 $ git remote add memphiz https://github.com/Memphiz/xbmc.git
 $ git fetch memphiz
-$ git checkout -b ios9_workaround memphiz/ios9_workaround
-&lt;/pre&gt;
+$ git checkout -b ios9_workaround memphiz/ios9_workaround&lt;/pre&gt;
 &lt;p&gt;Follow the instructions from the README.ios file:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-$ git submodule update --init addons/skin.re-touched
+&lt;pre class="literal-block"&gt;$ git submodule update --init addons/skin.re-touched
 $ cd tools/depends
 $ ./bootstrap
 $ ./configure --host=arm-apple-darwin
@@ -26,8 +27,7 @@ $ make -j4 -C target/binary-addons
 $ cd ../..
 $ make -j4 -C tools/depends/target/xbmc
 $ make clean
-$ make -j4 xcode_depends
-&lt;/pre&gt;
+$ make -j4 xcode_depends&lt;/pre&gt;
 &lt;p&gt;Start Xcode and open the Kodi project.
 Open the Preferences, and add your Apple ID if not already
 done:&lt;/p&gt;

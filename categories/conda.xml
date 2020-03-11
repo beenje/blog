@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about conda)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/conda.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Tue, 18 Sep 2018 20:09:30 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Docker and conda</title><link>http://beenje.github.io/blog/posts/docker-and-conda/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I just read a blog post about &lt;a class="reference external" href="http://fmgdata.kinja.com/using-docker-with-conda-environments-1790901398"&gt;Using Docker with Conda Environments&lt;/a&gt;.
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about conda)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/conda.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2020 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
+&lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
+&lt;img alt="Creative Commons License BY-NC-SA"
+style="border-width:0; margin-bottom:12px;"
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 11 Mar 2020 18:05:00 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Docker and conda</title><link>http://beenje.github.io/blog/posts/docker-and-conda/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I just read a blog post about &lt;a class="reference external" href="http://fmgdata.kinja.com/using-docker-with-conda-environments-1790901398"&gt;Using Docker with Conda Environments&lt;/a&gt;.
 I do things slightly differently so I thought I would share an example of
 Dockerfile I use:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-FROM continuumio/miniconda3:latest
+&lt;pre class="literal-block"&gt;FROM continuumio/miniconda3:latest
 
 # Install extra packages if required
 RUN apt-get update &amp;amp;&amp;amp; apt-get install -y \
@@ -26,8 +29,7 @@ COPY . /app/
 RUN chown -R myuser:myuser /app/*
 
 # activate the myapp environment
-ENV PATH /opt/conda/envs/myapp/bin:$PATH
-&lt;/pre&gt;
+ENV PATH /opt/conda/envs/myapp/bin:$PATH&lt;/pre&gt;
 &lt;p&gt;I don't run &lt;cite&gt;source activate myapp&lt;/cite&gt; but just use &lt;cite&gt;ENV&lt;/cite&gt; to update the &lt;cite&gt;PATH&lt;/cite&gt;
 variable. There is only one environment in the docker image. No need for the extra
 checks done by the activate script.&lt;/p&gt;
@@ -35,16 +37,16 @@ checks done by the activate script.&lt;/p&gt;
 environment.&lt;/p&gt;
 &lt;p&gt;Just a few additional notes:&lt;/p&gt;
 &lt;ol class="arabic simple"&gt;
-&lt;li&gt;Be sure to only copy the file &lt;cite&gt;environment.yml&lt;/cite&gt; before to copy the full
+&lt;li&gt;&lt;p&gt;Be sure to only copy the file &lt;cite&gt;environment.yml&lt;/cite&gt; before to copy the full
 current directory. Otherwise any change in the directory would
 invalidate the docker cache.
 We only want to re-create the conda environment if &lt;cite&gt;environment.yml&lt;/cite&gt;
-changes.&lt;/li&gt;
-&lt;li&gt;I always add the &lt;a class="reference external" href="https://conda-forge.github.io"&gt;conda-forge channel&lt;/a&gt;.
+changes.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;I always add the &lt;a class="reference external" href="https://conda-forge.github.io"&gt;conda-forge channel&lt;/a&gt;.
 Check this &lt;a class="reference external" href="https://www.continuum.io/blog/developer-blog/community-conda-forge"&gt;post&lt;/a&gt;
-if you haven't heard of it yet.&lt;/li&gt;
-&lt;li&gt;I clean some cache (&lt;em&gt;/var/lib/apt/lists/&lt;/em&gt; and &lt;em&gt;/opt/conda/pkgs/&lt;/em&gt;) to
-make the image a bit smaller.&lt;/li&gt;
+if you haven't heard of it yet.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;I clean some cache (&lt;em&gt;/var/lib/apt/lists/&lt;/em&gt; and &lt;em&gt;/opt/conda/pkgs/&lt;/em&gt;) to
+make the image a bit smaller.&lt;/p&gt;&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;I switched from virtualenv to &lt;a class="reference external" href="https://conda.io"&gt;conda&lt;/a&gt; a while ago and I really enjoy it.
 A big thanks to &lt;a class="reference external" href="https://www.continuum.io"&gt;Continuum Analytics&lt;/a&gt;!&lt;/p&gt;&lt;/div&gt;</description><category>conda</category><category>docker</category><category>python</category><guid>http://beenje.github.io/blog/posts/docker-and-conda/</guid><pubDate>Sat, 28 Jan 2017 22:32:56 GMT</pubDate></item><item><title>GitLab CI and conda</title><link>http://beenje.github.io/blog/posts/gitlab-ci-and-conda/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I setup GitLab to host several projects at work and I have been quite
@@ -55,8 +57,7 @@ sphinx documentation.&lt;/p&gt;
 to setup a runner so I won't go into details here. I chose the &lt;a class="reference external" href="https://gitlab.com/gitlab-org/gitlab-ci-multi-runner/blob/master/docs/executors/docker.md"&gt;Docker
 executor&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;Here is my first &lt;cite&gt;.gitlab-ci.yml&lt;/cite&gt; test:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-image: python:3.4
+&lt;pre class="literal-block"&gt;image: python:3.4
 
 before_script:
   - pip install -r requirements.txt
@@ -64,15 +65,13 @@ before_script:
 tests:
   stage: test
   script:
-    - python -m unittest discover -v
-&lt;/pre&gt;
+    - python -m unittest discover -v&lt;/pre&gt;
 &lt;p&gt;Success, it works! Nice. But... 8 minutes 33 seconds build time for a test suite that
 runs in less than 1 second... that's a bit long.&lt;/p&gt;
 &lt;p&gt;Let's try using some caching to avoid having to download all the pip
 requirements every time. After googling, I found this &lt;a class="reference external" href="https://fleschenberg.net/gitlab-pip-cache/"&gt;post&lt;/a&gt; explaining that the cache
 path must be inside the build directory:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-image: python:3.4
+&lt;pre class="literal-block"&gt;image: python:3.4
 
 before_script:
   - export PIP_CACHE_DIR="pip-cache"
@@ -85,8 +84,7 @@ cache:
 tests:
   stage: test
   script:
-    - python -m unittest discover -v
-&lt;/pre&gt;
+    - python -m unittest discover -v&lt;/pre&gt;
 &lt;p&gt;With the pip cache, the build time went down to about 6 minutes. A bit
 better, but far from acceptable.&lt;/p&gt;
 &lt;p&gt;Of course I knew the problem was not the download, but the
@@ -95,8 +93,7 @@ which explains why it takes a while to compile.&lt;/p&gt;
 &lt;p&gt;So how do you install &lt;a class="reference external" href="http://pandas.pydata.org"&gt;pandas&lt;/a&gt; easily? With &lt;a class="reference external" href="http://conda.pydata.org/docs/"&gt;conda&lt;/a&gt; of course!
 There are even some nice &lt;a class="reference external" href="https://github.com/ContinuumIO/docker-images"&gt;docker images&lt;/a&gt;  created by Continuum Analytics ready to be used.&lt;/p&gt;
 &lt;p&gt;So let's try again:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-image: continuumio/miniconda3:latest
+&lt;pre class="literal-block"&gt;image: continuumio/miniconda3:latest
 
 before_script:
   - conda env create -f environment.yml
@@ -105,8 +102,7 @@ before_script:
 tests:
   stage: test
   script:
-    - python -m unittest discover -v
-&lt;/pre&gt;
+    - python -m unittest discover -v&lt;/pre&gt;
 &lt;p&gt;Build time: 2 minutes 55 seconds. Nice but we need some cache to avoid
 downloading all the packages everytime.
 The first problem is that the cache path has to be in the build directory.
@@ -116,18 +112,15 @@ problem is that Gitlab makes a compressed archive to save and restore the
 cache which takes quite some time in this case...&lt;/p&gt;
 &lt;p&gt;How to get a fast cache? Let's use a docker volume!
 I modified my &lt;cite&gt;/etc/gitlab-runner/config.toml&lt;/cite&gt; to add two volumes:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-[runners.docker]
+&lt;pre class="literal-block"&gt;[runners.docker]
   tls_verify = false
   image = "continuumio/miniconda3:latest"
   privileged = false
   disable_cache = false
-  volumes = ["/cache", "/opt/cache/conda/pkgs:/opt/conda/pkgs:rw", "/opt/cache/pip:/opt/cache/pip:rw"]
-&lt;/pre&gt;
+  volumes = ["/cache", "/opt/cache/conda/pkgs:/opt/conda/pkgs:rw", "/opt/cache/pip:/opt/cache/pip:rw"]&lt;/pre&gt;
 &lt;p&gt;One volume for &lt;a class="reference external" href="http://conda.pydata.org/docs/"&gt;conda&lt;/a&gt; packages and one for &lt;cite&gt;pip&lt;/cite&gt;.
 My new &lt;cite&gt;.gitlab-ci.yml&lt;/cite&gt;:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-image: continuumio/miniconda3:latest
+&lt;pre class="literal-block"&gt;image: continuumio/miniconda3:latest
 
 before_script:
   - export PIP_CACHE_DIR="/opt/cache/pip"
@@ -137,8 +130,7 @@ before_script:
 tests:
   stage: test
   script:
-    - python -m unittest discover -v
-&lt;/pre&gt;
+    - python -m unittest discover -v&lt;/pre&gt;
 &lt;p&gt;The build time is about 10 seconds!&lt;/p&gt;
 &lt;p&gt;Just a few days after my tests, GitLab announced &lt;a class="reference external" href="https://about.gitlab.com/2016/05/23/gitlab-container-registry/"&gt;GitLab Container
 Registry&lt;/a&gt;.

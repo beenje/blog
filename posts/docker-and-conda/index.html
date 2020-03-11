@@ -21,10 +21,9 @@
 <meta property="og:description" content="I just read a blog post about Using Docker with Conda Environments.
 I do things slightly differently so I thought I would share an example of
 Dockerfile I use:
-
 FROM continuumio/miniconda3:latest
 
-# I">
+# In">
 <meta property="og:type" content="article">
 <meta property="article:published_time" content="2017-01-28T23:32:56+01:00">
 <meta property="article:tag" content="conda">
@@ -82,10 +81,11 @@ navbar-dark bg-dark
         <!--Body content-->
         
         
+        
 <article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Docker and conda</a></h1>
 
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
                     Benjamin Bertrand
             </span></p>
             <p class="dateline">
@@ -109,8 +109,7 @@ navbar-dark bg-dark
 <p>I just read a blog post about <a class="reference external" href="http://fmgdata.kinja.com/using-docker-with-conda-environments-1790901398">Using Docker with Conda Environments</a>.
 I do things slightly differently so I thought I would share an example of
 Dockerfile I use:</p>
-<pre class="literal-block">
-FROM continuumio/miniconda3:latest
+<pre class="literal-block">FROM continuumio/miniconda3:latest
 
 # Install extra packages if required
 RUN apt-get update &amp;&amp; apt-get install -y \
@@ -133,8 +132,7 @@ COPY . /app/
 RUN chown -R myuser:myuser /app/*
 
 # activate the myapp environment
-ENV PATH /opt/conda/envs/myapp/bin:$PATH
-</pre>
+ENV PATH /opt/conda/envs/myapp/bin:$PATH</pre>
 <p>I don't run <cite>source activate myapp</cite> but just use <cite>ENV</cite> to update the <cite>PATH</cite>
 variable. There is only one environment in the docker image. No need for the extra
 checks done by the activate script.</p>
@@ -142,16 +140,16 @@ checks done by the activate script.</p>
 environment.</p>
 <p>Just a few additional notes:</p>
 <ol class="arabic simple">
-<li>Be sure to only copy the file <cite>environment.yml</cite> before to copy the full
+<li><p>Be sure to only copy the file <cite>environment.yml</cite> before to copy the full
 current directory. Otherwise any change in the directory would
 invalidate the docker cache.
 We only want to re-create the conda environment if <cite>environment.yml</cite>
-changes.</li>
-<li>I always add the <a class="reference external" href="https://conda-forge.github.io">conda-forge channel</a>.
+changes.</p></li>
+<li><p>I always add the <a class="reference external" href="https://conda-forge.github.io">conda-forge channel</a>.
 Check this <a class="reference external" href="https://www.continuum.io/blog/developer-blog/community-conda-forge">post</a>
-if you haven't heard of it yet.</li>
-<li>I clean some cache (<em>/var/lib/apt/lists/</em> and <em>/opt/conda/pkgs/</em>) to
-make the image a bit smaller.</li>
+if you haven't heard of it yet.</p></li>
+<li><p>I clean some cache (<em>/var/lib/apt/lists/</em> and <em>/opt/conda/pkgs/</em>) to
+make the image a bit smaller.</p></li>
 </ol>
 <p>I switched from virtualenv to <a class="reference external" href="https://conda.io">conda</a> a while ago and I really enjoy it.
 A big thanks to <a class="reference external" href="https://www.continuum.io">Continuum Analytics</a>!</p>
@@ -192,19 +190,17 @@ A big thanks to <a class="reference external" href="https://www.continuum.io">Co
 
 
         </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
-            Contents © 2019         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2020         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
             
         </footer>
 </div>
 </div>
 
 
-        <script src="../../assets/js/all-nocdn.js"></script><!-- fancy dates --><script>
-    moment.locale("en");
-    fancydates(0, "YYYY-MM-DD HH:mm");
-    </script><!-- end fancy dates --><script>
+        <script src="../../assets/js/all-nocdn.js"></script><script>
     baguetteBox.run('div#content', {
         ignoreClass: 'islink',
         captions: function(element) {

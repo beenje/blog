@@ -60,6 +60,7 @@ navbar-dark bg-dark
         <!--Body content-->
         
         
+        
 
     
 
@@ -100,37 +101,30 @@ If you haven't heard about it, you should check it out.</p>
 <p>Installing an OpenVPN client on OpenWrt is not very difficult.
 Here is a quick summary.</p>
 <ol class="arabic">
+<li><p>Install <cite>openvpn-openssl</cite> package (via the
+webinterface or the command line)</p></li>
 <li>
-<p class="first">Install <cite>openvpn-openssl</cite> package (via the
-webinterface or the command line)</p>
-</li>
-<li>
-<p class="first">I already have a custom client config that I generated with Ansible in
+<p>I already have a custom client config that I generated with Ansible in
 this <a class="reference external" href="posts/installing-openvpn-on-a-raspberry-pi-with-ansible">post</a>.
 To use this config, create the file <cite>/etc/config/openvpn</cite>:</p>
-<pre class="literal-block">
-# cat /etc/config/openvpn
+<pre class="literal-block"># cat /etc/config/openvpn
 package openvpn
 
 config openvpn myvpn
         # Set to 1 to enable this instance:
         option enabled 1
         # Include OpenVPN configuration
-        option config /etc/openvpn/myclientconfig.ovpn
-</pre>
+        option config /etc/openvpn/myclientconfig.ovpn</pre>
 </li>
 <li>
-<p class="first">Add a new interface in <cite>/etc/config/network</cite>:</p>
-<pre class="literal-block">
-config interface 'myvpn'
+<p>Add a new interface in <cite>/etc/config/network</cite>:</p>
+<pre class="literal-block">config interface 'myvpn'
        option proto 'none'
-       option ifname 'tun0'
-</pre>
+       option ifname 'tun0'</pre>
 </li>
 <li>
-<p class="first">Add a new zone to <cite>/etc/config/firewall</cite>:</p>
-<pre class="literal-block">
-config zone
+<p>Add a new zone to <cite>/etc/config/firewall</cite>:</p>
+<pre class="literal-block">config zone
         option forward 'REJECT'
         option output 'ACCEPT'
         option name 'VPN_FW'
@@ -141,21 +135,18 @@ config zone
 
 config forwarding
         option dest 'VPN_FW'
-        option src 'lan'
-</pre>
+        option src 'lan'</pre>
 </li>
 <li>
-<p class="first">An easy way to configure DNS servers is to add fixed DNS for the WAN interface of the router.
+<p>An easy way to configure DNS servers is to add fixed DNS for the WAN interface of the router.
 To use Google DNS, add the following two lines to the wan interface in <cite>/etc/config/network</cite>:</p>
-<pre class="literal-block">
-# diff -u network.save network
+<pre class="literal-block"># diff -u network.save network
 @@ -20,6 +20,8 @@
  config interface 'wan'
          option ifname 'eth1'
          option proto 'dhcp'
 +        option peerdns '0'
-+        option dns '8.8.8.8 8.8.4.4'
-</pre>
++        option dns '8.8.8.8 8.8.4.4'</pre>
 </li>
 </ol>
 <p>If you run <cite>/etc/init.d/openvpn start</cite> with this config, you should connect successfully!
@@ -170,12 +161,10 @@ that before to do that I had to ignore the routes pushed by the server.</p>
 <p>With my configuration, when the client connects, the server pushes some
 routes among which a default route that makes all the traffic go via the
 VPN:</p>
-<pre class="literal-block">
-Kernel IP routing table
+<pre class="literal-block">Kernel IP routing table
 Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 default         10.8.0.21       128.0.0.0       UG    0      0        0 tun0
-...
-</pre>
+...</pre>
 <p>Ignoring the routes pushed by the server can be done with the <cite>--route-noexec</cite> option.
 I tried to add <cite>option route_noexec 1</cite> to my <cite>/etc/config/openvpn</cite> file
 but it had no effect. It looks like that when using a custom config, you
@@ -184,14 +173,11 @@ config. I added <cite>route-noexec</cite> to  my <cite>/etc/openvpn/myclientconf
 No more route added. No traffic sent via the VPN.</p>
 <p>We can now apply the changes described in the <a class="reference external" href="https://wiki.openwrt.org/doc/networking/routing">Routing wiki page</a>.</p>
 <ol class="arabic">
+<li><p>Install the <cite>ip</cite> package</p></li>
 <li>
-<p class="first">Install the <cite>ip</cite> package</p>
-</li>
-<li>
-<p class="first">Add the <cite>10 vpn</cite> line to <cite>/etc/iproute2/rt_tables</cite> so that it looks like
+<p>Add the <cite>10 vpn</cite> line to <cite>/etc/iproute2/rt_tables</cite> so that it looks like
 this:</p>
-<pre class="literal-block">
-# cat /etc/iproute2/rt_tables
+<pre class="literal-block"># cat /etc/iproute2/rt_tables
 #
 # reserved values
 #
@@ -203,14 +189,12 @@ this:</p>
 #
 # local
 #
-#1  inr.ruhep
-</pre>
+#1  inr.ruhep</pre>
 </li>
 <li>
-<p class="first">We now need to add a new rule and route when starting the client.
+<p>We now need to add a new rule and route when starting the client.
 We can do so using the openvpn <cite>up</cite> command. Create the <cite>/etc/openvpn/upvpn</cite> script:</p>
-<pre class="literal-block">
-# cat /etc/openvpn/upvpn
+<pre class="literal-block"># cat /etc/openvpn/upvpn
 #!/bin/sh
 
 client=192.168.75.20
@@ -225,13 +209,11 @@ echo "Routing client $client traffic through VPN"
 ip rule add from $client priority 10 table vpn
 ip route add $client dev $tun_dev table vpn
 ip route add default via $ifconfig_remote_ip dev $tun_dev table vpn
-ip route flush cache
-</pre>
+ip route flush cache</pre>
 </li>
 <li>
-<p class="first">Create the <cite>/etc/openvpn/downvpn</cite> script to properly remove the rule and route:</p>
-<pre class="literal-block">
-# cat /etc/openvpn/downvpn
+<p>Create the <cite>/etc/openvpn/downvpn</cite> script to properly remove the rule and route:</p>
+<pre class="literal-block"># cat /etc/openvpn/downvpn
 #!/bin/sh
 
 client=192.168.75.20
@@ -246,14 +228,12 @@ echo "Delete client $client traffic routing through VPN"
 ip rule del from $client priority 10 table vpn
 ip route del $client dev $tun_dev table vpn
 ip route del default via $ifconfig_remote_ip dev $tun_dev table vpn
-ip route flush cache
-</pre>
+ip route flush cache</pre>
 </li>
 <li>
-<p class="first">We now have to add those scripts to the client config.
+<p>We now have to add those scripts to the client config.
 Here is everything I added to my <cite>/etc/openvpn/myclientconfig.ovpn</cite> file:</p>
-<pre class="literal-block">
-# Don't add or remove routes automatically
+<pre class="literal-block"># Don't add or remove routes automatically
 # Source based routing for specific client added in up script
 route-noexec
 # script-security 2 needed to run up and down scripts
@@ -262,8 +242,7 @@ script-security 2
 up /etc/openvpn/upvpn
 # Call down script before to close TUN to properly remove the routing
 down-pre
-down /etc/openvpn/downvpn
-</pre>
+down /etc/openvpn/downvpn</pre>
 </li>
 </ol>
 <p>Notice that the machine IP address that we want to route via the VPN is
@@ -303,9 +282,7 @@ I'll talk about an even more user friendly way to control it.</p>
         </p>
 </div>
     </header><div class="e-content entry-content">
-    <div tabindex="-1" id="notebook" class="border-box-sizing">
-    <div class="container" id="notebook-container">
-
+    <div>
 <div class="cell border-box-sizing text_cell rendered">
 <div class="prompt input_prompt">
 </div>
@@ -356,7 +333,7 @@ On MacOS, you can install it using <a href="http://brew.sh">Homebrew</a>:</p>
     <span class="k">return</span> <span class="n">content</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">'utf-8'</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -384,7 +361,7 @@ On MacOS, you can install it using <a href="http://brew.sh">Homebrew</a>:</p>
     <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -404,11 +381,11 @@ On MacOS, you can install it using <a href="http://brew.sh">Homebrew</a>:</p>
 <div class="prompt input_prompt">In [3]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="k">import</span> <span class="n">IFrame</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">IFrame</span>
 <span class="n">IFrame</span><span class="p">(</span><span class="s1">'http://www.cbu.edu.zm/downloads/pdf-sample.pdf'</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">870</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -417,7 +394,10 @@ On MacOS, you can install it using <a href="http://brew.sh">Homebrew</a>:</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[3]:</div>
+
+    <div class="prompt output_prompt">Out[3]:</div>
+
+
 
 <div class="output_html rendered_html output_subarea output_execute_result">
 
@@ -450,7 +430,7 @@ On MacOS, you can install it using <a href="http://brew.sh">Homebrew</a>:</p>
 <span class="n">content</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -459,7 +439,10 @@ On MacOS, you can install it using <a href="http://brew.sh">Homebrew</a>:</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[4]:</div>
+
+    <div class="prompt output_prompt">Out[4]:</div>
+
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -548,11 +531,11 @@ to interact with our Elasticsearch cluster.</p>
 <div class="prompt input_prompt">In [5]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">elasticsearch</span> <span class="k">import</span> <span class="n">Elasticsearch</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">elasticsearch</span> <span class="kn">import</span> <span class="n">Elasticsearch</span>
 <span class="n">es</span> <span class="o">=</span> <span class="n">Elasticsearch</span><span class="p">()</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -575,7 +558,7 @@ to interact with our Elasticsearch cluster.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">es</span><span class="o">.</span><span class="n">cat</span><span class="o">.</span><span class="n">health</span><span class="p">()</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -584,7 +567,10 @@ to interact with our Elasticsearch cluster.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[6]:</div>
+
+    <div class="prompt output_prompt">Out[6]:</div>
+
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -639,7 +625,7 @@ to interact with our Elasticsearch cluster.</p>
 <span class="n">es</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">'_ingest'</span><span class="p">,</span> <span class="n">doc_type</span><span class="o">=</span><span class="s1">'pipeline'</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s1">'attachment'</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="n">body</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -648,7 +634,10 @@ to interact with our Elasticsearch cluster.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[7]:</div>
+
+    <div class="prompt output_prompt">Out[7]:</div>
+
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -687,7 +676,7 @@ to interact with our Elasticsearch cluster.</p>
 <span class="n">result1</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -696,7 +685,10 @@ to interact with our Elasticsearch cluster.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[8]:</div>
+
+    <div class="prompt output_prompt">Out[8]:</div>
+
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -733,7 +725,7 @@ to interact with our Elasticsearch cluster.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">es</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">'my_index'</span><span class="p">,</span> <span class="n">doc_type</span><span class="o">=</span><span class="s1">'my_type'</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">result1</span><span class="p">[</span><span class="s1">'_id'</span><span class="p">])</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -742,7 +734,10 @@ to interact with our Elasticsearch cluster.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[9]:</div>
+
+    <div class="prompt output_prompt">Out[9]:</div>
+
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -784,7 +779,7 @@ But it would be much bigger even on small files. We can exclude it using <code>_
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">es</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">'my_index'</span><span class="p">,</span> <span class="n">doc_type</span><span class="o">=</span><span class="s1">'my_type'</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">result1</span><span class="p">[</span><span class="s1">'_id'</span><span class="p">],</span> <span class="n">_source_exclude</span><span class="o">=</span><span class="p">[</span><span class="s1">'data'</span><span class="p">])</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -793,7 +788,10 @@ But it would be much bigger even on small files. We can exclude it using <code>_
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[10]:</div>
+
+    <div class="prompt output_prompt">Out[10]:</div>
+
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -835,7 +833,7 @@ But it would be much bigger even on small files. We can exclude it using <code>_
 <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -861,7 +859,7 @@ The source field must be a base64 encoded binary.</p>
 <span class="n">data</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">'ascii'</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -876,7 +874,7 @@ The source field must be a base64 encoded binary.</p>
 <span class="n">result2</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -885,7 +883,10 @@ The source field must be a base64 encoded binary.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[13]:</div>
+
+    <div class="prompt output_prompt">Out[13]:</div>
+
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -923,7 +924,7 @@ The source field must be a base64 encoded binary.</p>
 <span class="n">doc</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -932,7 +933,10 @@ The source field must be a base64 encoded binary.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[14]:</div>
+
+    <div class="prompt output_prompt">Out[14]:</div>
+
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -974,7 +978,7 @@ The source field must be a base64 encoded binary.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">es</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">'my_index'</span><span class="p">,</span> <span class="n">doc_type</span><span class="o">=</span><span class="s1">'my_type'</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="s1">'Adobe'</span><span class="p">,</span> <span class="n">_source_exclude</span><span class="o">=</span><span class="p">[</span><span class="s1">'data'</span><span class="p">])</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -983,7 +987,10 @@ The source field must be a base64 encoded binary.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[15]:</div>
+
+    <div class="prompt output_prompt">Out[15]:</div>
+
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -1030,7 +1037,7 @@ The source field must be a base64 encoded binary.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s1">'_source'</span><span class="p">][</span><span class="s1">'attachment'</span><span class="p">][</span><span class="s1">'content'</span><span class="p">])</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1039,7 +1046,10 @@ The source field must be a base64 encoded binary.</p>
 
 
 <div class="output_area">
-<div class="prompt"></div>
+
+    <div class="prompt"></div>
+
+
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Adobe Acrobat PDF Files
 
@@ -1112,10 +1122,10 @@ Like that I have control of what is running.</p>
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">tika</span>
 <span class="n">tika</span><span class="o">.</span><span class="n">TikaClientOnly</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="kn">from</span> <span class="nn">tika</span> <span class="k">import</span> <span class="n">parser</span>
+<span class="kn">from</span> <span class="nn">tika</span> <span class="kn">import</span> <span class="n">parser</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1128,7 +1138,7 @@ Like that I have control of what is running.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">parsed</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="s1">'/tmp/pdf-sample.pdf'</span><span class="p">,</span> <span class="s1">'http://localhost:9998/tika'</span><span class="p">)</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1137,7 +1147,10 @@ Like that I have control of what is running.</p>
 
 
 <div class="output_area">
-<div class="prompt"></div>
+
+    <div class="prompt"></div>
+
+
 <div class="output_subarea output_stream output_stderr output_text">
 <pre>2016-11-16 22:57:14,233 [MainThread  ] [INFO ]  Starting new HTTP connection (1): localhost
 </pre>
@@ -1156,7 +1169,7 @@ Like that I have control of what is running.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">parsed</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1165,7 +1178,10 @@ Like that I have control of what is running.</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[19]:</div>
+
+    <div class="prompt output_prompt">Out[19]:</div>
+
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -1228,7 +1244,7 @@ Like that I have control of what is running.</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">parsed</span><span class="p">[</span><span class="s1">'content'</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1237,7 +1253,10 @@ Like that I have control of what is running.</p>
 
 
 <div class="output_area">
-<div class="prompt"></div>
+
+    <div class="prompt"></div>
+
+
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>This is a test PDF file
 
@@ -1293,7 +1312,7 @@ Anyway the text is extracted properly and we even get a lot of metadata:</p>
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">parsed</span><span class="p">[</span><span class="s1">'metadata'</span><span class="p">]</span>
 </pre></div>
 
-</div>
+    </div>
 </div>
 </div>
 
@@ -1302,7 +1321,10 @@ Anyway the text is extracted properly and we even get a lot of metadata:</p>
 
 
 <div class="output_area">
-<div class="prompt output_prompt">Out[21]:</div>
+
+    <div class="prompt output_prompt">Out[21]:</div>
+
+
 
 
 <div class="output_text output_subarea output_execute_result">
@@ -1373,9 +1395,7 @@ You can let the library starts the server or use Docker to start your own.</p>
 </div>
 </div>
 </div>
-    </div>
-  </div>
-
+</div>
     </div>
     </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/gitlab-container-registry-and-proxy/" class="u-url">GitLab Container Registry and proxy</a></h1>
         <div class="metadata">
@@ -1405,33 +1425,30 @@ The documentation to use the image is quite clear and can be found <a class="ref
 I wanted to access GitLab using HTTPS, so I disabled port 443 in nginx
 configuration. To do that I had to modify the template
 <cite>/usr/syno/share/nginx/WWWService.mustache</cite> and reboot the NAS:</p>
-<pre class="code diff"><a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-1"></a><span class="gd">--- WWWService.mustache.org 2016-08-16 23:25:06.000000000 +0100</span>
-<a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-2"></a><span class="gi">+++ WWWService.mustache 2016-09-19 13:53:45.256735700 +0100</span>
-<a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-3"></a><span class="gu">@@ -1,8 +1,6 @@</span>
-<a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-4"></a> server {
-<a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-5"></a>     listen 80 default_server{{#reuseport}} reuseport{{/reuseport}};
-<a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-6"></a>     listen [::]:80 default_server{{#reuseport}} reuseport{{/reuseport}};
-<a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-7"></a><span class="gd">-    listen 443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
-<a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-8"></a><span class="gd">-    listen [::]:443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
-<a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-9"></a>
-<a name="rest_code_a298be4dce8b495e9cb4c6effbf1314a-10"></a>     server_name _;
+<pre class="code diff"><a name="rest_code_7870ce14df8241a4b6006e19315a25dc-1"></a><span class="gd">--- WWWService.mustache.org 2016-08-16 23:25:06.000000000 +0100</span>
+<a name="rest_code_7870ce14df8241a4b6006e19315a25dc-2"></a><span class="gi">+++ WWWService.mustache 2016-09-19 13:53:45.256735700 +0100</span>
+<a name="rest_code_7870ce14df8241a4b6006e19315a25dc-3"></a><span class="gu">@@ -1,8 +1,6 @@</span>
+<a name="rest_code_7870ce14df8241a4b6006e19315a25dc-4"></a> server {
+<a name="rest_code_7870ce14df8241a4b6006e19315a25dc-5"></a>     listen 80 default_server{{#reuseport}} reuseport{{/reuseport}};
+<a name="rest_code_7870ce14df8241a4b6006e19315a25dc-6"></a>     listen [::]:80 default_server{{#reuseport}} reuseport{{/reuseport}};
+<a name="rest_code_7870ce14df8241a4b6006e19315a25dc-7"></a><span class="gd">-    listen 443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
+<a name="rest_code_7870ce14df8241a4b6006e19315a25dc-8"></a><span class="gd">-    listen [::]:443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
+<a name="rest_code_7870ce14df8241a4b6006e19315a25dc-9"></a>
+<a name="rest_code_7870ce14df8241a4b6006e19315a25dc-10"></a>     server_name _;
 </pre>
 <p>The port 22 is also already used by the ssh daemon so I decided to use
 the port 2222. I created the directory <cite>/volume1/docker/gitlab</cite> to store
 all GitLab data. Here are the required variables in the
 <cite>/volume1/docker/gitlab/config/gitlab.rb</cite> config file:</p>
-<pre class="literal-block">
-external_url "https://mygitlab.example.com"
+<pre class="literal-block">external_url "https://mygitlab.example.com"
 
 ## GitLab Shell settings for GitLab
 gitlab_rails['gitlab_shell_ssh_port'] = 2222
 
 nginx['enable'] = true
-nginx['redirect_http_to_https'] = true
-</pre>
+nginx['redirect_http_to_https'] = true</pre>
 <p>And this is how I run the image:</p>
-<pre class="literal-block">
-docker run --detach \
+<pre class="literal-block">docker run --detach \
     --hostname mygitlab.example.com \
     --publish 443:443 --publish 8080:80 --publish 2222:22 \
     --name gitlab \
@@ -1439,22 +1456,18 @@ docker run --detach \
     --volume /volume1/docker/gitlab/config:/etc/gitlab \
     --volume /volume1/docker/gitlab/logs:/var/log/gitlab \
     --volume /volume1/docker/gitlab/data:/var/opt/gitlab \
-    gitlab/gitlab-ce:latest
-</pre>
+    gitlab/gitlab-ce:latest</pre>
 <p>This has been working fine. Since I heard about <a class="reference external" href="https://about.gitlab.com/2016/05/23/gitlab-container-registry/">GitLab Container Registry</a>,
 I've been wanted to give it a try.</p>
 </div>
 <div class="section" id="id1">
 <h2>GitLab Container Registry</h2>
 <p>To enable it, I just added to my <cite>gitlab.rb</cite> file the registry url:</p>
-<pre class="literal-block">
-registry_external_url 'https://mygitlab.example.com:4567'
-</pre>
+<pre class="literal-block">registry_external_url 'https://mygitlab.example.com:4567'</pre>
 <p>I use the existing GitLab domain and use the port 4567 for the registry.
 The TLS certificate and key are in the default path, so no need to specify them.</p>
 <p>So let's restart GitLab. Don't forget to publish the new port 4567!</p>
-<pre class="literal-block">
-$ docker stop gitlab
+<pre class="literal-block">$ docker stop gitlab
 $ docker rm gitlab
 $ docker run --detach \
     --hostname mygitlab.example.com \
@@ -1465,21 +1478,17 @@ $ docker run --detach \
     --volume /volume1/docker/gitlab/config:/etc/gitlab \
     --volume /volume1/docker/gitlab/logs:/var/log/gitlab \
     --volume /volume1/docker/gitlab/data:/var/opt/gitlab \
-    gitlab/gitlab-ce:latest
-</pre>
+    gitlab/gitlab-ce:latest</pre>
 <p>Easy! Let's test our new docker registry!</p>
-<pre class="literal-block">
-$ docker login mygitlab.example.com:4567
+<pre class="literal-block">$ docker login mygitlab.example.com:4567
 Username: user
 Password:
-Error response from daemon: Get https://mygitlab.example.com:4567/v1/users/: Service Unavailable
-</pre>
+Error response from daemon: Get https://mygitlab.example.com:4567/v1/users/: Service Unavailable</pre>
 <p>Hmm... Not super useful error...
 I thought about publishing port 4567 in docker, so what is happening?
 After looking through the logs, I found <cite>/volume1/docker/gitlab/logs/nginx/gitlab_registry_access.logi</cite>. It's empty...
 Let's try curl:</p>
-<pre class="literal-block">
-$ curl https://mygitlab.example.com:4567/v1/users/
+<pre class="literal-block">$ curl https://mygitlab.example.com:4567/v1/users/
 
 curl: (60) Peer certificate cannot be authenticated with known CA certificates
 More details here: http://curl.haxx.se/docs/sslcerts.html
@@ -1493,69 +1502,52 @@ If this HTTPS server uses a certificate signed by a CA represented in
  problem with the certificate (it might be expired, or the name might
  not match the domain name in the URL).
 If you'd like to turn off curl's verification of the certificate, use
- the -k (or --insecure) option.
-</pre>
+ the -k (or --insecure) option.</pre>
 <p>OK, I have a self-signed certificate. So let's try with <cite>--insecure</cite>:</p>
-<pre class="literal-block">
-$ curl --insecure https://mygitlab.example.com:4567/v1/users/
-404 page not found
-</pre>
+<pre class="literal-block">$ curl --insecure https://mygitlab.example.com:4567/v1/users/
+404 page not found</pre>
 <p>At least I get an entry in my log file:</p>
-<pre class="literal-block">
-$ cd /volume1/docker/gitlab
+<pre class="literal-block">$ cd /volume1/docker/gitlab
 $ cat logs/nginx/gitlab_registry_access.log
-xxx.xx.x.x - - [21/Sep/2016:14:24:57 +0000] "GET /v1/users/ HTTP/1.1" 404 19 "-" "curl/7.43.0"
-</pre>
+xxx.xx.x.x - - [21/Sep/2016:14:24:57 +0000] "GET /v1/users/ HTTP/1.1" 404 19 "-" "curl/7.43.0"</pre>
 <p>So, docker and nginx seem to be configured properly...
 It looks like <cite>docker login</cite> is not even trying to access my host...</p>
 <p>Let's try with a dummy host:</p>
-<pre class="literal-block">
-$ docker login foo
+<pre class="literal-block">$ docker login foo
 Username: user
 Password:
-Error response from daemon: Get https://mygitlab.example.com:4567/v1/users/: Service Unavailable
-</pre>
+Error response from daemon: Get https://mygitlab.example.com:4567/v1/users/: Service Unavailable</pre>
 <p>Same error!
 Why is that? I can ping <cite>mygitlab.example.com</cite> and even access nginx on port 4567 (using curl)
 inside the docker container...
 My machine is on the same network. It can't be a proxy problem. Wait. Proxy?</p>
 <p>That's when I remembered I had configured my docker daemon to use a proxy to access the internet!
 I created the file <cite>/etc/systemd/system/docker.service.d/http-proxy.conf</cite> with:</p>
-<pre class="literal-block">
-[Service]
-Environment="HTTP_PROXY=http://proxy.example.com:8080/"
-</pre>
+<pre class="literal-block">[Service]
+Environment="HTTP_PROXY=http://proxy.example.com:8080/"</pre>
 <p>Reading the <a class="reference external" href="https://docs.docker.com/engine/admin/systemd/">docker documentation</a>, it's very clear:
 <strong>If you have internal Docker registries that you need to contact without proxying you can specify them via the NO_PROXY environment variable</strong></p>
 <p>Let's add the NO_PROXY variable:</p>
-<pre class="literal-block">
-[Service]
-Environment="HTTP_PROXY=http://proxy.example.com:8080/" "NO_PROXY=localhost,127.0.0.1,mygitlab.example.com"
-</pre>
+<pre class="literal-block">[Service]
+Environment="HTTP_PROXY=http://proxy.example.com:8080/" "NO_PROXY=localhost,127.0.0.1,mygitlab.example.com"</pre>
 <p>Flush the changes and restart the docker daemon:</p>
-<pre class="literal-block">
-$ sudo systemctl daemon-reload
-$ sudo systemctl restart docker
-</pre>
+<pre class="literal-block">$ sudo systemctl daemon-reload
+$ sudo systemctl restart docker</pre>
 <p>Now let's try to login again:</p>
-<pre class="literal-block">
-$ docker login mygitlab.example.com:4567
+<pre class="literal-block">$ docker login mygitlab.example.com:4567
 Username: user
 Password:
-Error response from daemon: Get https://mygitlab.example.com:4567/v1/users/: x509: certificate signed by unknown authority
-</pre>
+Error response from daemon: Get https://mygitlab.example.com:4567/v1/users/: x509: certificate signed by unknown authority</pre>
 <p>This error is easy to fix (after googling). I have to add the self-signed certificate at the OS level.
 On my Ubuntu machine:</p>
-<pre class="literal-block">
-$ sudo cp mygitlab.example.com.crt /usr/local/share/ca-certificates/
+<pre class="literal-block">$ sudo cp mygitlab.example.com.crt /usr/local/share/ca-certificates/
 $ sudo update-ca-certificates
 $ sudo systemctl restart docker
 
 $ docker login mygitlab.example.com:4567
 Username: user
 Password:
-Login Succeeded
-</pre>
+Login Succeeded</pre>
 <p>Yes! :-)</p>
 <p>I can now push docker images to my GitLab Container Registry!</p>
 </div>
@@ -1566,14 +1558,12 @@ settings made me lost quite some time... The proxy environment variables (HTTP_P
 are not taken into account by the docker commands. The docker daemon has to be configured
 specifically. Something to remember!</p>
 <p>Note that this was with docker 1.11.2. When trying the same command on my Mac with docker 1.12.1, I got a nicer error message:</p>
-<pre class="literal-block">
-$ docker --version
+<pre class="literal-block">$ docker --version
 Docker version 1.12.1, build 6f9534c
 $ docker login foo
 Username: user
 Password:
-Error response from daemon: Get https://foo/v1/users/: dial tcp: lookup foo on xxx.xxx.xx.x:53: no such host
-</pre>
+Error response from daemon: Get https://foo/v1/users/: dial tcp: lookup foo on xxx.xxx.xx.x:53: no such host</pre>
 </div>
 </div>
     </div>
@@ -1617,8 +1607,7 @@ simple example, but I'll organize it like I use to for a real application
 using <a class="reference external" href="http://flask.pocoo.org/docs/0.11/blueprints/">Blueprints</a>, an
 <a class="reference external" href="http://flask.pocoo.org/docs/0.11/patterns/appfactories/">application factory</a>
 and some extensions (<a class="reference external" href="https://pythonhosted.org/Flask-Bootstrap/">Flask-Bootstrap</a>, <a class="reference external" href="https://flask-script.readthedocs.io/en/latest/">Flask-Script</a> and <a class="reference external" href="http://flask-wtf.readthedocs.io/en/latest/">Flask-WTF</a>):</p>
-<pre class="literal-block">
-├── Dockerfile
+<pre class="literal-block">├── Dockerfile
 ├── LICENSE
 ├── README.rst
 ├── app
@@ -1640,139 +1629,136 @@ and some extensions (<a class="reference external" href="https://pythonhosted.or
 ├── docker-compose.yml
 ├── environment.yml
 ├── manage.py
-└── uwsgi.py
-</pre>
+└── uwsgi.py</pre>
 <p>I define all the used extensions in <cite>app/extensions.py</cite>, my application factory in <cite>app/factory.py</cite> and
 my default settings in <cite>app/settings.py</cite>. Nothing strange in there. You can refer to the
 <a class="reference external" href="https://github.com/beenje/flask-rq-example">GitHub repository</a>.</p>
 <p>Here is our main <cite>app/main/views.py</cite>:</p>
-<pre class="code python"><a name="rest_code_a241daf1d7514f64b08c076953ff66f8-1"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">url_for</span><span class="p">,</span> <span class="n">flash</span><span class="p">,</span> <span class="n">redirect</span>
-<a name="rest_code_a241daf1d7514f64b08c076953ff66f8-2"></a><span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">tasks</span>
-<a name="rest_code_a241daf1d7514f64b08c076953ff66f8-3"></a><span class="kn">from</span> <span class="nn">.forms</span> <span class="kn">import</span> <span class="n">TaskForm</span>
-<a name="rest_code_a241daf1d7514f64b08c076953ff66f8-4"></a>
-<a name="rest_code_a241daf1d7514f64b08c076953ff66f8-5"></a><span class="n">bp</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s1">'main'</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
-<a name="rest_code_a241daf1d7514f64b08c076953ff66f8-6"></a>
-<a name="rest_code_a241daf1d7514f64b08c076953ff66f8-7"></a>
-<a name="rest_code_a241daf1d7514f64b08c076953ff66f8-8"></a><span class="nd">@bp.route</span><span class="p">(</span><span class="s1">'/'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'GET'</span><span class="p">,</span> <span class="s1">'POST'</span><span class="p">])</span>
-<a name="rest_code_a241daf1d7514f64b08c076953ff66f8-9"></a><span class="k">def</span> <span class="nf">index</span><span class="p">():</span>
-<a name="rest_code_a241daf1d7514f64b08c076953ff66f8-10"></a>    <span class="n">form</span> <span class="o">=</span> <span class="n">TaskForm</span><span class="p">()</span>
-<a name="rest_code_a241daf1d7514f64b08c076953ff66f8-11"></a>    <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">validate_on_submit</span><span class="p">():</span>
-<a name="rest_code_a241daf1d7514f64b08c076953ff66f8-12"></a>        <span class="n">task</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">data</span>
-<a name="rest_code_a241daf1d7514f64b08c076953ff66f8-13"></a>        <span class="k">try</span><span class="p">:</span>
-<a name="rest_code_a241daf1d7514f64b08c076953ff66f8-14"></a>            <span class="n">result</span> <span class="o">=</span> <span class="n">tasks</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
-<a name="rest_code_a241daf1d7514f64b08c076953ff66f8-15"></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a name="rest_code_a241daf1d7514f64b08c076953ff66f8-16"></a>            <span class="n">flash</span><span class="p">(</span><span class="s1">'Task failed: {}'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="s1">'danger'</span><span class="p">)</span>
-<a name="rest_code_a241daf1d7514f64b08c076953ff66f8-17"></a>        <span class="k">else</span><span class="p">:</span>
-<a name="rest_code_a241daf1d7514f64b08c076953ff66f8-18"></a>            <span class="n">flash</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s1">'success'</span><span class="p">)</span>
-<a name="rest_code_a241daf1d7514f64b08c076953ff66f8-19"></a>        <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">url_for</span><span class="p">(</span><span class="s1">'main.index'</span><span class="p">))</span>
-<a name="rest_code_a241daf1d7514f64b08c076953ff66f8-20"></a>    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">'index.html'</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">)</span>
+<pre class="code python"><a name="rest_code_15ae167a37354616afc8e43513e65ce0-1"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">url_for</span><span class="p">,</span> <span class="n">flash</span><span class="p">,</span> <span class="n">redirect</span>
+<a name="rest_code_15ae167a37354616afc8e43513e65ce0-2"></a><span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">tasks</span>
+<a name="rest_code_15ae167a37354616afc8e43513e65ce0-3"></a><span class="kn">from</span> <span class="nn">.forms</span> <span class="kn">import</span> <span class="n">TaskForm</span>
+<a name="rest_code_15ae167a37354616afc8e43513e65ce0-4"></a>
+<a name="rest_code_15ae167a37354616afc8e43513e65ce0-5"></a><span class="n">bp</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s1">'main'</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
+<a name="rest_code_15ae167a37354616afc8e43513e65ce0-6"></a>
+<a name="rest_code_15ae167a37354616afc8e43513e65ce0-7"></a>
+<a name="rest_code_15ae167a37354616afc8e43513e65ce0-8"></a><span class="nd">@bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'GET'</span><span class="p">,</span> <span class="s1">'POST'</span><span class="p">])</span>
+<a name="rest_code_15ae167a37354616afc8e43513e65ce0-9"></a><span class="k">def</span> <span class="nf">index</span><span class="p">():</span>
+<a name="rest_code_15ae167a37354616afc8e43513e65ce0-10"></a>    <span class="n">form</span> <span class="o">=</span> <span class="n">TaskForm</span><span class="p">()</span>
+<a name="rest_code_15ae167a37354616afc8e43513e65ce0-11"></a>    <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">validate_on_submit</span><span class="p">():</span>
+<a name="rest_code_15ae167a37354616afc8e43513e65ce0-12"></a>        <span class="n">task</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">data</span>
+<a name="rest_code_15ae167a37354616afc8e43513e65ce0-13"></a>        <span class="k">try</span><span class="p">:</span>
+<a name="rest_code_15ae167a37354616afc8e43513e65ce0-14"></a>            <span class="n">result</span> <span class="o">=</span> <span class="n">tasks</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+<a name="rest_code_15ae167a37354616afc8e43513e65ce0-15"></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a name="rest_code_15ae167a37354616afc8e43513e65ce0-16"></a>            <span class="n">flash</span><span class="p">(</span><span class="s1">'Task failed: </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="s1">'danger'</span><span class="p">)</span>
+<a name="rest_code_15ae167a37354616afc8e43513e65ce0-17"></a>        <span class="k">else</span><span class="p">:</span>
+<a name="rest_code_15ae167a37354616afc8e43513e65ce0-18"></a>            <span class="n">flash</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s1">'success'</span><span class="p">)</span>
+<a name="rest_code_15ae167a37354616afc8e43513e65ce0-19"></a>        <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">url_for</span><span class="p">(</span><span class="s1">'main.index'</span><span class="p">))</span>
+<a name="rest_code_15ae167a37354616afc8e43513e65ce0-20"></a>    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">'index.html'</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">)</span>
 </pre>
 <p>As said previously, we create a form. On submit, we run the task and send the response back.</p>
 <p>The form is defined in <cite>app/main/forms.py</cite>:</p>
-<pre class="code python"><a name="rest_code_20c9aeb6884a4f2095c9d81a00a70bf6-1"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">current_app</span>
-<a name="rest_code_20c9aeb6884a4f2095c9d81a00a70bf6-2"></a><span class="kn">from</span> <span class="nn">flask_wtf</span> <span class="kn">import</span> <span class="n">Form</span>
-<a name="rest_code_20c9aeb6884a4f2095c9d81a00a70bf6-3"></a><span class="kn">from</span> <span class="nn">wtforms</span> <span class="kn">import</span> <span class="n">SelectField</span>
-<a name="rest_code_20c9aeb6884a4f2095c9d81a00a70bf6-4"></a>
-<a name="rest_code_20c9aeb6884a4f2095c9d81a00a70bf6-5"></a>
-<a name="rest_code_20c9aeb6884a4f2095c9d81a00a70bf6-6"></a><span class="k">class</span> <span class="nc">TaskForm</span><span class="p">(</span><span class="n">Form</span><span class="p">):</span>
-<a name="rest_code_20c9aeb6884a4f2095c9d81a00a70bf6-7"></a>    <span class="n">task</span> <span class="o">=</span> <span class="n">SelectField</span><span class="p">(</span><span class="s1">'Task'</span><span class="p">)</span>
-<a name="rest_code_20c9aeb6884a4f2095c9d81a00a70bf6-8"></a>
-<a name="rest_code_20c9aeb6884a4f2095c9d81a00a70bf6-9"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<a name="rest_code_20c9aeb6884a4f2095c9d81a00a70bf6-10"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-<a name="rest_code_20c9aeb6884a4f2095c9d81a00a70bf6-11"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="p">[(</span><span class="n">task</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span> <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">'TASKS'</span><span class="p">]]</span>
+<pre class="code python"><a name="rest_code_fa9ca38c6c554266a7cea4b4725ffc4a-1"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">current_app</span>
+<a name="rest_code_fa9ca38c6c554266a7cea4b4725ffc4a-2"></a><span class="kn">from</span> <span class="nn">flask_wtf</span> <span class="kn">import</span> <span class="n">Form</span>
+<a name="rest_code_fa9ca38c6c554266a7cea4b4725ffc4a-3"></a><span class="kn">from</span> <span class="nn">wtforms</span> <span class="kn">import</span> <span class="n">SelectField</span>
+<a name="rest_code_fa9ca38c6c554266a7cea4b4725ffc4a-4"></a>
+<a name="rest_code_fa9ca38c6c554266a7cea4b4725ffc4a-5"></a>
+<a name="rest_code_fa9ca38c6c554266a7cea4b4725ffc4a-6"></a><span class="k">class</span> <span class="nc">TaskForm</span><span class="p">(</span><span class="n">Form</span><span class="p">):</span>
+<a name="rest_code_fa9ca38c6c554266a7cea4b4725ffc4a-7"></a>    <span class="n">task</span> <span class="o">=</span> <span class="n">SelectField</span><span class="p">(</span><span class="s1">'Task'</span><span class="p">)</span>
+<a name="rest_code_fa9ca38c6c554266a7cea4b4725ffc4a-8"></a>
+<a name="rest_code_fa9ca38c6c554266a7cea4b4725ffc4a-9"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<a name="rest_code_fa9ca38c6c554266a7cea4b4725ffc4a-10"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<a name="rest_code_fa9ca38c6c554266a7cea4b4725ffc4a-11"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="p">[(</span><span class="n">task</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span> <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">'TASKS'</span><span class="p">]]</span>
 </pre>
 <p>In <cite>app/tasks.py</cite>, we have our <cite>run</cite> function to start a dummy task:</p>
-<pre class="code python"><a name="rest_code_a648cba7aee74a67a1c64c34903446eb-1"></a><span class="kn">import</span> <span class="nn">random</span>
-<a name="rest_code_a648cba7aee74a67a1c64c34903446eb-2"></a><span class="kn">import</span> <span class="nn">time</span>
-<a name="rest_code_a648cba7aee74a67a1c64c34903446eb-3"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">current_app</span>
-<a name="rest_code_a648cba7aee74a67a1c64c34903446eb-4"></a>
-<a name="rest_code_a648cba7aee74a67a1c64c34903446eb-5"></a>
-<a name="rest_code_a648cba7aee74a67a1c64c34903446eb-6"></a><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">task</span><span class="p">):</span>
-<a name="rest_code_a648cba7aee74a67a1c64c34903446eb-7"></a>    <span class="k">if</span> <span class="s1">'error'</span> <span class="ow">in</span> <span class="n">task</span><span class="p">:</span>
-<a name="rest_code_a648cba7aee74a67a1c64c34903446eb-8"></a>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
-<a name="rest_code_a648cba7aee74a67a1c64c34903446eb-9"></a>        <span class="mi">1</span> <span class="o">/</span> <span class="mi">0</span>
-<a name="rest_code_a648cba7aee74a67a1c64c34903446eb-10"></a>    <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'Short'</span><span class="p">):</span>
-<a name="rest_code_a648cba7aee74a67a1c64c34903446eb-11"></a>        <span class="n">seconds</span> <span class="o">=</span> <span class="mi">1</span>
-<a name="rest_code_a648cba7aee74a67a1c64c34903446eb-12"></a>    <span class="k">else</span><span class="p">:</span>
-<a name="rest_code_a648cba7aee74a67a1c64c34903446eb-13"></a>        <span class="n">seconds</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">'MAX_TIME_TO_WAIT'</span><span class="p">])</span>
-<a name="rest_code_a648cba7aee74a67a1c64c34903446eb-14"></a>    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">seconds</span><span class="p">)</span>
-<a name="rest_code_a648cba7aee74a67a1c64c34903446eb-15"></a>    <span class="k">return</span> <span class="s1">'{} performed in {} second(s)'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">seconds</span><span class="p">)</span>
+<pre class="code python"><a name="rest_code_c1281acbc78a4b89bb2d542404a3eb0e-1"></a><span class="kn">import</span> <span class="nn">random</span>
+<a name="rest_code_c1281acbc78a4b89bb2d542404a3eb0e-2"></a><span class="kn">import</span> <span class="nn">time</span>
+<a name="rest_code_c1281acbc78a4b89bb2d542404a3eb0e-3"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">current_app</span>
+<a name="rest_code_c1281acbc78a4b89bb2d542404a3eb0e-4"></a>
+<a name="rest_code_c1281acbc78a4b89bb2d542404a3eb0e-5"></a>
+<a name="rest_code_c1281acbc78a4b89bb2d542404a3eb0e-6"></a><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">task</span><span class="p">):</span>
+<a name="rest_code_c1281acbc78a4b89bb2d542404a3eb0e-7"></a>    <span class="k">if</span> <span class="s1">'error'</span> <span class="ow">in</span> <span class="n">task</span><span class="p">:</span>
+<a name="rest_code_c1281acbc78a4b89bb2d542404a3eb0e-8"></a>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+<a name="rest_code_c1281acbc78a4b89bb2d542404a3eb0e-9"></a>        <span class="mi">1</span> <span class="o">/</span> <span class="mi">0</span>
+<a name="rest_code_c1281acbc78a4b89bb2d542404a3eb0e-10"></a>    <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'Short'</span><span class="p">):</span>
+<a name="rest_code_c1281acbc78a4b89bb2d542404a3eb0e-11"></a>        <span class="n">seconds</span> <span class="o">=</span> <span class="mi">1</span>
+<a name="rest_code_c1281acbc78a4b89bb2d542404a3eb0e-12"></a>    <span class="k">else</span><span class="p">:</span>
+<a name="rest_code_c1281acbc78a4b89bb2d542404a3eb0e-13"></a>        <span class="n">seconds</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">'MAX_TIME_TO_WAIT'</span><span class="p">])</span>
+<a name="rest_code_c1281acbc78a4b89bb2d542404a3eb0e-14"></a>    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">seconds</span><span class="p">)</span>
+<a name="rest_code_c1281acbc78a4b89bb2d542404a3eb0e-15"></a>    <span class="k">return</span> <span class="s1">'</span><span class="si">{}</span><span class="s1"> performed in </span><span class="si">{}</span><span class="s1"> second(s)'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">seconds</span><span class="p">)</span>
 </pre>
 <p>In <cite>app/templates/base.html</cite>, we define a fixed to top navbar and
 a container to show flash messages and our main code. Note that we take advantage of
 <a class="reference external" href="https://pythonhosted.org/Flask-Bootstrap/">Flask-Bootstrap</a>.</p>
-<pre class="code html"><a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-1"></a>{%- extends "bootstrap/base.html" %}
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-2"></a>{% import "bootstrap/utils.html" as utils %}
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-3"></a>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-4"></a>{% block head %}
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-5"></a>  <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">charset</span><span class="o">=</span><span class="s">"utf-8"</span><span class="p">&gt;</span>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-6"></a>  <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">http-equiv</span><span class="o">=</span><span class="s">"X-UA-Compatible"</span> <span class="na">content</span><span class="o">=</span><span class="s">"IE=edge"</span><span class="p">&gt;</span>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-7"></a>  {{super()}}
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-8"></a>{% endblock %}
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-9"></a>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-10"></a>{% block styles %}
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-11"></a>  {{super()}}
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-12"></a>  <span class="p">&lt;</span><span class="nt">link</span> <span class="na">href</span><span class="o">=</span><span class="s">"{{ url_for('static', filename='css/main.css') }}"</span> <span class="na">rel</span><span class="o">=</span><span class="s">"stylesheet"</span><span class="p">&gt;</span>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-13"></a>{% endblock %}
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-14"></a>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-15"></a>{% block title %}My App{% endblock %}
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-16"></a>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-17"></a>{% block navbar %}
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-18"></a>  <span class="c">&lt;!-- Fixed navbar --&gt;</span>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-19"></a>  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"navbar navbar-default navbar-fixed-top"</span> <span class="na">role</span><span class="o">=</span><span class="s">"navigation"</span><span class="p">&gt;</span>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-20"></a>    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"container"</span><span class="p">&gt;</span>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-21"></a>      <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"navbar-header"</span><span class="p">&gt;</span>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-22"></a>        <span class="p">&lt;</span><span class="nt">button</span> <span class="na">type</span><span class="o">=</span><span class="s">"button"</span> <span class="na">class</span><span class="o">=</span><span class="s">"navbar-toggle"</span> <span class="na">data-toggle</span><span class="o">=</span><span class="s">"collapse"</span> <span class="na">data-target</span><span class="o">=</span><span class="s">".navbar-collapse"</span><span class="p">&gt;</span>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-23"></a>          <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">"sr-only"</span><span class="p">&gt;</span>Toggle navigation<span class="p">&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-24"></a>          <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">"icon-bar"</span><span class="p">&gt;&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-25"></a>          <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">"icon-bar"</span><span class="p">&gt;&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-26"></a>          <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">"icon-bar"</span><span class="p">&gt;&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-27"></a>        <span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-28"></a>        <span class="c">&lt;!--img class="navbar-brand" src="../../static/logo.png"--&gt;</span>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-29"></a>        <span class="p">&lt;</span><span class="nt">a</span> <span class="na">class</span><span class="o">=</span><span class="s">"navbar-brand"</span> <span class="na">href</span><span class="o">=</span><span class="s">"{{ url_for('main.index') }}"</span><span class="p">&gt;</span>My App<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-30"></a>      <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-31"></a>    <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-32"></a>  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-33"></a>{% endblock %}
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-34"></a>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-35"></a>{% block content %}
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-36"></a>  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"container"</span> <span class="na">id</span><span class="o">=</span><span class="s">"mainContent"</span><span class="p">&gt;</span>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-37"></a>    {{utils.flashed_messages(container=False, dismissible=True)}}
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-38"></a>    {% block main %}{% endblock %}
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-39"></a>  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<a name="rest_code_497d343557c34aa88a9e22f17d82bd9d-40"></a>{% endblock %}
+<pre class="code html"><a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-1"></a>{%- extends "bootstrap/base.html" %}
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-2"></a>{% import "bootstrap/utils.html" as utils %}
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-3"></a>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-4"></a>{% block head %}
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-5"></a>  <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">charset</span><span class="o">=</span><span class="s">"utf-8"</span><span class="p">&gt;</span>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-6"></a>  <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">http-equiv</span><span class="o">=</span><span class="s">"X-UA-Compatible"</span> <span class="na">content</span><span class="o">=</span><span class="s">"IE=edge"</span><span class="p">&gt;</span>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-7"></a>  {{super()}}
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-8"></a>{% endblock %}
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-9"></a>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-10"></a>{% block styles %}
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-11"></a>  {{super()}}
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-12"></a>  <span class="p">&lt;</span><span class="nt">link</span> <span class="na">href</span><span class="o">=</span><span class="s">"{{ url_for('static', filename='css/main.css') }}"</span> <span class="na">rel</span><span class="o">=</span><span class="s">"stylesheet"</span><span class="p">&gt;</span>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-13"></a>{% endblock %}
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-14"></a>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-15"></a>{% block title %}My App{% endblock %}
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-16"></a>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-17"></a>{% block navbar %}
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-18"></a>  <span class="c">&lt;!-- Fixed navbar --&gt;</span>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-19"></a>  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"navbar navbar-default navbar-fixed-top"</span> <span class="na">role</span><span class="o">=</span><span class="s">"navigation"</span><span class="p">&gt;</span>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-20"></a>    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"container"</span><span class="p">&gt;</span>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-21"></a>      <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"navbar-header"</span><span class="p">&gt;</span>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-22"></a>        <span class="p">&lt;</span><span class="nt">button</span> <span class="na">type</span><span class="o">=</span><span class="s">"button"</span> <span class="na">class</span><span class="o">=</span><span class="s">"navbar-toggle"</span> <span class="na">data-toggle</span><span class="o">=</span><span class="s">"collapse"</span> <span class="na">data-target</span><span class="o">=</span><span class="s">".navbar-collapse"</span><span class="p">&gt;</span>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-23"></a>          <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">"sr-only"</span><span class="p">&gt;</span>Toggle navigation<span class="p">&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-24"></a>          <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">"icon-bar"</span><span class="p">&gt;&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-25"></a>          <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">"icon-bar"</span><span class="p">&gt;&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-26"></a>          <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">"icon-bar"</span><span class="p">&gt;&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-27"></a>        <span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-28"></a>        <span class="c">&lt;!--img class="navbar-brand" src="../../static/logo.png"--&gt;</span>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-29"></a>        <span class="p">&lt;</span><span class="nt">a</span> <span class="na">class</span><span class="o">=</span><span class="s">"navbar-brand"</span> <span class="na">href</span><span class="o">=</span><span class="s">"{{ url_for('main.index') }}"</span><span class="p">&gt;</span>My App<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-30"></a>      <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-31"></a>    <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-32"></a>  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-33"></a>{% endblock %}
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-34"></a>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-35"></a>{% block content %}
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-36"></a>  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"container"</span> <span class="na">id</span><span class="o">=</span><span class="s">"mainContent"</span><span class="p">&gt;</span>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-37"></a>    {{utils.flashed_messages(container=False, dismissible=True)}}
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-38"></a>    {% block main %}{% endblock %}
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-39"></a>  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<a name="rest_code_3c1f7d26d4c6498b90af860aff2f5d8e-40"></a>{% endblock %}
 </pre>
 <p>The html code for our view is in <cite>app/templates/index.html</cite>:</p>
-<pre class="code html"><a name="rest_code_87e50011da844a34acaee52e31078a90-1"></a>{%- extends "base.html" %}
-<a name="rest_code_87e50011da844a34acaee52e31078a90-2"></a>{% import "bootstrap/wtf.html" as wtf %}
-<a name="rest_code_87e50011da844a34acaee52e31078a90-3"></a>
-<a name="rest_code_87e50011da844a34acaee52e31078a90-4"></a>{% block main %}
-<a name="rest_code_87e50011da844a34acaee52e31078a90-5"></a>      <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"panel panel-default"</span><span class="p">&gt;</span>
-<a name="rest_code_87e50011da844a34acaee52e31078a90-6"></a>        <span class="c">&lt;!-- Default panel contents --&gt;</span>
-<a name="rest_code_87e50011da844a34acaee52e31078a90-7"></a>        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"panel-heading"</span><span class="p">&gt;</span>Select task to run<span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<a name="rest_code_87e50011da844a34acaee52e31078a90-8"></a>        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"panel-body"</span><span class="p">&gt;</span>
-<a name="rest_code_87e50011da844a34acaee52e31078a90-9"></a>          <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"col-md-3"</span><span class="p">&gt;</span>
-<a name="rest_code_87e50011da844a34acaee52e31078a90-10"></a>            <span class="p">&lt;</span><span class="nt">form</span> <span class="na">class</span><span class="o">=</span><span class="s">"form"</span> <span class="na">id</span><span class="o">=</span><span class="s">"taskForm"</span> <span class="na">method</span><span class="o">=</span><span class="s">"POST"</span><span class="p">&gt;</span>
-<a name="rest_code_87e50011da844a34acaee52e31078a90-11"></a>              {{ form.hidden_tag() }}
-<a name="rest_code_87e50011da844a34acaee52e31078a90-12"></a>              {{ wtf.form_field(form.task) }}
-<a name="rest_code_87e50011da844a34acaee52e31078a90-13"></a>              <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"form-group"</span><span class="p">&gt;</span>
-<a name="rest_code_87e50011da844a34acaee52e31078a90-14"></a>                <span class="p">&lt;</span><span class="nt">button</span> <span class="na">type</span><span class="o">=</span><span class="s">"submit"</span> <span class="na">class</span><span class="o">=</span><span class="s">"btn btn-default"</span> <span class="na">id</span><span class="o">=</span><span class="s">"submit"</span><span class="p">&gt;</span>Run<span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
-<a name="rest_code_87e50011da844a34acaee52e31078a90-15"></a>              <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<a name="rest_code_87e50011da844a34acaee52e31078a90-16"></a>            <span class="p">&lt;/</span><span class="nt">form</span><span class="p">&gt;</span>
-<a name="rest_code_87e50011da844a34acaee52e31078a90-17"></a>          <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<a name="rest_code_87e50011da844a34acaee52e31078a90-18"></a>        <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<a name="rest_code_87e50011da844a34acaee52e31078a90-19"></a>      <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<a name="rest_code_87e50011da844a34acaee52e31078a90-20"></a>{% endblock %}
+<pre class="code html"><a name="rest_code_e265a44533ae42ac9a2b7287499d2d3f-1"></a>{%- extends "base.html" %}
+<a name="rest_code_e265a44533ae42ac9a2b7287499d2d3f-2"></a>{% import "bootstrap/wtf.html" as wtf %}
+<a name="rest_code_e265a44533ae42ac9a2b7287499d2d3f-3"></a>
+<a name="rest_code_e265a44533ae42ac9a2b7287499d2d3f-4"></a>{% block main %}
+<a name="rest_code_e265a44533ae42ac9a2b7287499d2d3f-5"></a>      <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"panel panel-default"</span><span class="p">&gt;</span>
+<a name="rest_code_e265a44533ae42ac9a2b7287499d2d3f-6"></a>        <span class="c">&lt;!-- Default panel contents --&gt;</span>
+<a name="rest_code_e265a44533ae42ac9a2b7287499d2d3f-7"></a>        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"panel-heading"</span><span class="p">&gt;</span>Select task to run<span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<a name="rest_code_e265a44533ae42ac9a2b7287499d2d3f-8"></a>        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"panel-body"</span><span class="p">&gt;</span>
+<a name="rest_code_e265a44533ae42ac9a2b7287499d2d3f-9"></a>          <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"col-md-3"</span><span class="p">&gt;</span>
+<a name="rest_code_e265a44533ae42ac9a2b7287499d2d3f-10"></a>            <span class="p">&lt;</span><span class="nt">form</span> <span class="na">class</span><span class="o">=</span><span class="s">"form"</span> <span class="na">id</span><span class="o">=</span><span class="s">"taskForm"</span> <span class="na">method</span><span class="o">=</span><span class="s">"POST"</span><span class="p">&gt;</span>
+<a name="rest_code_e265a44533ae42ac9a2b7287499d2d3f-11"></a>              {{ form.hidden_tag() }}
+<a name="rest_code_e265a44533ae42ac9a2b7287499d2d3f-12"></a>              {{ wtf.form_field(form.task) }}
+<a name="rest_code_e265a44533ae42ac9a2b7287499d2d3f-13"></a>              <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"form-group"</span><span class="p">&gt;</span>
+<a name="rest_code_e265a44533ae42ac9a2b7287499d2d3f-14"></a>                <span class="p">&lt;</span><span class="nt">button</span> <span class="na">type</span><span class="o">=</span><span class="s">"submit"</span> <span class="na">class</span><span class="o">=</span><span class="s">"btn btn-default"</span> <span class="na">id</span><span class="o">=</span><span class="s">"submit"</span><span class="p">&gt;</span>Run<span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
+<a name="rest_code_e265a44533ae42ac9a2b7287499d2d3f-15"></a>              <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<a name="rest_code_e265a44533ae42ac9a2b7287499d2d3f-16"></a>            <span class="p">&lt;/</span><span class="nt">form</span><span class="p">&gt;</span>
+<a name="rest_code_e265a44533ae42ac9a2b7287499d2d3f-17"></a>          <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<a name="rest_code_e265a44533ae42ac9a2b7287499d2d3f-18"></a>        <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<a name="rest_code_e265a44533ae42ac9a2b7287499d2d3f-19"></a>      <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<a name="rest_code_e265a44533ae42ac9a2b7287499d2d3f-20"></a>{% endblock %}
 </pre>
 <p>Let's run this first example. We could just create a virtual environment using <a class="reference external" href="https://virtualenv.pypa.io/en/stable/">virtualenv</a>
 or <a class="reference external" href="http://conda.pydata.org/docs/intro.html">conda</a>. As we'll soon need <a class="reference external" href="http://redis.io">Redis</a>, let's directly go for <a class="reference external" href="https://www.docker.com">Docker</a>:</p>
-<pre class="literal-block">
-$ git clone https://github.com/beenje/flask-rq-example.git
+<pre class="literal-block">$ git clone https://github.com/beenje/flask-rq-example.git
 $ cd flask-rq-example
 $ git checkout faa61009dbe3bafe49aae473f0fa19ab05a3ab90
 $ docker-compose build
-$ docker-compose up
-</pre>
+$ docker-compose up</pre>
 <p>Go to <a class="reference external" href="http://localhost:5000">http://localhost:5000</a>. You should see the following window:</p>
 <img alt="/images/flask-rq-example.png" src="images/flask-rq-example.png"><p>Choose a task and press run. See how The UI is stuck while waiting for the server?
 Not very nice...
@@ -1781,104 +1767,102 @@ Let' improve that a little by using some JavaScript.</p>
 <div class="section" id="second-version-use-ajax-to-submit-the-form">
 <h2>Second version: use Ajax to submit the form</h2>
 <p>Let's write some javascript. Here is the <cite>app/static/js/main.js</cite>:</p>
-<pre class="code javascript"><a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-1"></a><span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">ready</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-2"></a>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-3"></a>  <span class="c1">// flash an alert</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-4"></a>  <span class="c1">// remove previous alerts by default</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-5"></a>  <span class="c1">// set clean to false to keep old alerts</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-6"></a>  <span class="kd">function</span> <span class="nx">flash_alert</span><span class="p">(</span><span class="nx">message</span><span class="p">,</span> <span class="nx">category</span><span class="p">,</span> <span class="nx">clean</span><span class="p">)</span> <span class="p">{</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-7"></a>    <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span><span class="p">(</span><span class="nx">clean</span><span class="p">)</span> <span class="o">===</span> <span class="s2">"undefined"</span><span class="p">)</span> <span class="nx">clean</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-8"></a>    <span class="k">if</span><span class="p">(</span><span class="nx">clean</span><span class="p">)</span> <span class="p">{</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-9"></a>      <span class="nx">remove_alerts</span><span class="p">();</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-10"></a>    <span class="p">}</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-11"></a>    <span class="kd">var</span> <span class="nx">htmlString</span> <span class="o">=</span> <span class="s1">'&lt;div class="alert alert-'</span> <span class="o">+</span> <span class="nx">category</span> <span class="o">+</span> <span class="s1">' alert-dismissible" role="alert"&gt;'</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-12"></a>    <span class="nx">htmlString</span> <span class="o">+=</span> <span class="s1">'&lt;button type="button" class="close" data-dismiss="alert" aria-label="Close"&gt;'</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-13"></a>    <span class="nx">htmlString</span> <span class="o">+=</span> <span class="s1">'&lt;span aria-hidden="true"&gt;&amp;times;&lt;/span&gt;&lt;/button&gt;'</span> <span class="o">+</span> <span class="nx">message</span> <span class="o">+</span> <span class="s1">'&lt;/div&gt;'</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-14"></a>    <span class="nx">$</span><span class="p">(</span><span class="nx">htmlString</span><span class="p">).</span><span class="nx">prependTo</span><span class="p">(</span><span class="s2">"#mainContent"</span><span class="p">).</span><span class="nx">hide</span><span class="p">().</span><span class="nx">slideDown</span><span class="p">();</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-15"></a>  <span class="p">}</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-16"></a>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-17"></a>  <span class="kd">function</span> <span class="nx">remove_alerts</span><span class="p">()</span> <span class="p">{</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-18"></a>    <span class="nx">$</span><span class="p">(</span><span class="s2">".alert"</span><span class="p">).</span><span class="nx">slideUp</span><span class="p">(</span><span class="s2">"normal"</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-19"></a>      <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">remove</span><span class="p">();</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-20"></a>    <span class="p">});</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-21"></a>  <span class="p">}</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-22"></a>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-23"></a>  <span class="c1">// submit form</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-24"></a>  <span class="nx">$</span><span class="p">(</span><span class="s2">"#submit"</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">'click'</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-25"></a>    <span class="nx">flash_alert</span><span class="p">(</span><span class="s2">"Running "</span> <span class="o">+</span> <span class="nx">$</span><span class="p">(</span><span class="s2">"#task"</span><span class="p">).</span><span class="nx">val</span><span class="p">()</span> <span class="o">+</span> <span class="s2">"..."</span><span class="p">,</span> <span class="s2">"info"</span><span class="p">);</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-26"></a>    <span class="nx">$</span><span class="p">.</span><span class="nx">ajax</span><span class="p">({</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-27"></a>      <span class="nx">url</span><span class="o">:</span> <span class="nx">$SCRIPT_ROOT</span> <span class="o">+</span> <span class="s2">"/_run_task"</span><span class="p">,</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-28"></a>      <span class="nx">data</span><span class="o">:</span> <span class="nx">$</span><span class="p">(</span><span class="s2">"#taskForm"</span><span class="p">).</span><span class="nx">serialize</span><span class="p">(),</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-29"></a>      <span class="nx">method</span><span class="o">:</span> <span class="s2">"POST"</span><span class="p">,</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-30"></a>      <span class="nx">dataType</span><span class="o">:</span> <span class="s2">"json"</span><span class="p">,</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-31"></a>      <span class="nx">success</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-32"></a>        <span class="nx">flash_alert</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">result</span><span class="p">,</span> <span class="s2">"success"</span><span class="p">);</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-33"></a>      <span class="p">},</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-34"></a>      <span class="nx">error</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">jqXHR</span><span class="p">,</span> <span class="nx">textStatus</span><span class="p">,</span> <span class="nx">errorThrown</span><span class="p">)</span> <span class="p">{</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-35"></a>        <span class="nx">flash_alert</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">jqXHR</span><span class="p">.</span><span class="nx">responseText</span><span class="p">).</span><span class="nx">message</span><span class="p">,</span> <span class="s2">"danger"</span><span class="p">);</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-36"></a>      <span class="p">}</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-37"></a>    <span class="p">});</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-38"></a>  <span class="p">});</span>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-39"></a>
-<a name="rest_code_fc741cd9649c461f9c72f363c0b3d799-40"></a><span class="p">});</span>
+<pre class="code javascript"><a name="rest_code_ffb1474277d24213a2d806df281f8074-1"></a><span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">ready</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-2"></a>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-3"></a>  <span class="c1">// flash an alert</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-4"></a>  <span class="c1">// remove previous alerts by default</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-5"></a>  <span class="c1">// set clean to false to keep old alerts</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-6"></a>  <span class="kd">function</span> <span class="nx">flash_alert</span><span class="p">(</span><span class="nx">message</span><span class="p">,</span> <span class="nx">category</span><span class="p">,</span> <span class="nx">clean</span><span class="p">)</span> <span class="p">{</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-7"></a>    <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span><span class="p">(</span><span class="nx">clean</span><span class="p">)</span> <span class="o">===</span> <span class="s2">"undefined"</span><span class="p">)</span> <span class="nx">clean</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-8"></a>    <span class="k">if</span><span class="p">(</span><span class="nx">clean</span><span class="p">)</span> <span class="p">{</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-9"></a>      <span class="nx">remove_alerts</span><span class="p">();</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-10"></a>    <span class="p">}</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-11"></a>    <span class="kd">var</span> <span class="nx">htmlString</span> <span class="o">=</span> <span class="s1">'&lt;div class="alert alert-'</span> <span class="o">+</span> <span class="nx">category</span> <span class="o">+</span> <span class="s1">' alert-dismissible" role="alert"&gt;'</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-12"></a>    <span class="nx">htmlString</span> <span class="o">+=</span> <span class="s1">'&lt;button type="button" class="close" data-dismiss="alert" aria-label="Close"&gt;'</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-13"></a>    <span class="nx">htmlString</span> <span class="o">+=</span> <span class="s1">'&lt;span aria-hidden="true"&gt;&amp;times;&lt;/span&gt;&lt;/button&gt;'</span> <span class="o">+</span> <span class="nx">message</span> <span class="o">+</span> <span class="s1">'&lt;/div&gt;'</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-14"></a>    <span class="nx">$</span><span class="p">(</span><span class="nx">htmlString</span><span class="p">).</span><span class="nx">prependTo</span><span class="p">(</span><span class="s2">"#mainContent"</span><span class="p">).</span><span class="nx">hide</span><span class="p">().</span><span class="nx">slideDown</span><span class="p">();</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-15"></a>  <span class="p">}</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-16"></a>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-17"></a>  <span class="kd">function</span> <span class="nx">remove_alerts</span><span class="p">()</span> <span class="p">{</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-18"></a>    <span class="nx">$</span><span class="p">(</span><span class="s2">".alert"</span><span class="p">).</span><span class="nx">slideUp</span><span class="p">(</span><span class="s2">"normal"</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-19"></a>      <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">remove</span><span class="p">();</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-20"></a>    <span class="p">});</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-21"></a>  <span class="p">}</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-22"></a>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-23"></a>  <span class="c1">// submit form</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-24"></a>  <span class="nx">$</span><span class="p">(</span><span class="s2">"#submit"</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">'click'</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-25"></a>    <span class="nx">flash_alert</span><span class="p">(</span><span class="s2">"Running "</span> <span class="o">+</span> <span class="nx">$</span><span class="p">(</span><span class="s2">"#task"</span><span class="p">).</span><span class="nx">val</span><span class="p">()</span> <span class="o">+</span> <span class="s2">"..."</span><span class="p">,</span> <span class="s2">"info"</span><span class="p">);</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-26"></a>    <span class="nx">$</span><span class="p">.</span><span class="nx">ajax</span><span class="p">({</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-27"></a>      <span class="nx">url</span><span class="o">:</span> <span class="nx">$SCRIPT_ROOT</span> <span class="o">+</span> <span class="s2">"/_run_task"</span><span class="p">,</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-28"></a>      <span class="nx">data</span><span class="o">:</span> <span class="nx">$</span><span class="p">(</span><span class="s2">"#taskForm"</span><span class="p">).</span><span class="nx">serialize</span><span class="p">(),</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-29"></a>      <span class="nx">method</span><span class="o">:</span> <span class="s2">"POST"</span><span class="p">,</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-30"></a>      <span class="nx">dataType</span><span class="o">:</span> <span class="s2">"json"</span><span class="p">,</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-31"></a>      <span class="nx">success</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-32"></a>        <span class="nx">flash_alert</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">result</span><span class="p">,</span> <span class="s2">"success"</span><span class="p">);</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-33"></a>      <span class="p">},</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-34"></a>      <span class="nx">error</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">jqXHR</span><span class="p">,</span> <span class="nx">textStatus</span><span class="p">,</span> <span class="nx">errorThrown</span><span class="p">)</span> <span class="p">{</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-35"></a>        <span class="nx">flash_alert</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">jqXHR</span><span class="p">.</span><span class="nx">responseText</span><span class="p">).</span><span class="nx">message</span><span class="p">,</span> <span class="s2">"danger"</span><span class="p">);</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-36"></a>      <span class="p">}</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-37"></a>    <span class="p">});</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-38"></a>  <span class="p">});</span>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-39"></a>
+<a name="rest_code_ffb1474277d24213a2d806df281f8074-40"></a><span class="p">});</span>
 </pre>
 <p>To include this file in our html, we add the following block to <cite>app/templates/base.html</cite>:</p>
-<pre class="code html"><a name="rest_code_c080c11b691d4223be75c6d3630b6b96-1"></a>{% block scripts %}
-<a name="rest_code_c080c11b691d4223be75c6d3630b6b96-2"></a>  {{super()}}
-<a name="rest_code_c080c11b691d4223be75c6d3630b6b96-3"></a>  <span class="p">&lt;</span><span class="nt">script</span> <span class="na">type</span><span class="o">=</span><span class="s">text/javascript</span><span class="p">&gt;</span>
-<a name="rest_code_c080c11b691d4223be75c6d3630b6b96-4"></a>    <span class="nx">$SCRIPT_ROOT</span> <span class="o">=</span> <span class="p">{{</span> <span class="nx">request</span><span class="p">.</span><span class="nx">script_root</span><span class="o">|</span><span class="nx">tojson</span><span class="o">|</span><span class="nx">safe</span> <span class="p">}};</span>
-<a name="rest_code_c080c11b691d4223be75c6d3630b6b96-5"></a>  <span class="p">&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
-<a name="rest_code_c080c11b691d4223be75c6d3630b6b96-6"></a>  {% block app_scripts %}{% endblock %}
-<a name="rest_code_c080c11b691d4223be75c6d3630b6b96-7"></a>{% endblock %}
+<pre class="code html"><a name="rest_code_c9f404366ada4cdb9f1ce1fed13ec959-1"></a>{% block scripts %}
+<a name="rest_code_c9f404366ada4cdb9f1ce1fed13ec959-2"></a>  {{super()}}
+<a name="rest_code_c9f404366ada4cdb9f1ce1fed13ec959-3"></a>  <span class="p">&lt;</span><span class="nt">script</span> <span class="na">type</span><span class="o">=</span><span class="s">text/javascript</span><span class="p">&gt;</span>
+<a name="rest_code_c9f404366ada4cdb9f1ce1fed13ec959-4"></a>    <span class="nx">$SCRIPT_ROOT</span> <span class="o">=</span> <span class="p">{{</span> <span class="nx">request</span><span class="p">.</span><span class="nx">script_root</span><span class="o">|</span><span class="nx">tojson</span><span class="o">|</span><span class="nx">safe</span> <span class="p">}};</span>
+<a name="rest_code_c9f404366ada4cdb9f1ce1fed13ec959-5"></a>  <span class="p">&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+<a name="rest_code_c9f404366ada4cdb9f1ce1fed13ec959-6"></a>  {% block app_scripts %}{% endblock %}
+<a name="rest_code_c9f404366ada4cdb9f1ce1fed13ec959-7"></a>{% endblock %}
 </pre>
 <p>And here is a diff for our <cite>app/templates/index.html</cite>:</p>
-<pre class="code diff"><a name="rest_code_2b5a09c845b8433eba4cbf3563f4dfd6-1"></a>               {{ form.hidden_tag() }}
-<a name="rest_code_2b5a09c845b8433eba4cbf3563f4dfd6-2"></a>               {{ wtf.form_field(form.task) }}
-<a name="rest_code_2b5a09c845b8433eba4cbf3563f4dfd6-3"></a>               &lt;div class="form-group"&gt;
-<a name="rest_code_2b5a09c845b8433eba4cbf3563f4dfd6-4"></a><span class="gd">-                &lt;button type="submit" class="btn btn-default" id="submit"&gt;Run&lt;/button&gt;</span>
-<a name="rest_code_2b5a09c845b8433eba4cbf3563f4dfd6-5"></a><span class="gi">+                &lt;button type="button" class="btn btn-default" id="submit"&gt;Run&lt;/button&gt;</span>
-<a name="rest_code_2b5a09c845b8433eba4cbf3563f4dfd6-6"></a>               &lt;/div&gt;
-<a name="rest_code_2b5a09c845b8433eba4cbf3563f4dfd6-7"></a>             &lt;/form&gt;
-<a name="rest_code_2b5a09c845b8433eba4cbf3563f4dfd6-8"></a>           &lt;/div&gt;
-<a name="rest_code_2b5a09c845b8433eba4cbf3563f4dfd6-9"></a>         &lt;/div&gt;
-<a name="rest_code_2b5a09c845b8433eba4cbf3563f4dfd6-10"></a>       &lt;/div&gt;
-<a name="rest_code_2b5a09c845b8433eba4cbf3563f4dfd6-11"></a> {% endblock %}
-<a name="rest_code_2b5a09c845b8433eba4cbf3563f4dfd6-12"></a><span class="gi">+</span>
-<a name="rest_code_2b5a09c845b8433eba4cbf3563f4dfd6-13"></a><span class="gi">+{% block app_scripts %}</span>
-<a name="rest_code_2b5a09c845b8433eba4cbf3563f4dfd6-14"></a><span class="gi">+  &lt;script src="{{ url_for('static', filename='js/main.js') }}"&gt;&lt;/script&gt;</span>
-<a name="rest_code_2b5a09c845b8433eba4cbf3563f4dfd6-15"></a><span class="gi">+{% endblock %}</span>
+<pre class="code diff"><a name="rest_code_b313e9b54e4a4d36867e12b81f97110f-1"></a>               {{ form.hidden_tag() }}
+<a name="rest_code_b313e9b54e4a4d36867e12b81f97110f-2"></a>               {{ wtf.form_field(form.task) }}
+<a name="rest_code_b313e9b54e4a4d36867e12b81f97110f-3"></a>               &lt;div class="form-group"&gt;
+<a name="rest_code_b313e9b54e4a4d36867e12b81f97110f-4"></a><span class="gd">-                &lt;button type="submit" class="btn btn-default" id="submit"&gt;Run&lt;/button&gt;</span>
+<a name="rest_code_b313e9b54e4a4d36867e12b81f97110f-5"></a><span class="gi">+                &lt;button type="button" class="btn btn-default" id="submit"&gt;Run&lt;/button&gt;</span>
+<a name="rest_code_b313e9b54e4a4d36867e12b81f97110f-6"></a>               &lt;/div&gt;
+<a name="rest_code_b313e9b54e4a4d36867e12b81f97110f-7"></a>             &lt;/form&gt;
+<a name="rest_code_b313e9b54e4a4d36867e12b81f97110f-8"></a>           &lt;/div&gt;
+<a name="rest_code_b313e9b54e4a4d36867e12b81f97110f-9"></a>         &lt;/div&gt;
+<a name="rest_code_b313e9b54e4a4d36867e12b81f97110f-10"></a>       &lt;/div&gt;
+<a name="rest_code_b313e9b54e4a4d36867e12b81f97110f-11"></a> {% endblock %}
+<a name="rest_code_b313e9b54e4a4d36867e12b81f97110f-12"></a><span class="gi">+</span>
+<a name="rest_code_b313e9b54e4a4d36867e12b81f97110f-13"></a><span class="gi">+{% block app_scripts %}</span>
+<a name="rest_code_b313e9b54e4a4d36867e12b81f97110f-14"></a><span class="gi">+  &lt;script src="{{ url_for('static', filename='js/main.js') }}"&gt;&lt;/script&gt;</span>
+<a name="rest_code_b313e9b54e4a4d36867e12b81f97110f-15"></a><span class="gi">+{% endblock %}</span>
 </pre>
 <p>We change the <cite>button</cite> type from <cite>submit</cite> to <cite>button</cite> so that it doesn't send a POST when clicked.
 We send an Ajax query to <cite>$SCRIPT_ROOT/_run_task</cite> instead.</p>
 <p>This is our new <cite>app/main/views.py</cite>:</p>
-<pre class="code python"><a name="rest_code_cc1219ee1ef74f868b78da55845fe646-1"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
-<a name="rest_code_cc1219ee1ef74f868b78da55845fe646-2"></a><span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">tasks</span>
-<a name="rest_code_cc1219ee1ef74f868b78da55845fe646-3"></a><span class="kn">from</span> <span class="nn">.forms</span> <span class="kn">import</span> <span class="n">TaskForm</span>
-<a name="rest_code_cc1219ee1ef74f868b78da55845fe646-4"></a>
-<a name="rest_code_cc1219ee1ef74f868b78da55845fe646-5"></a><span class="n">bp</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s1">'main'</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
-<a name="rest_code_cc1219ee1ef74f868b78da55845fe646-6"></a>
-<a name="rest_code_cc1219ee1ef74f868b78da55845fe646-7"></a>
-<a name="rest_code_cc1219ee1ef74f868b78da55845fe646-8"></a><span class="nd">@bp.route</span><span class="p">(</span><span class="s1">'/_run_task'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'POST'</span><span class="p">])</span>
-<a name="rest_code_cc1219ee1ef74f868b78da55845fe646-9"></a><span class="k">def</span> <span class="nf">run_task</span><span class="p">():</span>
-<a name="rest_code_cc1219ee1ef74f868b78da55845fe646-10"></a>    <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'task'</span><span class="p">)</span>
-<a name="rest_code_cc1219ee1ef74f868b78da55845fe646-11"></a>    <span class="k">try</span><span class="p">:</span>
-<a name="rest_code_cc1219ee1ef74f868b78da55845fe646-12"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">tasks</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
-<a name="rest_code_cc1219ee1ef74f868b78da55845fe646-13"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a name="rest_code_cc1219ee1ef74f868b78da55845fe646-14"></a>        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">'message'</span><span class="p">:</span> <span class="s1">'Task failed: {}'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">)}),</span> <span class="mi">500</span>
-<a name="rest_code_cc1219ee1ef74f868b78da55845fe646-15"></a>    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">'result'</span><span class="p">:</span> <span class="n">result</span><span class="p">})</span>
-<a name="rest_code_cc1219ee1ef74f868b78da55845fe646-16"></a>
-<a name="rest_code_cc1219ee1ef74f868b78da55845fe646-17"></a>
-<a name="rest_code_cc1219ee1ef74f868b78da55845fe646-18"></a><span class="nd">@bp.route</span><span class="p">(</span><span class="s1">'/'</span><span class="p">)</span>
-<a name="rest_code_cc1219ee1ef74f868b78da55845fe646-19"></a><span class="k">def</span> <span class="nf">index</span><span class="p">():</span>
-<a name="rest_code_cc1219ee1ef74f868b78da55845fe646-20"></a>    <span class="n">form</span> <span class="o">=</span> <span class="n">TaskForm</span><span class="p">()</span>
-<a name="rest_code_cc1219ee1ef74f868b78da55845fe646-21"></a>    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">'index.html'</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">)</span>
+<pre class="code python"><a name="rest_code_1f8d6bac0c0b4d1e94b92224d012e618-1"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
+<a name="rest_code_1f8d6bac0c0b4d1e94b92224d012e618-2"></a><span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">tasks</span>
+<a name="rest_code_1f8d6bac0c0b4d1e94b92224d012e618-3"></a><span class="kn">from</span> <span class="nn">.forms</span> <span class="kn">import</span> <span class="n">TaskForm</span>
+<a name="rest_code_1f8d6bac0c0b4d1e94b92224d012e618-4"></a>
+<a name="rest_code_1f8d6bac0c0b4d1e94b92224d012e618-5"></a><span class="n">bp</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s1">'main'</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
+<a name="rest_code_1f8d6bac0c0b4d1e94b92224d012e618-6"></a>
+<a name="rest_code_1f8d6bac0c0b4d1e94b92224d012e618-7"></a>
+<a name="rest_code_1f8d6bac0c0b4d1e94b92224d012e618-8"></a><span class="nd">@bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/_run_task'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'POST'</span><span class="p">])</span>
+<a name="rest_code_1f8d6bac0c0b4d1e94b92224d012e618-9"></a><span class="k">def</span> <span class="nf">run_task</span><span class="p">():</span>
+<a name="rest_code_1f8d6bac0c0b4d1e94b92224d012e618-10"></a>    <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'task'</span><span class="p">)</span>
+<a name="rest_code_1f8d6bac0c0b4d1e94b92224d012e618-11"></a>    <span class="k">try</span><span class="p">:</span>
+<a name="rest_code_1f8d6bac0c0b4d1e94b92224d012e618-12"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">tasks</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+<a name="rest_code_1f8d6bac0c0b4d1e94b92224d012e618-13"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a name="rest_code_1f8d6bac0c0b4d1e94b92224d012e618-14"></a>        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">'message'</span><span class="p">:</span> <span class="s1">'Task failed: </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">)}),</span> <span class="mi">500</span>
+<a name="rest_code_1f8d6bac0c0b4d1e94b92224d012e618-15"></a>    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">'result'</span><span class="p">:</span> <span class="n">result</span><span class="p">})</span>
+<a name="rest_code_1f8d6bac0c0b4d1e94b92224d012e618-16"></a>
+<a name="rest_code_1f8d6bac0c0b4d1e94b92224d012e618-17"></a>
+<a name="rest_code_1f8d6bac0c0b4d1e94b92224d012e618-18"></a><span class="nd">@bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/'</span><span class="p">)</span>
+<a name="rest_code_1f8d6bac0c0b4d1e94b92224d012e618-19"></a><span class="k">def</span> <span class="nf">index</span><span class="p">():</span>
+<a name="rest_code_1f8d6bac0c0b4d1e94b92224d012e618-20"></a>    <span class="n">form</span> <span class="o">=</span> <span class="n">TaskForm</span><span class="p">()</span>
+<a name="rest_code_1f8d6bac0c0b4d1e94b92224d012e618-21"></a>    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">'index.html'</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">)</span>
 </pre>
 <p>Let's run this new example:</p>
-<pre class="literal-block">
-$ git checkout c1ccfe8b3a39079ab80f813b5733b324c8b65c6f
+<pre class="literal-block">$ git checkout c1ccfe8b3a39079ab80f813b5733b324c8b65c6f
 $ docker rm flaskrqexample_web
-$ docker-compose up
-</pre>
+$ docker-compose up</pre>
 <p>This time we immediately get some feedback when clicking on <em>Run</em>. There is no reload.
 That's better, but the server is still busy during the processing. If you try to open a new page, you won't get any answer until the task is done...</p>
 <p>To avoid blocking the server, we'll use a task queue.</p>
@@ -1889,24 +1873,24 @@ That's better, but the server is still busy during the processing. If you try to
 It is designed to have a low barrier entry.
 What do we need to integrate <a class="reference external" href="http://python-rq.org">RQ</a> in our <a class="reference external" href="http://flask.pocoo.org">Flask</a> web app?</p>
 <p>Let's first add some variables in <cite>app/settings.py</cite>:</p>
-<pre class="code python"><a name="rest_code_85b7c82da52c4d05b02d14d4ac52008b-1"></a><span class="c1"># The Redis database to use</span>
-<a name="rest_code_85b7c82da52c4d05b02d14d4ac52008b-2"></a><span class="n">REDIS_URL</span> <span class="o">=</span> <span class="s1">'redis://redis:6379/0'</span>
-<a name="rest_code_85b7c82da52c4d05b02d14d4ac52008b-3"></a><span class="c1"># The queues to listen on</span>
-<a name="rest_code_85b7c82da52c4d05b02d14d4ac52008b-4"></a><span class="n">QUEUES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'default'</span><span class="p">]</span>
+<pre class="code python"><a name="rest_code_8da6d20941c74b31b567579713b77a90-1"></a><span class="c1"># The Redis database to use</span>
+<a name="rest_code_8da6d20941c74b31b567579713b77a90-2"></a><span class="n">REDIS_URL</span> <span class="o">=</span> <span class="s1">'redis://redis:6379/0'</span>
+<a name="rest_code_8da6d20941c74b31b567579713b77a90-3"></a><span class="c1"># The queues to listen on</span>
+<a name="rest_code_8da6d20941c74b31b567579713b77a90-4"></a><span class="n">QUEUES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'default'</span><span class="p">]</span>
 </pre>
 <p>To execute a background job, we need a worker.
 <a class="reference external" href="http://python-rq.org">RQ</a> comes with the <cite>rq worker</cite> command to start a worker. To integrate it
 better with our Flask app, we are going to write a simple <a class="reference external" href="https://flask-script.readthedocs.io/en/latest/">Flask-Script</a>
 command. We add the following to our <cite>manage.py</cite>:</p>
-<pre class="code python"><a name="rest_code_ea8298c7ca244d5e9ad431f9c9da3374-1"></a><span class="kn">from</span> <span class="nn">rq</span> <span class="kn">import</span> <span class="n">Connection</span><span class="p">,</span> <span class="n">Worker</span>
-<a name="rest_code_ea8298c7ca244d5e9ad431f9c9da3374-2"></a>
-<a name="rest_code_ea8298c7ca244d5e9ad431f9c9da3374-3"></a><span class="nd">@manager.command</span>
-<a name="rest_code_ea8298c7ca244d5e9ad431f9c9da3374-4"></a><span class="k">def</span> <span class="nf">runworker</span><span class="p">():</span>
-<a name="rest_code_ea8298c7ca244d5e9ad431f9c9da3374-5"></a>    <span class="n">redis_url</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">'REDIS_URL'</span><span class="p">]</span>
-<a name="rest_code_ea8298c7ca244d5e9ad431f9c9da3374-6"></a>    <span class="n">redis_connection</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">from_url</span><span class="p">(</span><span class="n">redis_url</span><span class="p">)</span>
-<a name="rest_code_ea8298c7ca244d5e9ad431f9c9da3374-7"></a>    <span class="k">with</span> <span class="n">Connection</span><span class="p">(</span><span class="n">redis_connection</span><span class="p">):</span>
-<a name="rest_code_ea8298c7ca244d5e9ad431f9c9da3374-8"></a>        <span class="n">worker</span> <span class="o">=</span> <span class="n">Worker</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">'QUEUES'</span><span class="p">])</span>
-<a name="rest_code_ea8298c7ca244d5e9ad431f9c9da3374-9"></a>        <span class="n">worker</span><span class="o">.</span><span class="n">work</span><span class="p">()</span>
+<pre class="code python"><a name="rest_code_622f40f997c74783be61bf4305461b6f-1"></a><span class="kn">from</span> <span class="nn">rq</span> <span class="kn">import</span> <span class="n">Connection</span><span class="p">,</span> <span class="n">Worker</span>
+<a name="rest_code_622f40f997c74783be61bf4305461b6f-2"></a>
+<a name="rest_code_622f40f997c74783be61bf4305461b6f-3"></a><span class="nd">@manager</span><span class="o">.</span><span class="n">command</span>
+<a name="rest_code_622f40f997c74783be61bf4305461b6f-4"></a><span class="k">def</span> <span class="nf">runworker</span><span class="p">():</span>
+<a name="rest_code_622f40f997c74783be61bf4305461b6f-5"></a>    <span class="n">redis_url</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">'REDIS_URL'</span><span class="p">]</span>
+<a name="rest_code_622f40f997c74783be61bf4305461b6f-6"></a>    <span class="n">redis_connection</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">from_url</span><span class="p">(</span><span class="n">redis_url</span><span class="p">)</span>
+<a name="rest_code_622f40f997c74783be61bf4305461b6f-7"></a>    <span class="k">with</span> <span class="n">Connection</span><span class="p">(</span><span class="n">redis_connection</span><span class="p">):</span>
+<a name="rest_code_622f40f997c74783be61bf4305461b6f-8"></a>        <span class="n">worker</span> <span class="o">=</span> <span class="n">Worker</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">'QUEUES'</span><span class="p">])</span>
+<a name="rest_code_622f40f997c74783be61bf4305461b6f-9"></a>        <span class="n">worker</span><span class="o">.</span><span class="n">work</span><span class="p">()</span>
 </pre>
 <p>The Manager runs the command inside a Flask test context, meaning we can
 access the app config from within the worker.
@@ -1918,81 +1902,79 @@ Everything is in <cite>app/settings.py</cite> and can be overwritten by <em>LOCA
 One way to do that is to pass the connection when creating the <em>Queue</em>. This is a bit tedious.
 <a class="reference external" href="http://python-rq.org">RQ</a> has the notion of <a class="reference external" href="http://python-rq.org/docs/connections/">connection context</a>. We take advantage of that
 and register a function to push the connection and pop it before and after a request (<cite>app/main/views.py</cite>):</p>
-<pre class="code python"><a name="rest_code_b274d0f5f65d4779bbb78ac88bc80f6e-1"></a><span class="kn">import</span> <span class="nn">redis</span>
-<a name="rest_code_b274d0f5f65d4779bbb78ac88bc80f6e-2"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">current_app</span><span class="p">,</span> <span class="n">g</span>
-<a name="rest_code_b274d0f5f65d4779bbb78ac88bc80f6e-3"></a><span class="kn">from</span> <span class="nn">rq</span> <span class="kn">import</span> <span class="n">push_connection</span><span class="p">,</span> <span class="n">pop_connection</span><span class="p">,</span> <span class="n">Queue</span>
-<a name="rest_code_b274d0f5f65d4779bbb78ac88bc80f6e-4"></a>
-<a name="rest_code_b274d0f5f65d4779bbb78ac88bc80f6e-5"></a>
-<a name="rest_code_b274d0f5f65d4779bbb78ac88bc80f6e-6"></a><span class="k">def</span> <span class="nf">get_redis_connection</span><span class="p">():</span>
-<a name="rest_code_b274d0f5f65d4779bbb78ac88bc80f6e-7"></a>    <span class="n">redis_connection</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="s1">'_redis_connection'</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
-<a name="rest_code_b274d0f5f65d4779bbb78ac88bc80f6e-8"></a>    <span class="k">if</span> <span class="n">redis_connection</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-<a name="rest_code_b274d0f5f65d4779bbb78ac88bc80f6e-9"></a>        <span class="n">redis_url</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">'REDIS_URL'</span><span class="p">]</span>
-<a name="rest_code_b274d0f5f65d4779bbb78ac88bc80f6e-10"></a>        <span class="n">redis_connection</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">_redis_connection</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">from_url</span><span class="p">(</span><span class="n">redis_url</span><span class="p">)</span>
-<a name="rest_code_b274d0f5f65d4779bbb78ac88bc80f6e-11"></a>    <span class="k">return</span> <span class="n">redis_connection</span>
-<a name="rest_code_b274d0f5f65d4779bbb78ac88bc80f6e-12"></a>
-<a name="rest_code_b274d0f5f65d4779bbb78ac88bc80f6e-13"></a>
-<a name="rest_code_b274d0f5f65d4779bbb78ac88bc80f6e-14"></a><span class="nd">@bp.before_request</span>
-<a name="rest_code_b274d0f5f65d4779bbb78ac88bc80f6e-15"></a><span class="k">def</span> <span class="nf">push_rq_connection</span><span class="p">():</span>
-<a name="rest_code_b274d0f5f65d4779bbb78ac88bc80f6e-16"></a>    <span class="n">push_connection</span><span class="p">(</span><span class="n">get_redis_connection</span><span class="p">())</span>
-<a name="rest_code_b274d0f5f65d4779bbb78ac88bc80f6e-17"></a>
-<a name="rest_code_b274d0f5f65d4779bbb78ac88bc80f6e-18"></a>
-<a name="rest_code_b274d0f5f65d4779bbb78ac88bc80f6e-19"></a><span class="nd">@bp.teardown_request</span>
-<a name="rest_code_b274d0f5f65d4779bbb78ac88bc80f6e-20"></a><span class="k">def</span> <span class="nf">pop_rq_connection</span><span class="p">(</span><span class="n">exception</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-<a name="rest_code_b274d0f5f65d4779bbb78ac88bc80f6e-21"></a>    <span class="n">pop_connection</span><span class="p">()</span>
+<pre class="code python"><a name="rest_code_0f49de2f3be24c64826673ad686a8bf6-1"></a><span class="kn">import</span> <span class="nn">redis</span>
+<a name="rest_code_0f49de2f3be24c64826673ad686a8bf6-2"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">current_app</span><span class="p">,</span> <span class="n">g</span>
+<a name="rest_code_0f49de2f3be24c64826673ad686a8bf6-3"></a><span class="kn">from</span> <span class="nn">rq</span> <span class="kn">import</span> <span class="n">push_connection</span><span class="p">,</span> <span class="n">pop_connection</span><span class="p">,</span> <span class="n">Queue</span>
+<a name="rest_code_0f49de2f3be24c64826673ad686a8bf6-4"></a>
+<a name="rest_code_0f49de2f3be24c64826673ad686a8bf6-5"></a>
+<a name="rest_code_0f49de2f3be24c64826673ad686a8bf6-6"></a><span class="k">def</span> <span class="nf">get_redis_connection</span><span class="p">():</span>
+<a name="rest_code_0f49de2f3be24c64826673ad686a8bf6-7"></a>    <span class="n">redis_connection</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="s1">'_redis_connection'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<a name="rest_code_0f49de2f3be24c64826673ad686a8bf6-8"></a>    <span class="k">if</span> <span class="n">redis_connection</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a name="rest_code_0f49de2f3be24c64826673ad686a8bf6-9"></a>        <span class="n">redis_url</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">'REDIS_URL'</span><span class="p">]</span>
+<a name="rest_code_0f49de2f3be24c64826673ad686a8bf6-10"></a>        <span class="n">redis_connection</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">_redis_connection</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">from_url</span><span class="p">(</span><span class="n">redis_url</span><span class="p">)</span>
+<a name="rest_code_0f49de2f3be24c64826673ad686a8bf6-11"></a>    <span class="k">return</span> <span class="n">redis_connection</span>
+<a name="rest_code_0f49de2f3be24c64826673ad686a8bf6-12"></a>
+<a name="rest_code_0f49de2f3be24c64826673ad686a8bf6-13"></a>
+<a name="rest_code_0f49de2f3be24c64826673ad686a8bf6-14"></a><span class="nd">@bp</span><span class="o">.</span><span class="n">before_request</span>
+<a name="rest_code_0f49de2f3be24c64826673ad686a8bf6-15"></a><span class="k">def</span> <span class="nf">push_rq_connection</span><span class="p">():</span>
+<a name="rest_code_0f49de2f3be24c64826673ad686a8bf6-16"></a>    <span class="n">push_connection</span><span class="p">(</span><span class="n">get_redis_connection</span><span class="p">())</span>
+<a name="rest_code_0f49de2f3be24c64826673ad686a8bf6-17"></a>
+<a name="rest_code_0f49de2f3be24c64826673ad686a8bf6-18"></a>
+<a name="rest_code_0f49de2f3be24c64826673ad686a8bf6-19"></a><span class="nd">@bp</span><span class="o">.</span><span class="n">teardown_request</span>
+<a name="rest_code_0f49de2f3be24c64826673ad686a8bf6-20"></a><span class="k">def</span> <span class="nf">pop_rq_connection</span><span class="p">(</span><span class="n">exception</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<a name="rest_code_0f49de2f3be24c64826673ad686a8bf6-21"></a>    <span class="n">pop_connection</span><span class="p">()</span>
 </pre>
 <p>This makes it easy to create a <em>Queue</em> in a request or application context.</p>
 <p>The <cite>get_redis_connection</cite> function gets the Redis connection and stores it in the <em>flask.g</em> object.
 This is the same as what is explained for SQLite <a class="reference external" href="http://flask.pocoo.org/docs/0.11/patterns/sqlite3/">here</a>.</p>
 <p>With that in place, it's easy to enqueue a job. Here are the changes to the <em>run_task</em> function:</p>
-<pre class="code diff"><a name="rest_code_d2d0d513d0254b2c82c6ec521b1e3dc2-1"></a> @bp.route('/_run_task', methods=['POST'])
-<a name="rest_code_d2d0d513d0254b2c82c6ec521b1e3dc2-2"></a> def run_task():
-<a name="rest_code_d2d0d513d0254b2c82c6ec521b1e3dc2-3"></a>     task = request.form.get('task')
-<a name="rest_code_d2d0d513d0254b2c82c6ec521b1e3dc2-4"></a><span class="gd">-    try:</span>
-<a name="rest_code_d2d0d513d0254b2c82c6ec521b1e3dc2-5"></a><span class="gd">-        result = tasks.run(task)</span>
-<a name="rest_code_d2d0d513d0254b2c82c6ec521b1e3dc2-6"></a><span class="gd">-    except Exception as e:</span>
-<a name="rest_code_d2d0d513d0254b2c82c6ec521b1e3dc2-7"></a><span class="gd">-        return jsonify({'message': 'Task failed: {}'.format(e)}), 500</span>
-<a name="rest_code_d2d0d513d0254b2c82c6ec521b1e3dc2-8"></a><span class="gd">-    return jsonify({'result': result})</span>
-<a name="rest_code_d2d0d513d0254b2c82c6ec521b1e3dc2-9"></a><span class="gi">+    q = Queue()</span>
-<a name="rest_code_d2d0d513d0254b2c82c6ec521b1e3dc2-10"></a><span class="gi">+    job = q.enqueue(tasks.run, task)</span>
-<a name="rest_code_d2d0d513d0254b2c82c6ec521b1e3dc2-11"></a><span class="gi">+    return jsonify({'job_id': job.get_id()})</span>
+<pre class="code diff"><a name="rest_code_2ff105e611cb48edb61d1d2f720004af-1"></a> @bp.route('/_run_task', methods=['POST'])
+<a name="rest_code_2ff105e611cb48edb61d1d2f720004af-2"></a> def run_task():
+<a name="rest_code_2ff105e611cb48edb61d1d2f720004af-3"></a>     task = request.form.get('task')
+<a name="rest_code_2ff105e611cb48edb61d1d2f720004af-4"></a><span class="gd">-    try:</span>
+<a name="rest_code_2ff105e611cb48edb61d1d2f720004af-5"></a><span class="gd">-        result = tasks.run(task)</span>
+<a name="rest_code_2ff105e611cb48edb61d1d2f720004af-6"></a><span class="gd">-    except Exception as e:</span>
+<a name="rest_code_2ff105e611cb48edb61d1d2f720004af-7"></a><span class="gd">-        return jsonify({'message': 'Task failed: {}'.format(e)}), 500</span>
+<a name="rest_code_2ff105e611cb48edb61d1d2f720004af-8"></a><span class="gd">-    return jsonify({'result': result})</span>
+<a name="rest_code_2ff105e611cb48edb61d1d2f720004af-9"></a><span class="gi">+    q = Queue()</span>
+<a name="rest_code_2ff105e611cb48edb61d1d2f720004af-10"></a><span class="gi">+    job = q.enqueue(tasks.run, task)</span>
+<a name="rest_code_2ff105e611cb48edb61d1d2f720004af-11"></a><span class="gi">+    return jsonify({'job_id': job.get_id()})</span>
 </pre>
 <p>We enqeue our task and just return the job id for now.</p>
 <p>Docker and <cite>docker-compose</cite> are now gonna come in handy to start eveything
 (Redis, our web app and a worker). We just have to add the following to our
 <cite>docker-compose.yml</cite> file:</p>
-<pre class="code diff"><a name="rest_code_19c55815706c4a2c97980c5041e23092-1"></a> - "5000:5000"
-<a name="rest_code_19c55815706c4a2c97980c5041e23092-2"></a> volumes:
-<a name="rest_code_19c55815706c4a2c97980c5041e23092-3"></a> - .:/app
-<a name="rest_code_19c55815706c4a2c97980c5041e23092-4"></a><span class="gi">+    depends_on:</span>
-<a name="rest_code_19c55815706c4a2c97980c5041e23092-5"></a><span class="gi">+    - redis</span>
-<a name="rest_code_19c55815706c4a2c97980c5041e23092-6"></a><span class="gi">+  worker:</span>
-<a name="rest_code_19c55815706c4a2c97980c5041e23092-7"></a><span class="gi">+    image: flaskrqexample</span>
-<a name="rest_code_19c55815706c4a2c97980c5041e23092-8"></a><span class="gi">+    container_name: flaskrqexample_worker</span>
-<a name="rest_code_19c55815706c4a2c97980c5041e23092-9"></a><span class="gi">+    environment:</span>
-<a name="rest_code_19c55815706c4a2c97980c5041e23092-10"></a><span class="gi">+      LOCAL_SETTINGS: /app/settings.cfg</span>
-<a name="rest_code_19c55815706c4a2c97980c5041e23092-11"></a><span class="gi">+    command: python manage.py runworker</span>
-<a name="rest_code_19c55815706c4a2c97980c5041e23092-12"></a><span class="gi">+    volumes:</span>
-<a name="rest_code_19c55815706c4a2c97980c5041e23092-13"></a><span class="gi">+    - .:/app</span>
-<a name="rest_code_19c55815706c4a2c97980c5041e23092-14"></a><span class="gi">+    depends_on:</span>
-<a name="rest_code_19c55815706c4a2c97980c5041e23092-15"></a><span class="gi">+    - redis</span>
-<a name="rest_code_19c55815706c4a2c97980c5041e23092-16"></a><span class="gi">+  redis:</span>
-<a name="rest_code_19c55815706c4a2c97980c5041e23092-17"></a><span class="gi">+    image: redis:3.2</span>
+<pre class="code diff"><a name="rest_code_1c645cca88b145e3830a0ea2136f32b1-1"></a> - "5000:5000"
+<a name="rest_code_1c645cca88b145e3830a0ea2136f32b1-2"></a> volumes:
+<a name="rest_code_1c645cca88b145e3830a0ea2136f32b1-3"></a> - .:/app
+<a name="rest_code_1c645cca88b145e3830a0ea2136f32b1-4"></a><span class="gi">+    depends_on:</span>
+<a name="rest_code_1c645cca88b145e3830a0ea2136f32b1-5"></a><span class="gi">+    - redis</span>
+<a name="rest_code_1c645cca88b145e3830a0ea2136f32b1-6"></a><span class="gi">+  worker:</span>
+<a name="rest_code_1c645cca88b145e3830a0ea2136f32b1-7"></a><span class="gi">+    image: flaskrqexample</span>
+<a name="rest_code_1c645cca88b145e3830a0ea2136f32b1-8"></a><span class="gi">+    container_name: flaskrqexample_worker</span>
+<a name="rest_code_1c645cca88b145e3830a0ea2136f32b1-9"></a><span class="gi">+    environment:</span>
+<a name="rest_code_1c645cca88b145e3830a0ea2136f32b1-10"></a><span class="gi">+      LOCAL_SETTINGS: /app/settings.cfg</span>
+<a name="rest_code_1c645cca88b145e3830a0ea2136f32b1-11"></a><span class="gi">+    command: python manage.py runworker</span>
+<a name="rest_code_1c645cca88b145e3830a0ea2136f32b1-12"></a><span class="gi">+    volumes:</span>
+<a name="rest_code_1c645cca88b145e3830a0ea2136f32b1-13"></a><span class="gi">+    - .:/app</span>
+<a name="rest_code_1c645cca88b145e3830a0ea2136f32b1-14"></a><span class="gi">+    depends_on:</span>
+<a name="rest_code_1c645cca88b145e3830a0ea2136f32b1-15"></a><span class="gi">+    - redis</span>
+<a name="rest_code_1c645cca88b145e3830a0ea2136f32b1-16"></a><span class="gi">+  redis:</span>
+<a name="rest_code_1c645cca88b145e3830a0ea2136f32b1-17"></a><span class="gi">+    image: redis:3.2</span>
 </pre>
 <p>Don't forget to add <em>redis</em> and <em>rq</em> to your <cite>environment.yml</cite> file!</p>
-<pre class="code diff"><a name="rest_code_d46f73a487b542869477b32a3744bf3f-1"></a>   - dominate==2.2.1
-<a name="rest_code_d46f73a487b542869477b32a3744bf3f-2"></a>   - flask-bootstrap==3.3.6.0
-<a name="rest_code_d46f73a487b542869477b32a3744bf3f-3"></a>   - flask-script==2.0.5
-<a name="rest_code_d46f73a487b542869477b32a3744bf3f-4"></a><span class="gi">+  - redis==2.10.5</span>
-<a name="rest_code_d46f73a487b542869477b32a3744bf3f-5"></a><span class="gi">+  - rq==0.6.0</span>
-<a name="rest_code_d46f73a487b542869477b32a3744bf3f-6"></a>   - visitor==0.1.3
+<pre class="code diff"><a name="rest_code_295df150b5484b4399ec6062686e4594-1"></a>   - dominate==2.2.1
+<a name="rest_code_295df150b5484b4399ec6062686e4594-2"></a>   - flask-bootstrap==3.3.6.0
+<a name="rest_code_295df150b5484b4399ec6062686e4594-3"></a>   - flask-script==2.0.5
+<a name="rest_code_295df150b5484b4399ec6062686e4594-4"></a><span class="gi">+  - redis==2.10.5</span>
+<a name="rest_code_295df150b5484b4399ec6062686e4594-5"></a><span class="gi">+  - rq==0.6.0</span>
+<a name="rest_code_295df150b5484b4399ec6062686e4594-6"></a>   - visitor==0.1.3
 </pre>
 <p>Rebuild the docker image and start the app:</p>
-<pre class="literal-block">
-$ git checkout 437e710df3df0dd4b153f20027f5f00270b2e1a3
+<pre class="literal-block">$ git checkout 437e710df3df0dd4b153f20027f5f00270b2e1a3
 $ docker rm flaskrqexample_web
 $ docker-compose build
-$ docker-compose up
-</pre>
+$ docker-compose up</pre>
 <p>OK, nice, we started a job in the background! This is fine to run a task
 and forget about it (like sending an e-mail). But how do we get the result back?</p>
 </div>
@@ -2003,83 +1985,81 @@ When launching the job, we return an url to check the status of the job.
 The trick is to periodically call back the same function until the job is finished or failed.</p>
 <p>On the server side, the <cite>job_status</cite> endpoint uses the job_id to retrieve
 the job and to get its status and result.</p>
-<pre class="code python"><a name="rest_code_5993f5b1cd5744578937a2195e9b9149-1"></a><span class="nd">@bp.route</span><span class="p">(</span><span class="s1">'/status/&lt;job_id&gt;'</span><span class="p">)</span>
-<a name="rest_code_5993f5b1cd5744578937a2195e9b9149-2"></a><span class="k">def</span> <span class="nf">job_status</span><span class="p">(</span><span class="n">job_id</span><span class="p">):</span>
-<a name="rest_code_5993f5b1cd5744578937a2195e9b9149-3"></a>    <span class="n">q</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
-<a name="rest_code_5993f5b1cd5744578937a2195e9b9149-4"></a>    <span class="n">job</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">fetch_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
-<a name="rest_code_5993f5b1cd5744578937a2195e9b9149-5"></a>    <span class="k">if</span> <span class="n">job</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-<a name="rest_code_5993f5b1cd5744578937a2195e9b9149-6"></a>        <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'status'</span><span class="p">:</span> <span class="s1">'unknown'</span><span class="p">}</span>
-<a name="rest_code_5993f5b1cd5744578937a2195e9b9149-7"></a>    <span class="k">else</span><span class="p">:</span>
-<a name="rest_code_5993f5b1cd5744578937a2195e9b9149-8"></a>        <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
-<a name="rest_code_5993f5b1cd5744578937a2195e9b9149-9"></a>            <span class="s1">'status'</span><span class="p">:</span> <span class="n">job</span><span class="o">.</span><span class="n">get_status</span><span class="p">(),</span>
-<a name="rest_code_5993f5b1cd5744578937a2195e9b9149-10"></a>            <span class="s1">'result'</span><span class="p">:</span> <span class="n">job</span><span class="o">.</span><span class="n">result</span><span class="p">,</span>
-<a name="rest_code_5993f5b1cd5744578937a2195e9b9149-11"></a>        <span class="p">}</span>
-<a name="rest_code_5993f5b1cd5744578937a2195e9b9149-12"></a>        <span class="k">if</span> <span class="n">job</span><span class="o">.</span><span class="n">is_failed</span><span class="p">:</span>
-<a name="rest_code_5993f5b1cd5744578937a2195e9b9149-13"></a>            <span class="n">response</span><span class="p">[</span><span class="s1">'message'</span><span class="p">]</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">exc_info</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<a name="rest_code_5993f5b1cd5744578937a2195e9b9149-14"></a>    <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-<a name="rest_code_5993f5b1cd5744578937a2195e9b9149-15"></a>
-<a name="rest_code_5993f5b1cd5744578937a2195e9b9149-16"></a>
-<a name="rest_code_5993f5b1cd5744578937a2195e9b9149-17"></a><span class="nd">@bp.route</span><span class="p">(</span><span class="s1">'/_run_task'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'POST'</span><span class="p">])</span>
-<a name="rest_code_5993f5b1cd5744578937a2195e9b9149-18"></a><span class="k">def</span> <span class="nf">run_task</span><span class="p">():</span>
-<a name="rest_code_5993f5b1cd5744578937a2195e9b9149-19"></a>    <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'task'</span><span class="p">)</span>
-<a name="rest_code_5993f5b1cd5744578937a2195e9b9149-20"></a>    <span class="n">q</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
-<a name="rest_code_5993f5b1cd5744578937a2195e9b9149-21"></a>    <span class="n">job</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">tasks</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
-<a name="rest_code_5993f5b1cd5744578937a2195e9b9149-22"></a>    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({}),</span> <span class="mi">202</span><span class="p">,</span> <span class="p">{</span><span class="s1">'Location'</span><span class="p">:</span> <span class="n">url_for</span><span class="p">(</span><span class="s1">'main.job_status'</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">job</span><span class="o">.</span><span class="n">get_id</span><span class="p">())}</span>
+<pre class="code python"><a name="rest_code_97410e9a12fb4a10be4d23a774acf057-1"></a><span class="nd">@bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/status/&lt;job_id&gt;'</span><span class="p">)</span>
+<a name="rest_code_97410e9a12fb4a10be4d23a774acf057-2"></a><span class="k">def</span> <span class="nf">job_status</span><span class="p">(</span><span class="n">job_id</span><span class="p">):</span>
+<a name="rest_code_97410e9a12fb4a10be4d23a774acf057-3"></a>    <span class="n">q</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+<a name="rest_code_97410e9a12fb4a10be4d23a774acf057-4"></a>    <span class="n">job</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">fetch_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+<a name="rest_code_97410e9a12fb4a10be4d23a774acf057-5"></a>    <span class="k">if</span> <span class="n">job</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a name="rest_code_97410e9a12fb4a10be4d23a774acf057-6"></a>        <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'status'</span><span class="p">:</span> <span class="s1">'unknown'</span><span class="p">}</span>
+<a name="rest_code_97410e9a12fb4a10be4d23a774acf057-7"></a>    <span class="k">else</span><span class="p">:</span>
+<a name="rest_code_97410e9a12fb4a10be4d23a774acf057-8"></a>        <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
+<a name="rest_code_97410e9a12fb4a10be4d23a774acf057-9"></a>            <span class="s1">'status'</span><span class="p">:</span> <span class="n">job</span><span class="o">.</span><span class="n">get_status</span><span class="p">(),</span>
+<a name="rest_code_97410e9a12fb4a10be4d23a774acf057-10"></a>            <span class="s1">'result'</span><span class="p">:</span> <span class="n">job</span><span class="o">.</span><span class="n">result</span><span class="p">,</span>
+<a name="rest_code_97410e9a12fb4a10be4d23a774acf057-11"></a>        <span class="p">}</span>
+<a name="rest_code_97410e9a12fb4a10be4d23a774acf057-12"></a>        <span class="k">if</span> <span class="n">job</span><span class="o">.</span><span class="n">is_failed</span><span class="p">:</span>
+<a name="rest_code_97410e9a12fb4a10be4d23a774acf057-13"></a>            <span class="n">response</span><span class="p">[</span><span class="s1">'message'</span><span class="p">]</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">exc_info</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<a name="rest_code_97410e9a12fb4a10be4d23a774acf057-14"></a>    <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+<a name="rest_code_97410e9a12fb4a10be4d23a774acf057-15"></a>
+<a name="rest_code_97410e9a12fb4a10be4d23a774acf057-16"></a>
+<a name="rest_code_97410e9a12fb4a10be4d23a774acf057-17"></a><span class="nd">@bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/_run_task'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'POST'</span><span class="p">])</span>
+<a name="rest_code_97410e9a12fb4a10be4d23a774acf057-18"></a><span class="k">def</span> <span class="nf">run_task</span><span class="p">():</span>
+<a name="rest_code_97410e9a12fb4a10be4d23a774acf057-19"></a>    <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'task'</span><span class="p">)</span>
+<a name="rest_code_97410e9a12fb4a10be4d23a774acf057-20"></a>    <span class="n">q</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+<a name="rest_code_97410e9a12fb4a10be4d23a774acf057-21"></a>    <span class="n">job</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">tasks</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
+<a name="rest_code_97410e9a12fb4a10be4d23a774acf057-22"></a>    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({}),</span> <span class="mi">202</span><span class="p">,</span> <span class="p">{</span><span class="s1">'Location'</span><span class="p">:</span> <span class="n">url_for</span><span class="p">(</span><span class="s1">'main.job_status'</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">job</span><span class="o">.</span><span class="n">get_id</span><span class="p">())}</span>
 </pre>
 <p>The <cite>run_task</cite> function returns an empty response with the <a class="reference external" href="https://httpstatuses.com/202">202</a> status
 code. We use the <em>Location</em> response-header field to pass the <cite>job_status</cite> URL to the
 client.</p>
 <p>On the client side, we retrieve the URL from the header and call the new
 <cite>check_job_status</cite> function.</p>
-<pre class="code diff"><a name="rest_code_2eac0807509b4db2ad6240a14840dadf-1"></a><span class="gu">@@ -28,8 +53,11 @@ $(document).ready(function() {</span>
-<a name="rest_code_2eac0807509b4db2ad6240a14840dadf-2"></a>       data: $("#taskForm").serialize(),
-<a name="rest_code_2eac0807509b4db2ad6240a14840dadf-3"></a>       method: "POST",
-<a name="rest_code_2eac0807509b4db2ad6240a14840dadf-4"></a>       dataType: "json",
-<a name="rest_code_2eac0807509b4db2ad6240a14840dadf-5"></a><span class="gd">-      success: function(data) {</span>
-<a name="rest_code_2eac0807509b4db2ad6240a14840dadf-6"></a><span class="gd">-        flash_alert("Job " + data.job_id + " started...", "info", false);</span>
-<a name="rest_code_2eac0807509b4db2ad6240a14840dadf-7"></a><span class="gi">+      success: function(data, status, request) {</span>
-<a name="rest_code_2eac0807509b4db2ad6240a14840dadf-8"></a><span class="gi">+        $("#submit").attr("disabled", "disabled");</span>
-<a name="rest_code_2eac0807509b4db2ad6240a14840dadf-9"></a><span class="gi">+        flash_alert("Running " + task + "...", "info");</span>
-<a name="rest_code_2eac0807509b4db2ad6240a14840dadf-10"></a><span class="gi">+        var status_url = request.getResponseHeader('Location');</span>
-<a name="rest_code_2eac0807509b4db2ad6240a14840dadf-11"></a><span class="gi">+        check_job_status(status_url);</span>
-<a name="rest_code_2eac0807509b4db2ad6240a14840dadf-12"></a>       },
-<a name="rest_code_2eac0807509b4db2ad6240a14840dadf-13"></a>       error: function(jqXHR, textStatus, errorThrown) {
-<a name="rest_code_2eac0807509b4db2ad6240a14840dadf-14"></a>         flash_alert("Failed to start " + task, "danger");
+<pre class="code diff"><a name="rest_code_1a0ffd55f84346da99e39710441602ae-1"></a><span class="gu">@@ -28,8 +53,11 @@ $(document).ready(function() {</span>
+<a name="rest_code_1a0ffd55f84346da99e39710441602ae-2"></a>       data: $("#taskForm").serialize(),
+<a name="rest_code_1a0ffd55f84346da99e39710441602ae-3"></a>       method: "POST",
+<a name="rest_code_1a0ffd55f84346da99e39710441602ae-4"></a>       dataType: "json",
+<a name="rest_code_1a0ffd55f84346da99e39710441602ae-5"></a><span class="gd">-      success: function(data) {</span>
+<a name="rest_code_1a0ffd55f84346da99e39710441602ae-6"></a><span class="gd">-        flash_alert("Job " + data.job_id + " started...", "info", false);</span>
+<a name="rest_code_1a0ffd55f84346da99e39710441602ae-7"></a><span class="gi">+      success: function(data, status, request) {</span>
+<a name="rest_code_1a0ffd55f84346da99e39710441602ae-8"></a><span class="gi">+        $("#submit").attr("disabled", "disabled");</span>
+<a name="rest_code_1a0ffd55f84346da99e39710441602ae-9"></a><span class="gi">+        flash_alert("Running " + task + "...", "info");</span>
+<a name="rest_code_1a0ffd55f84346da99e39710441602ae-10"></a><span class="gi">+        var status_url = request.getResponseHeader('Location');</span>
+<a name="rest_code_1a0ffd55f84346da99e39710441602ae-11"></a><span class="gi">+        check_job_status(status_url);</span>
+<a name="rest_code_1a0ffd55f84346da99e39710441602ae-12"></a>       },
+<a name="rest_code_1a0ffd55f84346da99e39710441602ae-13"></a>       error: function(jqXHR, textStatus, errorThrown) {
+<a name="rest_code_1a0ffd55f84346da99e39710441602ae-14"></a>         flash_alert("Failed to start " + task, "danger");
 </pre>
 <p>We use <cite>setTimeout</cite> to call back the same function until the job is done (finished
 or failed).</p>
-<pre class="code javascript"><a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-1"></a><span class="kd">function</span> <span class="nx">check_job_status</span><span class="p">(</span><span class="nx">status_url</span><span class="p">)</span> <span class="p">{</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-2"></a>  <span class="nx">$</span><span class="p">.</span><span class="nx">getJSON</span><span class="p">(</span><span class="nx">status_url</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-3"></a>    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-4"></a>    <span class="k">switch</span> <span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">status</span><span class="p">)</span> <span class="p">{</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-5"></a>      <span class="k">case</span> <span class="s2">"unknown"</span><span class="o">:</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-6"></a>          <span class="nx">flash_alert</span><span class="p">(</span><span class="s2">"Unknown job id"</span><span class="p">,</span> <span class="s2">"danger"</span><span class="p">);</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-7"></a>          <span class="nx">$</span><span class="p">(</span><span class="s2">"#submit"</span><span class="p">).</span><span class="nx">removeAttr</span><span class="p">(</span><span class="s2">"disabled"</span><span class="p">);</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-8"></a>          <span class="k">break</span><span class="p">;</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-9"></a>      <span class="k">case</span> <span class="s2">"finished"</span><span class="o">:</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-10"></a>          <span class="nx">flash_alert</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">result</span><span class="p">,</span> <span class="s2">"success"</span><span class="p">);</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-11"></a>          <span class="nx">$</span><span class="p">(</span><span class="s2">"#submit"</span><span class="p">).</span><span class="nx">removeAttr</span><span class="p">(</span><span class="s2">"disabled"</span><span class="p">);</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-12"></a>          <span class="k">break</span><span class="p">;</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-13"></a>      <span class="k">case</span> <span class="s2">"failed"</span><span class="o">:</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-14"></a>          <span class="nx">flash_alert</span><span class="p">(</span><span class="s2">"Job failed: "</span> <span class="o">+</span> <span class="nx">data</span><span class="p">.</span><span class="nx">message</span><span class="p">,</span> <span class="s2">"danger"</span><span class="p">);</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-15"></a>          <span class="nx">$</span><span class="p">(</span><span class="s2">"#submit"</span><span class="p">).</span><span class="nx">removeAttr</span><span class="p">(</span><span class="s2">"disabled"</span><span class="p">);</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-16"></a>          <span class="k">break</span><span class="p">;</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-17"></a>      <span class="k">default</span><span class="o">:</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-18"></a>        <span class="c1">// queued/started/deferred</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-19"></a>        <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-20"></a>          <span class="nx">check_job_status</span><span class="p">(</span><span class="nx">status_url</span><span class="p">);</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-21"></a>        <span class="p">},</span> <span class="mi">500</span><span class="p">);</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-22"></a>    <span class="p">}</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-23"></a>  <span class="p">});</span>
-<a name="rest_code_f90ab3128f7348fd8ae8028e7a1d878d-24"></a><span class="p">}</span>
+<pre class="code javascript"><a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-1"></a><span class="kd">function</span> <span class="nx">check_job_status</span><span class="p">(</span><span class="nx">status_url</span><span class="p">)</span> <span class="p">{</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-2"></a>  <span class="nx">$</span><span class="p">.</span><span class="nx">getJSON</span><span class="p">(</span><span class="nx">status_url</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-3"></a>    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-4"></a>    <span class="k">switch</span> <span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">status</span><span class="p">)</span> <span class="p">{</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-5"></a>      <span class="k">case</span> <span class="s2">"unknown"</span><span class="o">:</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-6"></a>          <span class="nx">flash_alert</span><span class="p">(</span><span class="s2">"Unknown job id"</span><span class="p">,</span> <span class="s2">"danger"</span><span class="p">);</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-7"></a>          <span class="nx">$</span><span class="p">(</span><span class="s2">"#submit"</span><span class="p">).</span><span class="nx">removeAttr</span><span class="p">(</span><span class="s2">"disabled"</span><span class="p">);</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-8"></a>          <span class="k">break</span><span class="p">;</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-9"></a>      <span class="k">case</span> <span class="s2">"finished"</span><span class="o">:</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-10"></a>          <span class="nx">flash_alert</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">result</span><span class="p">,</span> <span class="s2">"success"</span><span class="p">);</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-11"></a>          <span class="nx">$</span><span class="p">(</span><span class="s2">"#submit"</span><span class="p">).</span><span class="nx">removeAttr</span><span class="p">(</span><span class="s2">"disabled"</span><span class="p">);</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-12"></a>          <span class="k">break</span><span class="p">;</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-13"></a>      <span class="k">case</span> <span class="s2">"failed"</span><span class="o">:</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-14"></a>          <span class="nx">flash_alert</span><span class="p">(</span><span class="s2">"Job failed: "</span> <span class="o">+</span> <span class="nx">data</span><span class="p">.</span><span class="nx">message</span><span class="p">,</span> <span class="s2">"danger"</span><span class="p">);</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-15"></a>          <span class="nx">$</span><span class="p">(</span><span class="s2">"#submit"</span><span class="p">).</span><span class="nx">removeAttr</span><span class="p">(</span><span class="s2">"disabled"</span><span class="p">);</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-16"></a>          <span class="k">break</span><span class="p">;</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-17"></a>      <span class="k">default</span><span class="o">:</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-18"></a>        <span class="c1">// queued/started/deferred</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-19"></a>        <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-20"></a>          <span class="nx">check_job_status</span><span class="p">(</span><span class="nx">status_url</span><span class="p">);</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-21"></a>        <span class="p">},</span> <span class="mi">500</span><span class="p">);</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-22"></a>    <span class="p">}</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-23"></a>  <span class="p">});</span>
+<a name="rest_code_fd49b9fed81347d7a93347e5d7a426e6-24"></a><span class="p">}</span>
 </pre>
 <p>Let's checkout this commit and run our app again:</p>
-<pre class="literal-block">
-$ git checkout da8360aefb222afc17417a518ac25029566071d6
+<pre class="literal-block">$ git checkout da8360aefb222afc17417a518ac25029566071d6
 $ docker rm flaskrqexample_web
 $ docker rm flaskrqexample_worker
-$ docker-compose up
-</pre>
+$ docker-compose up</pre>
 <p>Try submitting some tasks. This time you can open another window and the
 server will answer even when a task is running :-)
 You can open a console in your browser to see the polling and the response
@@ -2138,8 +2118,7 @@ favorite tool to deploy software.</p>
 <p>So let's write a small Ansible playbook to install OpenVPN on a Raspberry Pi.</p>
 <p>First the firewall configuration. I like to use <a class="reference external" href="https://help.ubuntu.com/community/UFW">ufw</a> which is quite easy to
 setup:</p>
-<pre class="literal-block">
-- name: install dependencies
+<pre class="literal-block">- name: install dependencies
   apt: name=ufw state=present update_cache=yes cache_valid_time=3600
 
 - name: update ufw default forward policy
@@ -2174,15 +2153,13 @@ setup:</p>
   ufw: rule=allow port={{openvpn_port}} proto={{openvpn_protocol}}
 
 - name: enable ufw
-  ufw: logging=on state=enabled
-</pre>
+  ufw: logging=on state=enabled</pre>
 <p>This enables IP forwarding, adds the required NAT rules and allows ssh and
 openvpn.</p>
 <p>The rest of the playbook installs OpenVPN and generates all the keys automatically,
 except the Diffie-Hellman one that should be generated locally.
 This is just because it takes for ever on the Pi :-)</p>
-<pre class="literal-block">
-- name: install openvpn
+<pre class="literal-block">- name: install openvpn
   apt: name=openvpn state=present
 
 - name: create /etc/openvpn
@@ -2251,8 +2228,7 @@ This is just because it takes for ever on the Pi :-)</p>
   notify: restart openvpn
 
 - name: start openvpn
-  service: name=openvpn state=started
-</pre>
+  service: name=openvpn state=started</pre>
 <p>The <em>create_clientside</em> script generates all the required client keys and creates an ovpn file
 that includes them.  It makes it very easy to install on any device: just one file to
 drop.</p>
@@ -2304,8 +2280,7 @@ securely access my NAS from anywhere!</p>
 <p>The app is deployed using <a class="reference external" href="http://uwsgi-docs.readthedocs.io/en/latest/">uWSGI</a> behind Nginx.
 This was working fine with Python 3.4.</p>
 <p>When I updated Python to 3.5, I got the following exception when trying to download a file:</p>
-<pre class="literal-block">
-io.UnsupportedOperation: fileno
+<pre class="literal-block">io.UnsupportedOperation: fileno
 
 During handling of the above exception, another exception occurred:
 
@@ -2332,17 +2307,14 @@ Traceback (most recent call last):
     data = wrap_file(request.environ, file)
   File "/webapps/bowser/miniconda3/envs/bowser/lib/python3.5/site-packages/werkzeug/wsgi.py", line 726, in wrap_file
     return environ.get('wsgi.file_wrapper', FileWrapper)(file, buffer_size)
-SystemError: &lt;built-in function uwsgi_sendfile&gt; returned a result with an error set
-</pre>
+SystemError: &lt;built-in function uwsgi_sendfile&gt; returned a result with an error set</pre>
 <p>I quickly found the following <a class="reference external" href="http://lists.unbit.it/pipermail/uwsgi/2015-September/008186.html">post</a> with the same exception, but no answer...
 A little more googling brought me to this github issue: <a class="reference external" href="https://github.com/unbit/uwsgi/issues/1126">In python3, uwsgi fails to respond a
 stream from BytesIO object</a></p>
 <p>As described, you should run uwsgi with the <cite>--wsgi-disable-file-wrapper</cite> flag to avoid this problem.
 As with all command line options, you can add the following entry in your
 uwsgi.ini file:</p>
-<pre class="literal-block">
-wsgi-disable-file-wrapper = true
-</pre>
+<pre class="literal-block">wsgi-disable-file-wrapper = true</pre>
 <p>Note that <a class="reference external" href="http://uwsgi-docs.readthedocs.io/en/latest/">uWSGI</a> 2.0.12 is required.</p>
 <p>When searching in <a class="reference external" href="http://uwsgi-docs.readthedocs.io/en/latest/">uWSGI</a> documentation, I only found one match in <a class="reference external" href="http://uwsgi-docs.readthedocs.io/en/latest/Changelog-2.0.12.html?highlight=wsgi-disable-file-wrapper">uWSGI 2.0.12 release notes</a>.</p>
 <p>A problem/option that should be better documented. Probably a pull request to open :-)</p>
@@ -2375,8 +2347,7 @@ sphinx documentation.</p>
 to setup a runner so I won't go into details here. I chose the <a class="reference external" href="https://gitlab.com/gitlab-org/gitlab-ci-multi-runner/blob/master/docs/executors/docker.md">Docker
 executor</a>.</p>
 <p>Here is my first <cite>.gitlab-ci.yml</cite> test:</p>
-<pre class="literal-block">
-image: python:3.4
+<pre class="literal-block">image: python:3.4
 
 before_script:
   - pip install -r requirements.txt
@@ -2384,15 +2355,13 @@ before_script:
 tests:
   stage: test
   script:
-    - python -m unittest discover -v
-</pre>
+    - python -m unittest discover -v</pre>
 <p>Success, it works! Nice. But... 8 minutes 33 seconds build time for a test suite that
 runs in less than 1 second... that's a bit long.</p>
 <p>Let's try using some caching to avoid having to download all the pip
 requirements every time. After googling, I found this <a class="reference external" href="https://fleschenberg.net/gitlab-pip-cache/">post</a> explaining that the cache
 path must be inside the build directory:</p>
-<pre class="literal-block">
-image: python:3.4
+<pre class="literal-block">image: python:3.4
 
 before_script:
   - export PIP_CACHE_DIR="pip-cache"
@@ -2405,8 +2374,7 @@ cache:
 tests:
   stage: test
   script:
-    - python -m unittest discover -v
-</pre>
+    - python -m unittest discover -v</pre>
 <p>With the pip cache, the build time went down to about 6 minutes. A bit
 better, but far from acceptable.</p>
 <p>Of course I knew the problem was not the download, but the
@@ -2415,8 +2383,7 @@ which explains why it takes a while to compile.</p>
 <p>So how do you install <a class="reference external" href="http://pandas.pydata.org">pandas</a> easily? With <a class="reference external" href="http://conda.pydata.org/docs/">conda</a> of course!
 There are even some nice <a class="reference external" href="https://github.com/ContinuumIO/docker-images">docker images</a>  created by Continuum Analytics ready to be used.</p>
 <p>So let's try again:</p>
-<pre class="literal-block">
-image: continuumio/miniconda3:latest
+<pre class="literal-block">image: continuumio/miniconda3:latest
 
 before_script:
   - conda env create -f environment.yml
@@ -2425,8 +2392,7 @@ before_script:
 tests:
   stage: test
   script:
-    - python -m unittest discover -v
-</pre>
+    - python -m unittest discover -v</pre>
 <p>Build time: 2 minutes 55 seconds. Nice but we need some cache to avoid
 downloading all the packages everytime.
 The first problem is that the cache path has to be in the build directory.
@@ -2436,18 +2402,15 @@ problem is that Gitlab makes a compressed archive to save and restore the
 cache which takes quite some time in this case...</p>
 <p>How to get a fast cache? Let's use a docker volume!
 I modified my <cite>/etc/gitlab-runner/config.toml</cite> to add two volumes:</p>
-<pre class="literal-block">
-[runners.docker]
+<pre class="literal-block">[runners.docker]
   tls_verify = false
   image = "continuumio/miniconda3:latest"
   privileged = false
   disable_cache = false
-  volumes = ["/cache", "/opt/cache/conda/pkgs:/opt/conda/pkgs:rw", "/opt/cache/pip:/opt/cache/pip:rw"]
-</pre>
+  volumes = ["/cache", "/opt/cache/conda/pkgs:/opt/conda/pkgs:rw", "/opt/cache/pip:/opt/cache/pip:rw"]</pre>
 <p>One volume for <a class="reference external" href="http://conda.pydata.org/docs/">conda</a> packages and one for <cite>pip</cite>.
 My new <cite>.gitlab-ci.yml</cite>:</p>
-<pre class="literal-block">
-image: continuumio/miniconda3:latest
+<pre class="literal-block">image: continuumio/miniconda3:latest
 
 before_script:
   - export PIP_CACHE_DIR="/opt/cache/pip"
@@ -2457,8 +2420,7 @@ before_script:
 tests:
   stage: test
   script:
-    - python -m unittest discover -v
-</pre>
+    - python -m unittest discover -v</pre>
 <p>The build time is about 10 seconds!</p>
 <p>Just a few days after my tests, GitLab announced <a class="reference external" href="https://about.gitlab.com/2016/05/23/gitlab-container-registry/">GitLab Container
 Registry</a>.
@@ -2500,33 +2462,26 @@ obvious option to replace <a class="reference external" href="https://github.com
 <p>Here is how to switch a project using <a class="reference external" href="https://github.com/beenje/git-bigfile">git-bigfile</a> to <a class="reference external" href="https://git-lfs.github.com">git-lfs</a>:</p>
 <ol class="arabic">
 <li>
-<p class="first">Make a list of all files tracked by git-bigfile:</p>
-<pre class="literal-block">
-$ git bigfile status | awk '/pushed/ {print $NF}' &gt; /tmp/list
-</pre>
+<p>Make a list of all files tracked by git-bigfile:</p>
+<pre class="literal-block">$ git bigfile status | awk '/pushed/ {print $NF}' &gt; /tmp/list</pre>
 </li>
 <li>
-<p class="first">Edit .gitattributes to replace the filter. Replace <cite>filter=bigfile -crlf</cite> with <cite>filter=lfs diff=lfs merge=lfs -text</cite>:</p>
-<pre class="literal-block">
-$ cat .gitattributes
+<p>Edit .gitattributes to replace the filter. Replace <cite>filter=bigfile -crlf</cite> with <cite>filter=lfs diff=lfs merge=lfs -text</cite>:</p>
+<pre class="literal-block">$ cat .gitattributes
 *.tar.bz2 filter=lfs diff=lfs merge=lfs -text
 *.iso filter=lfs diff=lfs merge=lfs -text
-*.img filter=lfs diff=lfs merge=lfs -text
-</pre>
+*.img filter=lfs diff=lfs merge=lfs -text</pre>
 </li>
 <li>
-<p class="first">Remove all big files from the staging area and add them back with git-lfs:</p>
-<pre class="literal-block">
-$ git rm --cached $(cat /tmp/list)
+<p>Remove all big files from the staging area and add them back with git-lfs:</p>
+<pre class="literal-block">$ git rm --cached $(cat /tmp/list)
 $ git add .
-$ git commit -m "Switch to git-lfs"
-</pre>
+$ git commit -m "Switch to git-lfs"</pre>
 </li>
 <li>
-<p class="first">Check that the files were added using git-lfs. You should see something
+<p>Check that the files were added using git-lfs. You should see something
 like that:</p>
-<pre class="literal-block">
-$ git show HEAD
+<pre class="literal-block">$ git show HEAD
 diff --git a/CentOS_6.4/images/install.img
 b/CentOS_6.4/images/install.img
 index 227ea55..a9cc6a8 100644
@@ -2537,14 +2492,11 @@ index 227ea55..a9cc6a8 100644
 +version https://git-lfs.github.com/spec/v1
 +oid
 sha256:6fcaac620b82e38e2092a6353ca766a3b01fba7f3fd6a0397c57e979aa293db0
-+size 133255168
-</pre>
++size 133255168</pre>
 </li>
 <li>
-<p class="first">Remove git-bigfile cache directory:</p>
-<pre class="literal-block">
-$ rm -rf .git/bigfile
-</pre>
+<p>Remove git-bigfile cache directory:</p>
+<pre class="literal-block">$ rm -rf .git/bigfile</pre>
 </li>
 </ol>
 <p>Note: to push files larger than 2.1GB to your gitlab server, wait for this
@@ -2573,13 +2525,9 @@ it will be in 8.4.3.</p>
 <p>The other day, I wanted to add a script to the crontab and to redirect the
 output to a file including the current date. Easy. I have used the
 <cite>date</cite> command many times in bash script like that:</p>
-<pre class="literal-block">
-current_date=$(date +"%Y%m%dT%H%M")
-</pre>
+<pre class="literal-block">current_date=$(date +"%Y%m%dT%H%M")</pre>
 <p>So I added the following to my crontab:</p>
-<pre class="literal-block">
-0 1 * * * /usr/local/bin/foo &gt; /tmp/foo.$(date +%Y%m%dT%H%M).log 2&gt;&amp;1
-</pre>
+<pre class="literal-block">0 1 * * * /usr/local/bin/foo &gt; /tmp/foo.$(date +%Y%m%dT%H%M).log 2&gt;&amp;1</pre>
 <p>And... it didn't work...</p>
 <p>I quickly identified that the script was working properly when run from the
 crontab (it's easy to get a script working from the prompt, not running
@@ -2587,17 +2535,13 @@ from the crontab due to incorrect PATH). The problem was the redirection
 but I couldn't see why.</p>
 <p>I googled a bit but didn't find anything...</p>
 <p>I finally looked at the man pages:</p>
-<pre class="literal-block">
-$  man 5 crontab
+<pre class="literal-block">$  man 5 crontab
 
      ...
      The  ``sixth''  field  (the  rest of the line) specifies the command to be run.  The entire command portion of the line, up to a
-     newline or % character...
-</pre>
+     newline or % character...</pre>
 <p>Here it was of course! <cite>%</cite> is a special character. It needs to be escaped:</p>
-<pre class="literal-block">
-0 1 * * * /usr/local/bin/foo &gt; /tmp/foo.$(date +\%Y\%m\%dT\%H\%M).log 2&gt;&amp;1
-</pre>
+<pre class="literal-block">0 1 * * * /usr/local/bin/foo &gt; /tmp/foo.$(date +\%Y\%m\%dT\%H\%M).log 2&gt;&amp;1</pre>
 <p>Lesson to remember: check the man pages before to google!</p>
 </div>
     </div>
@@ -2628,16 +2572,13 @@ So here are my notes:</p>
 <p>First thanks to memphiz for the <a class="reference external" href="http://forum.kodi.tv/showthread.php?tid=239610">iOS9 support</a>!</p>
 <p>I compiled from his ios9_workaround branch, but it has been <a class="reference external" href="https://github.com/xbmc/xbmc/pull/8250">merged</a> to
 master since:</p>
-<pre class="literal-block">
-$ git clone https://github.com/xbmc/xbmc.git Kodi
+<pre class="literal-block">$ git clone https://github.com/xbmc/xbmc.git Kodi
 $ cd Kodi
 $ git remote add memphiz https://github.com/Memphiz/xbmc.git
 $ git fetch memphiz
-$ git checkout -b ios9_workaround memphiz/ios9_workaround
-</pre>
+$ git checkout -b ios9_workaround memphiz/ios9_workaround</pre>
 <p>Follow the instructions from the README.ios file:</p>
-<pre class="literal-block">
-$ git submodule update --init addons/skin.re-touched
+<pre class="literal-block">$ git submodule update --init addons/skin.re-touched
 $ cd tools/depends
 $ ./bootstrap
 $ ./configure --host=arm-apple-darwin
@@ -2646,8 +2587,7 @@ $ make -j4 -C target/binary-addons
 $ cd ../..
 $ make -j4 -C tools/depends/target/xbmc
 $ make clean
-$ make -j4 xcode_depends
-</pre>
+$ make -j4 xcode_depends</pre>
 <p>Start Xcode and open the Kodi project.
 Open the Preferences, and add your Apple ID if not already
 done:</p>
@@ -2664,22 +2604,20 @@ to create a provisioning profile.</p>
         <ul class="pager postindexpager clearfix">
 <li class="previous"><a href="index-2.html" rel="prev">Newer posts</a></li>
         </ul>
-<script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity="sha256-SDRP1VVYu+tgAGKhddBSl5+ezofHKZeI+OzxakbIe/Y=" crossorigin="anonymous"></script><script type="text/x-mathjax-config">
+<script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML" integrity="sha384-3lJUsx1TJHt7BA4udB5KPnDrlkO8T6J6v/op7ui0BbCjvZ9WqV4Xm6DTP6kQ/iBH" crossorigin="anonymous"></script><script type="text/x-mathjax-config">
         MathJax.Hub.Config({tex2jax: {inlineMath: [['$latex ','$'], ['\\(','\\)']]}});
         </script><!--End of body content--><footer id="footer">
-            Contents © 2019         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2020         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
             
         </footer>
 </div>
 </div>
 
 
-        <script src="assets/js/all-nocdn.js"></script><!-- fancy dates --><script>
-    moment.locale("en");
-    fancydates(0, "YYYY-MM-DD HH:mm");
-    </script><!-- end fancy dates --><script>
+        <script src="assets/js/all-nocdn.js"></script><script>
     baguetteBox.run('div#content', {
         ignoreClass: 'islink',
         captions: function(element) {

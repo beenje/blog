@@ -76,10 +76,11 @@ navbar-dark bg-dark
         <!--Body content-->
         
         
+        
 <article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Switching from git-bigfile to git-lfs</a></h1>
 
         <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
                     Benjamin Bertrand
             </span></p>
             <p class="dateline">
@@ -114,33 +115,26 @@ obvious option to replace <a class="reference external" href="https://github.com
 <p>Here is how to switch a project using <a class="reference external" href="https://github.com/beenje/git-bigfile">git-bigfile</a> to <a class="reference external" href="https://git-lfs.github.com">git-lfs</a>:</p>
 <ol class="arabic">
 <li>
-<p class="first">Make a list of all files tracked by git-bigfile:</p>
-<pre class="literal-block">
-$ git bigfile status | awk '/pushed/ {print $NF}' &gt; /tmp/list
-</pre>
+<p>Make a list of all files tracked by git-bigfile:</p>
+<pre class="literal-block">$ git bigfile status | awk '/pushed/ {print $NF}' &gt; /tmp/list</pre>
 </li>
 <li>
-<p class="first">Edit .gitattributes to replace the filter. Replace <cite>filter=bigfile -crlf</cite> with <cite>filter=lfs diff=lfs merge=lfs -text</cite>:</p>
-<pre class="literal-block">
-$ cat .gitattributes
+<p>Edit .gitattributes to replace the filter. Replace <cite>filter=bigfile -crlf</cite> with <cite>filter=lfs diff=lfs merge=lfs -text</cite>:</p>
+<pre class="literal-block">$ cat .gitattributes
 *.tar.bz2 filter=lfs diff=lfs merge=lfs -text
 *.iso filter=lfs diff=lfs merge=lfs -text
-*.img filter=lfs diff=lfs merge=lfs -text
-</pre>
+*.img filter=lfs diff=lfs merge=lfs -text</pre>
 </li>
 <li>
-<p class="first">Remove all big files from the staging area and add them back with git-lfs:</p>
-<pre class="literal-block">
-$ git rm --cached $(cat /tmp/list)
+<p>Remove all big files from the staging area and add them back with git-lfs:</p>
+<pre class="literal-block">$ git rm --cached $(cat /tmp/list)
 $ git add .
-$ git commit -m "Switch to git-lfs"
-</pre>
+$ git commit -m "Switch to git-lfs"</pre>
 </li>
 <li>
-<p class="first">Check that the files were added using git-lfs. You should see something
+<p>Check that the files were added using git-lfs. You should see something
 like that:</p>
-<pre class="literal-block">
-$ git show HEAD
+<pre class="literal-block">$ git show HEAD
 diff --git a/CentOS_6.4/images/install.img
 b/CentOS_6.4/images/install.img
 index 227ea55..a9cc6a8 100644
@@ -151,14 +145,11 @@ index 227ea55..a9cc6a8 100644
 +version https://git-lfs.github.com/spec/v1
 +oid
 sha256:6fcaac620b82e38e2092a6353ca766a3b01fba7f3fd6a0397c57e979aa293db0
-+size 133255168
-</pre>
++size 133255168</pre>
 </li>
 <li>
-<p class="first">Remove git-bigfile cache directory:</p>
-<pre class="literal-block">
-$ rm -rf .git/bigfile
-</pre>
+<p>Remove git-bigfile cache directory:</p>
+<pre class="literal-block">$ rm -rf .git/bigfile</pre>
 </li>
 </ol>
 <p>Note: to push files larger than 2.1GB to your gitlab server, wait for this
@@ -199,19 +190,17 @@ it will be in 8.4.3.</p>
 
 
         </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
-            Contents © 2019         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2020         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
             
         </footer>
 </div>
 </div>
 
 
-        <script src="../../assets/js/all-nocdn.js"></script><!-- fancy dates --><script>
-    moment.locale("en");
-    fancydates(0, "YYYY-MM-DD HH:mm");
-    </script><!-- end fancy dates --><script>
+        <script src="../../assets/js/all-nocdn.js"></script><script>
     baguetteBox.run('div#content', {
         ignoreClass: 'islink',
         captions: function(element) {

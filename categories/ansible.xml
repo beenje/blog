@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about Ansible)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/ansible.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><lastBuildDate>Tue, 18 Sep 2018 20:09:32 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Experimenting with asyncio on a Raspberry Pi</title><link>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In a previous post, I described how I built a &lt;a class="reference external" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display"&gt;LEGO Macintosh Classic with
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about Ansible)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/ansible.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2020 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
+&lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
+&lt;img alt="Creative Commons License BY-NC-SA"
+style="border-width:0; margin-bottom:12px;"
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 11 Mar 2020 18:05:01 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Experimenting with asyncio on a Raspberry Pi</title><link>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In a previous post, I described how I built a &lt;a class="reference external" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display"&gt;LEGO Macintosh Classic with
 a Raspberry Pi and e-paper display&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;For testing purpose I installed the clock demo which is part of the
 &lt;a class="reference external" href="https://github.com/embeddedartists/gratis"&gt;Embedded Artists repository&lt;/a&gt;.
@@ -8,9 +12,9 @@ I also wanted to take advantage of the button I had integrated.&lt;/p&gt;
 &lt;p&gt;One idea was to create a small web server so that I could receive and display
 messages. The application would basically:&lt;/p&gt;
 &lt;ul class="simple"&gt;
-&lt;li&gt;display the time (every minute)&lt;/li&gt;
-&lt;li&gt;when receiving a message, stop the clock and display the message&lt;/li&gt;
-&lt;li&gt;when the button is pressed, start the clock again&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;display the time (every minute)&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;when receiving a message, stop the clock and display the message&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;when the button is pressed, start the clock again&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;img alt="/images/legomac/press_button.gif" src="http://beenje.github.io/blog/images/legomac/press_button.gif"&gt;
 &lt;p&gt;I don't know about you, but this really makes me think &lt;strong&gt;event loop&lt;/strong&gt;!
@@ -29,19 +33,16 @@ which is kind of the default one.&lt;/p&gt;
 wrote a simple REST API using aiohttp. It uses JSON Web Tokens which is
 something else I have been wanted to try.&lt;/p&gt;
 &lt;p&gt;The API has only 3 endpoints:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-def setup_routes(app):
+&lt;pre class="literal-block"&gt;def setup_routes(app):
     app.router.add_get('/', index)
     app.router.add_post('/login', login)
-    app.router.add_post('/messages', post_message)
-&lt;/pre&gt;
+    app.router.add_post('/messages', post_message)&lt;/pre&gt;
 &lt;ul class="simple"&gt;
-&lt;li&gt;&lt;cite&gt;/&lt;/cite&gt; to check that our token is valid&lt;/li&gt;
-&lt;li&gt;&lt;cite&gt;/login&lt;/cite&gt; to login&lt;/li&gt;
-&lt;li&gt;&lt;cite&gt;/messages&lt;/cite&gt; to post messages&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;cite&gt;/&lt;/cite&gt; to check that our token is valid&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;cite&gt;/login&lt;/cite&gt; to login&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;cite&gt;/messages&lt;/cite&gt; to post messages&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;pre class="literal-block"&gt;
-async def login(request):
+&lt;pre class="literal-block"&gt;async def login(request):
     config = request.app['config']
     data = await request.json()
     try:
@@ -76,8 +77,7 @@ async def post_message(request):
 
 @login_required
 async def index(request):
-    return web.json_response({'message': 'Welcome to LegoMac {}!'.format(request.user)})
-&lt;/pre&gt;
+    return web.json_response({'message': 'Welcome to LegoMac {}!'.format(request.user)})&lt;/pre&gt;
 &lt;/div&gt;
 &lt;div class="section" id="raspberry-pi-gpio-and-asyncio"&gt;
 &lt;h3&gt;Raspberry Pi GPIO and asyncio&lt;/h3&gt;
@@ -104,16 +104,13 @@ consists of writing to a file.&lt;/p&gt;
 &lt;p&gt;There is a library to add file support to asyncio: &lt;a class="reference external" href="https://github.com/Tinche/aiofiles"&gt;aiofiles&lt;/a&gt;.
 The only thing I had to do was basically to wrap the file IO in &lt;a class="reference external" href="https://github.com/embeddedartists/gratis/blob/master/PlatformWithOS/demo/EPD.py"&gt;EPD.py&lt;/a&gt;
 with aiofiles:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-async def _command(self, c):
+&lt;pre class="literal-block"&gt;async def _command(self, c):
     async with aiofiles.open(os.path.join(self._epd_path, 'command'), 'wb') as f:
-        await f.write(c)
-&lt;/pre&gt;
+        await f.write(c)&lt;/pre&gt;
 &lt;p&gt;You can't use &lt;cite&gt;await&lt;/cite&gt; in a class &lt;cite&gt;__init__&lt;/cite&gt; method. So following some recommendations
 from &lt;a class="reference external" href="https://stackoverflow.com/questions/33128325/how-to-set-class-attribute-with-await-in-init"&gt;stackoverflow&lt;/a&gt;,
 I used the factory pattern and moved the actions requiring some IO to a classmethod:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-@classmethod
+&lt;pre class="literal-block"&gt;@classmethod
 async def create(cls, *args, **kwargs):
     self = EPD(*args, **kwargs)
     async with aiofiles.open(os.path.join(self._epd_path, 'version')) as f:
@@ -124,12 +121,9 @@ async def create(cls, *args, **kwargs):
         m = self.PANEL_RE.match(line.rstrip('\n'))
         if m is None:
             raise EPDError('invalid panel string')
-        ...
-&lt;/pre&gt;
+        ...&lt;/pre&gt;
 &lt;p&gt;To create an instance of the EPD class, use:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-epd = await EPD.create([path='/path/to/epd'], [auto=boolean])
-&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;epd = await EPD.create([path='/path/to/epd'], [auto=boolean])&lt;/pre&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;div class="section" id="putting-everything-together-with-aiohttp"&gt;
@@ -140,8 +134,7 @@ epd = await EPD.create([path='/path/to/epd'], [auto=boolean])
 from Embedded Artists repository.&lt;/p&gt;
 &lt;p&gt;As described in aiohttp documentation I created a &lt;a class="reference external" href="http://aiohttp.readthedocs.io/en/stable/web.html#background-tasks"&gt;background task&lt;/a&gt; to display the clock
 every minute:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-async def display_clock(app):
+&lt;pre class="literal-block"&gt;async def display_clock(app):
     """Background task to display clock every minute"""
     clock = Clock(app['epd'])
     first_start = True
@@ -174,8 +167,7 @@ def init_app():
     app = web.Application()
     app.on_startup.append(start_background_tasks)
     app.on_cleanup.append(cleanup_background_tasks)
-    ...
-&lt;/pre&gt;
+    ...&lt;/pre&gt;
 &lt;/div&gt;
 &lt;div class="section" id="stop-the-clock-and-display-a-message"&gt;
 &lt;h3&gt;Stop the clock and display a message&lt;/h3&gt;
@@ -183,8 +175,7 @@ def init_app():
 send the messages to the e-paper display using &lt;cite&gt;ensure_future&lt;/cite&gt; so that
 I can return a json response without having to wait for the message to be
 displayed as it takes about 5 seconds:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-@login_required
+&lt;pre class="literal-block"&gt;@login_required
 async def post_message(request):
     if request.content_type != 'application/json':
         return web.HTTPBadRequest()
@@ -198,16 +189,14 @@ async def post_message(request):
     logger.debug(f'Message received from {request.user}: {message}')
     now = datetime.datetime.now(request.app['timezone'])
     helpers.ensure_future(request.app['epd'].display_message(message, request.user, now))
-    return web.json_response({'message': message}, status=201)
-&lt;/pre&gt;
+    return web.json_response({'message': message}, status=201)&lt;/pre&gt;
 &lt;/div&gt;
 &lt;div class="section" id="start-the-clock-when-pressing-the-button"&gt;
 &lt;h3&gt;Start the clock when pressing the button&lt;/h3&gt;
 &lt;p&gt;To be able to restart the clock when pressing the button, I connect to the
 pigpiod when starting the app (in &lt;cite&gt;start_background_tasks&lt;/cite&gt;) and register
 the &lt;cite&gt;on_input&lt;/cite&gt; callback:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-async def start_background_tasks(app):
+&lt;pre class="literal-block"&gt;async def start_background_tasks(app):
     app['pi'] = apigpio.Pi(app.loop)
     address = (app['config']['pigpiod_host'], app['config']['pigpiod_port'])
     await app['pi'].connect(address)
@@ -216,18 +205,15 @@ async def start_background_tasks(app):
             BUTTON_GPIO,
             edge=apigpio.RISING_EDGE,
             func=functools.partial(on_input, app))
-    ...
-&lt;/pre&gt;
+    ...&lt;/pre&gt;
 &lt;p&gt;In the &lt;cite&gt;on_input&lt;/cite&gt; callback, I re-create the clock background task but only if the previous
 task is done:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-def on_input(app, gpio, level, tick):
+&lt;pre class="literal-block"&gt;def on_input(app, gpio, level, tick):
     """Callback called when pressing the button on the e-paper display"""
     logger.info('on_input {} {} {}'.format(gpio, level, tick))
     if app['clock'].done():
         logger.info('restart clock')
-        app['clock'] = app.loop.create_task(display_clock(app))
-&lt;/pre&gt;
+        app['clock'] = app.loop.create_task(display_clock(app))&lt;/pre&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;div class="section" id="running-on-the-pi"&gt;
@@ -253,17 +239,16 @@ HTTPS. As mentionned in another &lt;a class="reference external" href="http://be
 that very easy if you use docker. So that's what I chose.&lt;/p&gt;
 &lt;p&gt;I created 3 containers:&lt;/p&gt;
 &lt;ul class="simple"&gt;
-&lt;li&gt;traefik&lt;/li&gt;
-&lt;li&gt;pigpiod&lt;/li&gt;
-&lt;li&gt;aiolegomac&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;traefik&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;pigpiod&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;aiolegomac&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;div class="section" id="traefik"&gt;
 &lt;h3&gt;traefik&lt;/h3&gt;
 &lt;p&gt;There are no official Traefik docker images for arm yet, but an &lt;a class="reference external" href="https://github.com/containous/traefik/issues/1665"&gt;issue&lt;/a&gt; is currently opened.
 So it should arrive soon!&lt;/p&gt;
 &lt;p&gt;In the meantime I created my own:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-FROM arm32v6/alpine:3.6
+&lt;pre class="literal-block"&gt;FROM arm32v6/alpine:3.6
 
 RUN apk --update upgrade \
   &amp;amp;&amp;amp; apk --no-cache --no-progress add ca-certificates \
@@ -273,16 +258,14 @@ RUN apk --update upgrade \
 RUN wget -O /usr/local/bin/traefik https://github.com/containous/traefik/releases/download/v1.3.3/traefik_linux-arm \
   &amp;amp;&amp;amp; chmod a+x /usr/local/bin/traefik
 
-ENTRYPOINT ["/usr/local/bin/traefik"]
-&lt;/pre&gt;
+ENTRYPOINT ["/usr/local/bin/traefik"]&lt;/pre&gt;
 &lt;/div&gt;
 &lt;div class="section" id="pigpiod"&gt;
 &lt;h3&gt;pigpiod&lt;/h3&gt;
 &lt;p&gt;For pigpiod, I first created an image based on &lt;cite&gt;arm32v6/alpine&lt;/cite&gt; but I noticed I couldn't send
 a SIGTERM to the daemon to stop it properly... I'm not sure why. Alpine being based on &lt;cite&gt;musl&lt;/cite&gt; instead
 of &lt;cite&gt;glibc&lt;/cite&gt; might be the problem. Here is the Dockerfile I tried:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-FROM arm32v6/alpine:3.6
+&lt;pre class="literal-block"&gt;FROM arm32v6/alpine:3.6
 
 RUN apk add --no-cache --virtual .build-deps \
   gcc \
@@ -299,13 +282,11 @@ RUN apk add --no-cache --virtual .build-deps \
 
 EXPOSE 8888
 
-ENTRYPOINT ["/usr/local/bin/pigpiod", "-g"]
-&lt;/pre&gt;
+ENTRYPOINT ["/usr/local/bin/pigpiod", "-g"]&lt;/pre&gt;
 &lt;p&gt;I even tried using &lt;a class="reference external" href="https://github.com/krallin/tini"&gt;tini&lt;/a&gt; as entrypoint without luck.
 So if someone as the explanation, please share it in the comments.&lt;/p&gt;
 &lt;p&gt;I tried with &lt;cite&gt;resin/rpi-raspbian&lt;/cite&gt; image and I got it working properly right away:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-FROM resin/rpi-raspbian:jessie
+&lt;pre class="literal-block"&gt;FROM resin/rpi-raspbian:jessie
 
 RUN apt-get update \
   &amp;amp;&amp;amp; apt-get install -y \
@@ -323,15 +304,13 @@ RUN curl -o /tmp/pigpio.tar abyz.co.uk/rpi/pigpio/pigpio.tar \
 
 EXPOSE 8888
 
-ENTRYPOINT ["/usr/local/bin/pigpiod", "-g"]
-&lt;/pre&gt;
+ENTRYPOINT ["/usr/local/bin/pigpiod", "-g"]&lt;/pre&gt;
 &lt;p&gt;Note that the container has to run in privileged mode to access the GPIO.&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="aiolegomac"&gt;
 &lt;h3&gt;aiolegomac&lt;/h3&gt;
 &lt;p&gt;For the main application, the Dockerfile is quite standard for a Python application:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-FROM resin/raspberry-pi-python:3.6
+&lt;pre class="literal-block"&gt;FROM resin/raspberry-pi-python:3.6
 
 RUN apt-get update \
   &amp;amp;&amp;amp; apt-get install -y \
@@ -357,8 +336,7 @@ RUN python -m venv /opt/legomac \
 COPY . /app
 
 ENTRYPOINT ["/opt/legomac/bin/python"]
-CMD ["run.py"]
-&lt;/pre&gt;
+CMD ["run.py"]&lt;/pre&gt;
 &lt;p&gt;What about the EPD driver?
 As it uses libfuse to represent the e-paper display as a virtual directory of files,
 the easiest was to install it on the host and to mount it as a volume inside the docker
@@ -369,28 +347,21 @@ container.&lt;/p&gt;
 &lt;h2&gt;Deployment&lt;/h2&gt;
 &lt;p&gt;To install all that on the Pi, I wrote a small &lt;a class="reference external" href="https://www.ansible.com"&gt;Ansible&lt;/a&gt; playbook.&lt;/p&gt;
 &lt;ol class="arabic"&gt;
-&lt;li&gt;&lt;p class="first"&gt;Configure the Pi as described in my &lt;a class="reference external" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display"&gt;previous post&lt;/a&gt;.&lt;/p&gt;
+&lt;li&gt;&lt;p&gt;Configure the Pi as described in my &lt;a class="reference external" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display"&gt;previous post&lt;/a&gt;.&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Clone the playbook:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;$ git clone https://github.com/beenje/legomac.git
+$ cd legomac&lt;/pre&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;Clone the playbook:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-$ git clone https://github.com/beenje/legomac.git
-$ cd legomac
-&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;Create a file &lt;cite&gt;host_vars/legomac&lt;/cite&gt; with your variables (assuming the hostname of the Pi is legomac):&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-aiolegomac_hostname: myhost.example.com
+&lt;li&gt;&lt;p&gt;Create a file &lt;cite&gt;host_vars/legomac&lt;/cite&gt; with your variables (assuming the hostname of the Pi is legomac):&lt;/p&gt;
+&lt;pre class="literal-block"&gt;aiolegomac_hostname: myhost.example.com
 aiolegomac_username: john
 aiolegomac_password: mypassword
 aiolegomac_jwt_secret: secret
 traefik_letsencrypt_email: youremail@example.com
-traefik_letsencrypt_production: true
-&lt;/pre&gt;
+traefik_letsencrypt_production: true&lt;/pre&gt;
 &lt;/li&gt;
-&lt;li&gt;&lt;p class="first"&gt;Run the playbook:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-$ ansible-playbook -i hosts -k playbook.yml
-&lt;/pre&gt;
+&lt;li&gt;&lt;p&gt;Run the playbook:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;$ ansible-playbook -i hosts -k playbook.yml&lt;/pre&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;This will install docker and the EPD driver, download the &lt;a class="reference external" href="https://github.com/beenje/aiolegomac"&gt;aiolegomac repository&lt;/a&gt;, build the 3 docker images
@@ -409,8 +380,7 @@ the clock every minute and you can send messages to it!&lt;/p&gt;
 but I really like &lt;a class="reference external" href="https://httpie.org"&gt;HTTPie&lt;/a&gt;. It's much more user
 friendly.&lt;/p&gt;
 &lt;p&gt;Let's try to access our new server:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-$ http GET https://myhost.example.com
+&lt;pre class="literal-block"&gt;$ http GET https://myhost.example.com
 HTTP/1.1 401 Unauthorized
 Content-Length: 25
 Content-Type: application/json; charset=utf-8
@@ -419,11 +389,9 @@ Server: Python/3.6 aiohttp/2.2.3
 
 {
     "error": "Unauthorized"
-}
-&lt;/pre&gt;
+}&lt;/pre&gt;
 &lt;p&gt;Good, we need to login:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-$ http POST https://myhost.example.com/login username=john password=foo
+&lt;pre class="literal-block"&gt;$ http POST https://myhost.example.com/login username=john password=foo
 HTTP/1.1 400 Bad Request
 Content-Length: 32
 Content-Type: application/json; charset=utf-8
@@ -432,11 +400,9 @@ Server: Python/3.6 aiohttp/2.2.3
 
 {
     "error": "Invalid credentials"
-}
-&lt;/pre&gt;
+}&lt;/pre&gt;
 &lt;p&gt;Oops, wrong password:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-$ http POST https://myhost.example.com/login username=john password='mypassword'
+&lt;pre class="literal-block"&gt;$ http POST https://myhost.example.com/login username=john password='mypassword'
 HTTP/1.1 200 OK
 Content-Length: 134
 Content-Type: application/json; charset=utf-8
@@ -445,11 +411,9 @@ Server: Python/3.6 aiohttp/2.2.3
 
 {
     "token": "eyK0eXAiOiJRV5QiLCJhbGciOiJIUzI1NiJ9.eyJ1c3VyX2lkIjoxLCJleHAiOjE1MDB5MTIwOTh9.hECnj4u2mxvZ2r8IEC-db1T-eKTplM4kWJKZoHhtLxQ"
-}
-&lt;/pre&gt;
+}&lt;/pre&gt;
 &lt;p&gt;We got a token that we can use:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-$ http GET https://myhost.example.com 'Authorization: eyK0eXAiOiJRV5QiLCJhbGciOiJIUzI1NiJ9.eyJ1c3VyX2lkIjoxLCJleHAiOjE1MDB5MTIwOTh9.hECnj4u2mxvZ2r8IEC-db1T-eKTplM4kWJKZoHhtLxQ'
+&lt;pre class="literal-block"&gt;$ http GET https://myhost.example.com 'Authorization: eyK0eXAiOiJRV5QiLCJhbGciOiJIUzI1NiJ9.eyJ1c3VyX2lkIjoxLCJleHAiOjE1MDB5MTIwOTh9.hECnj4u2mxvZ2r8IEC-db1T-eKTplM4kWJKZoHhtLxQ'
 HTTP/1.1 200 OK
 Content-Length: 43
 Content-Type: application/json; charset=utf-8
@@ -458,11 +422,9 @@ Server: Python/3.6 aiohttp/2.2.3
 
 {
     "message": "Welcome to LegoMac john!"
-}
-&lt;/pre&gt;
+}&lt;/pre&gt;
 &lt;p&gt;Authentication is working, so we can send a message:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-$ http POST https://myhost.example.com/messages message='Hello World!' 'Authorization: eyK0eXAiOiJRV5QiLCJhbGciOiJIUzI1NiJ9.eyJ1c3VyX2lkIjoxLCJleHAiOjE1MDB5MTIwOTh9.hECnj4u2mxvZ2r8IEC-db1T-eKTplM4kWJKZoHhtLxQ'
+&lt;pre class="literal-block"&gt;$ http POST https://myhost.example.com/messages message='Hello World!' 'Authorization: eyK0eXAiOiJRV5QiLCJhbGciOiJIUzI1NiJ9.eyJ1c3VyX2lkIjoxLCJleHAiOjE1MDB5MTIwOTh9.hECnj4u2mxvZ2r8IEC-db1T-eKTplM4kWJKZoHhtLxQ'
 HTTP/1.1 201 Created
 Content-Length: 27
 Content-Type: application/json; charset=utf-8
@@ -471,8 +433,7 @@ Server: Python/3.6 aiohttp/2.2.3
 
 {
     "message": "Hello World!"
-}
-&lt;/pre&gt;
+}&lt;/pre&gt;
 &lt;p&gt;Message sent!
 HTTPie is nice for testing, but we can make a small script to easily send messages from the command line.&lt;/p&gt;
 &lt;/div&gt;
@@ -486,8 +447,7 @@ the script will retrieve one after prompting us for a password.
 The token is saved in the configuration file for later use.&lt;/p&gt;
 &lt;p&gt;The following script could be improved with some nicer error messages
 by catching exceptions. But it does the job:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-import os
+&lt;pre class="literal-block"&gt;import os
 import click
 import requests
 import yaml
@@ -546,20 +506,15 @@ def pylegomac(message, conf):
 
 
 if __name__ == '__main__':
-    pylegomac()
-&lt;/pre&gt;
+    pylegomac()&lt;/pre&gt;
 &lt;p&gt;Let's first create a configuration file:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-$ cat ~/.pylegomac.yml
+&lt;pre class="literal-block"&gt;$ cat ~/.pylegomac.yml
 url: https://myhost.example.com
-username: john
-&lt;/pre&gt;
+username: john&lt;/pre&gt;
 &lt;p&gt;Send a message:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-$ python pylegomac.py 'Beautiful is better than ugly. Explicit is better than implicit. Simple is better than complex. Complex is better than complicated.'
+&lt;pre class="literal-block"&gt;$ python pylegomac.py 'Beautiful is better than ugly. Explicit is better than implicit. Simple is better than complex. Complex is better than complicated.'
 Password:
-Message sent
-&lt;/pre&gt;
+Message sent&lt;/pre&gt;
 &lt;img alt="/images/legomac/zen_of_python.jpg" src="http://beenje.github.io/blog/images/legomac/zen_of_python.jpg"&gt;
 &lt;p&gt;Sending a new message won't request the password as the token was saved in the config file.&lt;/p&gt;
 &lt;/div&gt;
@@ -570,8 +525,8 @@ Message sent
 asyncio is quite pleasant to work with. I really like the async/await syntax.&lt;/p&gt;
 &lt;p&gt;All the code is on github:&lt;/p&gt;
 &lt;ul class="simple"&gt;
-&lt;li&gt;&lt;a class="reference external" href="https://github.com/beenje/aiolegomac"&gt;aiolegomac&lt;/a&gt; (the server and client script)&lt;/li&gt;
-&lt;li&gt;&lt;a class="reference external" href="https://github.com/beenje/legomac"&gt;legomac&lt;/a&gt; (the Ansible playbook to deploy the server)&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;a class="reference external" href="https://github.com/beenje/aiolegomac"&gt;aiolegomac&lt;/a&gt; (the server and client script)&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;a class="reference external" href="https://github.com/beenje/legomac"&gt;legomac&lt;/a&gt; (the Ansible playbook to deploy the server)&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;Why did I only write a command line script to send messages and no web interface?
 Don't worry, that's planned! I could have used Jinja2. But I'd like to try a javascript framework.
@@ -598,8 +553,7 @@ favorite tool to deploy software.&lt;/p&gt;
 &lt;p&gt;So let's write a small Ansible playbook to install OpenVPN on a Raspberry Pi.&lt;/p&gt;
 &lt;p&gt;First the firewall configuration. I like to use &lt;a class="reference external" href="https://help.ubuntu.com/community/UFW"&gt;ufw&lt;/a&gt; which is quite easy to
 setup:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-- name: install dependencies
+&lt;pre class="literal-block"&gt;- name: install dependencies
   apt: name=ufw state=present update_cache=yes cache_valid_time=3600
 
 - name: update ufw default forward policy
@@ -634,15 +588,13 @@ setup:&lt;/p&gt;
   ufw: rule=allow port={{openvpn_port}} proto={{openvpn_protocol}}
 
 - name: enable ufw
-  ufw: logging=on state=enabled
-&lt;/pre&gt;
+  ufw: logging=on state=enabled&lt;/pre&gt;
 &lt;p&gt;This enables IP forwarding, adds the required NAT rules and allows ssh and
 openvpn.&lt;/p&gt;
 &lt;p&gt;The rest of the playbook installs OpenVPN and generates all the keys automatically,
 except the Diffie-Hellman one that should be generated locally.
 This is just because it takes for ever on the Pi :-)&lt;/p&gt;
-&lt;pre class="literal-block"&gt;
-- name: install openvpn
+&lt;pre class="literal-block"&gt;- name: install openvpn
   apt: name=openvpn state=present
 
 - name: create /etc/openvpn
@@ -711,8 +663,7 @@ This is just because it takes for ever on the Pi :-)&lt;/p&gt;
   notify: restart openvpn
 
 - name: start openvpn
-  service: name=openvpn state=started
-&lt;/pre&gt;
+  service: name=openvpn state=started&lt;/pre&gt;
 &lt;p&gt;The &lt;em&gt;create_clientside&lt;/em&gt; script generates all the required client keys and creates an ovpn file
 that includes them.  It makes it very easy to install on any device: just one file to
 drop.&lt;/p&gt;
