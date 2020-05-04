@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about conda)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/cat_conda.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2020 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
+&lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
+&lt;img alt="Creative Commons License BY-NC-SA"
+style="border-width:0; margin-bottom:12px;"
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Mon, 04 May 2020 20:04:31 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>How to setup a Windows VM to build conda packages</title><link>http://beenje.github.io/blog/posts/how-to-setup-a-windows-vm-to-build-conda-packages/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I mostly work on macOS and Linux and I have almost no development experience on Windows.
+I recently wanted to update the &lt;a class="reference external" href="https://github.com/conda-forge/epics-base-feedstock"&gt;epics-base feedstock&lt;/a&gt;
+on &lt;a class="reference external" href="https://github.com/conda-forge"&gt;conda-forge&lt;/a&gt;.
+The goal was to have it working on the 3 platforms. A good opportunity to try building on Windows.&lt;/p&gt;
+&lt;p&gt;As explained in &lt;a class="reference external" href="https://conda-forge.org/docs/maintainer/knowledge_base.html#particularities-on-windows"&gt;conda-forge documentation&lt;/a&gt;,
+it's possible to test Windows builds even if you don't work on Windows.&lt;/p&gt;
+&lt;div class="section" id="create-a-windows-virtual-machine"&gt;
+&lt;h2&gt;Create a Windows Virtual Machine&lt;/h2&gt;
+&lt;p&gt;The first step is to download a Virtual Machine from &lt;a class="reference external" href="https://developer.microsoft.com/en-us/microsoft-edge/tools/vms/"&gt;https://developer.microsoft.com/en-us/microsoft-edge/tools/vms/&lt;/a&gt;.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/download-vm.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/download-vm.png"&gt;
+&lt;p&gt;I'll use &lt;a class="reference external" href="https://www.virtualbox.org"&gt;VirtualBox&lt;/a&gt; as I work on macOS and already have it installed.&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;&lt;p&gt;Download &lt;a class="reference external" href="https://az792536.vo.msecnd.net/vms/VMBuild_20190311/VirtualBox/MSEdge/MSEdge.Win10.VirtualBox.zip"&gt;MSEdge.Win10.VirtualBox.zip&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Unzip the archive&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Move the &lt;cite&gt;MSEdge - Win10&lt;/cite&gt; directory under &lt;cite&gt;~/VirtualBox VMs/&lt;/cite&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Open &lt;cite&gt;MSEdge - Win10.ovf&lt;/cite&gt; to import it in VirtualBox&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Start the new VM&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;img alt="/images/setup-windows-vm-conda/msedge-win10-login.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/msedge-win10-login.png"&gt;
+&lt;p&gt;As mentioned on the download page, the password is "Passw0rd!".&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/msedge-win10-home.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/msedge-win10-home.png"&gt;
+&lt;/div&gt;
+&lt;div class="section" id="developer-tools-installation"&gt;
+&lt;h2&gt;Developer tools installation&lt;/h2&gt;
+&lt;p&gt;Now that we have a Windows VM, we need a few developers tools to build conda packages.&lt;/p&gt;
+&lt;div class="section" id="vscode"&gt;
+&lt;h3&gt;VScode&lt;/h3&gt;
+&lt;p&gt;We'll first need an editor. I've been a &lt;a class="reference external" href="https://www.vim.org"&gt;Vim&lt;/a&gt; user for many years, but have to say I started to use VScode more lately,
+with &lt;a class="reference external" href="https://github.com/VSCodeVim/Vim"&gt;VSCodeVim&lt;/a&gt; of course :-).
+Microsoft is really doing a nice job. There are many great extensions.
+I can only recommend it.&lt;/p&gt;
+&lt;p&gt;Download VScode from &lt;a class="reference external" href="https://code.visualstudio.com/"&gt;https://code.visualstudio.com/&lt;/a&gt;.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/download-vscode.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/download-vscode.png"&gt;
+&lt;p&gt;Obviously, an editor is very personal. Pick the one you prefer!&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="git"&gt;
+&lt;h3&gt;Git&lt;/h3&gt;
+&lt;p&gt;To work with code, &lt;a class="reference external" href="https://git-scm.org"&gt;Git&lt;/a&gt; is essential.
+Download and install it from &lt;a class="reference external" href="https://git-scm.com/downloads"&gt;https://git-scm.com/downloads&lt;/a&gt;.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/download-git.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/download-git.png"&gt;
+&lt;/div&gt;
+&lt;div class="section" id="microsofts-visual-c"&gt;
+&lt;h3&gt;Microsoft’s Visual C++&lt;/h3&gt;
+&lt;p&gt;To compile native code (C, C++, etc.) on Windows, we need Microsoft’s Visual C++.
+As explained in this &lt;a class="reference external" href="https://wiki.python.org/moin/WindowsCompilers"&gt;Python wiki&lt;/a&gt;,
+each Python version uses a specific compiler version.&lt;/p&gt;
+&lt;p&gt;Since CPython 3.5, Visual C++ 14.X is required.
+This compiler has been part of Visual Studio since Visual Studio 2015.&lt;/p&gt;
+&lt;p&gt;As of May 2020, the current version of Visual Studio that you can download from
+&lt;a class="reference external" href="https://visualstudio.microsoft.com/downloads/"&gt;https://visualstudio.microsoft.com/downloads/&lt;/a&gt; is Visual Studio 2019,
+which comes with Visual C++ 14.2.&lt;/p&gt;
+&lt;p&gt;We could use that version, but conda-forge currently uses Visual Studio 2017.
+The transition from vs2015 to vs2017 was done in April 2020.
+Downloading an older release requires a Microsoft account.&lt;/p&gt;
+&lt;p&gt;Once logged in, go to &lt;a class="reference external" href="https://visualstudio.microsoft.com/vs/older-downloads/"&gt;https://visualstudio.microsoft.com/vs/older-downloads/&lt;/a&gt;
+and download the &lt;strong&gt;Build Tools for Visual Studio 2017&lt;/strong&gt;.
+You don't need to download the full Visual Studio edition.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/download-build-tools-for-visual-studio-2017.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/download-build-tools-for-visual-studio-2017.png"&gt;
+&lt;p&gt;During installation, only select the build tools.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/install-build-tools-for-visual-studio-2017.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/install-build-tools-for-visual-studio-2017.png"&gt;
+&lt;p&gt;The installation process will take some time. Be patient.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/visual-studio-installer.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/visual-studio-installer.png"&gt;
+&lt;/div&gt;
+&lt;div class="section" id="miniconda3"&gt;
+&lt;h3&gt;Miniconda3&lt;/h3&gt;
+&lt;p&gt;Now that we have an editor, Git and Windows C++ compilers, the last tool missing is &lt;a class="reference external" href="https://docs.conda.io/en/latest/"&gt;conda&lt;/a&gt;.
+Download and install Miniconda3 from &lt;a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html#windows-installers"&gt;https://docs.conda.io/en/latest/miniconda.html#windows-installers&lt;/a&gt;.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/download-miniconda.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/download-miniconda.png"&gt;
+&lt;p&gt;To use conda, start the Anaconda Prompt from the Start menu.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/start-anaconda-prompt.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/start-anaconda-prompt.png"&gt;
+&lt;p&gt;Just a few more steps to configure conda.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Add conda-forge channel:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;conda config --add channels conda-forge&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Install conda-build:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;conda install -y conda-build&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Download the &lt;cite&gt;conda_build_config.yaml&lt;/cite&gt; file from &lt;a class="reference external" href="https://github.com/conda-forge/conda-forge-pinning-feedstock"&gt;conda-forge-pinning-feedstock&lt;/a&gt;
+under the home directory:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;curl -LO https://raw.githubusercontent.com/conda-forge/conda-forge-pinning-feedstock/master/recipe/conda_build_config.yaml&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The &lt;a class="reference external" href="https://github.com/conda-forge/conda-forge-pinning-feedstock/blob/master/recipe/conda_build_config.yaml"&gt;conda_build_config.yaml&lt;/a&gt;
+file contains the version of compilers to use as well as the
+&lt;a class="reference external" href="https://conda-forge.org/docs/maintainer/pinning_deps.html#globally-pinned-packages"&gt;globally pinned packages&lt;/a&gt;.
+Notice that the compiler is set to vs2017 for Windows.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/conda-build-config-yaml.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/conda-build-config-yaml.png"&gt;
+&lt;p&gt;Note that this file contains several versions for Python: 3.6 and 3.7 at
+the time of writing. This means that when building conda packages with Python, you'll always
+build 2 packages (except for noarch).
+You can keep it as is if you want to test every versions. In most cases, testing one version
+of Python is enough. Especially during development.
+You can tune that file to your needs. I'll comment out Python 3.6.&lt;/p&gt;
+&lt;pre class="literal-block"&gt;python:
+#  - 3.6.* *_cpython
+  - 3.7.* *_cpython&lt;/pre&gt;
+&lt;p&gt;That's it! We now have all the tools required to build conda packages locally on Windows.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/conda-info.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/conda-info.png"&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="testing"&gt;
+&lt;h2&gt;Testing&lt;/h2&gt;
+&lt;p&gt;To check that everything is setup properly, let's try to build an existing conda recipe
+that requires a compiler.
+Start an Anaconda Prompt and run:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;mkdir conda-forge
+cd conda-forge
+git clone https://github.com/conda-forge/cython-feedstock.git
+cd cython-feedstock
+conda build recipe&lt;/pre&gt;
+&lt;p&gt;The build should succeed and create the &lt;cite&gt;cython-0.29.17-py37h1834ac0_0.tar.bz2&lt;/cite&gt; package.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/cython-build.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/cython-build.png"&gt;
+&lt;/div&gt;
+&lt;div class="section" id="summary"&gt;
+&lt;h2&gt;Summary&lt;/h2&gt;
+&lt;p&gt;We now have a VM with all the tools required to build and
+test locally conda packages on Windows.&lt;/p&gt;
+&lt;p&gt;In a coming post, I'll detail how I built epics-base on Linux, macOS and Windows.&lt;/p&gt;
+&lt;/div&gt;&lt;/div&gt;</description><category>conda</category><category>epics</category><category>python</category><category>windows</category><guid>http://beenje.github.io/blog/posts/how-to-setup-a-windows-vm-to-build-conda-packages/</guid><pubDate>Sun, 03 May 2020 20:00:42 GMT</pubDate></item></channel></rss>

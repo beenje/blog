@@ -3,7 +3,7 @@
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 11 Mar 2020 18:05:03 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>My LEGO Macintosh Classic with Raspberry Pi and e-paper display</title><link>http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;UPDATED 2019-11-24&lt;/p&gt;
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sun, 03 May 2020 21:40:47 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>My LEGO Macintosh Classic with Raspberry Pi and e-paper display</title><link>http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;UPDATED 2019-11-24&lt;/p&gt;
 &lt;p&gt;Beginning of April I read an inspiring blog post from Jannis Hermanns
 about a &lt;a class="reference external" href="https://jann.is/lego-macintosh-classic/"&gt;LEGO Machintosh Classic with e-paper display&lt;/a&gt;.  It was a really nice and cool article.&lt;/p&gt;
 &lt;p&gt;I've been playing with some Raspberry Pis before but only with
@@ -45,7 +45,7 @@ existing soldering iron when I discovered this &lt;a class="reference external" 
 I used the installation jig and it was really easy to install.
 There is a nice &lt;a class="reference external" href="https://youtu.be/VDJ2-feg2lk"&gt;video&lt;/a&gt; that explains how
 to proceed:&lt;/p&gt;
-&lt;a href="https://youtu.be/VDJ2-feg2lk"&gt;https://youtu.be/VDJ2-feg2lk&lt;/a&gt;&lt;/div&gt;
+&lt;iframe width="480" height="270" src="https://www.youtube.com/embed/VDJ2-feg2lk?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen&gt;&lt;/iframe&gt;&lt;/div&gt;
 &lt;div class="section" id="connecting-the-display-to-the-pi"&gt;
 &lt;h2&gt;Connecting the display to the Pi&lt;/h2&gt;
 &lt;p&gt;Based on Jannis article I initially thought it wasn't possible to use a ribbon

@@ -3,7 +3,126 @@
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 11 Mar 2020 20:38:37 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Searching by date in Elasticsearch</title><link>http://beenje.github.io/blog/posts/searching-by-date-in-elasticsearch/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Mon, 04 May 2020 20:04:31 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>How to setup a Windows VM to build conda packages</title><link>http://beenje.github.io/blog/posts/how-to-setup-a-windows-vm-to-build-conda-packages/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I mostly work on macOS and Linux and I have almost no development experience on Windows.
+I recently wanted to update the &lt;a class="reference external" href="https://github.com/conda-forge/epics-base-feedstock"&gt;epics-base feedstock&lt;/a&gt;
+on &lt;a class="reference external" href="https://github.com/conda-forge"&gt;conda-forge&lt;/a&gt;.
+The goal was to have it working on the 3 platforms. A good opportunity to try building on Windows.&lt;/p&gt;
+&lt;p&gt;As explained in &lt;a class="reference external" href="https://conda-forge.org/docs/maintainer/knowledge_base.html#particularities-on-windows"&gt;conda-forge documentation&lt;/a&gt;,
+it's possible to test Windows builds even if you don't work on Windows.&lt;/p&gt;
+&lt;div class="section" id="create-a-windows-virtual-machine"&gt;
+&lt;h2&gt;Create a Windows Virtual Machine&lt;/h2&gt;
+&lt;p&gt;The first step is to download a Virtual Machine from &lt;a class="reference external" href="https://developer.microsoft.com/en-us/microsoft-edge/tools/vms/"&gt;https://developer.microsoft.com/en-us/microsoft-edge/tools/vms/&lt;/a&gt;.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/download-vm.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/download-vm.png"&gt;
+&lt;p&gt;I'll use &lt;a class="reference external" href="https://www.virtualbox.org"&gt;VirtualBox&lt;/a&gt; as I work on macOS and already have it installed.&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;&lt;p&gt;Download &lt;a class="reference external" href="https://az792536.vo.msecnd.net/vms/VMBuild_20190311/VirtualBox/MSEdge/MSEdge.Win10.VirtualBox.zip"&gt;MSEdge.Win10.VirtualBox.zip&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Unzip the archive&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Move the &lt;cite&gt;MSEdge - Win10&lt;/cite&gt; directory under &lt;cite&gt;~/VirtualBox VMs/&lt;/cite&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Open &lt;cite&gt;MSEdge - Win10.ovf&lt;/cite&gt; to import it in VirtualBox&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Start the new VM&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;img alt="/images/setup-windows-vm-conda/msedge-win10-login.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/msedge-win10-login.png"&gt;
+&lt;p&gt;As mentioned on the download page, the password is "Passw0rd!".&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/msedge-win10-home.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/msedge-win10-home.png"&gt;
+&lt;/div&gt;
+&lt;div class="section" id="developer-tools-installation"&gt;
+&lt;h2&gt;Developer tools installation&lt;/h2&gt;
+&lt;p&gt;Now that we have a Windows VM, we need a few developers tools to build conda packages.&lt;/p&gt;
+&lt;div class="section" id="vscode"&gt;
+&lt;h3&gt;VScode&lt;/h3&gt;
+&lt;p&gt;We'll first need an editor. I've been a &lt;a class="reference external" href="https://www.vim.org"&gt;Vim&lt;/a&gt; user for many years, but have to say I started to use VScode more lately,
+with &lt;a class="reference external" href="https://github.com/VSCodeVim/Vim"&gt;VSCodeVim&lt;/a&gt; of course :-).
+Microsoft is really doing a nice job. There are many great extensions.
+I can only recommend it.&lt;/p&gt;
+&lt;p&gt;Download VScode from &lt;a class="reference external" href="https://code.visualstudio.com/"&gt;https://code.visualstudio.com/&lt;/a&gt;.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/download-vscode.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/download-vscode.png"&gt;
+&lt;p&gt;Obviously, an editor is very personal. Pick the one you prefer!&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="git"&gt;
+&lt;h3&gt;Git&lt;/h3&gt;
+&lt;p&gt;To work with code, &lt;a class="reference external" href="https://git-scm.org"&gt;Git&lt;/a&gt; is essential.
+Download and install it from &lt;a class="reference external" href="https://git-scm.com/downloads"&gt;https://git-scm.com/downloads&lt;/a&gt;.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/download-git.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/download-git.png"&gt;
+&lt;/div&gt;
+&lt;div class="section" id="microsofts-visual-c"&gt;
+&lt;h3&gt;Microsoft’s Visual C++&lt;/h3&gt;
+&lt;p&gt;To compile native code (C, C++, etc.) on Windows, we need Microsoft’s Visual C++.
+As explained in this &lt;a class="reference external" href="https://wiki.python.org/moin/WindowsCompilers"&gt;Python wiki&lt;/a&gt;,
+each Python version uses a specific compiler version.&lt;/p&gt;
+&lt;p&gt;Since CPython 3.5, Visual C++ 14.X is required.
+This compiler has been part of Visual Studio since Visual Studio 2015.&lt;/p&gt;
+&lt;p&gt;As of May 2020, the current version of Visual Studio that you can download from
+&lt;a class="reference external" href="https://visualstudio.microsoft.com/downloads/"&gt;https://visualstudio.microsoft.com/downloads/&lt;/a&gt; is Visual Studio 2019,
+which comes with Visual C++ 14.2.&lt;/p&gt;
+&lt;p&gt;We could use that version, but conda-forge currently uses Visual Studio 2017.
+The transition from vs2015 to vs2017 was done in April 2020.
+Downloading an older release requires a Microsoft account.&lt;/p&gt;
+&lt;p&gt;Once logged in, go to &lt;a class="reference external" href="https://visualstudio.microsoft.com/vs/older-downloads/"&gt;https://visualstudio.microsoft.com/vs/older-downloads/&lt;/a&gt;
+and download the &lt;strong&gt;Build Tools for Visual Studio 2017&lt;/strong&gt;.
+You don't need to download the full Visual Studio edition.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/download-build-tools-for-visual-studio-2017.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/download-build-tools-for-visual-studio-2017.png"&gt;
+&lt;p&gt;During installation, only select the build tools.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/install-build-tools-for-visual-studio-2017.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/install-build-tools-for-visual-studio-2017.png"&gt;
+&lt;p&gt;The installation process will take some time. Be patient.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/visual-studio-installer.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/visual-studio-installer.png"&gt;
+&lt;/div&gt;
+&lt;div class="section" id="miniconda3"&gt;
+&lt;h3&gt;Miniconda3&lt;/h3&gt;
+&lt;p&gt;Now that we have an editor, Git and Windows C++ compilers, the last tool missing is &lt;a class="reference external" href="https://docs.conda.io/en/latest/"&gt;conda&lt;/a&gt;.
+Download and install Miniconda3 from &lt;a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html#windows-installers"&gt;https://docs.conda.io/en/latest/miniconda.html#windows-installers&lt;/a&gt;.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/download-miniconda.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/download-miniconda.png"&gt;
+&lt;p&gt;To use conda, start the Anaconda Prompt from the Start menu.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/start-anaconda-prompt.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/start-anaconda-prompt.png"&gt;
+&lt;p&gt;Just a few more steps to configure conda.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Add conda-forge channel:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;conda config --add channels conda-forge&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Install conda-build:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;conda install -y conda-build&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Download the &lt;cite&gt;conda_build_config.yaml&lt;/cite&gt; file from &lt;a class="reference external" href="https://github.com/conda-forge/conda-forge-pinning-feedstock"&gt;conda-forge-pinning-feedstock&lt;/a&gt;
+under the home directory:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;curl -LO https://raw.githubusercontent.com/conda-forge/conda-forge-pinning-feedstock/master/recipe/conda_build_config.yaml&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The &lt;a class="reference external" href="https://github.com/conda-forge/conda-forge-pinning-feedstock/blob/master/recipe/conda_build_config.yaml"&gt;conda_build_config.yaml&lt;/a&gt;
+file contains the version of compilers to use as well as the
+&lt;a class="reference external" href="https://conda-forge.org/docs/maintainer/pinning_deps.html#globally-pinned-packages"&gt;globally pinned packages&lt;/a&gt;.
+Notice that the compiler is set to vs2017 for Windows.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/conda-build-config-yaml.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/conda-build-config-yaml.png"&gt;
+&lt;p&gt;Note that this file contains several versions for Python: 3.6 and 3.7 at
+the time of writing. This means that when building conda packages with Python, you'll always
+build 2 packages (except for noarch).
+You can keep it as is if you want to test every versions. In most cases, testing one version
+of Python is enough. Especially during development.
+You can tune that file to your needs. I'll comment out Python 3.6.&lt;/p&gt;
+&lt;pre class="literal-block"&gt;python:
+#  - 3.6.* *_cpython
+  - 3.7.* *_cpython&lt;/pre&gt;
+&lt;p&gt;That's it! We now have all the tools required to build conda packages locally on Windows.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/conda-info.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/conda-info.png"&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="testing"&gt;
+&lt;h2&gt;Testing&lt;/h2&gt;
+&lt;p&gt;To check that everything is setup properly, let's try to build an existing conda recipe
+that requires a compiler.
+Start an Anaconda Prompt and run:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;mkdir conda-forge
+cd conda-forge
+git clone https://github.com/conda-forge/cython-feedstock.git
+cd cython-feedstock
+conda build recipe&lt;/pre&gt;
+&lt;p&gt;The build should succeed and create the &lt;cite&gt;cython-0.29.17-py37h1834ac0_0.tar.bz2&lt;/cite&gt; package.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/cython-build.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/cython-build.png"&gt;
+&lt;/div&gt;
+&lt;div class="section" id="summary"&gt;
+&lt;h2&gt;Summary&lt;/h2&gt;
+&lt;p&gt;We now have a VM with all the tools required to build and
+test locally conda packages on Windows.&lt;/p&gt;
+&lt;p&gt;In a coming post, I'll detail how I built epics-base on Linux, macOS and Windows.&lt;/p&gt;
+&lt;/div&gt;&lt;/div&gt;</description><category>conda</category><category>epics</category><category>python</category><category>windows</category><guid>http://beenje.github.io/blog/posts/how-to-setup-a-windows-vm-to-build-conda-packages/</guid><pubDate>Sun, 03 May 2020 20:00:42 GMT</pubDate></item><item><title>Searching by date in Elasticsearch</title><link>http://beenje.github.io/blog/posts/searching-by-date-in-elasticsearch/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;&lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
 &lt;p&gt;I recently indexed some documents in Elasticsearch at work and had issues retrieving what I wanted by date. Googling didn't get me very useful results, except the official &lt;a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html"&gt;documentation&lt;/a&gt;. I thought it was worth sharing what wasn't obvious to me by reading the documentation.&lt;/p&gt;
@@ -6855,7 +6974,7 @@ existing soldering iron when I discovered this &lt;a class="reference external" 
 I used the installation jig and it was really easy to install.
 There is a nice &lt;a class="reference external" href="https://youtu.be/VDJ2-feg2lk"&gt;video&lt;/a&gt; that explains how
 to proceed:&lt;/p&gt;
-&lt;a href="https://youtu.be/VDJ2-feg2lk"&gt;https://youtu.be/VDJ2-feg2lk&lt;/a&gt;&lt;/div&gt;
+&lt;iframe width="480" height="270" src="https://www.youtube.com/embed/VDJ2-feg2lk?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen&gt;&lt;/iframe&gt;&lt;/div&gt;
 &lt;div class="section" id="connecting-the-display-to-the-pi"&gt;
 &lt;h2&gt;Connecting the display to the Pi&lt;/h2&gt;
 &lt;p&gt;Based on Jannis article I initially thought it wasn't possible to use a ribbon
@@ -7171,113 +7290,4 @@ late as possible&lt;/p&gt;&lt;/li&gt;
 &lt;li&gt;&lt;p&gt;put related commands in the same RUN instruction&lt;/p&gt;&lt;/li&gt;
 &lt;li&gt;&lt;p&gt;remove files in the same RUN command that created them&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>docker</category><guid>http://beenje.github.io/blog/posts/dockerfile-anti-patterns-and-best-practices/</guid><pubDate>Thu, 16 Mar 2017 21:10:49 GMT</pubDate></item><item><title>Control your accessories from Home Assistant with Siri and HomeKit</title><link>http://beenje.github.io/blog/posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;While reading more about &lt;a class="reference external" href="https://home-assistant.io"&gt;Home Assistant&lt;/a&gt;, I
-discovered it was possible to control your accessories from Home Assistant
-with Siri and HomeKit. I decided to give that a try.&lt;/p&gt;
-&lt;p&gt;This requires to install &lt;a class="reference external" href="https://github.com/nfarina/homebridge"&gt;Homebridge&lt;/a&gt; and
-the &lt;a class="reference external" href="https://github.com/home-assistant/homebridge-homeassistant"&gt;homebridge-homeassitant plugin&lt;/a&gt;.&lt;/p&gt;
-&lt;div class="section" id="install-homebridge"&gt;
-&lt;h2&gt;Install Homebridge&lt;/h2&gt;
-&lt;p&gt;Homebridge is a lightweight NodeJS server that emulates the iOS HomeKit
-API. Let's install it in the same &lt;a class="reference external" href="http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container"&gt;LXC container as Home Assistant&lt;/a&gt;:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;root@turris:~# lxc-attach -n homeassistant&lt;/pre&gt;
-&lt;p&gt;I followed the &lt;a class="reference external" href="https://github.com/nfarina/homebridge/wiki/Running-HomeBridge-on-a-Raspberry-Pi"&gt;Running HomeBridge on a Raspberry Pi page&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;We need curl and git:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;root@homeassistant:~# apt-get install -y curl git&lt;/pre&gt;
-&lt;p&gt;Install Node:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;root@homeassistant:~# curl -sL https://deb.nodesource.com/setup_6.x | bash -
-## Installing the NodeSource Node.js v6.x repo...
-
-## Populating apt-get cache...
-
-root@homeassistant:~# apt-get install -y nodejs&lt;/pre&gt;
-&lt;p&gt;Install avahi and other dependencies:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;root@homeassistant:~# apt-get install -y libavahi-compat-libdnssd-dev&lt;/pre&gt;
-&lt;p&gt;Install Homebridge and dependencies still following this &lt;a class="reference external" href="https://github.com/nfarina/homebridge/wiki/Running-HomeBridge-on-a-Raspberry-Pi#install-homebridge-and-dependencies"&gt;page&lt;/a&gt;.
-Note that I had a strange problem here. The &lt;em&gt;npm&lt;/em&gt; command didn't produce
-any output. I found the same issue on &lt;a class="reference external" href="http://stackoverflow.com/questions/40755598/containers-lxc-attach-and-npm-no-output"&gt;stackoverflow&lt;/a&gt;
-and even an &lt;a class="reference external" href="https://github.com/npm/npm/issues/15681"&gt;issue on github&lt;/a&gt;.
-The workaround is just to open a new terminal...&lt;/p&gt;
-&lt;pre class="literal-block"&gt;root@homeassistant:~# npm install -g --unsafe-perm homebridge hap-nodejs node-gyp
-root@homeassistant:~# cd /usr/lib/node_modules/homebridge/
-root@homeassistant:/usr/lib/node_modules/homebridge# npm install --unsafe-perm bignum
-root@homeassistant:/usr/lib/node_modules/homebridge# cd ../hap-nodejs/node_modules/mdns/
-root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# node-gyp BUILDTYPE=Release rebuild&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="install-and-configure-homebridge-homeassistant-plugin"&gt;
-&lt;h2&gt;Install and configure homebridge-homeassistant plugin&lt;/h2&gt;
-&lt;pre class="literal-block"&gt;root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# cd
-root@homeassistant:~# npm install -g --unsafe-perm homebridge-homeassistant&lt;/pre&gt;
-&lt;p&gt;Try to start Homebridge:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;root@homeassistant:~# su -s /bin/bash homeassistant
-homeassistant@homeassistant:~$ homebridge&lt;/pre&gt;
-&lt;p&gt;Homebridge won't do anything until you've created a configuration file.
-So press CTRL-C and create the file &lt;cite&gt;~/.homebridge/config.json&lt;/cite&gt;:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;homeassistant@homeassistant:~$ cat &amp;lt;&amp;lt;EOF &amp;gt;&amp;gt; ~/.homebridge/config.json
-{
-  "bridge": {
-    "name": "Homebridge",
-    "username": "CC:22:3D:E3:CE:30",
-    "port": 51826,
-    "pin": "031-45-154"
-  },
-
-  "platforms": [
-    {
-      "platform": "HomeAssistant",
-      "name": "HomeAssistant",
-      "host": "http://localhost:8123",
-      "logging": false
-    }
- ]
-}
-EOF&lt;/pre&gt;
-&lt;p&gt;Note that you can change the username and pin code.
-You will need the PIN code to add the Homebridge accessory to HomeKit.&lt;/p&gt;
-&lt;p&gt;Check the &lt;a class="reference external" href="https://github.com/home-assistant/homebridge-homeassistant#configuration"&gt;Home Assistant plugin page&lt;/a&gt;
-for more information on how to configure the plugin.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="automatically-start-homebridge"&gt;
-&lt;h2&gt;Automatically start Homebridge&lt;/h2&gt;
-&lt;p&gt;Let's configure systemd.
-Create the file &lt;cite&gt;/etc/systemd/system/home-assistant@homebridge.service&lt;/cite&gt;:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;root@homeassistant:~# cat &amp;lt;&amp;lt;EOF &amp;gt;&amp;gt; /etc/systemd/system/home-assistant@homebridge.service
-[Unit]
-Description=Node.js HomeKit Server
-After=syslog.target network-online.target
-
-[Service]
-Type=simple
-User=homeassistant
-ExecStart=/usr/bin/homebridge -U /home/homeassistant/.homebridge
-Restart=on-failure
-RestartSec=10
-KillMode=process
-
-[Install]
-WantedBy=multi-user.target
-EOF&lt;/pre&gt;
-&lt;p&gt;Enable and launch Homebridge:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;root@homeassistant:~# systemctl --system daemon-reload
-root@homeassistant:~# systemctl enable home-assistant@homebridge
-Created symlink from /etc/systemd/system/multi-user.target.wants/home-assistant@homebridge.service to /etc/systemd/system/home-assistant@homebridge.service.
-root@homeassistant:~# systemctl start home-assistant@homebridge&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="adding-homebridge-to-ios"&gt;
-&lt;h2&gt;Adding Homebridge to iOS&lt;/h2&gt;
-&lt;p&gt;Homebridge and the Home Assistant plugin are now running.
-Using the Home app on your iOS device, you should be able to add the accessory "Homebridge".
-See &lt;a class="reference external" href="https://github.com/nfarina/homebridge#adding-homebridge-to-ios"&gt;Homebridge README&lt;/a&gt; for
-more information. You will need to enter the &lt;em&gt;PIN code&lt;/em&gt; defined in your
-&lt;cite&gt;config.json&lt;/cite&gt; file.&lt;/p&gt;
-&lt;p&gt;You should then see the Homebridge bridge on your device:&lt;/p&gt;
-&lt;img alt="/images/homebridge.png" src="http://beenje.github.io/blog/images/homebridge.png"&gt;
-&lt;p&gt;And it will automatically add all the accessories defined in Home Assistant!&lt;/p&gt;
-&lt;img alt="/images/home_accessories.png" src="http://beenje.github.io/blog/images/home_accessories.png"&gt;
-&lt;p&gt;You can now even use Siri to control your devices, like turning ON or OFF the TV VPN.&lt;/p&gt;
-&lt;img alt="/images/siri_tv_vpn_off.png" src="http://beenje.github.io/blog/images/siri_tv_vpn_off.png"&gt;
-&lt;p&gt;Note that I renamed the original switch to make it easier to pronounce.
-As described in the &lt;a class="reference external" href="https://github.com/nfarina/homebridge#interacting-with-your-devices"&gt;README&lt;/a&gt;,
-avoid names usually used by Siri like "Radio" or "Sonos".&lt;/p&gt;
-&lt;p&gt;That's it! Homebridge is really a nice addition to Home Assistant if you have some iOS devices at home.&lt;/p&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>home-assistant</category><category>iOS</category><category>LXC</category><category>turris</category><guid>http://beenje.github.io/blog/posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/</guid><pubDate>Thu, 16 Feb 2017 21:58:56 GMT</pubDate></item></channel></rss>
+&lt;/div&gt;&lt;/div&gt;</description><category>docker</category><guid>http://beenje.github.io/blog/posts/dockerfile-anti-patterns-and-best-practices/</guid><pubDate>Thu, 16 Mar 2017 21:10:49 GMT</pubDate></item></channel></rss>

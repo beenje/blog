@@ -3,7 +3,7 @@
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 11 Mar 2020 18:05:01 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Experimenting with asyncio on a Raspberry Pi</title><link>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In a previous post, I described how I built a &lt;a class="reference external" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display"&gt;LEGO Macintosh Classic with
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sun, 03 May 2020 21:40:47 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Experimenting with asyncio on a Raspberry Pi</title><link>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In a previous post, I described how I built a &lt;a class="reference external" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display"&gt;LEGO Macintosh Classic with
 a Raspberry Pi and e-paper display&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;For testing purpose I installed the clock demo which is part of the
 &lt;a class="reference external" href="https://github.com/embeddedartists/gratis"&gt;Embedded Artists repository&lt;/a&gt;.
@@ -725,16 +725,16 @@ The documentation to use the image is quite clear and can be found &lt;a class="
 I wanted to access GitLab using HTTPS, so I disabled port 443 in nginx
 configuration. To do that I had to modify the template
 &lt;cite&gt;/usr/syno/share/nginx/WWWService.mustache&lt;/cite&gt; and reboot the NAS:&lt;/p&gt;
-&lt;pre class="code diff"&gt;&lt;a name="rest_code_7870ce14df8241a4b6006e19315a25dc-1"&gt;&lt;/a&gt;&lt;span class="gd"&gt;--- WWWService.mustache.org 2016-08-16 23:25:06.000000000 +0100&lt;/span&gt;
-&lt;a name="rest_code_7870ce14df8241a4b6006e19315a25dc-2"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+++ WWWService.mustache 2016-09-19 13:53:45.256735700 +0100&lt;/span&gt;
-&lt;a name="rest_code_7870ce14df8241a4b6006e19315a25dc-3"&gt;&lt;/a&gt;&lt;span class="gu"&gt;@@ -1,8 +1,6 @@&lt;/span&gt;
-&lt;a name="rest_code_7870ce14df8241a4b6006e19315a25dc-4"&gt;&lt;/a&gt; server {
-&lt;a name="rest_code_7870ce14df8241a4b6006e19315a25dc-5"&gt;&lt;/a&gt;     listen 80 default_server{{#reuseport}} reuseport{{/reuseport}};
-&lt;a name="rest_code_7870ce14df8241a4b6006e19315a25dc-6"&gt;&lt;/a&gt;     listen [::]:80 default_server{{#reuseport}} reuseport{{/reuseport}};
-&lt;a name="rest_code_7870ce14df8241a4b6006e19315a25dc-7"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    listen 443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};&lt;/span&gt;
-&lt;a name="rest_code_7870ce14df8241a4b6006e19315a25dc-8"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    listen [::]:443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};&lt;/span&gt;
-&lt;a name="rest_code_7870ce14df8241a4b6006e19315a25dc-9"&gt;&lt;/a&gt;
-&lt;a name="rest_code_7870ce14df8241a4b6006e19315a25dc-10"&gt;&lt;/a&gt;     server_name _;
+&lt;pre class="code diff"&gt;&lt;a name="rest_code_ef779b598a1244559261aa2265101ac8-1"&gt;&lt;/a&gt;&lt;span class="gd"&gt;--- WWWService.mustache.org 2016-08-16 23:25:06.000000000 +0100&lt;/span&gt;
+&lt;a name="rest_code_ef779b598a1244559261aa2265101ac8-2"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+++ WWWService.mustache 2016-09-19 13:53:45.256735700 +0100&lt;/span&gt;
+&lt;a name="rest_code_ef779b598a1244559261aa2265101ac8-3"&gt;&lt;/a&gt;&lt;span class="gu"&gt;@@ -1,8 +1,6 @@&lt;/span&gt;
+&lt;a name="rest_code_ef779b598a1244559261aa2265101ac8-4"&gt;&lt;/a&gt; server {
+&lt;a name="rest_code_ef779b598a1244559261aa2265101ac8-5"&gt;&lt;/a&gt;     listen 80 default_server{{#reuseport}} reuseport{{/reuseport}};
+&lt;a name="rest_code_ef779b598a1244559261aa2265101ac8-6"&gt;&lt;/a&gt;     listen [::]:80 default_server{{#reuseport}} reuseport{{/reuseport}};
+&lt;a name="rest_code_ef779b598a1244559261aa2265101ac8-7"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    listen 443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};&lt;/span&gt;
+&lt;a name="rest_code_ef779b598a1244559261aa2265101ac8-8"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    listen [::]:443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};&lt;/span&gt;
+&lt;a name="rest_code_ef779b598a1244559261aa2265101ac8-9"&gt;&lt;/a&gt;
+&lt;a name="rest_code_ef779b598a1244559261aa2265101ac8-10"&gt;&lt;/a&gt;     server_name _;
 &lt;/pre&gt;&lt;p&gt;The port 22 is also already used by the ssh daemon so I decided to use
 the port 2222. I created the directory &lt;cite&gt;/volume1/docker/gitlab&lt;/cite&gt; to store
 all GitLab data. Here are the required variables in the

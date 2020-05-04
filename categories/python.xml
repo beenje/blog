@@ -3,7 +3,126 @@
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 11 Mar 2020 20:38:36 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Searching by date in Elasticsearch</title><link>http://beenje.github.io/blog/posts/searching-by-date-in-elasticsearch/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Mon, 04 May 2020 20:04:31 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>How to setup a Windows VM to build conda packages</title><link>http://beenje.github.io/blog/posts/how-to-setup-a-windows-vm-to-build-conda-packages/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I mostly work on macOS and Linux and I have almost no development experience on Windows.
+I recently wanted to update the &lt;a class="reference external" href="https://github.com/conda-forge/epics-base-feedstock"&gt;epics-base feedstock&lt;/a&gt;
+on &lt;a class="reference external" href="https://github.com/conda-forge"&gt;conda-forge&lt;/a&gt;.
+The goal was to have it working on the 3 platforms. A good opportunity to try building on Windows.&lt;/p&gt;
+&lt;p&gt;As explained in &lt;a class="reference external" href="https://conda-forge.org/docs/maintainer/knowledge_base.html#particularities-on-windows"&gt;conda-forge documentation&lt;/a&gt;,
+it's possible to test Windows builds even if you don't work on Windows.&lt;/p&gt;
+&lt;div class="section" id="create-a-windows-virtual-machine"&gt;
+&lt;h2&gt;Create a Windows Virtual Machine&lt;/h2&gt;
+&lt;p&gt;The first step is to download a Virtual Machine from &lt;a class="reference external" href="https://developer.microsoft.com/en-us/microsoft-edge/tools/vms/"&gt;https://developer.microsoft.com/en-us/microsoft-edge/tools/vms/&lt;/a&gt;.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/download-vm.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/download-vm.png"&gt;
+&lt;p&gt;I'll use &lt;a class="reference external" href="https://www.virtualbox.org"&gt;VirtualBox&lt;/a&gt; as I work on macOS and already have it installed.&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;&lt;p&gt;Download &lt;a class="reference external" href="https://az792536.vo.msecnd.net/vms/VMBuild_20190311/VirtualBox/MSEdge/MSEdge.Win10.VirtualBox.zip"&gt;MSEdge.Win10.VirtualBox.zip&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Unzip the archive&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Move the &lt;cite&gt;MSEdge - Win10&lt;/cite&gt; directory under &lt;cite&gt;~/VirtualBox VMs/&lt;/cite&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Open &lt;cite&gt;MSEdge - Win10.ovf&lt;/cite&gt; to import it in VirtualBox&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Start the new VM&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;img alt="/images/setup-windows-vm-conda/msedge-win10-login.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/msedge-win10-login.png"&gt;
+&lt;p&gt;As mentioned on the download page, the password is "Passw0rd!".&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/msedge-win10-home.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/msedge-win10-home.png"&gt;
+&lt;/div&gt;
+&lt;div class="section" id="developer-tools-installation"&gt;
+&lt;h2&gt;Developer tools installation&lt;/h2&gt;
+&lt;p&gt;Now that we have a Windows VM, we need a few developers tools to build conda packages.&lt;/p&gt;
+&lt;div class="section" id="vscode"&gt;
+&lt;h3&gt;VScode&lt;/h3&gt;
+&lt;p&gt;We'll first need an editor. I've been a &lt;a class="reference external" href="https://www.vim.org"&gt;Vim&lt;/a&gt; user for many years, but have to say I started to use VScode more lately,
+with &lt;a class="reference external" href="https://github.com/VSCodeVim/Vim"&gt;VSCodeVim&lt;/a&gt; of course :-).
+Microsoft is really doing a nice job. There are many great extensions.
+I can only recommend it.&lt;/p&gt;
+&lt;p&gt;Download VScode from &lt;a class="reference external" href="https://code.visualstudio.com/"&gt;https://code.visualstudio.com/&lt;/a&gt;.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/download-vscode.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/download-vscode.png"&gt;
+&lt;p&gt;Obviously, an editor is very personal. Pick the one you prefer!&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="git"&gt;
+&lt;h3&gt;Git&lt;/h3&gt;
+&lt;p&gt;To work with code, &lt;a class="reference external" href="https://git-scm.org"&gt;Git&lt;/a&gt; is essential.
+Download and install it from &lt;a class="reference external" href="https://git-scm.com/downloads"&gt;https://git-scm.com/downloads&lt;/a&gt;.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/download-git.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/download-git.png"&gt;
+&lt;/div&gt;
+&lt;div class="section" id="microsofts-visual-c"&gt;
+&lt;h3&gt;Microsoft’s Visual C++&lt;/h3&gt;
+&lt;p&gt;To compile native code (C, C++, etc.) on Windows, we need Microsoft’s Visual C++.
+As explained in this &lt;a class="reference external" href="https://wiki.python.org/moin/WindowsCompilers"&gt;Python wiki&lt;/a&gt;,
+each Python version uses a specific compiler version.&lt;/p&gt;
+&lt;p&gt;Since CPython 3.5, Visual C++ 14.X is required.
+This compiler has been part of Visual Studio since Visual Studio 2015.&lt;/p&gt;
+&lt;p&gt;As of May 2020, the current version of Visual Studio that you can download from
+&lt;a class="reference external" href="https://visualstudio.microsoft.com/downloads/"&gt;https://visualstudio.microsoft.com/downloads/&lt;/a&gt; is Visual Studio 2019,
+which comes with Visual C++ 14.2.&lt;/p&gt;
+&lt;p&gt;We could use that version, but conda-forge currently uses Visual Studio 2017.
+The transition from vs2015 to vs2017 was done in April 2020.
+Downloading an older release requires a Microsoft account.&lt;/p&gt;
+&lt;p&gt;Once logged in, go to &lt;a class="reference external" href="https://visualstudio.microsoft.com/vs/older-downloads/"&gt;https://visualstudio.microsoft.com/vs/older-downloads/&lt;/a&gt;
+and download the &lt;strong&gt;Build Tools for Visual Studio 2017&lt;/strong&gt;.
+You don't need to download the full Visual Studio edition.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/download-build-tools-for-visual-studio-2017.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/download-build-tools-for-visual-studio-2017.png"&gt;
+&lt;p&gt;During installation, only select the build tools.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/install-build-tools-for-visual-studio-2017.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/install-build-tools-for-visual-studio-2017.png"&gt;
+&lt;p&gt;The installation process will take some time. Be patient.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/visual-studio-installer.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/visual-studio-installer.png"&gt;
+&lt;/div&gt;
+&lt;div class="section" id="miniconda3"&gt;
+&lt;h3&gt;Miniconda3&lt;/h3&gt;
+&lt;p&gt;Now that we have an editor, Git and Windows C++ compilers, the last tool missing is &lt;a class="reference external" href="https://docs.conda.io/en/latest/"&gt;conda&lt;/a&gt;.
+Download and install Miniconda3 from &lt;a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html#windows-installers"&gt;https://docs.conda.io/en/latest/miniconda.html#windows-installers&lt;/a&gt;.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/download-miniconda.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/download-miniconda.png"&gt;
+&lt;p&gt;To use conda, start the Anaconda Prompt from the Start menu.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/start-anaconda-prompt.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/start-anaconda-prompt.png"&gt;
+&lt;p&gt;Just a few more steps to configure conda.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Add conda-forge channel:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;conda config --add channels conda-forge&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Install conda-build:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;conda install -y conda-build&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;Download the &lt;cite&gt;conda_build_config.yaml&lt;/cite&gt; file from &lt;a class="reference external" href="https://github.com/conda-forge/conda-forge-pinning-feedstock"&gt;conda-forge-pinning-feedstock&lt;/a&gt;
+under the home directory:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;curl -LO https://raw.githubusercontent.com/conda-forge/conda-forge-pinning-feedstock/master/recipe/conda_build_config.yaml&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The &lt;a class="reference external" href="https://github.com/conda-forge/conda-forge-pinning-feedstock/blob/master/recipe/conda_build_config.yaml"&gt;conda_build_config.yaml&lt;/a&gt;
+file contains the version of compilers to use as well as the
+&lt;a class="reference external" href="https://conda-forge.org/docs/maintainer/pinning_deps.html#globally-pinned-packages"&gt;globally pinned packages&lt;/a&gt;.
+Notice that the compiler is set to vs2017 for Windows.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/conda-build-config-yaml.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/conda-build-config-yaml.png"&gt;
+&lt;p&gt;Note that this file contains several versions for Python: 3.6 and 3.7 at
+the time of writing. This means that when building conda packages with Python, you'll always
+build 2 packages (except for noarch).
+You can keep it as is if you want to test every versions. In most cases, testing one version
+of Python is enough. Especially during development.
+You can tune that file to your needs. I'll comment out Python 3.6.&lt;/p&gt;
+&lt;pre class="literal-block"&gt;python:
+#  - 3.6.* *_cpython
+  - 3.7.* *_cpython&lt;/pre&gt;
+&lt;p&gt;That's it! We now have all the tools required to build conda packages locally on Windows.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/conda-info.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/conda-info.png"&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="testing"&gt;
+&lt;h2&gt;Testing&lt;/h2&gt;
+&lt;p&gt;To check that everything is setup properly, let's try to build an existing conda recipe
+that requires a compiler.
+Start an Anaconda Prompt and run:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;mkdir conda-forge
+cd conda-forge
+git clone https://github.com/conda-forge/cython-feedstock.git
+cd cython-feedstock
+conda build recipe&lt;/pre&gt;
+&lt;p&gt;The build should succeed and create the &lt;cite&gt;cython-0.29.17-py37h1834ac0_0.tar.bz2&lt;/cite&gt; package.&lt;/p&gt;
+&lt;img alt="/images/setup-windows-vm-conda/cython-build.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/cython-build.png"&gt;
+&lt;/div&gt;
+&lt;div class="section" id="summary"&gt;
+&lt;h2&gt;Summary&lt;/h2&gt;
+&lt;p&gt;We now have a VM with all the tools required to build and
+test locally conda packages on Windows.&lt;/p&gt;
+&lt;p&gt;In a coming post, I'll detail how I built epics-base on Linux, macOS and Windows.&lt;/p&gt;
+&lt;/div&gt;&lt;/div&gt;</description><category>conda</category><category>epics</category><category>python</category><category>windows</category><guid>http://beenje.github.io/blog/posts/how-to-setup-a-windows-vm-to-build-conda-packages/</guid><pubDate>Sun, 03 May 2020 20:00:42 GMT</pubDate></item><item><title>Searching by date in Elasticsearch</title><link>http://beenje.github.io/blog/posts/searching-by-date-in-elasticsearch/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;&lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
 &lt;p&gt;I recently indexed some documents in Elasticsearch at work and had issues retrieving what I wanted by date. Googling didn't get me very useful results, except the official &lt;a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html"&gt;documentation&lt;/a&gt;. I thought it was worth sharing what wasn't obvious to me by reading the documentation.&lt;/p&gt;
@@ -6855,7 +6974,7 @@ existing soldering iron when I discovered this &lt;a class="reference external" 
 I used the installation jig and it was really easy to install.
 There is a nice &lt;a class="reference external" href="https://youtu.be/VDJ2-feg2lk"&gt;video&lt;/a&gt; that explains how
 to proceed:&lt;/p&gt;
-&lt;a href="https://youtu.be/VDJ2-feg2lk"&gt;https://youtu.be/VDJ2-feg2lk&lt;/a&gt;&lt;/div&gt;
+&lt;iframe width="480" height="270" src="https://www.youtube.com/embed/VDJ2-feg2lk?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen&gt;&lt;/iframe&gt;&lt;/div&gt;
 &lt;div class="section" id="connecting-the-display-to-the-pi"&gt;
 &lt;h2&gt;Connecting the display to the Pi&lt;/h2&gt;
 &lt;p&gt;Based on Jannis article I initially thought it wasn't possible to use a ribbon
@@ -7079,1055 +7198,4 @@ if you haven't heard of it yet.&lt;/p&gt;&lt;/li&gt;
 make the image a bit smaller.&lt;/p&gt;&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;I switched from virtualenv to &lt;a class="reference external" href="https://conda.io"&gt;conda&lt;/a&gt; a while ago and I really enjoy it.
-A big thanks to &lt;a class="reference external" href="https://www.continuum.io"&gt;Continuum Analytics&lt;/a&gt;!&lt;/p&gt;&lt;/div&gt;</description><category>conda</category><category>docker</category><category>python</category><guid>http://beenje.github.io/blog/posts/docker-and-conda/</guid><pubDate>Sat, 28 Jan 2017 22:32:56 GMT</pubDate></item><item><title>Parsing and indexing PDF in Python</title><link>http://beenje.github.io/blog/posts/parsing-and-indexing-pdf-in-python/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;I have a &lt;a href="http://www.getdoxie.com"&gt;Doxie Go&lt;/a&gt; scanner and I scan all the documents I receive in paper.
-That's nice, but it creates another problem. All the resulting PDF files have to be named, organized and stored...
-Doing that manually is boring and time consuming. Of course that's something I want to automate!&lt;/p&gt;
-&lt;p&gt;I even bought &lt;a href="https://www.noodlesoft.com"&gt;Hazel&lt;/a&gt; a while ago.
-It's a nice software that monitors files in a folder and performs specific instructions based on the rules you defined.
-It works well but I felt a bit limited and I thought I could probably write something more tailored to my use case.
-And that would be more fun :-)&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;h2 id="Parsing-PDF-in-Python"&gt;Parsing PDF in Python&lt;a class="anchor-link" href="http://beenje.github.io/blog/posts/parsing-and-indexing-pdf-in-python/#Parsing-PDF-in-Python"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;A quick solution I found was to run &lt;a href="https://linux.die.net/man/1/pdftotext"&gt;pdftotext&lt;/a&gt; using subprocess.
-I looked at &lt;a href="https://euske.github.io/pdfminer/"&gt;PDFMiner&lt;/a&gt;, a pure Python PDF parser but I found pdftotext
-output to be more accurate.
-On MacOS, you can install it using &lt;a href="http://brew.sh"&gt;Homebrew&lt;/a&gt;:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ brew install Caskroom/cask/pdftotext&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Here is a simple Python function to do that:&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In [1]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;subprocess&lt;/span&gt;
-
-&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;parse_pdf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;filename&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
-    &lt;span class="k"&gt;try&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-        &lt;span class="n"&gt;content&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;subprocess&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;check_output&lt;/span&gt;&lt;span class="p"&gt;([&lt;/span&gt;&lt;span class="s2"&gt;"pdftotext"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'-enc'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'UTF-8'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;filename&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s2"&gt;"-"&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
-    &lt;span class="k"&gt;except&lt;/span&gt; &lt;span class="n"&gt;subprocess&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;CalledProcessError&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-        &lt;span class="nb"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'Skipping &lt;/span&gt;&lt;span class="si"&gt;{}&lt;/span&gt;&lt;span class="s1"&gt; (pdftotext returned status &lt;/span&gt;&lt;span class="si"&gt;{}&lt;/span&gt;&lt;span class="s1"&gt;)'&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;format&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;filename&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;returncode&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
-        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="kc"&gt;None&lt;/span&gt;
-    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;content&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;decode&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'utf-8'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;Let's try to parse a pdf file. We'll use &lt;code&gt;requests&lt;/code&gt; to download a sample file.&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In [2]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;requests&lt;/span&gt;
-
-&lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;'http://www.cbu.edu.zm/downloads/pdf-sample.pdf'&lt;/span&gt;
-&lt;span class="n"&gt;response&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="k"&gt;with&lt;/span&gt; &lt;span class="nb"&gt;open&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'/tmp/pdf-sample.pdf'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'wb'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
-    &lt;span class="n"&gt;f&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;write&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;content&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;Let's first look at the PDF:&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In [3]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;IPython.display&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;IFrame&lt;/span&gt;
-&lt;span class="n"&gt;IFrame&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'http://www.cbu.edu.zm/downloads/pdf-sample.pdf'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;width&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;600&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;height&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;870&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="output_wrapper"&gt;
-&lt;div class="output"&gt;
-
-
-&lt;div class="output_area"&gt;
-
-    &lt;div class="prompt output_prompt"&gt;Out[3]:&lt;/div&gt;
-
-
-
-&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
-
-        &lt;iframe width="600" height="870" src="http://www.cbu.edu.zm/downloads/pdf-sample.pdf" frameborder="0" allowfullscreen&gt;&lt;/iframe&gt;
-        
-&lt;/div&gt;
-
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;Nothing complex. It should be easy to parse.&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In [4]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;content&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;parse_pdf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'/tmp/pdf-sample.pdf'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;span class="n"&gt;content&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="output_wrapper"&gt;
-&lt;div class="output"&gt;
-
-
-&lt;div class="output_area"&gt;
-
-    &lt;div class="prompt output_prompt"&gt;Out[4]:&lt;/div&gt;
-
-
-
-
-&lt;div class="output_text output_subarea output_execute_result"&gt;
-&lt;pre&gt;"Adobe Acrobat PDF Files\nAdobe® Portable Document Format (PDF) is a universal file format that preserves all of the fonts, formatting, colours and graphics of any source document, regardless of the application and platform used to create it. Adobe PDF is an ideal format for electronic document distribution as it overcomes the problems commonly encountered with electronic file sharing. • Anyone, anywhere can open a PDF file. All you need is the free Adobe Acrobat Reader. Recipients of other file formats sometimes can't open files because they don't have the applications used to create the documents. PDF files always print correctly on any printing device. PDF files always display exactly as created, regardless of fonts, software, and operating systems. Fonts, and graphics are not lost due to platform, software, and version incompatibilities. The free Acrobat Reader is easy to download and can be freely distributed by anyone. Compact PDF files are smaller than their source files and download a page at a time for fast display on the Web.\n\n• •\n\n• •\n\n\x0c"&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;This works quite well. The layout is not respected but it's the text that matters. It would be easy to define some regex to define rules based on the PDF content.&lt;/p&gt;
-&lt;p&gt;This could be the first step in naming and organizing the scanned documents.
-But it would be nice to have an interface to easily search in all the files.
-I've already used MongoDB full text search in a webapp I wrote and it worked well for my use case.
-But I read about Elasticsearch and I always wanted to give it a try.&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;h2 id="Elasticsearch-Ingest-Attachment-Processor-Plugin"&gt;Elasticsearch Ingest Attachment Processor Plugin&lt;a class="anchor-link" href="http://beenje.github.io/blog/posts/parsing-and-indexing-pdf-in-python/#Elasticsearch-Ingest-Attachment-Processor-Plugin"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;I could just index the result from pdftotext, but I know there is a plugin that can parse PDF files.&lt;/p&gt;
-&lt;p&gt;The &lt;a href="https://github.com/elastic/elasticsearch-mapper-attachments#mapper-attachments-type-for-elasticsearch&amp;gt;"&gt;Mapper Attachments Type plugin&lt;/a&gt;
-is &lt;a href="https://www.elastic.co/guide/en/elasticsearch/plugins/5.x/mapper-attachments.html&amp;gt;"&gt;deprecated&lt;/a&gt;
-in 5.0.0. It has been replaced with the &lt;a href="https://www.elastic.co/guide/en/elasticsearch/plugins/5.x/ingest-attachment.html"&gt;ingest-attachment&lt;/a&gt;
-plugin.
-So let's look at that.&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;h3 id="Running-Elasticsearch"&gt;Running Elasticsearch&lt;a class="anchor-link" href="http://beenje.github.io/blog/posts/parsing-and-indexing-pdf-in-python/#Running-Elasticsearch"&gt;¶&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;To run Elasticsearch, the easiest is to use Docker.
-As the official image from &lt;a href="https://hub.docker.com/_/elasticsearch/"&gt;Docker Hub&lt;/a&gt; comes with no plugin, we'll
-create our own image.
-See &lt;a href="https://www.elastic.co/blog/elasticsearch-docker-plugin-management"&gt;Elasticsearch Plugin Management with Docker&lt;/a&gt;
-for more information.&lt;/p&gt;
-&lt;p&gt;Here is our &lt;code&gt;Dockerfile&lt;/code&gt;:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;FROM elasticsearch:5
-
-RUN /usr/share/elasticsearch/bin/elasticsearch-plugin install ingest-attachment&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Create the &lt;code&gt;elasticsearch-ingest&lt;/code&gt; docker image:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ docker build -t elasticsearch-ingest .&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We can now run elasticsearch with the ingest-attachment plugin:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ docker run -d -p 9200:9200 elasticsearch-ingest&lt;/code&gt;&lt;/pre&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;h3 id="Python-Elasticsearch-Client"&gt;Python Elasticsearch Client&lt;a class="anchor-link" href="http://beenje.github.io/blog/posts/parsing-and-indexing-pdf-in-python/#Python-Elasticsearch-Client"&gt;¶&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;We'll use &lt;a href="https://elasticsearch-py.readthedocs.io/en/master/"&gt;elasticsearch-py&lt;/a&gt;
-to interact with our Elasticsearch cluster.&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In [5]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;elasticsearch&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;Elasticsearch&lt;/span&gt;
-&lt;span class="n"&gt;es&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Elasticsearch&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;Let's first check that our elasticsearch cluster is alive by asking about its health:&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In [6]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;es&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;cat&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;health&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="output_wrapper"&gt;
-&lt;div class="output"&gt;
-
-
-&lt;div class="output_area"&gt;
-
-    &lt;div class="prompt output_prompt"&gt;Out[6]:&lt;/div&gt;
-
-
-
-
-&lt;div class="output_text output_subarea output_execute_result"&gt;
-&lt;pre&gt;'1479333419 21:56:59 elasticsearch green 1 1 0 0 0 0 0 0 - 100.0%\n'&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;Nice! We can start playing with our ES cluster.&lt;/p&gt;
-&lt;p&gt;As described in the &lt;a href="https://www.elastic.co/guide/en/elasticsearch/plugins/master/using-ingest-attachment.html"&gt;documentation&lt;/a&gt;, we first have to create a pipeline to use the Ingest Attachment Processor Plugin:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;PUT _ingest/pipeline/attachment
-{
-  "description" : "Extract attachment information",
-  "processors" : [
-    {
-      "attachment" : {
-        "field" : "data"
-      }
-    }
-  ]
-}&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;OK, how do we do that using the Python client?&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In [7]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-  &lt;span class="s2"&gt;"description"&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;"Extract attachment information"&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
-  &lt;span class="s2"&gt;"processors"&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;[&lt;/span&gt;
-    &lt;span class="p"&gt;{&lt;/span&gt;
-      &lt;span class="s2"&gt;"attachment"&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
-        &lt;span class="s2"&gt;"field"&lt;/span&gt; &lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;"data"&lt;/span&gt;
-      &lt;span class="p"&gt;}&lt;/span&gt;
-    &lt;span class="p"&gt;}&lt;/span&gt;
-  &lt;span class="p"&gt;]&lt;/span&gt;
-&lt;span class="p"&gt;}&lt;/span&gt;
-&lt;span class="n"&gt;es&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;index&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;index&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'_ingest'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;doc_type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'pipeline'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;id&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'attachment'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="output_wrapper"&gt;
-&lt;div class="output"&gt;
-
-
-&lt;div class="output_area"&gt;
-
-    &lt;div class="prompt output_prompt"&gt;Out[7]:&lt;/div&gt;
-
-
-
-
-&lt;div class="output_text output_subarea output_execute_result"&gt;
-&lt;pre&gt;{'acknowledged': True}&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;Now, we can send a document to our pipeline. Let's start by using the same example as in the documentation:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;PUT my_index/my_type/my_id?pipeline=attachment
-{
-  "data": "e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0="
-}&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;Using Python client, this gives:&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In [8]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;result1&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;es&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;index&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;index&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'my_index'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;doc_type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'my_type'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;pipeline&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'attachment'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
-                  &lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;'data'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="s2"&gt;"e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0="&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
-&lt;span class="n"&gt;result1&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="output_wrapper"&gt;
-&lt;div class="output"&gt;
-
-
-&lt;div class="output_area"&gt;
-
-    &lt;div class="prompt output_prompt"&gt;Out[8]:&lt;/div&gt;
-
-
-
-
-&lt;div class="output_text output_subarea output_execute_result"&gt;
-&lt;pre&gt;{'_id': 'AVhvJKzVIvjFWZACJU_t',
- '_index': 'my_index',
- '_shards': {'failed': 0, 'successful': 1, 'total': 2},
- '_type': 'my_type',
- '_version': 1,
- 'created': True,
- 'result': 'created'}&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;Let's try to get the created document based on its id:&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In [9]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;es&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;index&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'my_index'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;doc_type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'my_type'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;id&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;result1&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'_id'&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="output_wrapper"&gt;
-&lt;div class="output"&gt;
-
-
-&lt;div class="output_area"&gt;
-
-    &lt;div class="prompt output_prompt"&gt;Out[9]:&lt;/div&gt;
-
-
-
-
-&lt;div class="output_text output_subarea output_execute_result"&gt;
-&lt;pre&gt;{'_id': 'AVhvJKzVIvjFWZACJU_t',
- '_index': 'my_index',
- '_source': {'attachment': {'content': 'Lorem ipsum dolor sit amet',
-   'content_length': 28,
-   'content_type': 'application/rtf',
-   'language': 'ro'},
-  'data': 'e1xydGYxXGFuc2kNCkxvcmVtIGlwc3VtIGRvbG9yIHNpdCBhbWV0DQpccGFyIH0='},
- '_type': 'my_type',
- '_version': 1,
- 'found': True}&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;We can see that the binary data passed to the pipeline was a Rich Text Format file and that the content was extracted: &lt;em&gt;Lorem ipsum dolor sit amet&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;Displaying the binary data is not very useful. It doesn't matter in this example as it's quite small.
-But it would be much bigger even on small files. We can exclude it using &lt;code&gt;_source_exclude&lt;/code&gt;:&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In [10]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;es&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;index&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'my_index'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;doc_type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'my_type'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;id&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;result1&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'_id'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;_source_exclude&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'data'&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="output_wrapper"&gt;
-&lt;div class="output"&gt;
-
-
-&lt;div class="output_area"&gt;
-
-    &lt;div class="prompt output_prompt"&gt;Out[10]:&lt;/div&gt;
-
-
-
-
-&lt;div class="output_text output_subarea output_execute_result"&gt;
-&lt;pre&gt;{'_id': 'AVhvJKzVIvjFWZACJU_t',
- '_index': 'my_index',
- '_source': {'attachment': {'content': 'Lorem ipsum dolor sit amet',
-   'content_length': 28,
-   'content_type': 'application/rtf',
-   'language': 'ro'}},
- '_type': 'my_type',
- '_version': 1,
- 'found': True}&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;h3 id="Indexing-PDF-files"&gt;Indexing PDF files&lt;a class="anchor-link" href="http://beenje.github.io/blog/posts/parsing-and-indexing-pdf-in-python/#Indexing-PDF-files"&gt;¶&lt;/a&gt;&lt;/h3&gt;&lt;p&gt;Let's try to parse the same sample pdf as before.&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In [11]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s1"&gt;'http://www.cbu.edu.zm/downloads/pdf-sample.pdf'&lt;/span&gt;
-&lt;span class="n"&gt;response&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;requests&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;url&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;Note that we have to encode the content of the pdf before to pass it to ES.
-The source field must be a base64 encoded binary.&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In [12]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;base64&lt;/span&gt;
-
-&lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;base64&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;b64encode&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;content&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;decode&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'ascii'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In [13]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;result2&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;es&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;index&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;index&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'my_index'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;doc_type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'my_type'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;pipeline&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'attachment'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
-                  &lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;{&lt;/span&gt;&lt;span class="s1"&gt;'data'&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
-&lt;span class="n"&gt;result2&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="output_wrapper"&gt;
-&lt;div class="output"&gt;
-
-
-&lt;div class="output_area"&gt;
-
-    &lt;div class="prompt output_prompt"&gt;Out[13]:&lt;/div&gt;
-
-
-
-
-&lt;div class="output_text output_subarea output_execute_result"&gt;
-&lt;pre&gt;{'_id': 'AVhvJMC6IvjFWZACJU_u',
- '_index': 'my_index',
- '_shards': {'failed': 0, 'successful': 1, 'total': 2},
- '_type': 'my_type',
- '_version': 1,
- 'created': True,
- 'result': 'created'}&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;We can get the document based on its id:&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In [14]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;doc&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;es&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;index&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'my_index'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;doc_type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'my_type'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;id&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;result2&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'_id'&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt; &lt;span class="n"&gt;_source_exclude&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'data'&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
-&lt;span class="n"&gt;doc&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="output_wrapper"&gt;
-&lt;div class="output"&gt;
-
-
-&lt;div class="output_area"&gt;
-
-    &lt;div class="prompt output_prompt"&gt;Out[14]:&lt;/div&gt;
-
-
-
-
-&lt;div class="output_text output_subarea output_execute_result"&gt;
-&lt;pre&gt;{'_id': 'AVhvJMC6IvjFWZACJU_u',
- '_index': 'my_index',
- '_source': {'attachment': {'author': 'cdaily',
-   'content': "Adobe Acrobat PDF Files\n\nAdobe® Portable Document Format (PDF) is a universal file format that preserves all\nof the fonts, formatting, colours and graphics of any source document, regardless of\nthe application and platform used to create it.\n\nAdobe PDF is an ideal format for electronic document distribution as it overcomes the\nproblems commonly encountered with electronic file sharing.\n\n•  Anyone, anywhere can open a PDF file. All you need is the free Adobe Acrobat\nReader. Recipients of other file formats sometimes can't open files because they\ndon't have the applications used to create the documents.\n\n•  PDF files always print correctly on any printing device.\n\n•  PDF files always display exactly as created, regardless of fonts, software, and\noperating systems. Fonts, and graphics are not lost due to platform, software, and\nversion incompatibilities.\n\n•  The free Acrobat Reader is easy to download and can be freely distributed by\nanyone.\n\n•  Compact PDF files are smaller than their source files and download a\npage at a time for fast display on the Web.",
-   'content_length': 1073,
-   'content_type': 'application/pdf',
-   'date': '2000-06-28T23:21:08Z',
-   'language': 'en',
-   'title': 'This is a test PDF file'}},
- '_type': 'my_type',
- '_version': 1,
- 'found': True}&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;Or with a basic search:&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In [15]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;es&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;search&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;index&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'my_index'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;doc_type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'my_type'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'Adobe'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;_source_exclude&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'data'&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="output_wrapper"&gt;
-&lt;div class="output"&gt;
-
-
-&lt;div class="output_area"&gt;
-
-    &lt;div class="prompt output_prompt"&gt;Out[15]:&lt;/div&gt;
-
-
-
-
-&lt;div class="output_text output_subarea output_execute_result"&gt;
-&lt;pre&gt;{'_shards': {'failed': 0, 'successful': 5, 'total': 5},
- 'hits': {'hits': [{'_id': 'AVhvJMC6IvjFWZACJU_u',
-    '_index': 'my_index',
-    '_score': 0.45930308,
-    '_source': {'attachment': {'author': 'cdaily',
-      'content': "Adobe Acrobat PDF Files\n\nAdobe® Portable Document Format (PDF) is a universal file format that preserves all\nof the fonts, formatting, colours and graphics of any source document, regardless of\nthe application and platform used to create it.\n\nAdobe PDF is an ideal format for electronic document distribution as it overcomes the\nproblems commonly encountered with electronic file sharing.\n\n•  Anyone, anywhere can open a PDF file. All you need is the free Adobe Acrobat\nReader. Recipients of other file formats sometimes can't open files because they\ndon't have the applications used to create the documents.\n\n•  PDF files always print correctly on any printing device.\n\n•  PDF files always display exactly as created, regardless of fonts, software, and\noperating systems. Fonts, and graphics are not lost due to platform, software, and\nversion incompatibilities.\n\n•  The free Acrobat Reader is easy to download and can be freely distributed by\nanyone.\n\n•  Compact PDF files are smaller than their source files and download a\npage at a time for fast display on the Web.",
-      'content_length': 1073,
-      'content_type': 'application/pdf',
-      'date': '2000-06-28T23:21:08Z',
-      'language': 'en',
-      'title': 'This is a test PDF file'}},
-    '_type': 'my_type'}],
-  'max_score': 0.45930308,
-  'total': 1},
- 'timed_out': False,
- 'took': 75}&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;Of course Elasticsearch allows much more complex queries. But that's something for another time.&lt;/p&gt;
-&lt;p&gt;One interesting thing is that by printing the content, we can see that even the layout is quite acurate! Much better than the pdftotext output:&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In [16]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;doc&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'_source'&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s1"&gt;'attachment'&lt;/span&gt;&lt;span class="p"&gt;][&lt;/span&gt;&lt;span class="s1"&gt;'content'&lt;/span&gt;&lt;span class="p"&gt;])&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="output_wrapper"&gt;
-&lt;div class="output"&gt;
-
-
-&lt;div class="output_area"&gt;
-
-    &lt;div class="prompt"&gt;&lt;/div&gt;
-
-
-&lt;div class="output_subarea output_stream output_stdout output_text"&gt;
-&lt;pre&gt;Adobe Acrobat PDF Files
-
-Adobe® Portable Document Format (PDF) is a universal file format that preserves all
-of the fonts, formatting, colours and graphics of any source document, regardless of
-the application and platform used to create it.
-
-Adobe PDF is an ideal format for electronic document distribution as it overcomes the
-problems commonly encountered with electronic file sharing.
-
-•  Anyone, anywhere can open a PDF file. All you need is the free Adobe Acrobat
-Reader. Recipients of other file formats sometimes can't open files because they
-don't have the applications used to create the documents.
-
-•  PDF files always print correctly on any printing device.
-
-•  PDF files always display exactly as created, regardless of fonts, software, and
-operating systems. Fonts, and graphics are not lost due to platform, software, and
-version incompatibilities.
-
-•  The free Acrobat Reader is easy to download and can be freely distributed by
-anyone.
-
-•  Compact PDF files are smaller than their source files and download a
-page at a time for fast display on the Web.
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;The ingest-attachment plugin uses the Apache text extraction library &lt;a href="http://tika.apache.org"&gt;Tika&lt;/a&gt;.
-It's really powerful. It detects and extracts metadata and text from many file types.&lt;/p&gt;
-&lt;p&gt;Sending the file directly to Elasticsearch is nice, but in my use case, I'd like to process the file (change its title, move it to a specific location...) based on its content. I could of course update the document in ES after processing it.&lt;/p&gt;
-&lt;p&gt;It might be better in some case to decorelate the parsing and processing from the indexing.
-So let's check how to use Tika from Python.&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;h2 id="Apache-Tika"&gt;Apache Tika&lt;a class="anchor-link" href="http://beenje.github.io/blog/posts/parsing-and-indexing-pdf-in-python/#Apache-Tika"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;&lt;a href="https://github.com/chrismattmann/tika-python"&gt;Tika-Python&lt;/a&gt; makes Apache Tika available as a Python library.
-It can even starts a Tika REST server in the background, but this requires Java 7+ to be installed.
-I prefer to run the server myself using the prebuilt docker image: &lt;a href="http://logicalspark.github.io/docker-tikaserver/"&gt;docker-tikaserver&lt;/a&gt;.
-Like that I have control of what is running.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code&gt;$ docker run --rm -p 9998:9998 logicalspark/docker-tikaserver&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;We can then set Tika-Python to use Client mode only:&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In [17]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;tika&lt;/span&gt;
-&lt;span class="n"&gt;tika&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;TikaClientOnly&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;True&lt;/span&gt;
-&lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;tika&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;parser&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In [18]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;parsed&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;parser&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;from_file&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s1"&gt;'/tmp/pdf-sample.pdf'&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s1"&gt;'http://localhost:9998/tika'&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="output_wrapper"&gt;
-&lt;div class="output"&gt;
-
-
-&lt;div class="output_area"&gt;
-
-    &lt;div class="prompt"&gt;&lt;/div&gt;
-
-
-&lt;div class="output_subarea output_stream output_stderr output_text"&gt;
-&lt;pre&gt;2016-11-16 22:57:14,233 [MainThread  ] [INFO ]  Starting new HTTP connection (1): localhost
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In [19]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;parsed&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="output_wrapper"&gt;
-&lt;div class="output"&gt;
-
-
-&lt;div class="output_area"&gt;
-
-    &lt;div class="prompt output_prompt"&gt;Out[19]:&lt;/div&gt;
-
-
-
-
-&lt;div class="output_text output_subarea output_execute_result"&gt;
-&lt;pre&gt;{'content': "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nThis is a test PDF file\n\n\nAdobe Acrobat PDF Files\n\nAdobe® Portable Document Format (PDF) is a universal file format that preserves all\nof the fonts, formatting, colours and graphics of any source document, regardless of\nthe application and platform used to create it.\n\nAdobe PDF is an ideal format for electronic document distribution as it overcomes the\nproblems commonly encountered with electronic file sharing.\n\n•  Anyone, anywhere can open a PDF file. All you need is the free Adobe Acrobat\nReader. Recipients of other file formats sometimes can't open files because they\ndon't have the applications used to create the documents.\n\n•  PDF files always print correctly on any printing device.\n\n•  PDF files always display exactly as created, regardless of fonts, software, and\noperating systems. Fonts, and graphics are not lost due to platform, software, and\nversion incompatibilities.\n\n•  The free Acrobat Reader is easy to download and can be freely distributed by\nanyone.\n\n•  Compact PDF files are smaller than their source files and download a\npage at a time for fast display on the Web.\n\n\n",
- 'metadata': {'Author': 'cdaily',
-  'Content-Type': 'application/pdf',
-  'Creation-Date': '2000-06-28T23:21:08Z',
-  'Last-Modified': '2013-10-28T19:24:13Z',
-  'Last-Save-Date': '2013-10-28T19:24:13Z',
-  'X-Parsed-By': ['org.apache.tika.parser.DefaultParser',
-   'org.apache.tika.parser.pdf.PDFParser'],
-  'X-TIKA:parse_time_millis': '62',
-  'access_permission:assemble_document': 'true',
-  'access_permission:can_modify': 'true',
-  'access_permission:can_print': 'true',
-  'access_permission:can_print_degraded': 'true',
-  'access_permission:extract_content': 'true',
-  'access_permission:extract_for_accessibility': 'true',
-  'access_permission:fill_in_form': 'true',
-  'access_permission:modify_annotations': 'true',
-  'created': 'Wed Jun 28 23:21:08 UTC 2000',
-  'creator': 'cdaily',
-  'date': '2013-10-28T19:24:13Z',
-  'dc:creator': 'cdaily',
-  'dc:format': 'application/pdf; version=1.3',
-  'dc:title': 'This is a test PDF file',
-  'dcterms:created': '2000-06-28T23:21:08Z',
-  'dcterms:modified': '2013-10-28T19:24:13Z',
-  'meta:author': 'cdaily',
-  'meta:creation-date': '2000-06-28T23:21:08Z',
-  'meta:save-date': '2013-10-28T19:24:13Z',
-  'modified': '2013-10-28T19:24:13Z',
-  'pdf:PDFVersion': '1.3',
-  'pdf:docinfo:created': '2000-06-28T23:21:08Z',
-  'pdf:docinfo:creator': 'cdaily',
-  'pdf:docinfo:creator_tool': 'Microsoft Word 8.0',
-  'pdf:docinfo:modified': '2013-10-28T19:24:13Z',
-  'pdf:docinfo:producer': 'Acrobat Distiller 4.0 for Windows',
-  'pdf:docinfo:title': 'This is a test PDF file',
-  'pdf:encrypted': 'false',
-  'producer': 'Acrobat Distiller 4.0 for Windows',
-  'resourceName': 'pdf-sample.pdf',
-  'title': 'This is a test PDF file',
-  'xmp:CreatorTool': 'Microsoft Word 8.0',
-  'xmpMM:DocumentID': 'uuid:0805e221-80a8-459e-a522-635ed5c1e2e6',
-  'xmpTPg:NPages': '1'}}&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In [20]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;print&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;parsed&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'content'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;strip&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="output_wrapper"&gt;
-&lt;div class="output"&gt;
-
-
-&lt;div class="output_area"&gt;
-
-    &lt;div class="prompt"&gt;&lt;/div&gt;
-
-
-&lt;div class="output_subarea output_stream output_stdout output_text"&gt;
-&lt;pre&gt;This is a test PDF file
-
-
-Adobe Acrobat PDF Files
-
-Adobe® Portable Document Format (PDF) is a universal file format that preserves all
-of the fonts, formatting, colours and graphics of any source document, regardless of
-the application and platform used to create it.
-
-Adobe PDF is an ideal format for electronic document distribution as it overcomes the
-problems commonly encountered with electronic file sharing.
-
-•  Anyone, anywhere can open a PDF file. All you need is the free Adobe Acrobat
-Reader. Recipients of other file formats sometimes can't open files because they
-don't have the applications used to create the documents.
-
-•  PDF files always print correctly on any printing device.
-
-•  PDF files always display exactly as created, regardless of fonts, software, and
-operating systems. Fonts, and graphics are not lost due to platform, software, and
-version incompatibilities.
-
-•  The free Acrobat Reader is easy to download and can be freely distributed by
-anyone.
-
-•  Compact PDF files are smaller than their source files and download a
-page at a time for fast display on the Web.
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;p&gt;Not sure why we get the title of the PDF inside the content.
-Anyway the text is extracted properly and we even get a lot of metadata:&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing code_cell rendered"&gt;
-&lt;div class="input"&gt;
-&lt;div class="prompt input_prompt"&gt;In [21]:&lt;/div&gt;
-&lt;div class="inner_cell"&gt;
-    &lt;div class="input_area"&gt;
-&lt;div class=" highlight hl-ipython3"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;parsed&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="s1"&gt;'metadata'&lt;/span&gt;&lt;span class="p"&gt;]&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div class="output_wrapper"&gt;
-&lt;div class="output"&gt;
-
-
-&lt;div class="output_area"&gt;
-
-    &lt;div class="prompt output_prompt"&gt;Out[21]:&lt;/div&gt;
-
-
-
-
-&lt;div class="output_text output_subarea output_execute_result"&gt;
-&lt;pre&gt;{'Author': 'cdaily',
- 'Content-Type': 'application/pdf',
- 'Creation-Date': '2000-06-28T23:21:08Z',
- 'Last-Modified': '2013-10-28T19:24:13Z',
- 'Last-Save-Date': '2013-10-28T19:24:13Z',
- 'X-Parsed-By': ['org.apache.tika.parser.DefaultParser',
-  'org.apache.tika.parser.pdf.PDFParser'],
- 'X-TIKA:parse_time_millis': '62',
- 'access_permission:assemble_document': 'true',
- 'access_permission:can_modify': 'true',
- 'access_permission:can_print': 'true',
- 'access_permission:can_print_degraded': 'true',
- 'access_permission:extract_content': 'true',
- 'access_permission:extract_for_accessibility': 'true',
- 'access_permission:fill_in_form': 'true',
- 'access_permission:modify_annotations': 'true',
- 'created': 'Wed Jun 28 23:21:08 UTC 2000',
- 'creator': 'cdaily',
- 'date': '2013-10-28T19:24:13Z',
- 'dc:creator': 'cdaily',
- 'dc:format': 'application/pdf; version=1.3',
- 'dc:title': 'This is a test PDF file',
- 'dcterms:created': '2000-06-28T23:21:08Z',
- 'dcterms:modified': '2013-10-28T19:24:13Z',
- 'meta:author': 'cdaily',
- 'meta:creation-date': '2000-06-28T23:21:08Z',
- 'meta:save-date': '2013-10-28T19:24:13Z',
- 'modified': '2013-10-28T19:24:13Z',
- 'pdf:PDFVersion': '1.3',
- 'pdf:docinfo:created': '2000-06-28T23:21:08Z',
- 'pdf:docinfo:creator': 'cdaily',
- 'pdf:docinfo:creator_tool': 'Microsoft Word 8.0',
- 'pdf:docinfo:modified': '2013-10-28T19:24:13Z',
- 'pdf:docinfo:producer': 'Acrobat Distiller 4.0 for Windows',
- 'pdf:docinfo:title': 'This is a test PDF file',
- 'pdf:encrypted': 'false',
- 'producer': 'Acrobat Distiller 4.0 for Windows',
- 'resourceName': 'pdf-sample.pdf',
- 'title': 'This is a test PDF file',
- 'xmp:CreatorTool': 'Microsoft Word 8.0',
- 'xmpMM:DocumentID': 'uuid:0805e221-80a8-459e-a522-635ed5c1e2e6',
- 'xmpTPg:NPages': '1'}&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;/div&gt;
-&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
-&lt;/div&gt;&lt;div class="inner_cell"&gt;
-&lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
-&lt;h2 id="Conclusion"&gt;Conclusion&lt;a class="anchor-link" href="http://beenje.github.io/blog/posts/parsing-and-indexing-pdf-in-python/#Conclusion"&gt;¶&lt;/a&gt;&lt;/h2&gt;&lt;p&gt;We saw different methods to extract text from PDF in Python.
-Depending on what you want to do, one might suit you better. And this was of course not exhaustive.&lt;/p&gt;
-&lt;p&gt;If you want to index PDFs, Elasticsearch might be all you need.
-The ingest-attachment plugin uses &lt;a href="http://tika.apache.org"&gt;Apache Tika&lt;/a&gt; which is very powerful.&lt;/p&gt;
-&lt;p&gt;And thanks to &lt;a href="https://github.com/chrismattmann/tika-python"&gt;Tika-Python&lt;/a&gt;, it's very easy to use Tika directly from Python.
-You can let the library starts the server or use Docker to start your own.&lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>elasticsearch</category><category>python</category><category>tika</category><guid>http://beenje.github.io/blog/posts/parsing-and-indexing-pdf-in-python/</guid><pubDate>Wed, 16 Nov 2016 20:59:23 GMT</pubDate></item></channel></rss>
+A big thanks to &lt;a class="reference external" href="https://www.continuum.io"&gt;Continuum Analytics&lt;/a&gt;!&lt;/p&gt;&lt;/div&gt;</description><category>conda</category><category>docker</category><category>python</category><guid>http://beenje.github.io/blog/posts/docker-and-conda/</guid><pubDate>Sat, 28 Jan 2017 22:32:56 GMT</pubDate></item></channel></rss>

@@ -3,7 +3,7 @@
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 11 Mar 2020 18:05:01 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Switching from git-bigfile to git-lfs</title><link>http://beenje.github.io/blog/posts/switching-from-git-bigfile-to-git-lfs/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In 2012, I was looking for a way to store big files in git. &lt;a class="reference external" href="https://git-annex.branchable.com"&gt;git-annex&lt;/a&gt;
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sun, 03 May 2020 21:40:49 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Switching from git-bigfile to git-lfs</title><link>http://beenje.github.io/blog/posts/switching-from-git-bigfile-to-git-lfs/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In 2012, I was looking for a way to store big files in git. &lt;a class="reference external" href="https://git-annex.branchable.com"&gt;git-annex&lt;/a&gt;
 was already around, but I found it a bit too complex for my use case.
 I discovered &lt;a class="reference external" href="https://github.com/schacon/git-media"&gt;git-media&lt;/a&gt; from Scott Chacon and it looked like what I was looking for.
 It was in Ruby which made it not super easy to install on some machines at work.

@@ -3,7 +3,7 @@
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 11 Mar 2020 18:05:01 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Logging to a Tkinter ScrolledText Widget</title><link>http://beenje.github.io/blog/posts/logging-to-a-tkinter-scrolledtext-widget/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I've been programming in Python for almost 10 years.
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sun, 03 May 2020 21:40:47 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Logging to a Tkinter ScrolledText Widget</title><link>http://beenje.github.io/blog/posts/logging-to-a-tkinter-scrolledtext-widget/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I've been programming in Python for almost 10 years.
 I did many CLI tools, some web applications (mainly using &lt;a class="reference external" href="http://flask.pocoo.org"&gt;Flask&lt;/a&gt;),
 but I had never built a GUI.&lt;/p&gt;
 &lt;p&gt;&lt;a class="reference external" href="https://riverbankcomputing.com/software/pyqt/intro"&gt;PyQt&lt;/a&gt; seems to be one of the most popular framework. I had a look at it but I was not hooked.
