@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article#
+" lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Using epics-base with conda on Linux, macOS and Windows | Tchut-Tchut Blog</title>
+<link href="../../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/ipython.min.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/nikola_ipython.css" rel="stylesheet" type="text/css">
+<meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="../../rss.xml">
+<link rel="canonical" href="http://beenje.github.io/blog/posts/using-epics-base-with-conda-on-linux-macos-and-windows/">
+<!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><meta name="author" content="Benjamin Bertrand">
+<link rel="prev" href="../how-to-setup-a-windows-vm-to-build-conda-packages/" title="How to setup a Windows VM to build conda packages" type="text/html">
+<meta property="og:site_name" content="Tchut-Tchut Blog">
+<meta property="og:title" content="Using epics-base with conda on Linux, macOS and Windows">
+<meta property="og:url" content="http://beenje.github.io/blog/posts/using-epics-base-with-conda-on-linux-macos-and-windows/">
+<meta property="og:description" content="I previously described how to create a Windows VM to build conda packages.
+I mentioned this was to update the conda-forge epics-base feedstock.
+In this post, I want to share how to use EPICS Base with">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2020-05-07T22:33:55+02:00">
+<meta property="article:tag" content="conda">
+<meta property="article:tag" content="epics">
+<meta property="article:tag" content="linux">
+<meta property="article:tag" content="Mac">
+<meta property="article:tag" content="python">
+<meta property="article:tag" content="windows">
+</head>
+<body>
+<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+
+<!-- Menubar -->
+
+<nav class="navbar navbar-expand-md static-top mb-4
+navbar-dark bg-dark
+"><div class="container">
+<!-- This keeps the margins nice -->
+        <a class="navbar-brand" href="http://beenje.github.io/blog/">
+
+            <span id="blog-title">Tchut-Tchut Blog</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#bs-navbar" aria-controls="bs-navbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="bs-navbar">
+            <ul class="navbar-nav mr-auto">
+<li class="nav-item">
+<a href="../../archive.html" class="nav-link">Archive</a>
+                </li>
+<li class="nav-item">
+<a href="../../categories/" class="nav-link">Tags</a>
+                </li>
+<li class="nav-item">
+<a href="../../rss.xml" class="nav-link">RSS feed</a>
+                </li>
+<li class="nav-item">
+<a href="../../stories/about/index.html" class="nav-link">About</a>
+
+                
+            </li>
+</ul>
+<ul class="navbar-nav navbar-right">
+<li class="nav-item">
+    <a href="index.rst" id="sourcelink" class="nav-link">Source</a>
+    </li>
+
+
+                
+            </ul>
+</div>
+<!-- /.navbar-collapse -->
+    </div>
+<!-- /.container -->
+</nav><!-- End of Menubar --><div class="container" id="content" role="main">
+    <div class="body-content">
+        <!--Body content-->
+        
+        
+        
+<article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Using epics-base with conda on Linux, macOS and Windows</a></h1>
+
+        <div class="metadata">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
+                    Benjamin Bertrand
+            </span></p>
+            <p class="dateline">
+            <a href="." rel="bookmark">
+            <time class="published dt-published" datetime="2020-05-07T22:33:55+02:00" itemprop="datePublished" title="2020-05-07 22:33">2020-05-07 22:33</time></a>
+            </p>
+                <p class="commentline">
+        
+    <a href="#disqus_thread" data-disqus-identifier="cache/posts/using-epics-base-with-conda-on-linux-macos-and-windows.html">Comments</a>
+
+
+            
+        </p>
+<p class="sourceline"><a href="index.rst" class="sourcelink">Source</a></p>
+
+        </div>
+        
+
+    </header><div class="e-content entry-content" itemprop="articleBody text">
+    <div>
+<p>I previously described how to create a <a class="reference external" href="../how-to-setup-a-windows-vm-to-build-conda-packages">Windows VM to build conda packages</a>.
+I mentioned this was to update the conda-forge <a class="reference external" href="https://github.com/conda-forge/epics-base-feedstock">epics-base feedstock</a>.
+In this post, I want to share how to use <a class="reference external" href="https://github.com/epics-base/epics-base">EPICS Base</a> with <a class="reference external" href="https://docs.conda.io/en/latest/">conda</a>.</p>
+<div class="section" id="acknowledgement">
+<h2>Acknowledgement</h2>
+<p>I'm not the original author of the <a class="reference external" href="https://github.com/conda-forge/epics-base-feedstock">epics-base feedstock</a>.
+I want to thank all the people who contributed to that conda recipe.</p>
+<p>All the examples of <a class="reference external" href="https://epics.anl.gov">EPICS</a> usage below come directly from the official website
+<a class="reference external" href="https://epics-controls.org/resources-and-support/documents/getting-started/">Getting Started page</a>.</p>
+</div>
+<div class="section" id="miniconda">
+<h2>Miniconda</h2>
+<p>This post assumes some basic knowledge of <a class="reference external" href="https://docs.conda.io/en/latest/">conda</a>.
+If you never used it before, I recommend starting by checking the <a class="reference external" href="https://docs.conda.io/en/latest/">documentation</a>.</p>
+<p>If you don't have <cite>conda</cite> already installed, here are some quick instructions.
+Refer to the <a class="reference external" href="https://conda.io/projects/conda/en/latest/user-guide/install/index.html">official documentation</a>
+for more detailed information.</p>
+<div class="section" id="linux">
+<h3>Linux</h3>
+<p>Note that <cite>bzip2</cite> is required to run the installation.</p>
+<pre class="literal-block">curl -LO https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh -bp $HOME/miniconda
+rm -f Miniconda3-latest-Linux-x86_64.sh
+# Let conda update your ~/.bashrc
+source $HOME/miniconda/bin/activate
+conda init</pre>
+</div>
+<div class="section" id="macos">
+<h3>macOS</h3>
+<pre class="literal-block">curl -LO https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
+bash Miniconda3-latest-MacOSX-x86_64.sh -bp $HOME/miniconda
+rm -f Miniconda3-latest-MacOSX-x86_64.sh
+# Let conda update your ~/.bash_profile
+source $HOME/miniconda/bin/activate
+conda init</pre>
+</div>
+<div class="section" id="windows">
+<h3>Windows</h3>
+<p>Download and run the Miniconda3 installer from <a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html#windows-installers">https://docs.conda.io/en/latest/miniconda.html#windows-installers</a>.
+To use conda, open the Anaconda Prompt from the start menu.</p>
+</div>
+<div class="section" id="configuration">
+<h3>Configuration</h3>
+<p>On Linux and macOS, if you don't want conda to activate the base environment by default (and modify your PATH),
+you should run:</p>
+<pre class="literal-block">conda config --set auto_activate_base false</pre>
+<p>This doesn't really apply to Windows as you have to start the Anaconda Prompt to use conda.</p>
+<p>To be able to install package from <a class="reference external" href="https://conda-forge.org">conda-forge</a>,
+add the <cite>conda-forge</cite> channel to your configuration. This applies to all platforms.</p>
+<pre class="literal-block">conda config --add channels conda-forge</pre>
+</div>
+</div>
+<div class="section" id="installing-epics-base">
+<h2>Installing epics-base</h2>
+<div class="section" id="environment-creation">
+<h3>Environment creation</h3>
+<p>Now that we have conda installed and configured, getting <cite>epics-base</cite> is as easy
+as running:</p>
+<pre class="literal-block">conda create -y -n epics epics-base</pre>
+<p>Note that you don't need any compiler or to install any other packages.
+The only requirement is conda.
+As of may 2020, the version installed should be 7.0.3.1.</p>
+</div>
+<div class="section" id="environment-activation">
+<h3>Environment activation</h3>
+<p>To start using <a class="reference external" href="https://epics.anl.gov">EPICS</a>, activate the environment:</p>
+<pre class="literal-block">conda activate epics</pre>
+<p>You now have access to all the binaries provided by epics-base:</p>
+<pre class="literal-block">caget -h
+pvget -h
+softIocPVA
+epics&gt; exit</pre>
+<p>On Windows, there is currently a small issue. If you run <code class="docutils literal">softIocPVA <span class="pre">-h</span></code>,
+you will see that the compiled-in path to softIocPVA.dbd is incorrect:</p>
+<pre class="literal-block">(epics) C:\Users\IEUser&gt;softIocPVA -h
+Usage: softIocPVA [-D softIoc.dbd] [-h] [-S] [-a ascf]
+        [-m macro=value,macro2=value2] [-d file.db]
+        [-x prefix] [st.cmd]
+Compiled-in path to softIocPVA.dbd is:
+        D:/bld/epics-base_1588657178544/_h_env/epics/dbd/softIocPVA.dbd</pre>
+<p>The path is the one that was used when the epics-base conda package was created.
+Conda usually automatically replaces this <code class="docutils literal">$PREFIX</code> variable when creating an environment.
+It works on Linux and macOS but not on Windows in this case.
+You have to give the explicit path to the dbd manually. You can use the <code class="docutils literal">%EPICS_BASE%</code>
+environment variable that is automatically set during the activation of the epics environment:</p>
+<pre class="literal-block">(epics) C:\Users\IEUser&gt;softIocPVA -D %EPICS_BASE%\dbd\softIocPVA.dbd
+epics&gt;</pre>
+<p>Note that if I understand correctly this <a class="reference external" href="https://epics.anl.gov/tech-talk/2020/msg00900.php">tech-talk message</a>,
+next release should use a relative path and remove this issue.</p>
+<p>After activation, you can see that several EPICS environment variables have been
+set. The PATH was also updated. It includes both <code class="docutils literal">$CONDA_PREFIX/bin</code> as well
+as <code class="docutils literal"><span class="pre">$EPICS_BASE/bin/$EPICS_HOST_ARCH</span></code>:</p>
+<pre class="literal-block">(epics) [tux@964ef40cabbb ~]$ env | grep EPICS
+EPICS_BASE_HOST_BIN=/home/tux/miniconda/envs/epics/epics/bin/linux-x86_64
+EPICS_BASE_VERSION=7.0.3.1
+EPICS_BASE=/home/tux/miniconda/envs/epics/epics
+EPICS_HOST_ARCH=linux-x86_64
+(epics) [tux@964ef40cabbb ~]$ echo $PATH
+/home/tux/miniconda/envs/epics/epics/bin/linux-x86_64:/home/tux/miniconda/envs/epics/bin:/home/tux/miniconda/condabin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/tux/.local/bin:/home/tux/bin
+(epics) [tux@964ef40cabbb ~]$</pre>
+<p>Those variables are set by the activation script part of the <cite>epics-base</cite> package.
+Running <code class="docutils literal">conda deactivate</code> will unset those variables:</p>
+<pre class="literal-block">(epics) [tux@964ef40cabbb ~]$ conda deactivate
+(base) [tux@964ef40cabbb ~]$ env | grep EPICS
+(base) [tux@964ef40cabbb ~]$ echo $PATH
+/home/tux/miniconda/bin:/home/tux/miniconda/condabin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/tux/.local/bin:/home/tux/bin
+(base) [tux@964ef40cabbb ~]$</pre>
+</div>
+<div class="section" id="simple-test">
+<h3>Simple test</h3>
+<p>With your editor of choice, create the <cite>test.db</cite> file that contains:</p>
+<pre class="literal-block">record(ai, "temperature:water")
+{
+    field(DESC, "Water temperature in the fish tank")
+}</pre>
+<p>Open a terminal and activate the <cite>epics</cite> environment.</p>
+<p>On Linux and macOS, run:</p>
+<pre class="literal-block">softIocPVA -d test.db</pre>
+<p>On Windows, run:</p>
+<pre class="literal-block">softIocPVA -D %EPICS_BASE%\dbd\softIocPVA.dbd -d test.db</pre>
+<p>Open another terminal and run:</p>
+<pre class="literal-block">CI0011906:~ $ conda activate epics
+(epics) CI0011906:~ $ caget temperature:water
+temperature:water              0
+(epics) CI0011906:~ $ caget temperature:water.DESC
+temperature:water.DESC         Water temperature in the fish tank
+(epics) CI0011906:~ $ caput temperature:water 21
+Old : temperature:water              0
+New : temperature:water              21
+(epics) CI0011906:~ $ caget temperature:water
+temperature:water              21
+(epics) CI0011906:~ $</pre>
+<p>The following screenshots show the result on macOS and Windows.</p>
+<img alt="/images/using-epics-base-with-conda/simple-test-macos.png" src="../../images/using-epics-base-with-conda/simple-test-macos.png"><img alt="/images/using-epics-base-with-conda/simple-test-windows.png" src="../../images/using-epics-base-with-conda/simple-test-windows.png">
+</div>
+</div>
+<div class="section" id="compiling-a-demo-ioc">
+<h2>Compiling a demo IOC</h2>
+<p>We saw how to use the binaries that come with epics-base. It's worth mentioning
+that you can also compile code using the installed conda package.</p>
+<div class="section" id="pre-requisites">
+<h3>Pre-requisites</h3>
+<p>The pre-requisites are different depending on the platform.</p>
+<div class="section" id="id1">
+<h4>Linux</h4>
+<p>There is no distribution specific dependencies to install.
+All requirements will be installed with conda.</p>
+<p>We could use the existing <cite>epics</cite> environment but we'll create a new one
+to demonstrate that several environments can coexist in parallel.</p>
+<p>Create and activate the <cite>epics-dev</cite> environment:</p>
+<pre class="literal-block">conda create -y -n epics-dev epics-base make compilers
+conda activate epics-dev</pre>
+</div>
+<div class="section" id="id2">
+<h4>macOS</h4>
+<p>Conda provides the clang compilers for macOS. But the macOS SDK is still required.
+The SDK license prevents it from being bundled in the conda package.
+The SDK has to be installed manually. For compatibility issue, conda packages
+are built with the 10.9 SDK. To compile code locally that you don't plan
+to share, using a more recent version should be fine.</p>
+<div class="section" id="solution-1-current-sdk">
+<h5>Solution 1: current SDK</h5>
+<p>Install Xcode Command Line Tools by running:</p>
+<pre class="literal-block">xcode-select --install</pre>
+</div>
+<div class="section" id="solution-2-10-9-sdk">
+<h5>Solution 2: 10.9 SDK</h5>
+<p>As mentioned in <a class="reference external" href="https://docs.conda.io/projects/conda-build/en/latest/resources/compiler-tools.html#macos-sdk">conda-build documentation</a>,
+the 10.9 SDK can be downloaded from:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/devernay/xcodelegacy">https://github.com/devernay/xcodelegacy</a></p></li>
+<li><p><a class="reference external" href="https://github.com/phracker/MacOSX-SDKs">https://github.com/phracker/MacOSX-SDKs</a></p></li>
+</ul>
+<p>Download <a class="reference external" href="https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.9.sdk.tar.xz">MacOSX10.9.sdk.tar.xz</a>
+and untar it under <code class="docutils literal">/opt/MacOSX10.9.sdk</code>.</p>
+<p>Create and activate the <cite>epics-dev</cite> environment:</p>
+<pre class="literal-block">conda create -y -n epics-dev epics-base make compilers
+conda activate epics-dev</pre>
+<p>Before to be able to compile, two variables have to be set on macOS: <code class="docutils literal">MACOSX_DEPLOYMENT_TARGET</code> and
+<code class="docutils literal">CONDA_BUILD_SYSROOT</code>.</p>
+<p>Those variables are usually set automatically by <cite>conda-build</cite>. When compiling locally,
+you have to set them manually.
+<code class="docutils literal">CONDA_BUILD_SYSROOT</code> is actually automatically set when activating an environment with
+the <cite>compilers</cite> package. It should detect your Xcode installation:</p>
+<pre class="literal-block">(epics-dev) CI0011906:~ $ echo $CONDA_BUILD_SYSROOT
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk</pre>
+<p>If you installed the 10.9 SDK, you might want to point to that instead:</p>
+<pre class="literal-block">export CONDA_BUILD_SYSROOT=/opt/MacOSX10.9.sdk</pre>
+<p>The variable <code class="docutils literal">MACOSX_DEPLOYMENT_TARGET</code>, you have to set manually:</p>
+<pre class="literal-block">export MACOSX_DEPLOYMENT_TARGET=10.9</pre>
+</div>
+</div>
+<div class="section" id="id3">
+<h4>Windows</h4>
+<p>On Windows, you need to install the Visual C++ compilers.
+You only need to download the <strong>Build Tools for Visual Studio 2017</strong>. Refer
+to the post on <a class="reference external" href="../how-to-setup-a-windows-vm-to-build-conda-packages">how to setup a Windows VM to build conda packages</a> for
+the instructions on how to install them.</p>
+<p>Create and activate the <cite>epics-dev</cite> environment:</p>
+<pre class="literal-block">conda create -n epics-dev epics-base epics-base-static-libs make vs2017_win-64
+conda activate epics-dev</pre>
+<p><cite>vs2017_win-64</cite> is a package that contains an activation script to setup VS 2017.
+Note that we also need to install the <cite>epics-base-static-libs</cite> to compile on Windows.
+The static libraries were moved to a subpackage to make <cite>epics-base</cite> package smaller.
+They are not needed most of the time on Linux and macOS. Maybe they should be part of
+the default package on Windows?</p>
+</div>
+</div>
+<div class="section" id="ioc-creation">
+<h3>IOC creation</h3>
+<p>Make sure you activated the <cite>epics-dev</cite> environment you created.
+Note that we didn't have to specify <cite>perl</cite> when creating the environment.
+It's installed with <cite>epics-base</cite> as run dependency.</p>
+<p>On Linux and macOS:</p>
+<pre class="literal-block">(epics-dev) CI0011906:~ $ mkdir -p $HOME/EPICS/testIoc
+(epics-dev) CI0011906:~ $ cd $HOME/EPICS/testIoc
+(epics-dev) CI0011906:~/EPICS/testIoc $ makeBaseApp.pl -t example testIoc
+(epics-dev) CI0011906:~/EPICS/testIoc $ makeBaseApp.pl -i -t example testIoc
+Using target architecture darwin-x86 (only one available)
+The following applications are available:
+    testIoc
+What application should the IOC(s) boot?
+The default uses the IOC's name, even if not listed above.
+Application name?
+(epics-dev) CI0011906:~/EPICS/testIoc $ make
+...
+(epics-dev) CI0011906:~/EPICS/testIoc $ cd iocBoot/ioctestIoc
+(epics-dev) CI0011906:~/EPICS/testIoc/iocBoot/ioctestIoc $ chmod a+x st.cmd
+(epics-dev) CI0011906:~/EPICS/testIoc/iocBoot/ioctestIoc $ ./st.cmd
+#!../../bin/darwin-x86/testIoc
+&lt; envPaths
+epicsEnvSet("IOC","ioctestIoc")
+epicsEnvSet("TOP","/Users/benjaminbertrand/EPICS/testIoc")
+epicsEnvSet("EPICS_BASE","/Users/benjaminbertrand/miniconda3/envs/epics-dev/epics")
+cd "/Users/benjaminbertrand/EPICS/testIoc"
+## Register all support components
+dbLoadDatabase "dbd/testIoc.dbd"
+testIoc_registerRecordDeviceDriver pdbbase
+## Load record instances
+dbLoadTemplate "db/user.substitutions"
+dbLoadRecords "db/testIocVersion.db", "user=benjaminbertrand"
+dbLoadRecords "db/dbSubExample.db", "user=benjaminbertrand"
+#var mySubDebug 1
+#traceIocInit
+cd "/Users/benjaminbertrand/EPICS/testIoc/iocBoot/ioctestIoc"
+iocInit
+Starting iocInit
+############################################################################
+## EPICS R7.0.3.1
+## EPICS Base built May  5 2020
+############################################################################
+iocRun: All initialization complete
+## Start any sequence programs
+#seq sncExample, "user=benjaminbertrand"
+epics&gt; dbl
+benjaminbertrand:testIoc:version
+benjaminbertrand:xxxExample
+benjaminbertrand:circle:step
+benjaminbertrand:circle:period
+benjaminbertrand:line:b
+benjaminbertrand:aiExample
+...</pre>
+<p>On Windows:</p>
+<pre class="literal-block">(epics-dev) C:\Users\IEUser&gt; mkdir EPICS\testIoc
+(epics-dev) C:\Users\IEUser&gt; cd EPICS\testIoc
+(epics-dev) C:\Users\IEUser\EPICS\testIoc&gt; perl %EPICS_BASE_HOST_BIN%\makeBaseApp.pl -t example testIoc
+(epics-dev) C:\Users\IEUser\EPICS\testIoc&gt; perl %EPICS_BASE_HOST_BIN%\makeBaseApp.pl -i -t example testIoc
+Using target architecture windows-x64 (only one available)
+The following applications are available:
+    testIoc
+What application should the IOC(s) boot?
+The default uses the IOC's name, even if not listed above.
+Application name?
+(epics-dev) C:\Users\IEUser\EPICS\testIoc&gt; make
+...
+(epics-dev) C:\Users\IEUser\EPICS\testIoc&gt; cd iocBoot\ioctestIoc
+(epics-dev) C:\Users\IEUser\EPICS\testIoc\iocBoot\ioctestIoc&gt; ..\..\bin\windows-x64\testIoc.exe st.cmd
+#!../../bin/windows-x64/testIoc
+&lt; envPaths
+epicsEnvSet("IOC","ioctestIoc")
+epicsEnvSet("TOP","C:/Users/IEUser/EPICS/testIoc")
+epicsEnvSet("EPICS_BASE","C:/Users/IEUser/miniconda3/envs/epics-dev/epics")
+cd "C:/Users/IEUser/EPICS/testIoc"
+## Register all support components
+dbLoadDatabase "dbd/testIoc.dbd"
+testIoc_registerRecordDeviceDriver pdbbase
+## Load record instances
+dbLoadTemplate "db/user.substitutions"
+dbLoadRecords "db/testIocVersion.db", "user=IEUser"
+dbLoadRecords "db/dbSubExample.db", "user=IEUser"
+#var mySubDebug 1
+#traceIocInit
+cd "C:/Users/IEUser/EPICS/testIoc/iocBoot/ioctestIoc"
+iocInit
+Starting iocInit
+############################################################################
+## EPICS R7.0.3.1
+## EPICS Base built May  5 2020
+############################################################################
+iocRun: All initialization complete
+## Start any sequence programs
+#seq sncExample, "user=IEUser"
+epics&gt; dbl
+IEUser:xxxExample
+IEUser:circle:angle
+IEUser:line:a
+IEUser:circle:x
+IEUser:circle:y
+IEUser:calcExample
+...</pre>
+<p>We have a running IOC on all 3 platforms!</p>
+</div>
+</div>
+<div class="section" id="summary">
+<h2>Summary</h2>
+<p>I hope this post showed you how easy conda make it to install <a class="reference external" href="https://github.com/epics-base/epics-base">EPICS Base</a> on Linux, macOS and Windows.
+We saw that this package can also be used to compile an IOC. That being said, if you want to use
+various EPICS modules, this is probably not the best solution today. As long as those modules
+aren't available as conda packages at least.
+But if all you need is <a class="reference external" href="https://github.com/epics-base/epics-base">EPICS Base</a>, to interact with IOCs on other machines for example, then I'd
+really recommend <a class="reference external" href="https://docs.conda.io/en/latest/">conda</a>.</p>
+</div>
+</div>
+    </div>
+    <aside class="postpromonav"><nav><ul itemprop="keywords" class="tags">
+<li><a class="tag p-category" href="../../categories/conda/" rel="tag">conda</a></li>
+            <li><a class="tag p-category" href="../../categories/epics/" rel="tag">epics</a></li>
+            <li><a class="tag p-category" href="../../categories/linux/" rel="tag">linux</a></li>
+            <li><a class="tag p-category" href="../../categories/mac/" rel="tag">Mac</a></li>
+            <li><a class="tag p-category" href="../../categories/python/" rel="tag">python</a></li>
+            <li><a class="tag p-category" href="../../categories/windows/" rel="tag">windows</a></li>
+        </ul>
+<ul class="pager hidden-print">
+<li class="previous">
+                <a href="../how-to-setup-a-windows-vm-to-build-conda-packages/" rel="prev" title="How to setup a Windows VM to build conda packages">Previous post</a>
+            </li>
+        </ul></nav></aside><section class="comments hidden-print"><h2>Comments</h2>
+        
+        
+        <div id="disqus_thread"></div>
+        <script>
+        var disqus_shortname ="tchutchut",
+            disqus_url="http://beenje.github.io/blog/posts/using-epics-base-with-conda-on-linux-macos-and-windows/",
+        disqus_title="Using epics-base with conda on Linux, macOS and Windows",
+        disqus_identifier="cache/posts/using-epics-base-with-conda-on-linux-macos-and-windows.html",
+        disqus_config = function () {
+            this.language = "en";
+        };
+        (function() {
+            var dsq = document.createElement('script'); dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script><noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a>
+</noscript>
+    <a href="https://disqus.com" class="dsq-brlink" rel="nofollow">Comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+        </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
+            Contents © 2020         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
+            
+        </footer>
+</div>
+</div>
+
+
+        <script src="../../assets/js/all-nocdn.js"></script><script>
+    baguetteBox.run('div#content', {
+        ignoreClass: 'islink',
+        captions: function(element) {
+            return element.getElementsByTagName('img')[0].alt;
+    }});
+    </script><script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-99836987-1', 'auto');
+  ga('set', 'anonymizeIP', true);
+  ga('send', 'pageview');
+
+</script>
+</body>
+</html>

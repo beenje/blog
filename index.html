@@ -14,7 +14,7 @@
 <link rel="alternate" type="application/rss+xml" title="RSS" href="rss.xml">
 <link rel="canonical" href="http://beenje.github.io/blog/">
 <link rel="next" href="index-2.html" type="text/html">
-<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/how-to-setup-a-windows-vm-to-build-conda-packages/" type="text/html">
+<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/using-epics-base-with-conda-on-linux-macos-and-windows/" type="text/html">
 </head>
 <body>
 <a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
@@ -67,7 +67,349 @@ navbar-dark bg-dark
 
     
 <div class="postindex">
-    <article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/how-to-setup-a-windows-vm-to-build-conda-packages/" class="u-url">How to setup a Windows VM to build conda packages</a></h1>
+    <article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/using-epics-base-with-conda-on-linux-macos-and-windows/" class="u-url">Using epics-base with conda on Linux, macOS and Windows</a></h1>
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                Benjamin Bertrand
+            </span></p>
+            <p class="dateline">
+            <a href="posts/using-epics-base-with-conda-on-linux-macos-and-windows/" rel="bookmark">
+            <time class="published dt-published" datetime="2020-05-07T22:33:55+02:00" itemprop="datePublished" title="2020-05-07 22:33">2020-05-07 22:33</time></a>
+            </p>
+                <p class="commentline">
+        
+    <a href="posts/using-epics-base-with-conda-on-linux-macos-and-windows/#disqus_thread" data-disqus-identifier="cache/posts/using-epics-base-with-conda-on-linux-macos-and-windows.html">Comments</a>
+
+
+        </p>
+</div>
+    </header><div class="e-content entry-content">
+    <div>
+<p>I previously described how to create a <a class="reference external" href="posts/how-to-setup-a-windows-vm-to-build-conda-packages">Windows VM to build conda packages</a>.
+I mentioned this was to update the conda-forge <a class="reference external" href="https://github.com/conda-forge/epics-base-feedstock">epics-base feedstock</a>.
+In this post, I want to share how to use <a class="reference external" href="https://github.com/epics-base/epics-base">EPICS Base</a> with <a class="reference external" href="https://docs.conda.io/en/latest/">conda</a>.</p>
+<div class="section" id="acknowledgement">
+<h2>Acknowledgement</h2>
+<p>I'm not the original author of the <a class="reference external" href="https://github.com/conda-forge/epics-base-feedstock">epics-base feedstock</a>.
+I want to thank all the people who contributed to that conda recipe.</p>
+<p>All the examples of <a class="reference external" href="https://epics.anl.gov">EPICS</a> usage below come directly from the official website
+<a class="reference external" href="https://epics-controls.org/resources-and-support/documents/getting-started/">Getting Started page</a>.</p>
+</div>
+<div class="section" id="miniconda">
+<h2>Miniconda</h2>
+<p>This post assumes some basic knowledge of <a class="reference external" href="https://docs.conda.io/en/latest/">conda</a>.
+If you never used it before, I recommend starting by checking the <a class="reference external" href="https://docs.conda.io/en/latest/">documentation</a>.</p>
+<p>If you don't have <cite>conda</cite> already installed, here are some quick instructions.
+Refer to the <a class="reference external" href="https://conda.io/projects/conda/en/latest/user-guide/install/index.html">official documentation</a>
+for more detailed information.</p>
+<div class="section" id="linux">
+<h3>Linux</h3>
+<p>Note that <cite>bzip2</cite> is required to run the installation.</p>
+<pre class="literal-block">curl -LO https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh -bp $HOME/miniconda
+rm -f Miniconda3-latest-Linux-x86_64.sh
+# Let conda update your ~/.bashrc
+source $HOME/miniconda/bin/activate
+conda init</pre>
+</div>
+<div class="section" id="macos">
+<h3>macOS</h3>
+<pre class="literal-block">curl -LO https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
+bash Miniconda3-latest-MacOSX-x86_64.sh -bp $HOME/miniconda
+rm -f Miniconda3-latest-MacOSX-x86_64.sh
+# Let conda update your ~/.bash_profile
+source $HOME/miniconda/bin/activate
+conda init</pre>
+</div>
+<div class="section" id="windows">
+<h3>Windows</h3>
+<p>Download and run the Miniconda3 installer from <a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html#windows-installers">https://docs.conda.io/en/latest/miniconda.html#windows-installers</a>.
+To use conda, open the Anaconda Prompt from the start menu.</p>
+</div>
+<div class="section" id="configuration">
+<h3>Configuration</h3>
+<p>On Linux and macOS, if you don't want conda to activate the base environment by default (and modify your PATH),
+you should run:</p>
+<pre class="literal-block">conda config --set auto_activate_base false</pre>
+<p>This doesn't really apply to Windows as you have to start the Anaconda Prompt to use conda.</p>
+<p>To be able to install package from <a class="reference external" href="https://conda-forge.org">conda-forge</a>,
+add the <cite>conda-forge</cite> channel to your configuration. This applies to all platforms.</p>
+<pre class="literal-block">conda config --add channels conda-forge</pre>
+</div>
+</div>
+<div class="section" id="installing-epics-base">
+<h2>Installing epics-base</h2>
+<div class="section" id="environment-creation">
+<h3>Environment creation</h3>
+<p>Now that we have conda installed and configured, getting <cite>epics-base</cite> is as easy
+as running:</p>
+<pre class="literal-block">conda create -y -n epics epics-base</pre>
+<p>Note that you don't need any compiler or to install any other packages.
+The only requirement is conda.
+As of may 2020, the version installed should be 7.0.3.1.</p>
+</div>
+<div class="section" id="environment-activation">
+<h3>Environment activation</h3>
+<p>To start using <a class="reference external" href="https://epics.anl.gov">EPICS</a>, activate the environment:</p>
+<pre class="literal-block">conda activate epics</pre>
+<p>You now have access to all the binaries provided by epics-base:</p>
+<pre class="literal-block">caget -h
+pvget -h
+softIocPVA
+epics&gt; exit</pre>
+<p>On Windows, there is currently a small issue. If you run <code class="docutils literal">softIocPVA <span class="pre">-h</span></code>,
+you will see that the compiled-in path to softIocPVA.dbd is incorrect:</p>
+<pre class="literal-block">(epics) C:\Users\IEUser&gt;softIocPVA -h
+Usage: softIocPVA [-D softIoc.dbd] [-h] [-S] [-a ascf]
+        [-m macro=value,macro2=value2] [-d file.db]
+        [-x prefix] [st.cmd]
+Compiled-in path to softIocPVA.dbd is:
+        D:/bld/epics-base_1588657178544/_h_env/epics/dbd/softIocPVA.dbd</pre>
+<p>The path is the one that was used when the epics-base conda package was created.
+Conda usually automatically replaces this <code class="docutils literal">$PREFIX</code> variable when creating an environment.
+It works on Linux and macOS but not on Windows in this case.
+You have to give the explicit path to the dbd manually. You can use the <code class="docutils literal">%EPICS_BASE%</code>
+environment variable that is automatically set during the activation of the epics environment:</p>
+<pre class="literal-block">(epics) C:\Users\IEUser&gt;softIocPVA -D %EPICS_BASE%\dbd\softIocPVA.dbd
+epics&gt;</pre>
+<p>Note that if I understand correctly this <a class="reference external" href="https://epics.anl.gov/tech-talk/2020/msg00900.php">tech-talk message</a>,
+next release should use a relative path and remove this issue.</p>
+<p>After activation, you can see that several EPICS environment variables have been
+set. The PATH was also updated. It includes both <code class="docutils literal">$CONDA_PREFIX/bin</code> as well
+as <code class="docutils literal"><span class="pre">$EPICS_BASE/bin/$EPICS_HOST_ARCH</span></code>:</p>
+<pre class="literal-block">(epics) [tux@964ef40cabbb ~]$ env | grep EPICS
+EPICS_BASE_HOST_BIN=/home/tux/miniconda/envs/epics/epics/bin/linux-x86_64
+EPICS_BASE_VERSION=7.0.3.1
+EPICS_BASE=/home/tux/miniconda/envs/epics/epics
+EPICS_HOST_ARCH=linux-x86_64
+(epics) [tux@964ef40cabbb ~]$ echo $PATH
+/home/tux/miniconda/envs/epics/epics/bin/linux-x86_64:/home/tux/miniconda/envs/epics/bin:/home/tux/miniconda/condabin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/tux/.local/bin:/home/tux/bin
+(epics) [tux@964ef40cabbb ~]$</pre>
+<p>Those variables are set by the activation script part of the <cite>epics-base</cite> package.
+Running <code class="docutils literal">conda deactivate</code> will unset those variables:</p>
+<pre class="literal-block">(epics) [tux@964ef40cabbb ~]$ conda deactivate
+(base) [tux@964ef40cabbb ~]$ env | grep EPICS
+(base) [tux@964ef40cabbb ~]$ echo $PATH
+/home/tux/miniconda/bin:/home/tux/miniconda/condabin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/tux/.local/bin:/home/tux/bin
+(base) [tux@964ef40cabbb ~]$</pre>
+</div>
+<div class="section" id="simple-test">
+<h3>Simple test</h3>
+<p>With your editor of choice, create the <cite>test.db</cite> file that contains:</p>
+<pre class="literal-block">record(ai, "temperature:water")
+{
+    field(DESC, "Water temperature in the fish tank")
+}</pre>
+<p>Open a terminal and activate the <cite>epics</cite> environment.</p>
+<p>On Linux and macOS, run:</p>
+<pre class="literal-block">softIocPVA -d test.db</pre>
+<p>On Windows, run:</p>
+<pre class="literal-block">softIocPVA -D %EPICS_BASE%\dbd\softIocPVA.dbd -d test.db</pre>
+<p>Open another terminal and run:</p>
+<pre class="literal-block">CI0011906:~ $ conda activate epics
+(epics) CI0011906:~ $ caget temperature:water
+temperature:water              0
+(epics) CI0011906:~ $ caget temperature:water.DESC
+temperature:water.DESC         Water temperature in the fish tank
+(epics) CI0011906:~ $ caput temperature:water 21
+Old : temperature:water              0
+New : temperature:water              21
+(epics) CI0011906:~ $ caget temperature:water
+temperature:water              21
+(epics) CI0011906:~ $</pre>
+<p>The following screenshots show the result on macOS and Windows.</p>
+<img alt="/images/using-epics-base-with-conda/simple-test-macos.png" src="images/using-epics-base-with-conda/simple-test-macos.png"><img alt="/images/using-epics-base-with-conda/simple-test-windows.png" src="images/using-epics-base-with-conda/simple-test-windows.png">
+</div>
+</div>
+<div class="section" id="compiling-a-demo-ioc">
+<h2>Compiling a demo IOC</h2>
+<p>We saw how to use the binaries that come with epics-base. It's worth mentioning
+that you can also compile code using the installed conda package.</p>
+<div class="section" id="pre-requisites">
+<h3>Pre-requisites</h3>
+<p>The pre-requisites are different depending on the platform.</p>
+<div class="section" id="id1">
+<h4>Linux</h4>
+<p>There is no distribution specific dependencies to install.
+All requirements will be installed with conda.</p>
+<p>We could use the existing <cite>epics</cite> environment but we'll create a new one
+to demonstrate that several environments can coexist in parallel.</p>
+<p>Create and activate the <cite>epics-dev</cite> environment:</p>
+<pre class="literal-block">conda create -y -n epics-dev epics-base make compilers
+conda activate epics-dev</pre>
+</div>
+<div class="section" id="id2">
+<h4>macOS</h4>
+<p>Conda provides the clang compilers for macOS. But the macOS SDK is still required.
+The SDK license prevents it from being bundled in the conda package.
+The SDK has to be installed manually. For compatibility issue, conda packages
+are built with the 10.9 SDK. To compile code locally that you don't plan
+to share, using a more recent version should be fine.</p>
+<div class="section" id="solution-1-current-sdk">
+<h5>Solution 1: current SDK</h5>
+<p>Install Xcode Command Line Tools by running:</p>
+<pre class="literal-block">xcode-select --install</pre>
+</div>
+<div class="section" id="solution-2-10-9-sdk">
+<h5>Solution 2: 10.9 SDK</h5>
+<p>As mentioned in <a class="reference external" href="https://docs.conda.io/projects/conda-build/en/latest/resources/compiler-tools.html#macos-sdk">conda-build documentation</a>,
+the 10.9 SDK can be downloaded from:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/devernay/xcodelegacy">https://github.com/devernay/xcodelegacy</a></p></li>
+<li><p><a class="reference external" href="https://github.com/phracker/MacOSX-SDKs">https://github.com/phracker/MacOSX-SDKs</a></p></li>
+</ul>
+<p>Download <a class="reference external" href="https://github.com/phracker/MacOSX-SDKs/releases/download/10.15/MacOSX10.9.sdk.tar.xz">MacOSX10.9.sdk.tar.xz</a>
+and untar it under <code class="docutils literal">/opt/MacOSX10.9.sdk</code>.</p>
+<p>Create and activate the <cite>epics-dev</cite> environment:</p>
+<pre class="literal-block">conda create -y -n epics-dev epics-base make compilers
+conda activate epics-dev</pre>
+<p>Before to be able to compile, two variables have to be set on macOS: <code class="docutils literal">MACOSX_DEPLOYMENT_TARGET</code> and
+<code class="docutils literal">CONDA_BUILD_SYSROOT</code>.</p>
+<p>Those variables are usually set automatically by <cite>conda-build</cite>. When compiling locally,
+you have to set them manually.
+<code class="docutils literal">CONDA_BUILD_SYSROOT</code> is actually automatically set when activating an environment with
+the <cite>compilers</cite> package. It should detect your Xcode installation:</p>
+<pre class="literal-block">(epics-dev) CI0011906:~ $ echo $CONDA_BUILD_SYSROOT
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk</pre>
+<p>If you installed the 10.9 SDK, you might want to point to that instead:</p>
+<pre class="literal-block">export CONDA_BUILD_SYSROOT=/opt/MacOSX10.9.sdk</pre>
+<p>The variable <code class="docutils literal">MACOSX_DEPLOYMENT_TARGET</code>, you have to set manually:</p>
+<pre class="literal-block">export MACOSX_DEPLOYMENT_TARGET=10.9</pre>
+</div>
+</div>
+<div class="section" id="id3">
+<h4>Windows</h4>
+<p>On Windows, you need to install the Visual C++ compilers.
+You only need to download the <strong>Build Tools for Visual Studio 2017</strong>. Refer
+to the post on <a class="reference external" href="posts/how-to-setup-a-windows-vm-to-build-conda-packages">how to setup a Windows VM to build conda packages</a> for
+the instructions on how to install them.</p>
+<p>Create and activate the <cite>epics-dev</cite> environment:</p>
+<pre class="literal-block">conda create -n epics-dev epics-base epics-base-static-libs make vs2017_win-64
+conda activate epics-dev</pre>
+<p><cite>vs2017_win-64</cite> is a package that contains an activation script to setup VS 2017.
+Note that we also need to install the <cite>epics-base-static-libs</cite> to compile on Windows.
+The static libraries were moved to a subpackage to make <cite>epics-base</cite> package smaller.
+They are not needed most of the time on Linux and macOS. Maybe they should be part of
+the default package on Windows?</p>
+</div>
+</div>
+<div class="section" id="ioc-creation">
+<h3>IOC creation</h3>
+<p>Make sure you activated the <cite>epics-dev</cite> environment you created.
+Note that we didn't have to specify <cite>perl</cite> when creating the environment.
+It's installed with <cite>epics-base</cite> as run dependency.</p>
+<p>On Linux and macOS:</p>
+<pre class="literal-block">(epics-dev) CI0011906:~ $ mkdir -p $HOME/EPICS/testIoc
+(epics-dev) CI0011906:~ $ cd $HOME/EPICS/testIoc
+(epics-dev) CI0011906:~/EPICS/testIoc $ makeBaseApp.pl -t example testIoc
+(epics-dev) CI0011906:~/EPICS/testIoc $ makeBaseApp.pl -i -t example testIoc
+Using target architecture darwin-x86 (only one available)
+The following applications are available:
+    testIoc
+What application should the IOC(s) boot?
+The default uses the IOC's name, even if not listed above.
+Application name?
+(epics-dev) CI0011906:~/EPICS/testIoc $ make
+...
+(epics-dev) CI0011906:~/EPICS/testIoc $ cd iocBoot/ioctestIoc
+(epics-dev) CI0011906:~/EPICS/testIoc/iocBoot/ioctestIoc $ chmod a+x st.cmd
+(epics-dev) CI0011906:~/EPICS/testIoc/iocBoot/ioctestIoc $ ./st.cmd
+#!../../bin/darwin-x86/testIoc
+&lt; envPaths
+epicsEnvSet("IOC","ioctestIoc")
+epicsEnvSet("TOP","/Users/benjaminbertrand/EPICS/testIoc")
+epicsEnvSet("EPICS_BASE","/Users/benjaminbertrand/miniconda3/envs/epics-dev/epics")
+cd "/Users/benjaminbertrand/EPICS/testIoc"
+## Register all support components
+dbLoadDatabase "dbd/testIoc.dbd"
+testIoc_registerRecordDeviceDriver pdbbase
+## Load record instances
+dbLoadTemplate "db/user.substitutions"
+dbLoadRecords "db/testIocVersion.db", "user=benjaminbertrand"
+dbLoadRecords "db/dbSubExample.db", "user=benjaminbertrand"
+#var mySubDebug 1
+#traceIocInit
+cd "/Users/benjaminbertrand/EPICS/testIoc/iocBoot/ioctestIoc"
+iocInit
+Starting iocInit
+############################################################################
+## EPICS R7.0.3.1
+## EPICS Base built May  5 2020
+############################################################################
+iocRun: All initialization complete
+## Start any sequence programs
+#seq sncExample, "user=benjaminbertrand"
+epics&gt; dbl
+benjaminbertrand:testIoc:version
+benjaminbertrand:xxxExample
+benjaminbertrand:circle:step
+benjaminbertrand:circle:period
+benjaminbertrand:line:b
+benjaminbertrand:aiExample
+...</pre>
+<p>On Windows:</p>
+<pre class="literal-block">(epics-dev) C:\Users\IEUser&gt; mkdir EPICS\testIoc
+(epics-dev) C:\Users\IEUser&gt; cd EPICS\testIoc
+(epics-dev) C:\Users\IEUser\EPICS\testIoc&gt; perl %EPICS_BASE_HOST_BIN%\makeBaseApp.pl -t example testIoc
+(epics-dev) C:\Users\IEUser\EPICS\testIoc&gt; perl %EPICS_BASE_HOST_BIN%\makeBaseApp.pl -i -t example testIoc
+Using target architecture windows-x64 (only one available)
+The following applications are available:
+    testIoc
+What application should the IOC(s) boot?
+The default uses the IOC's name, even if not listed above.
+Application name?
+(epics-dev) C:\Users\IEUser\EPICS\testIoc&gt; make
+...
+(epics-dev) C:\Users\IEUser\EPICS\testIoc&gt; cd iocBoot\ioctestIoc
+(epics-dev) C:\Users\IEUser\EPICS\testIoc\iocBoot\ioctestIoc&gt; ..\..\bin\windows-x64\testIoc.exe st.cmd
+#!../../bin/windows-x64/testIoc
+&lt; envPaths
+epicsEnvSet("IOC","ioctestIoc")
+epicsEnvSet("TOP","C:/Users/IEUser/EPICS/testIoc")
+epicsEnvSet("EPICS_BASE","C:/Users/IEUser/miniconda3/envs/epics-dev/epics")
+cd "C:/Users/IEUser/EPICS/testIoc"
+## Register all support components
+dbLoadDatabase "dbd/testIoc.dbd"
+testIoc_registerRecordDeviceDriver pdbbase
+## Load record instances
+dbLoadTemplate "db/user.substitutions"
+dbLoadRecords "db/testIocVersion.db", "user=IEUser"
+dbLoadRecords "db/dbSubExample.db", "user=IEUser"
+#var mySubDebug 1
+#traceIocInit
+cd "C:/Users/IEUser/EPICS/testIoc/iocBoot/ioctestIoc"
+iocInit
+Starting iocInit
+############################################################################
+## EPICS R7.0.3.1
+## EPICS Base built May  5 2020
+############################################################################
+iocRun: All initialization complete
+## Start any sequence programs
+#seq sncExample, "user=IEUser"
+epics&gt; dbl
+IEUser:xxxExample
+IEUser:circle:angle
+IEUser:line:a
+IEUser:circle:x
+IEUser:circle:y
+IEUser:calcExample
+...</pre>
+<p>We have a running IOC on all 3 platforms!</p>
+</div>
+</div>
+<div class="section" id="summary">
+<h2>Summary</h2>
+<p>I hope this post showed you how easy conda make it to install <a class="reference external" href="https://github.com/epics-base/epics-base">EPICS Base</a> on Linux, macOS and Windows.
+We saw that this package can also be used to compile an IOC. That being said, if you want to use
+various EPICS modules, this is probably not the best solution today. As long as those modules
+aren't available as conda packages at least.
+But if all you need is <a class="reference external" href="https://github.com/epics-base/epics-base">EPICS Base</a>, to interact with IOCs on other machines for example, then I'd
+really recommend <a class="reference external" href="https://docs.conda.io/en/latest/">conda</a>.</p>
+</div>
+</div>
+    </div>
+    </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/how-to-setup-a-windows-vm-to-build-conda-packages/" class="u-url">How to setup a Windows VM to build conda packages</a></h1>
         <div class="metadata">
             <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
                 Benjamin Bertrand
@@ -7786,165 +8128,6 @@ Thanks again to @mkennedy for the stickers!</p>
 <p>I didn't build this LEGO Macintosh to use it as a simple clock :-)
 I have a few ideas. I'll start with a small web server so that I can receive and display messages.
 That will be the subject of another <a class="reference external" href="posts/experimenting-with-asyncio-on-a-raspberry-pi">blog post</a>!</p>
-</div>
-</div>
-    </div>
-    </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/dockerfile-anti-patterns-and-best-practices/" class="u-url">Dockerfile anti-patterns and best practices</a></h1>
-        <div class="metadata">
-            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
-                Benjamin Bertrand
-            </span></p>
-            <p class="dateline">
-            <a href="posts/dockerfile-anti-patterns-and-best-practices/" rel="bookmark">
-            <time class="published dt-published" datetime="2017-03-16T22:10:49+01:00" itemprop="datePublished" title="2017-03-16 22:10">2017-03-16 22:10</time></a>
-            </p>
-                <p class="commentline">
-        
-    <a href="posts/dockerfile-anti-patterns-and-best-practices/#disqus_thread" data-disqus-identifier="cache/posts/dockerfile-anti-patterns-and-best-practices.html">Comments</a>
-
-
-        </p>
-</div>
-    </header><div class="e-content entry-content">
-    <div>
-<p>I've been using <a class="reference external" href="https://www.docker.com">Docker</a> for some time now.
-There is already a lot of documentation available online but I recently
-saw the same "anti-patterns" several times, so I thought it was worth writing a post about
-it.</p>
-<p>I won't repeat all the <a class="reference external" href="https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/">Best practices for writing Dockerfiles</a> here.
-You should definitively read that page.</p>
-<p>I want to emphasize some things that took me some time to understand.</p>
-<div class="section" id="avoid-invalidating-the-cache">
-<h2>Avoid invalidating the cache</h2>
-<p>Let's take a simple example with a Python application:</p>
-<pre class="literal-block">FROM python:3.6
-
-COPY . /app
-WORKDIR /app
-
-RUN pip install -r requirements.txt
-
-ENTRYPOINT ["python"]
-CMD ["ap.py"]</pre>
-<p>It's actually an example I have seen several times online.
-This looks fine, right?</p>
-<p>The problem is that the <em>COPY . /app</em> command will invalidate the cache as
-soon as any file in the current directory is updated.
-Let's say you just change the <em>README</em> file and run <em>docker build</em> again.
-Docker will have to re-install all the requirements because the
-<em>RUN pip</em> command is run after the <em>COPY</em> that invalidated the cache.</p>
-<p>The requirements should only be re-installed if the <em>requirements.txt</em>
-file changes:</p>
-<pre class="literal-block">FROM python:3.6
-
-WORKDIR /app
-
-COPY requirements.txt /app/requirements.txt
-RUN pip install -r requirements.txt
-
-COPY . /app
-
-ENTRYPOINT ["python"]
-CMD ["ap.py"]</pre>
-<p>With this Dockerfile, the <em>RUN pip</em> command will only be re-run when the
-<em>requirements.txt</em> file changes. It will use the cache otherwise.</p>
-<p>This is much more efficient and will save you quite some time if you have
-many requirements to install.</p>
-</div>
-<div class="section" id="minimize-the-number-of-layers">
-<h2>Minimize the number of layers</h2>
-<p>What does that really mean?</p>
-<p>Each <a class="reference external" href="https://www.docker.com">Docker</a> image references a list of read-only layers that represent
-filesystem differences. Every command in your Dockerfile will create a new
-layer.</p>
-<p>Let's use the following Dockerfile:</p>
-<pre class="literal-block">FROM centos:7
-
-RUN yum update -y
-RUN yum install -y sudo
-RUN yum install -y git
-RUN yum clean all</pre>
-<p>Build the docker image and check the layers created with the <em>docker history</em> command:</p>
-<pre class="literal-block">$ docker build -t centos-test .
-...
-$ docker images
-REPOSITORY                       TAG                 IMAGE ID            CREATED              SIZE
-centos-test                      latest              1fae366a2613        About a minute ago   470 MB
-centos                           7                   98d35105a391        24 hours ago         193 MB
-$ docker history centos-test
-IMAGE               CREATED             CREATED BY                                      SIZE                COMMENT
-1fae366a2613        2 minutes ago       /bin/sh -c yum clean all                        1.67 MB
-999e7c7c0e14        2 minutes ago       /bin/sh -c yum install -y git                   133 MB
-c97b66528792        3 minutes ago       /bin/sh -c yum install -y sudo                  81 MB
-e0c7b450b7a8        3 minutes ago       /bin/sh -c yum update -y                        62.5 MB
-98d35105a391        24 hours ago        /bin/sh -c #(nop)  CMD ["/bin/bash"]            0 B
-&lt;missing&gt;           24 hours ago        /bin/sh -c #(nop)  LABEL name=CentOS Base ...   0 B
-&lt;missing&gt;           24 hours ago        /bin/sh -c #(nop) ADD file:29f66b8b4bafd0f...   193 MB
-&lt;missing&gt;           6 months ago        /bin/sh -c #(nop)  MAINTAINER https://gith...   0 B</pre>
-<p>There are two problems with this Dockerfile:</p>
-<ol class="arabic simple">
-<li><p>We added too many layers for nothing.</p></li>
-<li><p>The <em>yum clean all</em> command is meant to reduce the size of the image but it
-actually does the opposite by adding a new layer!</p></li>
-</ol>
-<p>Let's check that by removing the latest command and running the build
-again:</p>
-<pre class="literal-block">FROM centos:7
-
-RUN yum update -y
-RUN yum install -y sudo
-RUN yum install -y git
-# RUN yum clean all</pre>
-<pre class="literal-block">$ docker build -t centos-test .
-...
-$ docker images
-REPOSITORY                       TAG                 IMAGE ID            CREATED             SIZE
-centos-test                      latest              999e7c7c0e14        11 minutes ago      469 MB
-centos                           7                   98d35105a391        24 hours ago        193 MB</pre>
-<p>The new image without the <em>yum clean all</em> command is indeed smaller than the previous image (1.67 MB smaller)!</p>
-<p>If you want to remove files, it's important to do that in the same RUN command that created those files.
-Otherwise there is no point.</p>
-<p>Here is the proper way to do it:</p>
-<pre class="literal-block">FROM centos:7
-
-RUN yum update -y \
-  &amp;&amp; yum install -y \
-  sudo \
-  git \
-  &amp;&amp; yum clean all</pre>
-<p>Let's build this new image:</p>
-<pre class="literal-block">$ docker build -t centos-test .
-...
-$ docker images
-REPOSITORY                       TAG                 IMAGE ID            CREATED             SIZE
-centos-test                      latest              54a328ef7efd        21 seconds ago      265 MB
-centos                           7                   98d35105a391        24 hours ago        193 MB
-$ docker history centos-test
-IMAGE               CREATED              CREATED BY                                      SIZE                COMMENT
-54a328ef7efd        About a minute ago   /bin/sh -c yum update -y   &amp;&amp; yum install ...   72.8 MB
-98d35105a391        24 hours ago         /bin/sh -c #(nop)  CMD ["/bin/bash"]            0 B
-&lt;missing&gt;           24 hours ago         /bin/sh -c #(nop)  LABEL name=CentOS Base ...   0 B
-&lt;missing&gt;           24 hours ago         /bin/sh -c #(nop) ADD file:29f66b8b4bafd0f...   193 MB
-&lt;missing&gt;           6 months ago         /bin/sh -c #(nop)  MAINTAINER https://gith...   0 B</pre>
-<p>The new image is only 265 MB compared to the 470 MB of the original image.
-There isn't much more to say :-)</p>
-<p>If you want to know more about images and layers, you should read the
-documentation: <a class="reference external" href="https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/">Understand images, containers, and storage drivers</a>.</p>
-</div>
-<div class="section" id="conclusion">
-<h2>Conclusion</h2>
-<p>Avoid invalidating the cache:</p>
-<ul class="simple">
-<li><p>start your Dockerfile with commands that should not change often</p></li>
-<li><p>put commands that can often invalidate the cache (like COPY .) as
-late as possible</p></li>
-<li><p>only add the needed files (use a .dockerignore file)</p></li>
-</ul>
-<p>Minimize the number of layers:</p>
-<ul class="simple">
-<li><p>put related commands in the same RUN instruction</p></li>
-<li><p>remove files in the same RUN command that created them</p></li>
-</ul>
 </div>
 </div>
     </div>

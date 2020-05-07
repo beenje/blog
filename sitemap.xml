@@ -27,7 +27,7 @@
  </url>
  <url>
   <loc>http://beenje.github.io/blog/archive.html</loc>
-  <lastmod>2020-05-03T21:53:00Z</lastmod>
+  <lastmod>2020-05-07T18:36:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/</loc>
@@ -255,15 +255,11 @@
  </url>
  <url>
   <loc>http://beenje.github.io/blog/index-2.html</loc>
-  <lastmod>2020-05-03T21:53:00Z</lastmod>
+  <lastmod>2020-05-07T18:36:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp/</loc>
   <lastmod>2020-05-03T21:40:00Z</lastmod>
- </url>
- <url>
-  <loc>http://beenje.github.io/blog/posts/building-conda-packages-on-windows/</loc>
-  <lastmod>2020-05-03T18:59:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/compile-and-install-kodi-on-ipad-without-jailbreak/</loc>
@@ -322,6 +318,10 @@
   <lastmod>2020-05-03T21:40:00Z</lastmod>
  </url>
  <url>
+  <loc>http://beenje.github.io/blog/posts/packaging-epics-base-with-conda-on-linux-macos-and-windows/</loc>
+  <lastmod>2020-05-05T18:43:00Z</lastmod>
+ </url>
+ <url>
   <loc>http://beenje.github.io/blog/posts/parsing-and-indexing-pdf-in-python/</loc>
   <lastmod>2020-05-03T21:40:00Z</lastmod>
  </url>
@@ -348,6 +348,10 @@
  <url>
   <loc>http://beenje.github.io/blog/posts/switching-from-git-bigfile-to-git-lfs/</loc>
   <lastmod>2020-05-03T21:40:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/posts/using-epics-base-with-conda-on-linux-macos-and-windows/</loc>
+  <lastmod>2020-05-05T18:43:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/uwsgi-send_file-and-python35/</loc>
