@@ -27,11 +27,11 @@
  </url>
  <url>
   <loc>http://beenje.github.io/blog/archive.html</loc>
-  <lastmod>2020-05-07T18:36:00Z</lastmod>
+  <lastmod>2020-05-24T16:51:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/</loc>
-  <lastmod>2020-05-03T21:40:00Z</lastmod>
+  <lastmod>2020-05-30T20:46:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/aiohttp/</loc>
@@ -48,6 +48,10 @@
  <url>
   <loc>http://beenje.github.io/blog/categories/appletv/</loc>
   <lastmod>2020-05-03T21:40:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/asyncio/</loc>
+  <lastmod>2020-05-24T16:51:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/bash/</loc>
@@ -134,8 +138,16 @@
   <lastmod>2020-05-03T21:40:00Z</lastmod>
  </url>
  <url>
+  <loc>http://beenje.github.io/blog/categories/httpie/</loc>
+  <lastmod>2020-05-30T20:46:00Z</lastmod>
+ </url>
+ <url>
   <loc>http://beenje.github.io/blog/categories/https/</loc>
   <lastmod>2020-05-03T21:40:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/categories/httpx/</loc>
+  <lastmod>2020-05-24T16:51:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/ios/</loc>
@@ -214,6 +226,10 @@
   <lastmod>2020-05-03T21:40:00Z</lastmod>
  </url>
  <url>
+  <loc>http://beenje.github.io/blog/categories/starlette/</loc>
+  <lastmod>2020-05-24T16:51:00Z</lastmod>
+ </url>
+ <url>
   <loc>http://beenje.github.io/blog/categories/synology/</loc>
   <lastmod>2020-05-03T21:40:00Z</lastmod>
  </url>
@@ -255,11 +271,15 @@
  </url>
  <url>
   <loc>http://beenje.github.io/blog/index-2.html</loc>
-  <lastmod>2020-05-07T18:36:00Z</lastmod>
+  <lastmod>2020-05-24T16:51:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp/</loc>
   <lastmod>2020-05-03T21:40:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-starlette-and-httpx/</loc>
+  <lastmod>2020-05-24T16:51:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/compile-and-install-kodi-on-ipad-without-jailbreak/</loc>
@@ -316,10 +336,6 @@
  <url>
   <loc>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</loc>
   <lastmod>2020-05-03T21:40:00Z</lastmod>
- </url>
- <url>
-  <loc>http://beenje.github.io/blog/posts/packaging-epics-base-with-conda-on-linux-macos-and-windows/</loc>
-  <lastmod>2020-05-05T18:43:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/parsing-and-indexing-pdf-in-python/</loc>

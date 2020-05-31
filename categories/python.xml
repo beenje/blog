@@ -3,7 +3,322 @@
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Thu, 07 May 2020 20:40:06 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Using epics-base with conda on Linux, macOS and Windows</title><link>http://beenje.github.io/blog/posts/using-epics-base-with-conda-on-linux-macos-and-windows/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I previously described how to create a &lt;a class="reference external" href="http://beenje.github.io/blog/posts/how-to-setup-a-windows-vm-to-build-conda-packages"&gt;Windows VM to build conda packages&lt;/a&gt;.
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sun, 31 May 2020 20:38:25 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Building a GitLab bot using gidgetlab, Starlette and HTTPX</title><link>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-starlette-and-httpx/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I previously described how to create a &lt;a class="reference external" href="http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp"&gt;GitLab bot using gidgetlab and aiohttp&lt;/a&gt;.
+I recently read and became curious about &lt;a class="reference external" href="https://fastapi.tiangolo.com"&gt;FastAPI&lt;/a&gt; and &lt;a class="reference external" href="https://www.starlette.io"&gt;Starlette&lt;/a&gt;. The latter seemed
+like a good fit for a GitLab bot and a nice way to experiment with it for me.&lt;/p&gt;
+&lt;p&gt;If you haven't heard about &lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/"&gt;gidgetlab&lt;/a&gt;, I recommend starting with my &lt;a class="reference external" href="http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp"&gt;previous post&lt;/a&gt;.
+I won't explain again how to create an access token or configure a webhook.&lt;/p&gt;
+&lt;p&gt;To build a bot, we need both an HTTP client and server. &lt;a class="reference external" href="https://docs.aiohttp.org/en/stable/"&gt;aiohttp&lt;/a&gt; provides both.
+&lt;a class="reference external" href="https://www.starlette.io"&gt;Starlette&lt;/a&gt; is a lightweight &lt;a class="reference external" href="https://asgi.readthedocs.io/en/latest/"&gt;ASGI&lt;/a&gt; framework. It doesn't include an HTTP client.
+&lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/"&gt;gidgetlab&lt;/a&gt; supports several HTTP clients. I recently added &lt;a class="reference external" href="https://www.python-httpx.org"&gt;HTTPX&lt;/a&gt;, thanks to &lt;a class="reference external" href="https://gidgethub.readthedocs.io/en/latest/"&gt;gidgethub&lt;/a&gt; once again.
+It's described as the next-generation HTTP client for Python and will play well with &lt;a class="reference external" href="https://www.starlette.io"&gt;Starlette&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Let's start by a small example on how to use &lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/"&gt;gidgetlab&lt;/a&gt; with &lt;a class="reference external" href="https://www.python-httpx.org"&gt;HTTPX&lt;/a&gt;.&lt;/p&gt;
+&lt;div class="section" id="using-gidgetlab-with-httpx-on-the-command-line"&gt;
+&lt;h2&gt;Using gidgetlab with HTTPX on the command line&lt;/h2&gt;
+&lt;div class="section" id="install-gidgetlab-and-httpx"&gt;
+&lt;h3&gt;Install gidgetlab and httpx&lt;/h3&gt;
+&lt;p&gt;Install &lt;code class="docutils literal"&gt;gidgetlab&lt;/code&gt; and &lt;code class="docutils literal"&gt;httpx&lt;/code&gt; if you have not already. Using a virtual environment
+is recommended.&lt;/p&gt;
+&lt;pre class="literal-block"&gt;python3 -m pip install gidgetlab[httpx]&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div class="section" id="create-an-issue"&gt;
+&lt;h3&gt;Create an issue&lt;/h3&gt;
+&lt;p&gt;We'll use the same example as in the &lt;a class="reference external" href="http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp"&gt;previous post&lt;/a&gt; but replace &lt;a class="reference external" href="https://docs.aiohttp.org/en/stable/"&gt;aiohttp&lt;/a&gt; with &lt;a class="reference external" href="https://www.python-httpx.org"&gt;httpx&lt;/a&gt;.
+Copy the following into the file &lt;code class="docutils literal"&gt;create_issue.py&lt;/code&gt; using your favorite editor:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;import asyncio
+import os
+import httpx
+import gidgetlab.httpx
+
+
+async def main():
+    async with httpx.AsyncClient() as client:
+        gl = gidgetlab.httpx.GitLabAPI(
+            client, "gidgetlab", access_token=os.environ.get("GL_ACCESS_TOKEN")
+        )
+        await gl.post(
+            "/projects/beenje%2Fstrange-relationship/issues",
+            data={
+                "title": "We got a problem",
+                "description": "You should use HTTPX!",
+            })
+
+
+asyncio.run(main())&lt;/pre&gt;
+&lt;p&gt;If you check the example with &lt;a class="reference external" href="https://docs.aiohttp.org/en/stable/"&gt;aiohttp&lt;/a&gt; from my previous post, you can see it's pretty similar.&lt;/p&gt;
+&lt;pre class="literal-block"&gt;$ diff -u aiohttp_create_issue.py create_issue.py
+--- aiohttp_create_issue.py 2020-05-31 21:31:52.000000000 +0200
++++ create_issue.py 2020-05-31 21:26:19.000000000 +0200
+@@ -1,12 +1,14 @@
+ import asyncio
+ import os
+-import aiohttp
+-from gidgetlab.aiohttp import GitLabAPI
++import httpx
++import gidgetlab.httpx
+
+
+ async def main():
+-    async with aiohttp.ClientSession() as session:
+-        gl = GitLabAPI(session, "beenje", access_token=os.getenv("GL_ACCESS_TOKEN"))
++    async with httpx.AsyncClient() as client:
++        gl = gidgetlab.httpx.GitLabAPI(
++            client, "gidgetlab", access_token=os.environ.get("GL_ACCESS_TOKEN")
++        )
+         await gl.post(
+             "/projects/beenje%2Fstrange-relationship/issues",
+             data={
+@@ -15,5 +17,4 @@
+             })
+
+
+-loop = asyncio.get_event_loop()
+-loop.run_until_complete(main()
++asyncio.run(main())&lt;/pre&gt;
+&lt;p&gt;The only real difference is the use of &lt;code class="docutils literal"&gt;async with httpx.AsyncClient() as client&lt;/code&gt; instead of
+&lt;code class="docutils literal"&gt;async with aiohttp.ClientSession() as session&lt;/code&gt;.
+&lt;code class="docutils literal"&gt;asyncio.run()&lt;/code&gt; was introduced in Python 3.7 and is the new way to run an async function.&lt;/p&gt;
+&lt;p&gt;Save the file and run it in the command line after exporting your GitLab access token.&lt;/p&gt;
+&lt;p&gt;In Unix / Mac OS:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;export GL_ACCESS_TOKEN=&amp;lt;your token&amp;gt;&lt;/pre&gt;
+&lt;p&gt;In Windows:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;set GL_ACCESS_TOKEN=&amp;lt;your token&amp;gt;&lt;/pre&gt;
+&lt;pre class="literal-block"&gt;python3 -m create_issue&lt;/pre&gt;
+&lt;p&gt;There should be a new issue created in the strange-relationship project. Check it out:
+&lt;a class="reference external" href="https://gitlab.com/beenje/strange-relationship/issues"&gt;https://gitlab.com/beenje/strange-relationship/issues&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="using-starlette-to-build-a-gitlab-bot"&gt;
+&lt;h2&gt;Using Starlette to build a GitLab bot&lt;/h2&gt;
+&lt;p&gt;&lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/"&gt;gidgetlab&lt;/a&gt; provides a &lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/aiohttp.html"&gt;GitLabBot class&lt;/a&gt; to create an aiohttp
+web server that reponds to GitLab webhooks.
+Let's build the equivalent of the following aiohttp based bot with &lt;a class="reference external" href="https://www.starlette.io"&gt;Starlette&lt;/a&gt;:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;from gidgetlab.aiohttp import GitLabBot
+
+bot = GitLabBot("beenje")
+
+
+@bot.router.register("Issue Hook", action="open")
+async def issue_opened_event(event, gl, *args, **kwargs):
+    """Whenever an issue is opened, greet the author and say thanks."""
+    url = f"/projects/{event.project_id}/issues/{event.object_attributes['iid']}/notes"
+    message = f"Thanks for the report @{event.data['user']['username']}! I will look into it ASAP! (I'm a bot)."
+    await gl.post(url, data={"body": message})
+
+
+if __name__ == "__main__":
+    bot.run()&lt;/pre&gt;
+&lt;div class="section" id="starlette-bot"&gt;
+&lt;h3&gt;Starlette bot&lt;/h3&gt;
+&lt;p&gt;In the same virtual environment as before install &lt;a class="reference external" href="https://www.starlette.io"&gt;Starlette&lt;/a&gt; and uvicorn:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;python3 -m pip install starlette uvicorn&lt;/pre&gt;
+&lt;p&gt;Save the following in a file named &lt;code class="docutils literal"&gt;bot.py&lt;/code&gt;:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;import os
+import httpx
+import gidgetlab.routing
+import gidgetlab.sansio
+import gidgetlab.httpx
+from starlette.applications import Starlette
+from starlette.requests import Request
+from starlette.responses import Response
+from starlette.routing import Route
+
+router = gidgetlab.routing.Router()
+
+
+@router.register("Issue Hook", action="open")
+async def issue_opened_event(event, gl, *args, **kwargs):
+    """Whenever an issue is opened, greet the author and say thanks."""
+    url = f"/projects/{event.project_id}/issues/{event.object_attributes['iid']}/notes"
+    message = f"Thanks for the report @{event.data['user']['username']}! I will look into it ASAP! (I'm a bot)."
+    await gl.post(url, data={"body": message})
+
+
+async def webhook(request: Request) -&amp;gt; Response:
+    """Handler that processes GitLab webhook requests"""
+    body = await request.body()
+    secret = os.environ.get("GL_SECRET")
+    event = gidgetlab.sansio.Event.from_http(request.headers, body, secret=secret)
+    async with httpx.AsyncClient() as client:
+        gl = gidgetlab.httpx.GitLabAPI(
+            client, "gidgetlab", access_token=os.environ.get("GL_ACCESS_TOKEN")
+        )
+        await router.dispatch(event, gl)
+    return Response(status_code=200)
+
+
+app = Starlette(routes=[Route("/", webhook, methods=["POST"])])&lt;/pre&gt;
+&lt;p&gt;The Issue Hook handler is exactly the same as when using aiohttp.
+gidgetlab abstracts away the HTTP client used.
+To implement the bot, the only thing needed is an endpoint to handle webhook POST requests.&lt;/p&gt;
+&lt;p&gt;Run:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;uvicorn --reload bot:app
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [40232] using statreload
+INFO:     Started server process [40234]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.&lt;/pre&gt;
+&lt;p&gt;That's it. We have an ASGI server running on port 8000 that can receive events from GitLab.
+We could test it by using ngrok as in the previous post.
+This time we'll just fake some events using &lt;a class="reference external" href="https://httpie.org"&gt;httpie&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="testing-with-httpie"&gt;
+&lt;h3&gt;Testing with httpie&lt;/h3&gt;
+&lt;p&gt;For testing purpose, let's add a dummy event handler that is easy to trigger.&lt;/p&gt;
+&lt;pre class="literal-block"&gt;@router.register("Push Hook")
+async def dummy_action_on_push(event, gl, *args, **kwargs):
+    print(f"Received {event.event}")
+    print("Triggering some action...")
+    await gl.sleep(1)
+    print("Action done")&lt;/pre&gt;
+&lt;p&gt;In one terminal, run:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;uvicorn --reload bot:app&lt;/pre&gt;
+&lt;p&gt;In another one:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;http POST 127.0.0.1:8000  "X-Gitlab-Event:Push Hook" Content-Type:application/json&lt;/pre&gt;
+&lt;p&gt;You should see the following output in each respective terminal:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;Received Push Hook
+Triggering some action...
+Action done
+INFO:     127.0.0.1:58814 - "POST / HTTP/1.1" 200 OK
+
+HTTP/1.1 200 OK
+date: Wed, 27 May 2020 20:39:02 GMT
+server: uvicorn
+transfer-encoding: chunked&lt;/pre&gt;
+&lt;p&gt;If you want to use a secret you should pass it on both sides:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;export GL_SECRET=12345
+uvicorn --reload bot:app
+
+
+http POST 127.0.0.1:8000 x-gitlab-token:12345 "X-Gitlab-Event:Push Hook" Content-Type:application/json&lt;/pre&gt;
+&lt;p&gt;You can see both examples on the following screenshot.&lt;/p&gt;
+&lt;img alt="/images/gitlab-bot-starlette/httpie-push-hook.png" src="http://beenje.github.io/blog/images/gitlab-bot-starlette/httpie-push-hook.png"&gt;
+&lt;/div&gt;
+&lt;div class="section" id="starlette-startup-and-shutdown-events"&gt;
+&lt;h3&gt;Starlette startup and shutdown events&lt;/h3&gt;
+&lt;p&gt;&lt;a class="reference external" href="https://www.starlette.io"&gt;Starlette&lt;/a&gt; can register event handlers to run on startup and shutdown.
+Instead of creating a new httpx client on every new request, we could re-use the same.&lt;/p&gt;
+&lt;pre class="literal-block"&gt;async def create_client() -&amp;gt; None:
+    """Startup handler that creates the GitLabAPI instance"""
+    client = httpx.AsyncClient()
+    app.state.gl = gidgetlab.httpx.GitLabAPI(
+        client, "gidgetlab", access_token=os.environ.get("GL_ACCESS_TOKEN")
+    )
+
+
+async def close_client() -&amp;gt; None:
+    """Shutdown handler that closes the httpx client"""
+    await app.state.gl._client.aclose()
+
+
+async def webhook(request: Request) -&amp;gt; Response:
+    """Handler that processes GitLab webhook requests"""
+    body = await request.body()
+    secret = os.environ.get("GL_SECRET")
+    event = gidgetlab.sansio.Event.from_http(request.headers, body, secret=secret)
+    await router.dispatch(event, request.app.state.gl)
+    return Response(status_code=200)
+
+
+app = Starlette(
+    routes=[Route("/", webhook, methods=["POST"])],
+    on_startup=[create_client],
+    on_shutdown=[close_client],
+)&lt;/pre&gt;
+&lt;p&gt;In the &lt;code class="docutils literal"&gt;create_client&lt;/code&gt; function, we also store the GitLabAPI instance on the &lt;code class="docutils literal"&gt;app.state&lt;/code&gt;.
+This allows us to access it using &lt;code class="docutils literal"&gt;request.app&lt;/code&gt; in the request and to close the httpx client on application shutdown.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="background-tasks"&gt;
+&lt;h3&gt;Background tasks&lt;/h3&gt;
+&lt;p&gt;In the above code, the &lt;code class="docutils literal"&gt;Response&lt;/code&gt; is only sent when all the dispatched event handlers have been executed.
+Some event handlers might take some time to run if you trigger many actions or you might want to sleep
+(&lt;code class="docutils literal"&gt;asyncio.sleep&lt;/code&gt; of course not to block the event loop) between different actions.
+You probably noticed that's actually exactly what I did in my dummy push hook handler.&lt;/p&gt;
+&lt;p&gt;To illustrate that let's increase the sleep and print the date in our handler:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;import datetime
+
+
+@router.register("Push Hook")
+async def dummy_action_on_push(event, gl, *args, **kwargs):
+    print(f"Received {event.event}")
+    print(f"Triggering some action at {datetime.datetime.utcnow()}...")
+    await gl.sleep(5)
+    print(f"Action done at {datetime.datetime.utcnow()}")&lt;/pre&gt;
+&lt;p&gt;If we send a Push Hook event, we'll only get a response after 5 seconds. Not great...
+We can see that the server isn't blocked. We can send several requests and they are
+all processed in parallel. But the response is only sent after the event handler is done.&lt;/p&gt;
+&lt;img alt="/images/gitlab-bot-starlette/event-blocking-response.png" src="http://beenje.github.io/blog/images/gitlab-bot-starlette/event-blocking-response.png"&gt;
+&lt;p&gt;&lt;em&gt;Action done&lt;/em&gt; is printed before the 200 is sent.&lt;/p&gt;
+&lt;p&gt;When receiving a webhook, you should send the HTTP response as fast as possible.
+This is stated in GitLab's &lt;a class="reference external" href="https://docs.gitlab.com/ee/user/project/integrations/webhooks.html#webhook-endpoint-tips"&gt;documentation&lt;/a&gt;:
+Your endpoint should &lt;strong&gt;send its HTTP response as fast as possible&lt;/strong&gt;.
+If you wait too long, GitLab may decide the hook failed and retry it.&lt;/p&gt;
+&lt;p&gt;One way to achieve that would be to use a task queue like &lt;a class="reference external" href="http://celeryproject.org"&gt;Celery&lt;/a&gt; or &lt;a class="reference external" href="https://python-rq.org"&gt;RQ&lt;/a&gt; to run the event handlers.
+I'm actually using &lt;a class="reference external" href="https://python-rq.org"&gt;RQ&lt;/a&gt; in an aiohttp bot I created.&lt;/p&gt;
+&lt;p&gt;A nice feature of &lt;a class="reference external" href="https://www.starlette.io"&gt;Starlette&lt;/a&gt; is that you can attach a &lt;a class="reference external" href="https://www.starlette.io/background/"&gt;background task&lt;/a&gt; to a response.
+We can thus run the &lt;code class="docutils literal"&gt;dispatch&lt;/code&gt; function as a &lt;code class="docutils literal"&gt;BackgrounTask&lt;/code&gt;. This will ensure that the response is sent
+as soon as the event has been received and parsed:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;from starlette.background import BackgroundTask
+
+
+async def webhook(request: Request) -&amp;gt; Response:
+    """Handler that processes GitLab webhook requests"""
+    body = await request.body()
+    secret = os.environ.get("GL_SECRET")
+    event = gidgetlab.sansio.Event.from_http(request.headers, body, secret=secret)
+    task = BackgroundTask(router.dispatch, event, request.app.state.gl)
+    return Response(status_code=200, background=task)&lt;/pre&gt;
+&lt;p&gt;If we perform the same test as before we see that the event is dispatched only after the response was sent.
+It doesn't matter how long each handler takes.&lt;/p&gt;
+&lt;img alt="/images/gitlab-bot-starlette/event-background-task.png" src="http://beenje.github.io/blog/images/gitlab-bot-starlette/event-background-task.png"&gt;
+&lt;p&gt;&lt;em&gt;Received Push Hook&lt;/em&gt; is printed after the 200 is sent.&lt;/p&gt;
+&lt;p&gt;Of course handlers shouldn't block the event loop!
+As &lt;code class="docutils literal"&gt;router.dispatch&lt;/code&gt; is an async function, &lt;a class="reference external" href="https://www.starlette.io"&gt;Starlette&lt;/a&gt; will just await on it.
+If an event handler is performing some blocking action, it should be run in a thread or process pool.
+Otherwise the above code is all that is required.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="better-error-handling"&gt;
+&lt;h3&gt;Better error handling&lt;/h3&gt;
+&lt;p&gt;One thing we didn't pay attention to is error handling.
+What happens if &lt;code class="docutils literal"&gt;gidgetlab.sansio.Event.from_http&lt;/code&gt; raises an Exception?
+&lt;a class="reference external" href="https://www.starlette.io"&gt;Starlette&lt;/a&gt; will return a 500 (Internal Server Error) HTTP response.
+That's the proper thing to do.
+&lt;strong&gt;Your endpoint should ALWAYS return a valid HTTP response&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;But in the bot logs, we can see that exception. Not very clean.&lt;/p&gt;
+&lt;img alt="/images/gitlab-bot-starlette/unhandled-exception.png" src="http://beenje.github.io/blog/images/gitlab-bot-starlette/unhandled-exception.png"&gt;
+&lt;p&gt;We should catch those exceptions and handle them properly.&lt;/p&gt;
+&lt;pre class="literal-block"&gt;from starlette.responses import Response, PlainTextResponse
+
+
+async def webhook(request: Request) -&amp;gt; Response:
+    """Handler that processes GitLab webhook requests"""
+    body = await request.body()
+    secret = os.environ.get("GL_SECRET")
+    try:
+        event = gidgetlab.sansio.Event.from_http(request.headers, body, secret=secret)
+    except gidgetlab.HTTPException as e:
+        return PlainTextResponse(status_code=e.status_code, content=str(e))
+    except gidgetlab.GitLabException as e:
+        return PlainTextResponse(status_code=500, content=str(e))
+    task = BackgroundTask(router.dispatch, event, request.app.state.gl)
+    return Response(status_code=200, background=task)&lt;/pre&gt;
+&lt;img alt="/images/gitlab-bot-starlette/handle-exceptions.png" src="http://beenje.github.io/blog/images/gitlab-bot-starlette/handle-exceptions.png"&gt;
+&lt;p&gt;Much nicer now! Everything is in place for a production ready bot.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="conclusion"&gt;
+&lt;h2&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;I really enjoyed working with &lt;a class="reference external" href="https://www.starlette.io"&gt;Starlette&lt;/a&gt;. It made building a GitLab bot with &lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/"&gt;gidgetlab&lt;/a&gt; very easy.
+We saw how to use &lt;a class="reference external" href="https://www.starlette.io/events/"&gt;Events&lt;/a&gt; and
+&lt;a class="reference external" href="https://www.starlette.io/background/"&gt;Backroung Tasks&lt;/a&gt;. Being able to run the &lt;code class="docutils literal"&gt;dispatch&lt;/code&gt; function
+in the background is really perfect for our bot.&lt;/p&gt;
+&lt;p&gt;&lt;a class="reference external" href="https://www.python-httpx.org"&gt;HTTPX&lt;/a&gt; and &lt;a class="reference external" href="https://www.starlette.io"&gt;Starlette&lt;/a&gt; are definitvely my go-to frameworks for my next bot!&lt;/p&gt;
+&lt;p&gt;You can find the full source code used in this post on both GitLab and GitHub:&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;&lt;p&gt;&lt;a class="reference external" href="https://gitlab.com/beenje/gitlab-bot-starlette"&gt;https://gitlab.com/beenje/gitlab-bot-starlette&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;a class="reference external" href="https://github.com/beenje/gitlab-bot-starlette"&gt;https://github.com/beenje/gitlab-bot-starlette&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;&lt;/div&gt;</description><category>asyncio</category><category>bot</category><category>gidgetlab</category><category>gitlab</category><category>httpie</category><category>httpx</category><category>python</category><category>starlette</category><guid>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-starlette-and-httpx/</guid><pubDate>Sun, 31 May 2020 19:51:53 GMT</pubDate></item><item><title>Using epics-base with conda on Linux, macOS and Windows</title><link>http://beenje.github.io/blog/posts/using-epics-base-with-conda-on-linux-macos-and-windows/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I previously described how to create a &lt;a class="reference external" href="http://beenje.github.io/blog/posts/how-to-setup-a-windows-vm-to-build-conda-packages"&gt;Windows VM to build conda packages&lt;/a&gt;.
 I mentioned this was to update the conda-forge &lt;a class="reference external" href="https://github.com/conda-forge/epics-base-feedstock"&gt;epics-base feedstock&lt;/a&gt;.
 In this post, I want to share how to use &lt;a class="reference external" href="https://github.com/epics-base/epics-base"&gt;EPICS Base&lt;/a&gt; with &lt;a class="reference external" href="https://docs.conda.io/en/latest/"&gt;conda&lt;/a&gt;.&lt;/p&gt;
 &lt;div class="section" id="acknowledgement"&gt;
@@ -1925,7 +2240,8 @@ You can check the GitHub bot tutorial to see how to &lt;a class="reference exter
 &lt;p&gt;Hopefully this gave you an idea of what can be done with &lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/"&gt;gidgetlab&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;If you are interested, try to perform the other exercices described in the
 &lt;a class="reference external" href="https://github-bot-tutorial.readthedocs.io/en/latest/"&gt;github-bot-tutorial&lt;/a&gt; but using GitLab. Don't hesitate to let me know if you use &lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/"&gt;gidgetlab&lt;/a&gt;
-to build something cool :-)&lt;/p&gt;
+to build something cool :-)
+And check my post about &lt;a class="reference external" href="http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-starlette-and-httpx"&gt;building a GitLab bot with Starlette and HTTPX&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;Again, a big thanks to &lt;a class="reference external" href="https://github.com/Mariatta"&gt;Mariatta&lt;/a&gt; for her tutorial and to &lt;a class="reference external" href="https://github.com/brettcannon"&gt;Brett Cannon&lt;/a&gt; for
 &lt;a class="reference external" href="https://gidgethub.readthedocs.io/en/latest/"&gt;gidgethub&lt;/a&gt;! This project wouldn't exist otherwise.&lt;/p&gt;
 &lt;/div&gt;&lt;/div&gt;</description><category>aiohttp</category><category>bot</category><category>gidgetlab</category><category>gitlab</category><category>python</category><guid>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp/</guid><pubDate>Mon, 17 Sep 2018 20:40:15 GMT</pubDate></item><item><title>Parsing JavaScript rendered pages in Python with pyppeteer</title><link>http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
@@ -7254,224 +7570,4 @@ And &lt;a class="reference external" href="https://traefik.io"&gt;traefik&lt;/a&
 You should check &lt;a class="reference external" href="https://docs.traefik.io/#docker"&gt;this Docker example&lt;/a&gt; that demonstrates load-balancing.
 Really cool.&lt;/p&gt;
 &lt;p&gt;If you use &lt;a class="reference external" href="https://www.docker.com"&gt;docker&lt;/a&gt;, you should really give &lt;a class="reference external" href="https://traefik.io"&gt;traefik&lt;/a&gt; a try!&lt;/p&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>flask</category><category>https</category><category>python</category><category>traefik</category><guid>http://beenje.github.io/blog/posts/running-your-application-over-https-with-traefik/</guid><pubDate>Thu, 08 Jun 2017 19:49:46 GMT</pubDate></item><item><title>My LEGO Macintosh Classic with Raspberry Pi and e-paper display</title><link>http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;UPDATED 2019-11-24&lt;/p&gt;
-&lt;p&gt;Beginning of April I read an inspiring blog post from Jannis Hermanns
-about a &lt;a class="reference external" href="https://jann.is/lego-macintosh-classic/"&gt;LEGO Machintosh Classic with e-paper display&lt;/a&gt;.  It was a really nice and cool article.&lt;/p&gt;
-&lt;p&gt;I've been playing with some Raspberry Pis before but only with
-&lt;a class="reference external" href="http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible"&gt;software&lt;/a&gt;.
-I have been willing to fiddle with hardware for some time.
-This was the perfect opportunity!&lt;/p&gt;
-&lt;div class="section" id="lego-digital-designer"&gt;
-&lt;h2&gt;LEGO Digital Designer&lt;/h2&gt;
-&lt;p&gt;I decided to try to make my own LEGO Macintosh based on Jannis work.
-His blog post is quite detailed with even a list of links with all the
-required components.&lt;/p&gt;
-&lt;p&gt;But I quickly realized there were no LEGO building instructions...
-I thus created my own using LEGO Digital Designer, which was fun.
-Looking at the pictures on &lt;a class="reference external" href="https://www.flickr.com/photos/_-_/33583084842"&gt;Jannis flickr album&lt;/a&gt;
-helped a lot. But having an exact idea of the screen size wasn't easy on
-the computer. So I also built a small prototype of the front part to get a
-better idea. For that I had to wait for my e-paper display.&lt;/p&gt;
-&lt;p&gt;One modification I wanted to do was to use 1U width lego on the side of
-the display to require less drilling.
-I also wanted to check if it was possible to use the button located on top
-of the display.&lt;/p&gt;
-&lt;p&gt;My .lxf file is on &lt;a class="reference external" href="https://github.com/beenje/legomac/tree/master/ldd"&gt;github&lt;/a&gt;.&lt;/p&gt;
-&lt;a class="reference external image-reference" href="http://beenje.github.io/blog/images/legomac/legomac_ldd.png"&gt;&lt;img alt="/images/legomac/legomac_ldd.thumbnail.png" src="http://beenje.github.io/blog/images/legomac/legomac_ldd.thumbnail.png"&gt;&lt;/a&gt;
-&lt;/div&gt;
-&lt;div class="section" id="e-paper-display"&gt;
-&lt;h2&gt;E-paper display&lt;/h2&gt;
-&lt;p&gt;When I was about to order the &lt;a class="reference external" href="http://www.embeddedartists.com/products/displays/lcd_27_epaper.php"&gt;2.7 inch e-paper display from Embedded Artists&lt;/a&gt;, I
-noticed that Embedded Artists was located in Malmö, where I live :-).&lt;/p&gt;
-&lt;p&gt;I e-mailed them and I was granted to pick up my order at their office!
-A big thanks to them!&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="raspbery-pi-zero-w"&gt;
-&lt;h2&gt;Raspbery Pi Zero W&lt;/h2&gt;
-&lt;p&gt;The Raspberry Pi Zero W comes with Wifi which is really nice.
-It does not come with the soldered GPIO header. I was starting to look at
-existing soldering iron when I discovered this &lt;a class="reference external" href="https://shop.pimoroni.com/products/gpio-hammer-header"&gt;GPIO Hammer Header&lt;/a&gt;:&lt;/p&gt;
-&lt;a class="reference external image-reference" href="http://beenje.github.io/blog/images/legomac/gpio_hammer_header.jpg"&gt;&lt;img alt="/images/legomac/gpio_hammer_header.thumbnail.jpg" src="http://beenje.github.io/blog/images/legomac/gpio_hammer_header.thumbnail.jpg"&gt;&lt;/a&gt;
-&lt;p&gt;No soldering required!
-I used the installation jig and it was really easy to install.
-There is a nice &lt;a class="reference external" href="https://youtu.be/VDJ2-feg2lk"&gt;video&lt;/a&gt; that explains how
-to proceed:&lt;/p&gt;
-&lt;iframe width="480" height="270" src="https://www.youtube.com/embed/VDJ2-feg2lk?feature=oembed" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen&gt;&lt;/iframe&gt;&lt;/div&gt;
-&lt;div class="section" id="connecting-the-display-to-the-pi"&gt;
-&lt;h2&gt;Connecting the display to the Pi&lt;/h2&gt;
-&lt;p&gt;Based on Jannis article I initially thought it wasn't possible to use a ribbon
-cable (due to space), so I ordered some Jumper Wires.
-I connected the display to the Pi using the serial expansion
-connector as described in his blog post.
-It worked. With the &lt;a class="reference external" href="https://github.com/embeddedartists/gratis"&gt;demo from embeddedartists&lt;/a&gt;, I managed to display a nice cat picture :-)&lt;/p&gt;
-&lt;a class="reference external image-reference" href="http://beenje.github.io/blog/images/legomac/jumper_wires.jpg"&gt;&lt;img alt="/images/legomac/jumper_wires.thumbnail.jpg" src="http://beenje.github.io/blog/images/legomac/jumper_wires.thumbnail.jpg"&gt;&lt;/a&gt;
-&lt;a class="reference external image-reference" href="http://beenje.github.io/blog/images/legomac/cat.jpg"&gt;&lt;img alt="/images/legomac/cat.thumbnail.jpg" src="http://beenje.github.io/blog/images/legomac/cat.thumbnail.jpg"&gt;&lt;/a&gt;
-&lt;p&gt;I then realized that the serial expansion connector didn't give access to
-the button on top of the display. That button could allow some
-interactions, like changing mode, which would be nice.
-According to my prototype with 1U width lego on the side, using a ribbon cable shouldn't actually be
-an issue. So I ordered a &lt;a class="reference external" href="https://thepihut.com/products/downgrade-gpio-ribbon-cable-for-raspberry-pi-40p-to-26p"&gt;Downgrade GPIO Ribbon Cable for Raspberry Pi&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;It required a little drilling on the right side for the cable to fit. But
-not that much. More is needed on the left side to center the screen.
-Carried away by my enthusiasm, I actually cut a bit too much on the left side
-(using the dremel was fun :-).&lt;/p&gt;
-&lt;a class="reference external image-reference" href="http://beenje.github.io/blog/images/legomac/drilling_left.jpg"&gt;&lt;img alt="/images/legomac/drilling_left.thumbnail.jpg" src="http://beenje.github.io/blog/images/legomac/drilling_left.thumbnail.jpg"&gt;&lt;/a&gt;
-&lt;a class="reference external image-reference" href="http://beenje.github.io/blog/images/legomac/drilling_right.jpg"&gt;&lt;img alt="/images/legomac/drilling_right.thumbnail.jpg" src="http://beenje.github.io/blog/images/legomac/drilling_right.thumbnail.jpg"&gt;&lt;/a&gt;
-&lt;p&gt;Everything fitted nicely in the lego case:&lt;/p&gt;
-&lt;a class="reference external image-reference" href="http://beenje.github.io/blog/images/legomac/ribbon_cable.jpg"&gt;&lt;img alt="/images/legomac/ribbon_cable.thumbnail.jpg" src="http://beenje.github.io/blog/images/legomac/ribbon_cable.thumbnail.jpg"&gt;&lt;/a&gt;
-&lt;/div&gt;
-&lt;div class="section" id="button-on-top"&gt;
-&lt;h2&gt;Button on top&lt;/h2&gt;
-&lt;p&gt;With the ribbon cable, the button on top of the display is connected to pin
-15 on the Raspberry Pi (BCM GPIO22).
-The &lt;cite&gt;ImageDemoButton.py&lt;/cite&gt; part of the &lt;a class="reference external" href="https://github.com/embeddedartists/gratis"&gt;demo&lt;/a&gt;
-shows an example how to use the button to change the image displayed.&lt;/p&gt;
-&lt;p&gt;Using my small prototype, I planned a small hole on top of the case. I thought I'd have to fill
-the brick with something hard to press the button. The 1x1 brick ended fitting perfectly.
-As shown on the picture below, the side is exactly on top of the button.
-I added a little piece of foam inside the brick to keep it straight.&lt;/p&gt;
-&lt;a class="reference external image-reference" href="http://beenje.github.io/blog/images/legomac/button_front.jpg"&gt;&lt;img alt="/images/legomac/button_front.thumbnail.jpg" src="http://beenje.github.io/blog/images/legomac/button_front.thumbnail.jpg"&gt;&lt;/a&gt;
-&lt;p&gt;Of course I move away from the Macintosh Classic design here...
-but &lt;a class="reference external" href="https://www.python.org/dev/peps/pep-0020/"&gt;practicality beats purity&lt;/a&gt; :-)&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="pi-configuration"&gt;
-&lt;h2&gt;Pi configuration&lt;/h2&gt;
-&lt;p&gt;Jannis article made me discover &lt;a class="reference external" href="https://resin.io"&gt;resin.io&lt;/a&gt;,
-which is a really interesting project. I did a few tests on a Raspberry Pi 3 and it was a nice experience.
-But when I received my Pi Zero W, it wasn't supported by resinOS yet... This isn't the case anymore!
-Version 2.0.3 added support for the wifi chip.&lt;/p&gt;
-&lt;p&gt;Anyway, as Jannis already wrote about resinOS, I'll describe my tests with Raspbian.
-To flash the SD card, I recommend &lt;a class="reference external" href="https://etcher.io"&gt;Etcher&lt;/a&gt; which is an open source project by the same resin.io.
-I'm more a command line guy and I have used &lt;cite&gt;dd&lt;/cite&gt; many times. But I was pleasantly surprised.
-It's easy to install and use.&lt;/p&gt;
-&lt;ol class="arabic simple"&gt;
-&lt;li&gt;&lt;p&gt;Download and install &lt;a class="reference external" href="https://etcher.io"&gt;Etcher&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Download &lt;a class="reference external" href="https://www.raspberrypi.org/downloads/raspbian/"&gt;Raspbian Buster Lite image&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Flash the SD card using Etcher&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Mount the SD card to configure it:&lt;/p&gt;&lt;/li&gt;
-&lt;/ol&gt;
-&lt;pre class="literal-block"&gt;# Go to the boot partition
-# This is an example on OSX (mount point will be different on Linux)
-$ cd /Volumes/boot
-
-# To enable ssh, create a file named ssh onto the boot partition
-$ touch ssh
-
-# Create the file wpa_supplicant.conf with your wifi settings
-# Note that for Raspbian Stretch and Buster, you need the first line
-# (ctrl_interface...)! This was not the case for Jessie.
-$  cat &amp;lt;&amp;lt; EOF &amp;gt; wpa_supplicant.conf
-ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
-network={
-    ssid="MyWifiNetwork"
-    psk="password"
-    key_mgmt=WPA-PSK
-}
-EOF
-
-# Uncomment dtparam=spi=on to enable the SPI master driver
-$ vi config.txt
-
-# Leave the boot partition
-$ cd&lt;/pre&gt;
-&lt;ol class="arabic simple" start="5"&gt;
-&lt;li&gt;&lt;p&gt;Unmount the SD card and put it in the Raspberry Pi&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Boot the Pi&lt;/p&gt;&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;I wrote a small Ansible playbook to install the E-ink driver and the clock demo:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;- name: install required dependencies
-  apt:
-    name:
-      - git
-      - libfuse-dev
-      - fonts-liberation
-      - python-pil
-    state: present
-    update_cache: yes
-
-- name: check if the epd-fuse service exists
-  command: systemctl status epd-fuse.service
-  check_mode: no
-  failed_when: False
-  changed_when: False
-  register: epd_fuse_service
-
-- name: clone the embeddedartists gratis repository
-  git:
-    repo: https://github.com/embeddedartists/gratis.git
-    version: 9b7accc68db23865935b0d90c77a33055483b290
-    dest: /home/pi/gratis
-
-- name: build the EPD driver and install the epd-fuse service
-  shell: &amp;gt;
-    COG_VERSION=V2 make rpi-epd_fuse &amp;amp;&amp;amp;
-    COG_VERSION=V2 make rpi-install
-  args:
-    chdir: /home/pi/gratis/PlatformWithOS
-  when: epd_fuse_service.rc != 0
-
-- name: ensure the epd-fuse service is enabled and started
-  service:
-    name: epd-fuse
-    state: started
-    enabled: yes
-
-- name: install the epd-clock service
-  copy:
-    src: epd-clock.service
-    dest: /etc/systemd/system/epd-clock.service
-    owner: root
-    group: root
-    mode: 0644
-
-- name: start and enable epd-clock service
-  systemd:
-    name: epd-clock.service
-    daemon_reload: yes
-    state: started
-    enabled: yes&lt;/pre&gt;
-&lt;p&gt;Note that commit &lt;a class="reference external" href="https://github.com/embeddedartists/gratis/commit/282e88f8f642d8086d779c462d248063770482e3"&gt;282e88f&lt;/a&gt; in embeddedartists/gratis repository added support
-for the RaspberryPi 3, but broke the PI Zero W.
-You currently have to use the commit 9b7accc68 if you have a PI Zero W.&lt;/p&gt;
-&lt;p&gt;To run the playbook, clone the repository &lt;a class="reference external" href="https://github.com/beenje/legomac"&gt;https://github.com/beenje/legomac&lt;/a&gt;:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;$ git clone https://github.com/beenje/legomac.git
-$ cd legomac
-$ ansible-playbook -i hosts -k epd-demo.yml&lt;/pre&gt;
-&lt;p&gt;That's it!&lt;/p&gt;
-&lt;p&gt;Of course don't forget to change the default password on your Pi.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="one-more-thing"&gt;
-&lt;h2&gt;One more thing&lt;/h2&gt;
-&lt;p&gt;There isn't much Python in this article but the Pi is running some
-Python code.
-I couldn't resist putting a &lt;a class="reference external" href="https://talkpython.fm"&gt;Talk Python To Me&lt;/a&gt;
-sticker on the back :-)
-It's really a great podcast and you should definitevely give it a try if
-you haven't yet.
-Thanks again to @mkennedy for the stickers!&lt;/p&gt;
-&lt;a class="reference external image-reference" href="http://beenje.github.io/blog/images/legomac/talkpythontome.jpg"&gt;&lt;img alt="/images/legomac/talkpythontome.thumbnail.jpg" src="http://beenje.github.io/blog/images/legomac/talkpythontome.thumbnail.jpg"&gt;&lt;/a&gt;
-&lt;p&gt;Below are a few pictures. You can see more on &lt;a class="reference external" href="https://flic.kr/s/aHskVAadfo"&gt;flickr&lt;/a&gt;.&lt;/p&gt;
-&lt;div class="system-message"&gt;
-&lt;p class="system-message-title"&gt;System Message: ERROR/3 (&lt;span class="docutils literal"&gt;&amp;lt;string&amp;gt;&lt;/span&gt;, line 246)&lt;/p&gt;
-&lt;p&gt;Unknown directive type "slides".&lt;/p&gt;
-&lt;pre class="literal-block"&gt;.. slides::
-
-    /images/legomac/legomac.jpg
-    /images/legomac/legomac_front_close.jpg
-    /images/legomac/talkpythontome.jpg
-    /images/legomac/drilling_left.jpg
-    /images/legomac/drilling_right.jpg
-    /images/legomac/ribbon_cable.jpg
-    /images/legomac/display_front.jpg
-    /images/legomac/button_front.jpg
-    /images/legomac/button_top.jpg
-
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="section" id="next"&gt;
-&lt;h2&gt;Next&lt;/h2&gt;
-&lt;p&gt;I didn't build this LEGO Macintosh to use it as a simple clock :-)
-I have a few ideas. I'll start with a small web server so that I can receive and display messages.
-That will be the subject of another &lt;a class="reference external" href="http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi"&gt;blog post&lt;/a&gt;!&lt;/p&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>lego</category><category>Mac</category><category>pi</category><category>python</category><guid>http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/</guid><pubDate>Tue, 23 May 2017 20:39:12 GMT</pubDate></item></channel></rss>
+&lt;/div&gt;&lt;/div&gt;</description><category>flask</category><category>https</category><category>python</category><category>traefik</category><guid>http://beenje.github.io/blog/posts/running-your-application-over-https-with-traefik/</guid><pubDate>Thu, 08 Jun 2017 19:49:46 GMT</pubDate></item></channel></rss>

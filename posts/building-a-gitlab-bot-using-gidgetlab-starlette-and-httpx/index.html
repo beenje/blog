@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article#
+" lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Building a GitLab bot using gidgetlab, Starlette and HTTPX | Tchut-Tchut Blog</title>
+<link href="../../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/ipython.min.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/nikola_ipython.css" rel="stylesheet" type="text/css">
+<meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="../../rss.xml">
+<link rel="canonical" href="http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-starlette-and-httpx/">
+<!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><meta name="author" content="Benjamin Bertrand">
+<link rel="prev" href="../using-epics-base-with-conda-on-linux-macos-and-windows/" title="Using epics-base with conda on Linux, macOS and Windows" type="text/html">
+<meta property="og:site_name" content="Tchut-Tchut Blog">
+<meta property="og:title" content="Building a GitLab bot using gidgetlab, Starlette and HTTPX">
+<meta property="og:url" content="http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-starlette-and-httpx/">
+<meta property="og:description" content="I previously described how to create a GitLab bot using gidgetlab and aiohttp.
+I recently read and became curious about FastAPI and Starlette. The latter seemed
+like a good fit for a GitLab bot and a ">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2020-05-31T21:51:53+02:00">
+<meta property="article:tag" content="asyncio">
+<meta property="article:tag" content="bot">
+<meta property="article:tag" content="gidgetlab">
+<meta property="article:tag" content="gitlab">
+<meta property="article:tag" content="httpie">
+<meta property="article:tag" content="httpx">
+<meta property="article:tag" content="python">
+<meta property="article:tag" content="starlette">
+</head>
+<body>
+<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+
+<!-- Menubar -->
+
+<nav class="navbar navbar-expand-md static-top mb-4
+navbar-dark bg-dark
+"><div class="container">
+<!-- This keeps the margins nice -->
+        <a class="navbar-brand" href="http://beenje.github.io/blog/">
+
+            <span id="blog-title">Tchut-Tchut Blog</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#bs-navbar" aria-controls="bs-navbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="bs-navbar">
+            <ul class="navbar-nav mr-auto">
+<li class="nav-item">
+<a href="../../archive.html" class="nav-link">Archive</a>
+                </li>
+<li class="nav-item">
+<a href="../../categories/" class="nav-link">Tags</a>
+                </li>
+<li class="nav-item">
+<a href="../../rss.xml" class="nav-link">RSS feed</a>
+                </li>
+<li class="nav-item">
+<a href="../../stories/about/index.html" class="nav-link">About</a>
+
+                
+            </li>
+</ul>
+<ul class="navbar-nav navbar-right">
+<li class="nav-item">
+    <a href="index.rst" id="sourcelink" class="nav-link">Source</a>
+    </li>
+
+
+                
+            </ul>
+</div>
+<!-- /.navbar-collapse -->
+    </div>
+<!-- /.container -->
+</nav><!-- End of Menubar --><div class="container" id="content" role="main">
+    <div class="body-content">
+        <!--Body content-->
+        
+        
+        
+<article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Building a GitLab bot using gidgetlab, Starlette and HTTPX</a></h1>
+
+        <div class="metadata">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
+                    Benjamin Bertrand
+            </span></p>
+            <p class="dateline">
+            <a href="." rel="bookmark">
+            <time class="published dt-published" datetime="2020-05-31T21:51:53+02:00" itemprop="datePublished" title="2020-05-31 21:51">2020-05-31 21:51</time></a>
+            </p>
+                <p class="commentline">
+        
+    <a href="#disqus_thread" data-disqus-identifier="cache/posts/building-a-gitlab-bot-using-gidgetlab-starlette-and-httpx.html">Comments</a>
+
+
+            
+        </p>
+<p class="sourceline"><a href="index.rst" class="sourcelink">Source</a></p>
+
+        </div>
+        
+
+    </header><div class="e-content entry-content" itemprop="articleBody text">
+    <div>
+<p>I previously described how to create a <a class="reference external" href="../building-a-gitlab-bot-using-gidgetlab-and-aiohttp">GitLab bot using gidgetlab and aiohttp</a>.
+I recently read and became curious about <a class="reference external" href="https://fastapi.tiangolo.com">FastAPI</a> and <a class="reference external" href="https://www.starlette.io">Starlette</a>. The latter seemed
+like a good fit for a GitLab bot and a nice way to experiment with it for me.</p>
+<p>If you haven't heard about <a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/">gidgetlab</a>, I recommend starting with my <a class="reference external" href="../building-a-gitlab-bot-using-gidgetlab-and-aiohttp">previous post</a>.
+I won't explain again how to create an access token or configure a webhook.</p>
+<p>To build a bot, we need both an HTTP client and server. <a class="reference external" href="https://docs.aiohttp.org/en/stable/">aiohttp</a> provides both.
+<a class="reference external" href="https://www.starlette.io">Starlette</a> is a lightweight <a class="reference external" href="https://asgi.readthedocs.io/en/latest/">ASGI</a> framework. It doesn't include an HTTP client.
+<a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/">gidgetlab</a> supports several HTTP clients. I recently added <a class="reference external" href="https://www.python-httpx.org">HTTPX</a>, thanks to <a class="reference external" href="https://gidgethub.readthedocs.io/en/latest/">gidgethub</a> once again.
+It's described as the next-generation HTTP client for Python and will play well with <a class="reference external" href="https://www.starlette.io">Starlette</a>.</p>
+<p>Let's start by a small example on how to use <a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/">gidgetlab</a> with <a class="reference external" href="https://www.python-httpx.org">HTTPX</a>.</p>
+<div class="section" id="using-gidgetlab-with-httpx-on-the-command-line">
+<h2>Using gidgetlab with HTTPX on the command line</h2>
+<div class="section" id="install-gidgetlab-and-httpx">
+<h3>Install gidgetlab and httpx</h3>
+<p>Install <code class="docutils literal">gidgetlab</code> and <code class="docutils literal">httpx</code> if you have not already. Using a virtual environment
+is recommended.</p>
+<pre class="literal-block">python3 -m pip install gidgetlab[httpx]</pre>
+</div>
+<div class="section" id="create-an-issue">
+<h3>Create an issue</h3>
+<p>We'll use the same example as in the <a class="reference external" href="../building-a-gitlab-bot-using-gidgetlab-and-aiohttp">previous post</a> but replace <a class="reference external" href="https://docs.aiohttp.org/en/stable/">aiohttp</a> with <a class="reference external" href="https://www.python-httpx.org">httpx</a>.
+Copy the following into the file <code class="docutils literal">create_issue.py</code> using your favorite editor:</p>
+<pre class="literal-block">import asyncio
+import os
+import httpx
+import gidgetlab.httpx
+
+
+async def main():
+    async with httpx.AsyncClient() as client:
+        gl = gidgetlab.httpx.GitLabAPI(
+            client, "gidgetlab", access_token=os.environ.get("GL_ACCESS_TOKEN")
+        )
+        await gl.post(
+            "/projects/beenje%2Fstrange-relationship/issues",
+            data={
+                "title": "We got a problem",
+                "description": "You should use HTTPX!",
+            })
+
+
+asyncio.run(main())</pre>
+<p>If you check the example with <a class="reference external" href="https://docs.aiohttp.org/en/stable/">aiohttp</a> from my previous post, you can see it's pretty similar.</p>
+<pre class="literal-block">$ diff -u aiohttp_create_issue.py create_issue.py
+--- aiohttp_create_issue.py 2020-05-31 21:31:52.000000000 +0200
++++ create_issue.py 2020-05-31 21:26:19.000000000 +0200
+@@ -1,12 +1,14 @@
+ import asyncio
+ import os
+-import aiohttp
+-from gidgetlab.aiohttp import GitLabAPI
++import httpx
++import gidgetlab.httpx
+
+
+ async def main():
+-    async with aiohttp.ClientSession() as session:
+-        gl = GitLabAPI(session, "beenje", access_token=os.getenv("GL_ACCESS_TOKEN"))
++    async with httpx.AsyncClient() as client:
++        gl = gidgetlab.httpx.GitLabAPI(
++            client, "gidgetlab", access_token=os.environ.get("GL_ACCESS_TOKEN")
++        )
+         await gl.post(
+             "/projects/beenje%2Fstrange-relationship/issues",
+             data={
+@@ -15,5 +17,4 @@
+             })
+
+
+-loop = asyncio.get_event_loop()
+-loop.run_until_complete(main()
++asyncio.run(main())</pre>
+<p>The only real difference is the use of <code class="docutils literal">async with httpx.AsyncClient() as client</code> instead of
+<code class="docutils literal">async with aiohttp.ClientSession() as session</code>.
+<code class="docutils literal">asyncio.run()</code> was introduced in Python 3.7 and is the new way to run an async function.</p>
+<p>Save the file and run it in the command line after exporting your GitLab access token.</p>
+<p>In Unix / Mac OS:</p>
+<pre class="literal-block">export GL_ACCESS_TOKEN=&lt;your token&gt;</pre>
+<p>In Windows:</p>
+<pre class="literal-block">set GL_ACCESS_TOKEN=&lt;your token&gt;</pre>
+<pre class="literal-block">python3 -m create_issue</pre>
+<p>There should be a new issue created in the strange-relationship project. Check it out:
+<a class="reference external" href="https://gitlab.com/beenje/strange-relationship/issues">https://gitlab.com/beenje/strange-relationship/issues</a></p>
+</div>
+</div>
+<div class="section" id="using-starlette-to-build-a-gitlab-bot">
+<h2>Using Starlette to build a GitLab bot</h2>
+<p><a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/">gidgetlab</a> provides a <a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/aiohttp.html">GitLabBot class</a> to create an aiohttp
+web server that reponds to GitLab webhooks.
+Let's build the equivalent of the following aiohttp based bot with <a class="reference external" href="https://www.starlette.io">Starlette</a>:</p>
+<pre class="literal-block">from gidgetlab.aiohttp import GitLabBot
+
+bot = GitLabBot("beenje")
+
+
+@bot.router.register("Issue Hook", action="open")
+async def issue_opened_event(event, gl, *args, **kwargs):
+    """Whenever an issue is opened, greet the author and say thanks."""
+    url = f"/projects/{event.project_id}/issues/{event.object_attributes['iid']}/notes"
+    message = f"Thanks for the report @{event.data['user']['username']}! I will look into it ASAP! (I'm a bot)."
+    await gl.post(url, data={"body": message})
+
+
+if __name__ == "__main__":
+    bot.run()</pre>
+<div class="section" id="starlette-bot">
+<h3>Starlette bot</h3>
+<p>In the same virtual environment as before install <a class="reference external" href="https://www.starlette.io">Starlette</a> and uvicorn:</p>
+<pre class="literal-block">python3 -m pip install starlette uvicorn</pre>
+<p>Save the following in a file named <code class="docutils literal">bot.py</code>:</p>
+<pre class="literal-block">import os
+import httpx
+import gidgetlab.routing
+import gidgetlab.sansio
+import gidgetlab.httpx
+from starlette.applications import Starlette
+from starlette.requests import Request
+from starlette.responses import Response
+from starlette.routing import Route
+
+router = gidgetlab.routing.Router()
+
+
+@router.register("Issue Hook", action="open")
+async def issue_opened_event(event, gl, *args, **kwargs):
+    """Whenever an issue is opened, greet the author and say thanks."""
+    url = f"/projects/{event.project_id}/issues/{event.object_attributes['iid']}/notes"
+    message = f"Thanks for the report @{event.data['user']['username']}! I will look into it ASAP! (I'm a bot)."
+    await gl.post(url, data={"body": message})
+
+
+async def webhook(request: Request) -&gt; Response:
+    """Handler that processes GitLab webhook requests"""
+    body = await request.body()
+    secret = os.environ.get("GL_SECRET")
+    event = gidgetlab.sansio.Event.from_http(request.headers, body, secret=secret)
+    async with httpx.AsyncClient() as client:
+        gl = gidgetlab.httpx.GitLabAPI(
+            client, "gidgetlab", access_token=os.environ.get("GL_ACCESS_TOKEN")
+        )
+        await router.dispatch(event, gl)
+    return Response(status_code=200)
+
+
+app = Starlette(routes=[Route("/", webhook, methods=["POST"])])</pre>
+<p>The Issue Hook handler is exactly the same as when using aiohttp.
+gidgetlab abstracts away the HTTP client used.
+To implement the bot, the only thing needed is an endpoint to handle webhook POST requests.</p>
+<p>Run:</p>
+<pre class="literal-block">uvicorn --reload bot:app
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [40232] using statreload
+INFO:     Started server process [40234]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.</pre>
+<p>That's it. We have an ASGI server running on port 8000 that can receive events from GitLab.
+We could test it by using ngrok as in the previous post.
+This time we'll just fake some events using <a class="reference external" href="https://httpie.org">httpie</a>.</p>
+</div>
+<div class="section" id="testing-with-httpie">
+<h3>Testing with httpie</h3>
+<p>For testing purpose, let's add a dummy event handler that is easy to trigger.</p>
+<pre class="literal-block">@router.register("Push Hook")
+async def dummy_action_on_push(event, gl, *args, **kwargs):
+    print(f"Received {event.event}")
+    print("Triggering some action...")
+    await gl.sleep(1)
+    print("Action done")</pre>
+<p>In one terminal, run:</p>
+<pre class="literal-block">uvicorn --reload bot:app</pre>
+<p>In another one:</p>
+<pre class="literal-block">http POST 127.0.0.1:8000  "X-Gitlab-Event:Push Hook" Content-Type:application/json</pre>
+<p>You should see the following output in each respective terminal:</p>
+<pre class="literal-block">Received Push Hook
+Triggering some action...
+Action done
+INFO:     127.0.0.1:58814 - "POST / HTTP/1.1" 200 OK
+
+HTTP/1.1 200 OK
+date: Wed, 27 May 2020 20:39:02 GMT
+server: uvicorn
+transfer-encoding: chunked</pre>
+<p>If you want to use a secret you should pass it on both sides:</p>
+<pre class="literal-block">export GL_SECRET=12345
+uvicorn --reload bot:app
+
+
+http POST 127.0.0.1:8000 x-gitlab-token:12345 "X-Gitlab-Event:Push Hook" Content-Type:application/json</pre>
+<p>You can see both examples on the following screenshot.</p>
+<img alt="/images/gitlab-bot-starlette/httpie-push-hook.png" src="../../images/gitlab-bot-starlette/httpie-push-hook.png">
+</div>
+<div class="section" id="starlette-startup-and-shutdown-events">
+<h3>Starlette startup and shutdown events</h3>
+<p><a class="reference external" href="https://www.starlette.io">Starlette</a> can register event handlers to run on startup and shutdown.
+Instead of creating a new httpx client on every new request, we could re-use the same.</p>
+<pre class="literal-block">async def create_client() -&gt; None:
+    """Startup handler that creates the GitLabAPI instance"""
+    client = httpx.AsyncClient()
+    app.state.gl = gidgetlab.httpx.GitLabAPI(
+        client, "gidgetlab", access_token=os.environ.get("GL_ACCESS_TOKEN")
+    )
+
+
+async def close_client() -&gt; None:
+    """Shutdown handler that closes the httpx client"""
+    await app.state.gl._client.aclose()
+
+
+async def webhook(request: Request) -&gt; Response:
+    """Handler that processes GitLab webhook requests"""
+    body = await request.body()
+    secret = os.environ.get("GL_SECRET")
+    event = gidgetlab.sansio.Event.from_http(request.headers, body, secret=secret)
+    await router.dispatch(event, request.app.state.gl)
+    return Response(status_code=200)
+
+
+app = Starlette(
+    routes=[Route("/", webhook, methods=["POST"])],
+    on_startup=[create_client],
+    on_shutdown=[close_client],
+)</pre>
+<p>In the <code class="docutils literal">create_client</code> function, we also store the GitLabAPI instance on the <code class="docutils literal">app.state</code>.
+This allows us to access it using <code class="docutils literal">request.app</code> in the request and to close the httpx client on application shutdown.</p>
+</div>
+<div class="section" id="background-tasks">
+<h3>Background tasks</h3>
+<p>In the above code, the <code class="docutils literal">Response</code> is only sent when all the dispatched event handlers have been executed.
+Some event handlers might take some time to run if you trigger many actions or you might want to sleep
+(<code class="docutils literal">asyncio.sleep</code> of course not to block the event loop) between different actions.
+You probably noticed that's actually exactly what I did in my dummy push hook handler.</p>
+<p>To illustrate that let's increase the sleep and print the date in our handler:</p>
+<pre class="literal-block">import datetime
+
+
+@router.register("Push Hook")
+async def dummy_action_on_push(event, gl, *args, **kwargs):
+    print(f"Received {event.event}")
+    print(f"Triggering some action at {datetime.datetime.utcnow()}...")
+    await gl.sleep(5)
+    print(f"Action done at {datetime.datetime.utcnow()}")</pre>
+<p>If we send a Push Hook event, we'll only get a response after 5 seconds. Not great...
+We can see that the server isn't blocked. We can send several requests and they are
+all processed in parallel. But the response is only sent after the event handler is done.</p>
+<img alt="/images/gitlab-bot-starlette/event-blocking-response.png" src="../../images/gitlab-bot-starlette/event-blocking-response.png"><p><em>Action done</em> is printed before the 200 is sent.</p>
+<p>When receiving a webhook, you should send the HTTP response as fast as possible.
+This is stated in GitLab's <a class="reference external" href="https://docs.gitlab.com/ee/user/project/integrations/webhooks.html#webhook-endpoint-tips">documentation</a>:
+Your endpoint should <strong>send its HTTP response as fast as possible</strong>.
+If you wait too long, GitLab may decide the hook failed and retry it.</p>
+<p>One way to achieve that would be to use a task queue like <a class="reference external" href="http://celeryproject.org">Celery</a> or <a class="reference external" href="https://python-rq.org">RQ</a> to run the event handlers.
+I'm actually using <a class="reference external" href="https://python-rq.org">RQ</a> in an aiohttp bot I created.</p>
+<p>A nice feature of <a class="reference external" href="https://www.starlette.io">Starlette</a> is that you can attach a <a class="reference external" href="https://www.starlette.io/background/">background task</a> to a response.
+We can thus run the <code class="docutils literal">dispatch</code> function as a <code class="docutils literal">BackgrounTask</code>. This will ensure that the response is sent
+as soon as the event has been received and parsed:</p>
+<pre class="literal-block">from starlette.background import BackgroundTask
+
+
+async def webhook(request: Request) -&gt; Response:
+    """Handler that processes GitLab webhook requests"""
+    body = await request.body()
+    secret = os.environ.get("GL_SECRET")
+    event = gidgetlab.sansio.Event.from_http(request.headers, body, secret=secret)
+    task = BackgroundTask(router.dispatch, event, request.app.state.gl)
+    return Response(status_code=200, background=task)</pre>
+<p>If we perform the same test as before we see that the event is dispatched only after the response was sent.
+It doesn't matter how long each handler takes.</p>
+<img alt="/images/gitlab-bot-starlette/event-background-task.png" src="../../images/gitlab-bot-starlette/event-background-task.png"><p><em>Received Push Hook</em> is printed after the 200 is sent.</p>
+<p>Of course handlers shouldn't block the event loop!
+As <code class="docutils literal">router.dispatch</code> is an async function, <a class="reference external" href="https://www.starlette.io">Starlette</a> will just await on it.
+If an event handler is performing some blocking action, it should be run in a thread or process pool.
+Otherwise the above code is all that is required.</p>
+</div>
+<div class="section" id="better-error-handling">
+<h3>Better error handling</h3>
+<p>One thing we didn't pay attention to is error handling.
+What happens if <code class="docutils literal">gidgetlab.sansio.Event.from_http</code> raises an Exception?
+<a class="reference external" href="https://www.starlette.io">Starlette</a> will return a 500 (Internal Server Error) HTTP response.
+That's the proper thing to do.
+<strong>Your endpoint should ALWAYS return a valid HTTP response</strong>.</p>
+<p>But in the bot logs, we can see that exception. Not very clean.</p>
+<img alt="/images/gitlab-bot-starlette/unhandled-exception.png" src="../../images/gitlab-bot-starlette/unhandled-exception.png"><p>We should catch those exceptions and handle them properly.</p>
+<pre class="literal-block">from starlette.responses import Response, PlainTextResponse
+
+
+async def webhook(request: Request) -&gt; Response:
+    """Handler that processes GitLab webhook requests"""
+    body = await request.body()
+    secret = os.environ.get("GL_SECRET")
+    try:
+        event = gidgetlab.sansio.Event.from_http(request.headers, body, secret=secret)
+    except gidgetlab.HTTPException as e:
+        return PlainTextResponse(status_code=e.status_code, content=str(e))
+    except gidgetlab.GitLabException as e:
+        return PlainTextResponse(status_code=500, content=str(e))
+    task = BackgroundTask(router.dispatch, event, request.app.state.gl)
+    return Response(status_code=200, background=task)</pre>
+<img alt="/images/gitlab-bot-starlette/handle-exceptions.png" src="../../images/gitlab-bot-starlette/handle-exceptions.png"><p>Much nicer now! Everything is in place for a production ready bot.</p>
+</div>
+</div>
+<div class="section" id="conclusion">
+<h2>Conclusion</h2>
+<p>I really enjoyed working with <a class="reference external" href="https://www.starlette.io">Starlette</a>. It made building a GitLab bot with <a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/">gidgetlab</a> very easy.
+We saw how to use <a class="reference external" href="https://www.starlette.io/events/">Events</a> and
+<a class="reference external" href="https://www.starlette.io/background/">Backroung Tasks</a>. Being able to run the <code class="docutils literal">dispatch</code> function
+in the background is really perfect for our bot.</p>
+<p><a class="reference external" href="https://www.python-httpx.org">HTTPX</a> and <a class="reference external" href="https://www.starlette.io">Starlette</a> are definitvely my go-to frameworks for my next bot!</p>
+<p>You can find the full source code used in this post on both GitLab and GitHub:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://gitlab.com/beenje/gitlab-bot-starlette">https://gitlab.com/beenje/gitlab-bot-starlette</a></p></li>
+<li><p><a class="reference external" href="https://github.com/beenje/gitlab-bot-starlette">https://github.com/beenje/gitlab-bot-starlette</a></p></li>
+</ul>
+</div>
+</div>
+    </div>
+    <aside class="postpromonav"><nav><ul itemprop="keywords" class="tags">
+<li><a class="tag p-category" href="../../categories/asyncio/" rel="tag">asyncio</a></li>
+            <li><a class="tag p-category" href="../../categories/bot/" rel="tag">bot</a></li>
+            <li><a class="tag p-category" href="../../categories/gidgetlab/" rel="tag">gidgetlab</a></li>
+            <li><a class="tag p-category" href="../../categories/gitlab/" rel="tag">gitlab</a></li>
+            <li><a class="tag p-category" href="../../categories/httpie/" rel="tag">httpie</a></li>
+            <li><a class="tag p-category" href="../../categories/httpx/" rel="tag">httpx</a></li>
+            <li><a class="tag p-category" href="../../categories/python/" rel="tag">python</a></li>
+            <li><a class="tag p-category" href="../../categories/starlette/" rel="tag">starlette</a></li>
+        </ul>
+<ul class="pager hidden-print">
+<li class="previous">
+                <a href="../using-epics-base-with-conda-on-linux-macos-and-windows/" rel="prev" title="Using epics-base with conda on Linux, macOS and Windows">Previous post</a>
+            </li>
+        </ul></nav></aside><section class="comments hidden-print"><h2>Comments</h2>
+        
+        
+        <div id="disqus_thread"></div>
+        <script>
+        var disqus_shortname ="tchutchut",
+            disqus_url="http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-starlette-and-httpx/",
+        disqus_title="Building a GitLab bot using gidgetlab, Starlette and HTTPX",
+        disqus_identifier="cache/posts/building-a-gitlab-bot-using-gidgetlab-starlette-and-httpx.html",
+        disqus_config = function () {
+            this.language = "en";
+        };
+        (function() {
+            var dsq = document.createElement('script'); dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script><noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a>
+</noscript>
+    <a href="https://disqus.com" class="dsq-brlink" rel="nofollow">Comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+        </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
+            Contents © 2020         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
+            
+        </footer>
+</div>
+</div>
+
+
+        <script src="../../assets/js/all-nocdn.js"></script><script>
+    baguetteBox.run('div#content', {
+        ignoreClass: 'islink',
+        captions: function(element) {
+            return element.getElementsByTagName('img')[0].alt;
+    }});
+    </script><script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-99836987-1', 'auto');
+  ga('set', 'anonymizeIP', true);
+  ga('send', 'pageview');
+
+</script>
+</body>
+</html>
