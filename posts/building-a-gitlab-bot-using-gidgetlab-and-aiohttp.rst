@@ -475,6 +475,7 @@ Hopefully this gave you an idea of what can be done with gidgetlab_.
 If you are interested, try to perform the other exercices described in the
 github-bot-tutorial_ but using GitLab. Don't hesitate to let me know if you use gidgetlab_
 to build something cool :-)
+And check my post about `building a GitLab bot with Starlette and HTTPX </posts/building-a-gitlab-bot-using-gidgetlab-starlette-and-httpx>`_
 
 Again, a big thanks to Mariatta_ for her tutorial and to `Brett Cannon`_ for
 gidgethub_! This project wouldn't exist otherwise.
