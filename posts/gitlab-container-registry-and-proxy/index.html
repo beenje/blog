@@ -60,7 +60,7 @@ bg-dark
 <a href="../../rss.xml" class="nav-link">RSS feed</a>
                 </li>
 <li class="nav-item">
-<a href="../../stories/about/index.html" class="nav-link">About</a>
+<a href="../../pages/about/index.html" class="nav-link">About</a>
 
                 
             </li>
@@ -117,16 +117,16 @@ The documentation to use the image is quite clear and can be found <a class="ref
 I wanted to access GitLab using HTTPS, so I disabled port 443 in nginx
 configuration. To do that I had to modify the template
 <cite>/usr/syno/share/nginx/WWWService.mustache</cite> and reboot the NAS:</p>
-<pre class="code diff"><a name="rest_code_5996d70dbfc040b989090ba3a418d876-1"></a><span class="gd">--- WWWService.mustache.org 2016-08-16 23:25:06.000000000 +0100</span>
-<a name="rest_code_5996d70dbfc040b989090ba3a418d876-2"></a><span class="gi">+++ WWWService.mustache 2016-09-19 13:53:45.256735700 +0100</span>
-<a name="rest_code_5996d70dbfc040b989090ba3a418d876-3"></a><span class="gu">@@ -1,8 +1,6 @@</span>
-<a name="rest_code_5996d70dbfc040b989090ba3a418d876-4"></a> server {
-<a name="rest_code_5996d70dbfc040b989090ba3a418d876-5"></a>     listen 80 default_server{{#reuseport}} reuseport{{/reuseport}};
-<a name="rest_code_5996d70dbfc040b989090ba3a418d876-6"></a>     listen [::]:80 default_server{{#reuseport}} reuseport{{/reuseport}};
-<a name="rest_code_5996d70dbfc040b989090ba3a418d876-7"></a><span class="gd">-    listen 443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
-<a name="rest_code_5996d70dbfc040b989090ba3a418d876-8"></a><span class="gd">-    listen [::]:443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
-<a name="rest_code_5996d70dbfc040b989090ba3a418d876-9"></a>
-<a name="rest_code_5996d70dbfc040b989090ba3a418d876-10"></a>     server_name _;
+<pre class="code diff"><a name="rest_code_4320fa419db442aa82f648acae975c04-1"></a><span class="gd">--- WWWService.mustache.org 2016-08-16 23:25:06.000000000 +0100</span>
+<a name="rest_code_4320fa419db442aa82f648acae975c04-2"></a><span class="gi">+++ WWWService.mustache 2016-09-19 13:53:45.256735700 +0100</span>
+<a name="rest_code_4320fa419db442aa82f648acae975c04-3"></a><span class="gu">@@ -1,8 +1,6 @@</span>
+<a name="rest_code_4320fa419db442aa82f648acae975c04-4"></a> server {
+<a name="rest_code_4320fa419db442aa82f648acae975c04-5"></a>     listen 80 default_server{{#reuseport}} reuseport{{/reuseport}};
+<a name="rest_code_4320fa419db442aa82f648acae975c04-6"></a>     listen [::]:80 default_server{{#reuseport}} reuseport{{/reuseport}};
+<a name="rest_code_4320fa419db442aa82f648acae975c04-7"></a><span class="gd">-    listen 443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
+<a name="rest_code_4320fa419db442aa82f648acae975c04-8"></a><span class="gd">-    listen [::]:443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};</span>
+<a name="rest_code_4320fa419db442aa82f648acae975c04-9"></a>
+<a name="rest_code_4320fa419db442aa82f648acae975c04-10"></a>     server_name _;
 </pre>
 <p>The port 22 is also already used by the ssh daemon so I decided to use
 the port 2222. I created the directory <cite>/volume1/docker/gitlab</cite> to store

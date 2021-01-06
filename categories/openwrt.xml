@@ -3,7 +3,7 @@
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 06 Jan 2021 06:44:05 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Home Assistant on Turris Omnia via LXC container</title><link>http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In a previous post, I described &lt;a class="reference external" href="http://beenje.github.io/blog/posts/openvpn-source-based-routing"&gt;how to install OpenVPN client on a Turris
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 06 Jan 2021 08:21:41 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Home Assistant on Turris Omnia via LXC container</title><link>http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In a previous post, I described &lt;a class="reference external" href="http://beenje.github.io/blog/posts/openvpn-source-based-routing"&gt;how to install OpenVPN client on a Turris
 Omnia router&lt;/a&gt;. To start or stop the
 client, I was using the command line and mentioned the LuCi Web User
 Interface.&lt;/p&gt;

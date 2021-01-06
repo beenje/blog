@@ -3,7 +3,7 @@
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 06 Jan 2021 06:44:04 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>My LEGO Macintosh Classic with Raspberry Pi and e-paper display</title><link>http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;UPDATED 2019-11-24&lt;/p&gt;
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 06 Jan 2021 08:21:41 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>My LEGO Macintosh Classic with Raspberry Pi and e-paper display</title><link>http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;UPDATED 2019-11-24&lt;/p&gt;
 &lt;p&gt;Beginning of April I read an inspiring blog post from Jannis Hermanns
 about a &lt;a class="reference external" href="https://jann.is/lego-macintosh-classic/"&gt;LEGO Machintosh Classic with e-paper display&lt;/a&gt;.  It was a really nice and cool article.&lt;/p&gt;
 &lt;p&gt;I've been playing with some Raspberry Pis before but only with
@@ -200,23 +200,40 @@ you haven't yet.
 Thanks again to @mkennedy for the stickers!&lt;/p&gt;
 &lt;a class="reference external image-reference" href="http://beenje.github.io/blog/images/legomac/talkpythontome.jpg"&gt;&lt;img alt="/images/legomac/talkpythontome.thumbnail.jpg" src="http://beenje.github.io/blog/images/legomac/talkpythontome.thumbnail.jpg"&gt;&lt;/a&gt;
 &lt;p&gt;Below are a few pictures. You can see more on &lt;a class="reference external" href="https://flic.kr/s/aHskVAadfo"&gt;flickr&lt;/a&gt;.&lt;/p&gt;
-&lt;div class="system-message"&gt;
-&lt;p class="system-message-title"&gt;System Message: ERROR/3 (&lt;span class="docutils literal"&gt;&amp;lt;string&amp;gt;&lt;/span&gt;, line 246)&lt;/p&gt;
-&lt;p&gt;Unknown directive type "slides".&lt;/p&gt;
-&lt;pre class="literal-block"&gt;.. slides::
 
-    /images/legomac/legomac.jpg
-    /images/legomac/legomac_front_close.jpg
-    /images/legomac/talkpythontome.jpg
-    /images/legomac/drilling_left.jpg
-    /images/legomac/drilling_right.jpg
-    /images/legomac/ribbon_cable.jpg
-    /images/legomac/display_front.jpg
-    /images/legomac/button_front.jpg
-    /images/legomac/button_top.jpg
-
-&lt;/pre&gt;
+&lt;div id="slides_0a9f293b98484640b1e526f005ecaeb8" class="carousel slide" data-ride="carousel"&gt;
+    &lt;ol class="carousel-indicators"&gt;
+            &lt;li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="0" class="active"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="1"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="2"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="3"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="4"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="5"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="6"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="7"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="8"&gt;
+    &lt;/li&gt;&lt;/ol&gt;
+    &lt;div class="carousel-inner"&gt;
+                &lt;div class="carousel-item active"&gt;&lt;img class="d-block w-100" src="http://beenje.github.io/blog/images/legomac/legomac.jpg" alt=""&gt;&lt;/div&gt;
+                &lt;div class="carousel-item"&gt;&lt;img class="d-block w-100" src="http://beenje.github.io/blog/images/legomac/legomac_front_close.jpg" alt=""&gt;&lt;/div&gt;
+                &lt;div class="carousel-item"&gt;&lt;img class="d-block w-100" src="http://beenje.github.io/blog/images/legomac/talkpythontome.jpg" alt=""&gt;&lt;/div&gt;
+                &lt;div class="carousel-item"&gt;&lt;img class="d-block w-100" src="http://beenje.github.io/blog/images/legomac/drilling_left.jpg" alt=""&gt;&lt;/div&gt;
+                &lt;div class="carousel-item"&gt;&lt;img class="d-block w-100" src="http://beenje.github.io/blog/images/legomac/drilling_right.jpg" alt=""&gt;&lt;/div&gt;
+                &lt;div class="carousel-item"&gt;&lt;img class="d-block w-100" src="http://beenje.github.io/blog/images/legomac/ribbon_cable.jpg" alt=""&gt;&lt;/div&gt;
+                &lt;div class="carousel-item"&gt;&lt;img class="d-block w-100" src="http://beenje.github.io/blog/images/legomac/display_front.jpg" alt=""&gt;&lt;/div&gt;
+                &lt;div class="carousel-item"&gt;&lt;img class="d-block w-100" src="http://beenje.github.io/blog/images/legomac/button_front.jpg" alt=""&gt;&lt;/div&gt;
+                &lt;div class="carousel-item"&gt;&lt;img class="d-block w-100" src="http://beenje.github.io/blog/images/legomac/button_top.jpg" alt=""&gt;&lt;/div&gt;
+    &lt;/div&gt;
+      &lt;a class="carousel-control-prev" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_0a9f293b98484640b1e526f005ecaeb8" role="button" data-slide="prev"&gt;
+    &lt;span class="carousel-control-prev-icon" aria-hidden="true"&gt;&lt;/span&gt;
+    &lt;span class="sr-only"&gt;Previous&lt;/span&gt;
+  &lt;/a&gt;
+  &lt;a class="carousel-control-next" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_0a9f293b98484640b1e526f005ecaeb8" role="button" data-slide="next"&gt;
+    &lt;span class="carousel-control-next-icon" aria-hidden="true"&gt;&lt;/span&gt;
+    &lt;span class="sr-only"&gt;Next&lt;/span&gt;
+  &lt;/a&gt;
 &lt;/div&gt;
+
 &lt;/div&gt;
 &lt;div class="section" id="next"&gt;
 &lt;h2&gt;Next&lt;/h2&gt;

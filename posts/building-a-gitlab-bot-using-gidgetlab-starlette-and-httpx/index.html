@@ -61,7 +61,7 @@ bg-dark
 <a href="../../rss.xml" class="nav-link">RSS feed</a>
                 </li>
 <li class="nav-item">
-<a href="../../stories/about/index.html" class="nav-link">About</a>
+<a href="../../pages/about/index.html" class="nav-link">About</a>
 
                 
             </li>
@@ -360,7 +360,7 @@ If you wait too long, GitLab may decide the hook failed and retry it.</p>
 <p>One way to achieve that would be to use a task queue like <a class="reference external" href="http://celeryproject.org">Celery</a> or <a class="reference external" href="https://python-rq.org">RQ</a> to run the event handlers.
 I'm actually using <a class="reference external" href="https://python-rq.org">RQ</a> in an aiohttp bot I created.</p>
 <p>A nice feature of <a class="reference external" href="https://www.starlette.io">Starlette</a> is that you can attach a <a class="reference external" href="https://www.starlette.io/background/">background task</a> to a response.
-We can thus run the <code class="docutils literal">dispatch</code> function as a <code class="docutils literal">BackgrounTask</code>. This will ensure that the response is sent
+We can thus run the <code class="docutils literal">dispatch</code> function as a <code class="docutils literal">BackgroundTask</code>. This will ensure that the response is sent
 as soon as the event has been received and parsed:</p>
 <pre class="literal-block">from starlette.background import BackgroundTask
 

@@ -3,7 +3,7 @@
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 06 Jan 2021 06:44:05 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>GitLab Container Registry and proxy</title><link>http://beenje.github.io/blog/posts/gitlab-container-registry-and-proxy/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;div class="section" id="gitlab-on-synology"&gt;
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 06 Jan 2021 08:21:41 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>GitLab Container Registry and proxy</title><link>http://beenje.github.io/blog/posts/gitlab-container-registry-and-proxy/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;div class="section" id="gitlab-on-synology"&gt;
 &lt;h2&gt;GitLab on Synology&lt;/h2&gt;
 &lt;p&gt;I installed GitLab CE on a Synology RackStation RS815+ at work.
 It has an Intel Atom C2538 that allows to run &lt;a class="reference external" href="https://www.docker.com"&gt;Docker&lt;/a&gt; on the NAS.&lt;/p&gt;
@@ -13,16 +13,16 @@ The documentation to use the image is quite clear and can be found &lt;a class="
 I wanted to access GitLab using HTTPS, so I disabled port 443 in nginx
 configuration. To do that I had to modify the template
 &lt;cite&gt;/usr/syno/share/nginx/WWWService.mustache&lt;/cite&gt; and reboot the NAS:&lt;/p&gt;
-&lt;pre class="code diff"&gt;&lt;a name="rest_code_5996d70dbfc040b989090ba3a418d876-1"&gt;&lt;/a&gt;&lt;span class="gd"&gt;--- WWWService.mustache.org 2016-08-16 23:25:06.000000000 +0100&lt;/span&gt;
-&lt;a name="rest_code_5996d70dbfc040b989090ba3a418d876-2"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+++ WWWService.mustache 2016-09-19 13:53:45.256735700 +0100&lt;/span&gt;
-&lt;a name="rest_code_5996d70dbfc040b989090ba3a418d876-3"&gt;&lt;/a&gt;&lt;span class="gu"&gt;@@ -1,8 +1,6 @@&lt;/span&gt;
-&lt;a name="rest_code_5996d70dbfc040b989090ba3a418d876-4"&gt;&lt;/a&gt; server {
-&lt;a name="rest_code_5996d70dbfc040b989090ba3a418d876-5"&gt;&lt;/a&gt;     listen 80 default_server{{#reuseport}} reuseport{{/reuseport}};
-&lt;a name="rest_code_5996d70dbfc040b989090ba3a418d876-6"&gt;&lt;/a&gt;     listen [::]:80 default_server{{#reuseport}} reuseport{{/reuseport}};
-&lt;a name="rest_code_5996d70dbfc040b989090ba3a418d876-7"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    listen 443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};&lt;/span&gt;
-&lt;a name="rest_code_5996d70dbfc040b989090ba3a418d876-8"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    listen [::]:443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};&lt;/span&gt;
-&lt;a name="rest_code_5996d70dbfc040b989090ba3a418d876-9"&gt;&lt;/a&gt;
-&lt;a name="rest_code_5996d70dbfc040b989090ba3a418d876-10"&gt;&lt;/a&gt;     server_name _;
+&lt;pre class="code diff"&gt;&lt;a name="rest_code_4320fa419db442aa82f648acae975c04-1"&gt;&lt;/a&gt;&lt;span class="gd"&gt;--- WWWService.mustache.org 2016-08-16 23:25:06.000000000 +0100&lt;/span&gt;
+&lt;a name="rest_code_4320fa419db442aa82f648acae975c04-2"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+++ WWWService.mustache 2016-09-19 13:53:45.256735700 +0100&lt;/span&gt;
+&lt;a name="rest_code_4320fa419db442aa82f648acae975c04-3"&gt;&lt;/a&gt;&lt;span class="gu"&gt;@@ -1,8 +1,6 @@&lt;/span&gt;
+&lt;a name="rest_code_4320fa419db442aa82f648acae975c04-4"&gt;&lt;/a&gt; server {
+&lt;a name="rest_code_4320fa419db442aa82f648acae975c04-5"&gt;&lt;/a&gt;     listen 80 default_server{{#reuseport}} reuseport{{/reuseport}};
+&lt;a name="rest_code_4320fa419db442aa82f648acae975c04-6"&gt;&lt;/a&gt;     listen [::]:80 default_server{{#reuseport}} reuseport{{/reuseport}};
+&lt;a name="rest_code_4320fa419db442aa82f648acae975c04-7"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    listen 443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};&lt;/span&gt;
+&lt;a name="rest_code_4320fa419db442aa82f648acae975c04-8"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    listen [::]:443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};&lt;/span&gt;
+&lt;a name="rest_code_4320fa419db442aa82f648acae975c04-9"&gt;&lt;/a&gt;
+&lt;a name="rest_code_4320fa419db442aa82f648acae975c04-10"&gt;&lt;/a&gt;     server_name _;
 &lt;/pre&gt;&lt;p&gt;The port 22 is also already used by the ssh daemon so I decided to use
 the port 2222. I created the directory &lt;cite&gt;/volume1/docker/gitlab&lt;/cite&gt; to store
 all GitLab data. Here are the required variables in the
