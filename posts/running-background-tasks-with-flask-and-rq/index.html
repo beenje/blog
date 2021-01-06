@@ -10,7 +10,7 @@
 <link href="../../assets/css/nikola_ipython.css" rel="stylesheet" type="text/css">
 <meta name="theme-color" content="#5670d4">
 <meta name="generator" content="Nikola (getnikola.com)">
-<link rel="alternate" type="application/rss+xml" title="RSS" href="../../rss.xml">
+<link rel="alternate" type="application/rss+xml" title="RSS" hreflang="en" href="../../rss.xml">
 <link rel="canonical" href="http://beenje.github.io/blog/posts/running-background-tasks-with-flask-and-rq/">
 <!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><meta name="author" content="Benjamin Bertrand">
 <link rel="prev" href="../installing-openvpn-on-a-raspberry-pi-with-ansible/" title="Installing OpenVPN on a Raspberry Pi with Ansible" type="text/html">
@@ -36,10 +36,11 @@ It'">
 <!-- Menubar -->
 
 <nav class="navbar navbar-expand-md static-top mb-4
-navbar-dark bg-dark
+navbar-dark
+bg-dark
 "><div class="container">
 <!-- This keeps the margins nice -->
-        <a class="navbar-brand" href="http://beenje.github.io/blog/">
+        <a class="navbar-brand" href="../../">
 
             <span id="blog-title">Tchut-Tchut Blog</span>
         </a>
@@ -155,123 +156,123 @@ and some extensions (<a class="reference external" href="https://pythonhosted.or
 my default settings in <cite>app/settings.py</cite>. Nothing strange in there. You can refer to the
 <a class="reference external" href="https://github.com/beenje/flask-rq-example">GitHub repository</a>.</p>
 <p>Here is our main <cite>app/main/views.py</cite>:</p>
-<pre class="code python"><a name="rest_code_814bf35fd3e04b01bbc9f8b6faa60cd3-1"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">url_for</span><span class="p">,</span> <span class="n">flash</span><span class="p">,</span> <span class="n">redirect</span>
-<a name="rest_code_814bf35fd3e04b01bbc9f8b6faa60cd3-2"></a><span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">tasks</span>
-<a name="rest_code_814bf35fd3e04b01bbc9f8b6faa60cd3-3"></a><span class="kn">from</span> <span class="nn">.forms</span> <span class="kn">import</span> <span class="n">TaskForm</span>
-<a name="rest_code_814bf35fd3e04b01bbc9f8b6faa60cd3-4"></a>
-<a name="rest_code_814bf35fd3e04b01bbc9f8b6faa60cd3-5"></a><span class="n">bp</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s1">'main'</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
-<a name="rest_code_814bf35fd3e04b01bbc9f8b6faa60cd3-6"></a>
-<a name="rest_code_814bf35fd3e04b01bbc9f8b6faa60cd3-7"></a>
-<a name="rest_code_814bf35fd3e04b01bbc9f8b6faa60cd3-8"></a><span class="nd">@bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'GET'</span><span class="p">,</span> <span class="s1">'POST'</span><span class="p">])</span>
-<a name="rest_code_814bf35fd3e04b01bbc9f8b6faa60cd3-9"></a><span class="k">def</span> <span class="nf">index</span><span class="p">():</span>
-<a name="rest_code_814bf35fd3e04b01bbc9f8b6faa60cd3-10"></a>    <span class="n">form</span> <span class="o">=</span> <span class="n">TaskForm</span><span class="p">()</span>
-<a name="rest_code_814bf35fd3e04b01bbc9f8b6faa60cd3-11"></a>    <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">validate_on_submit</span><span class="p">():</span>
-<a name="rest_code_814bf35fd3e04b01bbc9f8b6faa60cd3-12"></a>        <span class="n">task</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">data</span>
-<a name="rest_code_814bf35fd3e04b01bbc9f8b6faa60cd3-13"></a>        <span class="k">try</span><span class="p">:</span>
-<a name="rest_code_814bf35fd3e04b01bbc9f8b6faa60cd3-14"></a>            <span class="n">result</span> <span class="o">=</span> <span class="n">tasks</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
-<a name="rest_code_814bf35fd3e04b01bbc9f8b6faa60cd3-15"></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a name="rest_code_814bf35fd3e04b01bbc9f8b6faa60cd3-16"></a>            <span class="n">flash</span><span class="p">(</span><span class="s1">'Task failed: </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="s1">'danger'</span><span class="p">)</span>
-<a name="rest_code_814bf35fd3e04b01bbc9f8b6faa60cd3-17"></a>        <span class="k">else</span><span class="p">:</span>
-<a name="rest_code_814bf35fd3e04b01bbc9f8b6faa60cd3-18"></a>            <span class="n">flash</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s1">'success'</span><span class="p">)</span>
-<a name="rest_code_814bf35fd3e04b01bbc9f8b6faa60cd3-19"></a>        <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">url_for</span><span class="p">(</span><span class="s1">'main.index'</span><span class="p">))</span>
-<a name="rest_code_814bf35fd3e04b01bbc9f8b6faa60cd3-20"></a>    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">'index.html'</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">)</span>
+<pre class="code python"><a name="rest_code_ff0b8172ea164a5b8c17b9857bf7803a-1"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">url_for</span><span class="p">,</span> <span class="n">flash</span><span class="p">,</span> <span class="n">redirect</span>
+<a name="rest_code_ff0b8172ea164a5b8c17b9857bf7803a-2"></a><span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">tasks</span>
+<a name="rest_code_ff0b8172ea164a5b8c17b9857bf7803a-3"></a><span class="kn">from</span> <span class="nn">.forms</span> <span class="kn">import</span> <span class="n">TaskForm</span>
+<a name="rest_code_ff0b8172ea164a5b8c17b9857bf7803a-4"></a>
+<a name="rest_code_ff0b8172ea164a5b8c17b9857bf7803a-5"></a><span class="n">bp</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s1">'main'</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
+<a name="rest_code_ff0b8172ea164a5b8c17b9857bf7803a-6"></a>
+<a name="rest_code_ff0b8172ea164a5b8c17b9857bf7803a-7"></a>
+<a name="rest_code_ff0b8172ea164a5b8c17b9857bf7803a-8"></a><span class="nd">@bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'GET'</span><span class="p">,</span> <span class="s1">'POST'</span><span class="p">])</span>
+<a name="rest_code_ff0b8172ea164a5b8c17b9857bf7803a-9"></a><span class="k">def</span> <span class="nf">index</span><span class="p">():</span>
+<a name="rest_code_ff0b8172ea164a5b8c17b9857bf7803a-10"></a>    <span class="n">form</span> <span class="o">=</span> <span class="n">TaskForm</span><span class="p">()</span>
+<a name="rest_code_ff0b8172ea164a5b8c17b9857bf7803a-11"></a>    <span class="k">if</span> <span class="n">form</span><span class="o">.</span><span class="n">validate_on_submit</span><span class="p">():</span>
+<a name="rest_code_ff0b8172ea164a5b8c17b9857bf7803a-12"></a>        <span class="n">task</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">data</span>
+<a name="rest_code_ff0b8172ea164a5b8c17b9857bf7803a-13"></a>        <span class="k">try</span><span class="p">:</span>
+<a name="rest_code_ff0b8172ea164a5b8c17b9857bf7803a-14"></a>            <span class="n">result</span> <span class="o">=</span> <span class="n">tasks</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+<a name="rest_code_ff0b8172ea164a5b8c17b9857bf7803a-15"></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a name="rest_code_ff0b8172ea164a5b8c17b9857bf7803a-16"></a>            <span class="n">flash</span><span class="p">(</span><span class="s1">'Task failed: </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="s1">'danger'</span><span class="p">)</span>
+<a name="rest_code_ff0b8172ea164a5b8c17b9857bf7803a-17"></a>        <span class="k">else</span><span class="p">:</span>
+<a name="rest_code_ff0b8172ea164a5b8c17b9857bf7803a-18"></a>            <span class="n">flash</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s1">'success'</span><span class="p">)</span>
+<a name="rest_code_ff0b8172ea164a5b8c17b9857bf7803a-19"></a>        <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">url_for</span><span class="p">(</span><span class="s1">'main.index'</span><span class="p">))</span>
+<a name="rest_code_ff0b8172ea164a5b8c17b9857bf7803a-20"></a>    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">'index.html'</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">)</span>
 </pre>
 <p>As said previously, we create a form. On submit, we run the task and send the response back.</p>
 <p>The form is defined in <cite>app/main/forms.py</cite>:</p>
-<pre class="code python"><a name="rest_code_25cf17c402264b8e90caf22868491240-1"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">current_app</span>
-<a name="rest_code_25cf17c402264b8e90caf22868491240-2"></a><span class="kn">from</span> <span class="nn">flask_wtf</span> <span class="kn">import</span> <span class="n">Form</span>
-<a name="rest_code_25cf17c402264b8e90caf22868491240-3"></a><span class="kn">from</span> <span class="nn">wtforms</span> <span class="kn">import</span> <span class="n">SelectField</span>
-<a name="rest_code_25cf17c402264b8e90caf22868491240-4"></a>
-<a name="rest_code_25cf17c402264b8e90caf22868491240-5"></a>
-<a name="rest_code_25cf17c402264b8e90caf22868491240-6"></a><span class="k">class</span> <span class="nc">TaskForm</span><span class="p">(</span><span class="n">Form</span><span class="p">):</span>
-<a name="rest_code_25cf17c402264b8e90caf22868491240-7"></a>    <span class="n">task</span> <span class="o">=</span> <span class="n">SelectField</span><span class="p">(</span><span class="s1">'Task'</span><span class="p">)</span>
-<a name="rest_code_25cf17c402264b8e90caf22868491240-8"></a>
-<a name="rest_code_25cf17c402264b8e90caf22868491240-9"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<a name="rest_code_25cf17c402264b8e90caf22868491240-10"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-<a name="rest_code_25cf17c402264b8e90caf22868491240-11"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="p">[(</span><span class="n">task</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span> <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">'TASKS'</span><span class="p">]]</span>
+<pre class="code python"><a name="rest_code_2d425bc4a1a646cdaaec94fa39333ca8-1"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">current_app</span>
+<a name="rest_code_2d425bc4a1a646cdaaec94fa39333ca8-2"></a><span class="kn">from</span> <span class="nn">flask_wtf</span> <span class="kn">import</span> <span class="n">Form</span>
+<a name="rest_code_2d425bc4a1a646cdaaec94fa39333ca8-3"></a><span class="kn">from</span> <span class="nn">wtforms</span> <span class="kn">import</span> <span class="n">SelectField</span>
+<a name="rest_code_2d425bc4a1a646cdaaec94fa39333ca8-4"></a>
+<a name="rest_code_2d425bc4a1a646cdaaec94fa39333ca8-5"></a>
+<a name="rest_code_2d425bc4a1a646cdaaec94fa39333ca8-6"></a><span class="k">class</span> <span class="nc">TaskForm</span><span class="p">(</span><span class="n">Form</span><span class="p">):</span>
+<a name="rest_code_2d425bc4a1a646cdaaec94fa39333ca8-7"></a>    <span class="n">task</span> <span class="o">=</span> <span class="n">SelectField</span><span class="p">(</span><span class="s1">'Task'</span><span class="p">)</span>
+<a name="rest_code_2d425bc4a1a646cdaaec94fa39333ca8-8"></a>
+<a name="rest_code_2d425bc4a1a646cdaaec94fa39333ca8-9"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<a name="rest_code_2d425bc4a1a646cdaaec94fa39333ca8-10"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<a name="rest_code_2d425bc4a1a646cdaaec94fa39333ca8-11"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">choices</span> <span class="o">=</span> <span class="p">[(</span><span class="n">task</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span> <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">'TASKS'</span><span class="p">]]</span>
 </pre>
 <p>In <cite>app/tasks.py</cite>, we have our <cite>run</cite> function to start a dummy task:</p>
-<pre class="code python"><a name="rest_code_23025bcbc1ec45faa9d47c60cfa92d36-1"></a><span class="kn">import</span> <span class="nn">random</span>
-<a name="rest_code_23025bcbc1ec45faa9d47c60cfa92d36-2"></a><span class="kn">import</span> <span class="nn">time</span>
-<a name="rest_code_23025bcbc1ec45faa9d47c60cfa92d36-3"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">current_app</span>
-<a name="rest_code_23025bcbc1ec45faa9d47c60cfa92d36-4"></a>
-<a name="rest_code_23025bcbc1ec45faa9d47c60cfa92d36-5"></a>
-<a name="rest_code_23025bcbc1ec45faa9d47c60cfa92d36-6"></a><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">task</span><span class="p">):</span>
-<a name="rest_code_23025bcbc1ec45faa9d47c60cfa92d36-7"></a>    <span class="k">if</span> <span class="s1">'error'</span> <span class="ow">in</span> <span class="n">task</span><span class="p">:</span>
-<a name="rest_code_23025bcbc1ec45faa9d47c60cfa92d36-8"></a>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
-<a name="rest_code_23025bcbc1ec45faa9d47c60cfa92d36-9"></a>        <span class="mi">1</span> <span class="o">/</span> <span class="mi">0</span>
-<a name="rest_code_23025bcbc1ec45faa9d47c60cfa92d36-10"></a>    <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'Short'</span><span class="p">):</span>
-<a name="rest_code_23025bcbc1ec45faa9d47c60cfa92d36-11"></a>        <span class="n">seconds</span> <span class="o">=</span> <span class="mi">1</span>
-<a name="rest_code_23025bcbc1ec45faa9d47c60cfa92d36-12"></a>    <span class="k">else</span><span class="p">:</span>
-<a name="rest_code_23025bcbc1ec45faa9d47c60cfa92d36-13"></a>        <span class="n">seconds</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">'MAX_TIME_TO_WAIT'</span><span class="p">])</span>
-<a name="rest_code_23025bcbc1ec45faa9d47c60cfa92d36-14"></a>    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">seconds</span><span class="p">)</span>
-<a name="rest_code_23025bcbc1ec45faa9d47c60cfa92d36-15"></a>    <span class="k">return</span> <span class="s1">'</span><span class="si">{}</span><span class="s1"> performed in </span><span class="si">{}</span><span class="s1"> second(s)'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">seconds</span><span class="p">)</span>
+<pre class="code python"><a name="rest_code_050bfb931ce44897b63a6f8cec2694f6-1"></a><span class="kn">import</span> <span class="nn">random</span>
+<a name="rest_code_050bfb931ce44897b63a6f8cec2694f6-2"></a><span class="kn">import</span> <span class="nn">time</span>
+<a name="rest_code_050bfb931ce44897b63a6f8cec2694f6-3"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">current_app</span>
+<a name="rest_code_050bfb931ce44897b63a6f8cec2694f6-4"></a>
+<a name="rest_code_050bfb931ce44897b63a6f8cec2694f6-5"></a>
+<a name="rest_code_050bfb931ce44897b63a6f8cec2694f6-6"></a><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">task</span><span class="p">):</span>
+<a name="rest_code_050bfb931ce44897b63a6f8cec2694f6-7"></a>    <span class="k">if</span> <span class="s1">'error'</span> <span class="ow">in</span> <span class="n">task</span><span class="p">:</span>
+<a name="rest_code_050bfb931ce44897b63a6f8cec2694f6-8"></a>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+<a name="rest_code_050bfb931ce44897b63a6f8cec2694f6-9"></a>        <span class="mi">1</span> <span class="o">/</span> <span class="mi">0</span>
+<a name="rest_code_050bfb931ce44897b63a6f8cec2694f6-10"></a>    <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'Short'</span><span class="p">):</span>
+<a name="rest_code_050bfb931ce44897b63a6f8cec2694f6-11"></a>        <span class="n">seconds</span> <span class="o">=</span> <span class="mi">1</span>
+<a name="rest_code_050bfb931ce44897b63a6f8cec2694f6-12"></a>    <span class="k">else</span><span class="p">:</span>
+<a name="rest_code_050bfb931ce44897b63a6f8cec2694f6-13"></a>        <span class="n">seconds</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">'MAX_TIME_TO_WAIT'</span><span class="p">])</span>
+<a name="rest_code_050bfb931ce44897b63a6f8cec2694f6-14"></a>    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">seconds</span><span class="p">)</span>
+<a name="rest_code_050bfb931ce44897b63a6f8cec2694f6-15"></a>    <span class="k">return</span> <span class="s1">'</span><span class="si">{}</span><span class="s1"> performed in </span><span class="si">{}</span><span class="s1"> second(s)'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">seconds</span><span class="p">)</span>
 </pre>
 <p>In <cite>app/templates/base.html</cite>, we define a fixed to top navbar and
 a container to show flash messages and our main code. Note that we take advantage of
 <a class="reference external" href="https://pythonhosted.org/Flask-Bootstrap/">Flask-Bootstrap</a>.</p>
-<pre class="code html"><a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-1"></a>{%- extends "bootstrap/base.html" %}
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-2"></a>{% import "bootstrap/utils.html" as utils %}
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-3"></a>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-4"></a>{% block head %}
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-5"></a>  <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">charset</span><span class="o">=</span><span class="s">"utf-8"</span><span class="p">&gt;</span>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-6"></a>  <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">http-equiv</span><span class="o">=</span><span class="s">"X-UA-Compatible"</span> <span class="na">content</span><span class="o">=</span><span class="s">"IE=edge"</span><span class="p">&gt;</span>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-7"></a>  {{super()}}
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-8"></a>{% endblock %}
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-9"></a>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-10"></a>{% block styles %}
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-11"></a>  {{super()}}
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-12"></a>  <span class="p">&lt;</span><span class="nt">link</span> <span class="na">href</span><span class="o">=</span><span class="s">"{{ url_for('static', filename='css/main.css') }}"</span> <span class="na">rel</span><span class="o">=</span><span class="s">"stylesheet"</span><span class="p">&gt;</span>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-13"></a>{% endblock %}
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-14"></a>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-15"></a>{% block title %}My App{% endblock %}
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-16"></a>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-17"></a>{% block navbar %}
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-18"></a>  <span class="c">&lt;!-- Fixed navbar --&gt;</span>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-19"></a>  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"navbar navbar-default navbar-fixed-top"</span> <span class="na">role</span><span class="o">=</span><span class="s">"navigation"</span><span class="p">&gt;</span>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-20"></a>    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"container"</span><span class="p">&gt;</span>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-21"></a>      <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"navbar-header"</span><span class="p">&gt;</span>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-22"></a>        <span class="p">&lt;</span><span class="nt">button</span> <span class="na">type</span><span class="o">=</span><span class="s">"button"</span> <span class="na">class</span><span class="o">=</span><span class="s">"navbar-toggle"</span> <span class="na">data-toggle</span><span class="o">=</span><span class="s">"collapse"</span> <span class="na">data-target</span><span class="o">=</span><span class="s">".navbar-collapse"</span><span class="p">&gt;</span>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-23"></a>          <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">"sr-only"</span><span class="p">&gt;</span>Toggle navigation<span class="p">&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-24"></a>          <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">"icon-bar"</span><span class="p">&gt;&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-25"></a>          <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">"icon-bar"</span><span class="p">&gt;&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-26"></a>          <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">"icon-bar"</span><span class="p">&gt;&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-27"></a>        <span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-28"></a>        <span class="c">&lt;!--img class="navbar-brand" src="../../static/logo.png"--&gt;</span>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-29"></a>        <span class="p">&lt;</span><span class="nt">a</span> <span class="na">class</span><span class="o">=</span><span class="s">"navbar-brand"</span> <span class="na">href</span><span class="o">=</span><span class="s">"{{ url_for('main.index') }}"</span><span class="p">&gt;</span>My App<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-30"></a>      <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-31"></a>    <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-32"></a>  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-33"></a>{% endblock %}
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-34"></a>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-35"></a>{% block content %}
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-36"></a>  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"container"</span> <span class="na">id</span><span class="o">=</span><span class="s">"mainContent"</span><span class="p">&gt;</span>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-37"></a>    {{utils.flashed_messages(container=False, dismissible=True)}}
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-38"></a>    {% block main %}{% endblock %}
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-39"></a>  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<a name="rest_code_ebfbdf600b284a8cb3cdf53c9736996e-40"></a>{% endblock %}
+<pre class="code html"><a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-1"></a>{%- extends "bootstrap/base.html" %}
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-2"></a>{% import "bootstrap/utils.html" as utils %}
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-3"></a>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-4"></a>{% block head %}
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-5"></a>  <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">charset</span><span class="o">=</span><span class="s">"utf-8"</span><span class="p">&gt;</span>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-6"></a>  <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">http-equiv</span><span class="o">=</span><span class="s">"X-UA-Compatible"</span> <span class="na">content</span><span class="o">=</span><span class="s">"IE=edge"</span><span class="p">&gt;</span>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-7"></a>  {{super()}}
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-8"></a>{% endblock %}
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-9"></a>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-10"></a>{% block styles %}
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-11"></a>  {{super()}}
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-12"></a>  <span class="p">&lt;</span><span class="nt">link</span> <span class="na">href</span><span class="o">=</span><span class="s">"{{ url_for('static', filename='css/main.css') }}"</span> <span class="na">rel</span><span class="o">=</span><span class="s">"stylesheet"</span><span class="p">&gt;</span>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-13"></a>{% endblock %}
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-14"></a>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-15"></a>{% block title %}My App{% endblock %}
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-16"></a>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-17"></a>{% block navbar %}
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-18"></a>  <span class="c">&lt;!-- Fixed navbar --&gt;</span>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-19"></a>  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"navbar navbar-default navbar-fixed-top"</span> <span class="na">role</span><span class="o">=</span><span class="s">"navigation"</span><span class="p">&gt;</span>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-20"></a>    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"container"</span><span class="p">&gt;</span>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-21"></a>      <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"navbar-header"</span><span class="p">&gt;</span>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-22"></a>        <span class="p">&lt;</span><span class="nt">button</span> <span class="na">type</span><span class="o">=</span><span class="s">"button"</span> <span class="na">class</span><span class="o">=</span><span class="s">"navbar-toggle"</span> <span class="na">data-toggle</span><span class="o">=</span><span class="s">"collapse"</span> <span class="na">data-target</span><span class="o">=</span><span class="s">".navbar-collapse"</span><span class="p">&gt;</span>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-23"></a>          <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">"sr-only"</span><span class="p">&gt;</span>Toggle navigation<span class="p">&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-24"></a>          <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">"icon-bar"</span><span class="p">&gt;&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-25"></a>          <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">"icon-bar"</span><span class="p">&gt;&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-26"></a>          <span class="p">&lt;</span><span class="nt">span</span> <span class="na">class</span><span class="o">=</span><span class="s">"icon-bar"</span><span class="p">&gt;&lt;/</span><span class="nt">span</span><span class="p">&gt;</span>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-27"></a>        <span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-28"></a>        <span class="c">&lt;!--img class="navbar-brand" src="../../static/logo.png"--&gt;</span>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-29"></a>        <span class="p">&lt;</span><span class="nt">a</span> <span class="na">class</span><span class="o">=</span><span class="s">"navbar-brand"</span> <span class="na">href</span><span class="o">=</span><span class="s">"{{ url_for('main.index') }}"</span><span class="p">&gt;</span>My App<span class="p">&lt;/</span><span class="nt">a</span><span class="p">&gt;</span>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-30"></a>      <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-31"></a>    <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-32"></a>  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-33"></a>{% endblock %}
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-34"></a>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-35"></a>{% block content %}
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-36"></a>  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"container"</span> <span class="na">id</span><span class="o">=</span><span class="s">"mainContent"</span><span class="p">&gt;</span>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-37"></a>    {{utils.flashed_messages(container=False, dismissible=True)}}
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-38"></a>    {% block main %}{% endblock %}
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-39"></a>  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<a name="rest_code_270c065bc70d4d14a0f9fc4818d83aef-40"></a>{% endblock %}
 </pre>
 <p>The html code for our view is in <cite>app/templates/index.html</cite>:</p>
-<pre class="code html"><a name="rest_code_4cee9692fdd5499687f1958ef3eacfc4-1"></a>{%- extends "base.html" %}
-<a name="rest_code_4cee9692fdd5499687f1958ef3eacfc4-2"></a>{% import "bootstrap/wtf.html" as wtf %}
-<a name="rest_code_4cee9692fdd5499687f1958ef3eacfc4-3"></a>
-<a name="rest_code_4cee9692fdd5499687f1958ef3eacfc4-4"></a>{% block main %}
-<a name="rest_code_4cee9692fdd5499687f1958ef3eacfc4-5"></a>      <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"panel panel-default"</span><span class="p">&gt;</span>
-<a name="rest_code_4cee9692fdd5499687f1958ef3eacfc4-6"></a>        <span class="c">&lt;!-- Default panel contents --&gt;</span>
-<a name="rest_code_4cee9692fdd5499687f1958ef3eacfc4-7"></a>        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"panel-heading"</span><span class="p">&gt;</span>Select task to run<span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<a name="rest_code_4cee9692fdd5499687f1958ef3eacfc4-8"></a>        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"panel-body"</span><span class="p">&gt;</span>
-<a name="rest_code_4cee9692fdd5499687f1958ef3eacfc4-9"></a>          <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"col-md-3"</span><span class="p">&gt;</span>
-<a name="rest_code_4cee9692fdd5499687f1958ef3eacfc4-10"></a>            <span class="p">&lt;</span><span class="nt">form</span> <span class="na">class</span><span class="o">=</span><span class="s">"form"</span> <span class="na">id</span><span class="o">=</span><span class="s">"taskForm"</span> <span class="na">method</span><span class="o">=</span><span class="s">"POST"</span><span class="p">&gt;</span>
-<a name="rest_code_4cee9692fdd5499687f1958ef3eacfc4-11"></a>              {{ form.hidden_tag() }}
-<a name="rest_code_4cee9692fdd5499687f1958ef3eacfc4-12"></a>              {{ wtf.form_field(form.task) }}
-<a name="rest_code_4cee9692fdd5499687f1958ef3eacfc4-13"></a>              <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"form-group"</span><span class="p">&gt;</span>
-<a name="rest_code_4cee9692fdd5499687f1958ef3eacfc4-14"></a>                <span class="p">&lt;</span><span class="nt">button</span> <span class="na">type</span><span class="o">=</span><span class="s">"submit"</span> <span class="na">class</span><span class="o">=</span><span class="s">"btn btn-default"</span> <span class="na">id</span><span class="o">=</span><span class="s">"submit"</span><span class="p">&gt;</span>Run<span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
-<a name="rest_code_4cee9692fdd5499687f1958ef3eacfc4-15"></a>              <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<a name="rest_code_4cee9692fdd5499687f1958ef3eacfc4-16"></a>            <span class="p">&lt;/</span><span class="nt">form</span><span class="p">&gt;</span>
-<a name="rest_code_4cee9692fdd5499687f1958ef3eacfc4-17"></a>          <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<a name="rest_code_4cee9692fdd5499687f1958ef3eacfc4-18"></a>        <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<a name="rest_code_4cee9692fdd5499687f1958ef3eacfc4-19"></a>      <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
-<a name="rest_code_4cee9692fdd5499687f1958ef3eacfc4-20"></a>{% endblock %}
+<pre class="code html"><a name="rest_code_b054b3780a354b7fa3833cac349a2835-1"></a>{%- extends "base.html" %}
+<a name="rest_code_b054b3780a354b7fa3833cac349a2835-2"></a>{% import "bootstrap/wtf.html" as wtf %}
+<a name="rest_code_b054b3780a354b7fa3833cac349a2835-3"></a>
+<a name="rest_code_b054b3780a354b7fa3833cac349a2835-4"></a>{% block main %}
+<a name="rest_code_b054b3780a354b7fa3833cac349a2835-5"></a>      <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"panel panel-default"</span><span class="p">&gt;</span>
+<a name="rest_code_b054b3780a354b7fa3833cac349a2835-6"></a>        <span class="c">&lt;!-- Default panel contents --&gt;</span>
+<a name="rest_code_b054b3780a354b7fa3833cac349a2835-7"></a>        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"panel-heading"</span><span class="p">&gt;</span>Select task to run<span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<a name="rest_code_b054b3780a354b7fa3833cac349a2835-8"></a>        <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"panel-body"</span><span class="p">&gt;</span>
+<a name="rest_code_b054b3780a354b7fa3833cac349a2835-9"></a>          <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"col-md-3"</span><span class="p">&gt;</span>
+<a name="rest_code_b054b3780a354b7fa3833cac349a2835-10"></a>            <span class="p">&lt;</span><span class="nt">form</span> <span class="na">class</span><span class="o">=</span><span class="s">"form"</span> <span class="na">id</span><span class="o">=</span><span class="s">"taskForm"</span> <span class="na">method</span><span class="o">=</span><span class="s">"POST"</span><span class="p">&gt;</span>
+<a name="rest_code_b054b3780a354b7fa3833cac349a2835-11"></a>              {{ form.hidden_tag() }}
+<a name="rest_code_b054b3780a354b7fa3833cac349a2835-12"></a>              {{ wtf.form_field(form.task) }}
+<a name="rest_code_b054b3780a354b7fa3833cac349a2835-13"></a>              <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"form-group"</span><span class="p">&gt;</span>
+<a name="rest_code_b054b3780a354b7fa3833cac349a2835-14"></a>                <span class="p">&lt;</span><span class="nt">button</span> <span class="na">type</span><span class="o">=</span><span class="s">"submit"</span> <span class="na">class</span><span class="o">=</span><span class="s">"btn btn-default"</span> <span class="na">id</span><span class="o">=</span><span class="s">"submit"</span><span class="p">&gt;</span>Run<span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
+<a name="rest_code_b054b3780a354b7fa3833cac349a2835-15"></a>              <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<a name="rest_code_b054b3780a354b7fa3833cac349a2835-16"></a>            <span class="p">&lt;/</span><span class="nt">form</span><span class="p">&gt;</span>
+<a name="rest_code_b054b3780a354b7fa3833cac349a2835-17"></a>          <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<a name="rest_code_b054b3780a354b7fa3833cac349a2835-18"></a>        <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<a name="rest_code_b054b3780a354b7fa3833cac349a2835-19"></a>      <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<a name="rest_code_b054b3780a354b7fa3833cac349a2835-20"></a>{% endblock %}
 </pre>
 <p>Let's run this first example. We could just create a virtual environment using <a class="reference external" href="https://virtualenv.pypa.io/en/stable/">virtualenv</a>
 or <a class="reference external" href="http://conda.pydata.org/docs/intro.html">conda</a>. As we'll soon need <a class="reference external" href="http://redis.io">Redis</a>, let's directly go for <a class="reference external" href="https://www.docker.com">Docker</a>:</p>
@@ -288,97 +289,97 @@ Let' improve that a little by using some JavaScript.</p>
 <div class="section" id="second-version-use-ajax-to-submit-the-form">
 <h2>Second version: use Ajax to submit the form</h2>
 <p>Let's write some javascript. Here is the <cite>app/static/js/main.js</cite>:</p>
-<pre class="code javascript"><a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-1"></a><span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">ready</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-2"></a>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-3"></a>  <span class="c1">// flash an alert</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-4"></a>  <span class="c1">// remove previous alerts by default</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-5"></a>  <span class="c1">// set clean to false to keep old alerts</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-6"></a>  <span class="kd">function</span> <span class="nx">flash_alert</span><span class="p">(</span><span class="nx">message</span><span class="p">,</span> <span class="nx">category</span><span class="p">,</span> <span class="nx">clean</span><span class="p">)</span> <span class="p">{</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-7"></a>    <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span><span class="p">(</span><span class="nx">clean</span><span class="p">)</span> <span class="o">===</span> <span class="s2">"undefined"</span><span class="p">)</span> <span class="nx">clean</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-8"></a>    <span class="k">if</span><span class="p">(</span><span class="nx">clean</span><span class="p">)</span> <span class="p">{</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-9"></a>      <span class="nx">remove_alerts</span><span class="p">();</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-10"></a>    <span class="p">}</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-11"></a>    <span class="kd">var</span> <span class="nx">htmlString</span> <span class="o">=</span> <span class="s1">'&lt;div class="alert alert-'</span> <span class="o">+</span> <span class="nx">category</span> <span class="o">+</span> <span class="s1">' alert-dismissible" role="alert"&gt;'</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-12"></a>    <span class="nx">htmlString</span> <span class="o">+=</span> <span class="s1">'&lt;button type="button" class="close" data-dismiss="alert" aria-label="Close"&gt;'</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-13"></a>    <span class="nx">htmlString</span> <span class="o">+=</span> <span class="s1">'&lt;span aria-hidden="true"&gt;&amp;times;&lt;/span&gt;&lt;/button&gt;'</span> <span class="o">+</span> <span class="nx">message</span> <span class="o">+</span> <span class="s1">'&lt;/div&gt;'</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-14"></a>    <span class="nx">$</span><span class="p">(</span><span class="nx">htmlString</span><span class="p">).</span><span class="nx">prependTo</span><span class="p">(</span><span class="s2">"#mainContent"</span><span class="p">).</span><span class="nx">hide</span><span class="p">().</span><span class="nx">slideDown</span><span class="p">();</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-15"></a>  <span class="p">}</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-16"></a>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-17"></a>  <span class="kd">function</span> <span class="nx">remove_alerts</span><span class="p">()</span> <span class="p">{</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-18"></a>    <span class="nx">$</span><span class="p">(</span><span class="s2">".alert"</span><span class="p">).</span><span class="nx">slideUp</span><span class="p">(</span><span class="s2">"normal"</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-19"></a>      <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">remove</span><span class="p">();</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-20"></a>    <span class="p">});</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-21"></a>  <span class="p">}</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-22"></a>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-23"></a>  <span class="c1">// submit form</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-24"></a>  <span class="nx">$</span><span class="p">(</span><span class="s2">"#submit"</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">'click'</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-25"></a>    <span class="nx">flash_alert</span><span class="p">(</span><span class="s2">"Running "</span> <span class="o">+</span> <span class="nx">$</span><span class="p">(</span><span class="s2">"#task"</span><span class="p">).</span><span class="nx">val</span><span class="p">()</span> <span class="o">+</span> <span class="s2">"..."</span><span class="p">,</span> <span class="s2">"info"</span><span class="p">);</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-26"></a>    <span class="nx">$</span><span class="p">.</span><span class="nx">ajax</span><span class="p">({</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-27"></a>      <span class="nx">url</span><span class="o">:</span> <span class="nx">$SCRIPT_ROOT</span> <span class="o">+</span> <span class="s2">"/_run_task"</span><span class="p">,</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-28"></a>      <span class="nx">data</span><span class="o">:</span> <span class="nx">$</span><span class="p">(</span><span class="s2">"#taskForm"</span><span class="p">).</span><span class="nx">serialize</span><span class="p">(),</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-29"></a>      <span class="nx">method</span><span class="o">:</span> <span class="s2">"POST"</span><span class="p">,</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-30"></a>      <span class="nx">dataType</span><span class="o">:</span> <span class="s2">"json"</span><span class="p">,</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-31"></a>      <span class="nx">success</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-32"></a>        <span class="nx">flash_alert</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">result</span><span class="p">,</span> <span class="s2">"success"</span><span class="p">);</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-33"></a>      <span class="p">},</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-34"></a>      <span class="nx">error</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">jqXHR</span><span class="p">,</span> <span class="nx">textStatus</span><span class="p">,</span> <span class="nx">errorThrown</span><span class="p">)</span> <span class="p">{</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-35"></a>        <span class="nx">flash_alert</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">jqXHR</span><span class="p">.</span><span class="nx">responseText</span><span class="p">).</span><span class="nx">message</span><span class="p">,</span> <span class="s2">"danger"</span><span class="p">);</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-36"></a>      <span class="p">}</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-37"></a>    <span class="p">});</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-38"></a>  <span class="p">});</span>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-39"></a>
-<a name="rest_code_fe35b6bfb4c74920b80234f10f5b80c5-40"></a><span class="p">});</span>
+<pre class="code javascript"><a name="rest_code_be01d508d5814022bf3168ea102d3f90-1"></a><span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">ready</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-2"></a>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-3"></a>  <span class="c1">// flash an alert</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-4"></a>  <span class="c1">// remove previous alerts by default</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-5"></a>  <span class="c1">// set clean to false to keep old alerts</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-6"></a>  <span class="kd">function</span> <span class="nx">flash_alert</span><span class="p">(</span><span class="nx">message</span><span class="p">,</span> <span class="nx">category</span><span class="p">,</span> <span class="nx">clean</span><span class="p">)</span> <span class="p">{</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-7"></a>    <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span><span class="p">(</span><span class="nx">clean</span><span class="p">)</span> <span class="o">===</span> <span class="s2">"undefined"</span><span class="p">)</span> <span class="nx">clean</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-8"></a>    <span class="k">if</span><span class="p">(</span><span class="nx">clean</span><span class="p">)</span> <span class="p">{</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-9"></a>      <span class="nx">remove_alerts</span><span class="p">();</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-10"></a>    <span class="p">}</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-11"></a>    <span class="kd">var</span> <span class="nx">htmlString</span> <span class="o">=</span> <span class="s1">'&lt;div class="alert alert-'</span> <span class="o">+</span> <span class="nx">category</span> <span class="o">+</span> <span class="s1">' alert-dismissible" role="alert"&gt;'</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-12"></a>    <span class="nx">htmlString</span> <span class="o">+=</span> <span class="s1">'&lt;button type="button" class="close" data-dismiss="alert" aria-label="Close"&gt;'</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-13"></a>    <span class="nx">htmlString</span> <span class="o">+=</span> <span class="s1">'&lt;span aria-hidden="true"&gt;&amp;times;&lt;/span&gt;&lt;/button&gt;'</span> <span class="o">+</span> <span class="nx">message</span> <span class="o">+</span> <span class="s1">'&lt;/div&gt;'</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-14"></a>    <span class="nx">$</span><span class="p">(</span><span class="nx">htmlString</span><span class="p">).</span><span class="nx">prependTo</span><span class="p">(</span><span class="s2">"#mainContent"</span><span class="p">).</span><span class="nx">hide</span><span class="p">().</span><span class="nx">slideDown</span><span class="p">();</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-15"></a>  <span class="p">}</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-16"></a>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-17"></a>  <span class="kd">function</span> <span class="nx">remove_alerts</span><span class="p">()</span> <span class="p">{</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-18"></a>    <span class="nx">$</span><span class="p">(</span><span class="s2">".alert"</span><span class="p">).</span><span class="nx">slideUp</span><span class="p">(</span><span class="s2">"normal"</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-19"></a>      <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">remove</span><span class="p">();</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-20"></a>    <span class="p">});</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-21"></a>  <span class="p">}</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-22"></a>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-23"></a>  <span class="c1">// submit form</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-24"></a>  <span class="nx">$</span><span class="p">(</span><span class="s2">"#submit"</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="s1">'click'</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-25"></a>    <span class="nx">flash_alert</span><span class="p">(</span><span class="s2">"Running "</span> <span class="o">+</span> <span class="nx">$</span><span class="p">(</span><span class="s2">"#task"</span><span class="p">).</span><span class="nx">val</span><span class="p">()</span> <span class="o">+</span> <span class="s2">"..."</span><span class="p">,</span> <span class="s2">"info"</span><span class="p">);</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-26"></a>    <span class="nx">$</span><span class="p">.</span><span class="nx">ajax</span><span class="p">({</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-27"></a>      <span class="nx">url</span><span class="o">:</span> <span class="nx">$SCRIPT_ROOT</span> <span class="o">+</span> <span class="s2">"/_run_task"</span><span class="p">,</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-28"></a>      <span class="nx">data</span><span class="o">:</span> <span class="nx">$</span><span class="p">(</span><span class="s2">"#taskForm"</span><span class="p">).</span><span class="nx">serialize</span><span class="p">(),</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-29"></a>      <span class="nx">method</span><span class="o">:</span> <span class="s2">"POST"</span><span class="p">,</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-30"></a>      <span class="nx">dataType</span><span class="o">:</span> <span class="s2">"json"</span><span class="p">,</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-31"></a>      <span class="nx">success</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-32"></a>        <span class="nx">flash_alert</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">result</span><span class="p">,</span> <span class="s2">"success"</span><span class="p">);</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-33"></a>      <span class="p">},</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-34"></a>      <span class="nx">error</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">jqXHR</span><span class="p">,</span> <span class="nx">textStatus</span><span class="p">,</span> <span class="nx">errorThrown</span><span class="p">)</span> <span class="p">{</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-35"></a>        <span class="nx">flash_alert</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">jqXHR</span><span class="p">.</span><span class="nx">responseText</span><span class="p">).</span><span class="nx">message</span><span class="p">,</span> <span class="s2">"danger"</span><span class="p">);</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-36"></a>      <span class="p">}</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-37"></a>    <span class="p">});</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-38"></a>  <span class="p">});</span>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-39"></a>
+<a name="rest_code_be01d508d5814022bf3168ea102d3f90-40"></a><span class="p">});</span>
 </pre>
 <p>To include this file in our html, we add the following block to <cite>app/templates/base.html</cite>:</p>
-<pre class="code html"><a name="rest_code_35579a102b2048e3bea9d42c8d411d1c-1"></a>{% block scripts %}
-<a name="rest_code_35579a102b2048e3bea9d42c8d411d1c-2"></a>  {{super()}}
-<a name="rest_code_35579a102b2048e3bea9d42c8d411d1c-3"></a>  <span class="p">&lt;</span><span class="nt">script</span> <span class="na">type</span><span class="o">=</span><span class="s">text/javascript</span><span class="p">&gt;</span>
-<a name="rest_code_35579a102b2048e3bea9d42c8d411d1c-4"></a>    <span class="nx">$SCRIPT_ROOT</span> <span class="o">=</span> <span class="p">{{</span> <span class="nx">request</span><span class="p">.</span><span class="nx">script_root</span><span class="o">|</span><span class="nx">tojson</span><span class="o">|</span><span class="nx">safe</span> <span class="p">}};</span>
-<a name="rest_code_35579a102b2048e3bea9d42c8d411d1c-5"></a>  <span class="p">&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
-<a name="rest_code_35579a102b2048e3bea9d42c8d411d1c-6"></a>  {% block app_scripts %}{% endblock %}
-<a name="rest_code_35579a102b2048e3bea9d42c8d411d1c-7"></a>{% endblock %}
+<pre class="code html"><a name="rest_code_96a7b1e839784bd0853f0a57e854a1c9-1"></a>{% block scripts %}
+<a name="rest_code_96a7b1e839784bd0853f0a57e854a1c9-2"></a>  {{super()}}
+<a name="rest_code_96a7b1e839784bd0853f0a57e854a1c9-3"></a>  <span class="p">&lt;</span><span class="nt">script</span> <span class="na">type</span><span class="o">=</span><span class="s">text/javascript</span><span class="p">&gt;</span>
+<a name="rest_code_96a7b1e839784bd0853f0a57e854a1c9-4"></a>    <span class="nx">$SCRIPT_ROOT</span> <span class="o">=</span> <span class="p">{{</span> <span class="nx">request</span><span class="p">.</span><span class="nx">script_root</span><span class="o">|</span><span class="nx">tojson</span><span class="o">|</span><span class="nx">safe</span> <span class="p">}};</span>
+<a name="rest_code_96a7b1e839784bd0853f0a57e854a1c9-5"></a>  <span class="p">&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+<a name="rest_code_96a7b1e839784bd0853f0a57e854a1c9-6"></a>  {% block app_scripts %}{% endblock %}
+<a name="rest_code_96a7b1e839784bd0853f0a57e854a1c9-7"></a>{% endblock %}
 </pre>
 <p>And here is a diff for our <cite>app/templates/index.html</cite>:</p>
-<pre class="code diff"><a name="rest_code_3451c86b70b142a3a5d7731907465f88-1"></a>               {{ form.hidden_tag() }}
-<a name="rest_code_3451c86b70b142a3a5d7731907465f88-2"></a>               {{ wtf.form_field(form.task) }}
-<a name="rest_code_3451c86b70b142a3a5d7731907465f88-3"></a>               &lt;div class="form-group"&gt;
-<a name="rest_code_3451c86b70b142a3a5d7731907465f88-4"></a><span class="gd">-                &lt;button type="submit" class="btn btn-default" id="submit"&gt;Run&lt;/button&gt;</span>
-<a name="rest_code_3451c86b70b142a3a5d7731907465f88-5"></a><span class="gi">+                &lt;button type="button" class="btn btn-default" id="submit"&gt;Run&lt;/button&gt;</span>
-<a name="rest_code_3451c86b70b142a3a5d7731907465f88-6"></a>               &lt;/div&gt;
-<a name="rest_code_3451c86b70b142a3a5d7731907465f88-7"></a>             &lt;/form&gt;
-<a name="rest_code_3451c86b70b142a3a5d7731907465f88-8"></a>           &lt;/div&gt;
-<a name="rest_code_3451c86b70b142a3a5d7731907465f88-9"></a>         &lt;/div&gt;
-<a name="rest_code_3451c86b70b142a3a5d7731907465f88-10"></a>       &lt;/div&gt;
-<a name="rest_code_3451c86b70b142a3a5d7731907465f88-11"></a> {% endblock %}
-<a name="rest_code_3451c86b70b142a3a5d7731907465f88-12"></a><span class="gi">+</span>
-<a name="rest_code_3451c86b70b142a3a5d7731907465f88-13"></a><span class="gi">+{% block app_scripts %}</span>
-<a name="rest_code_3451c86b70b142a3a5d7731907465f88-14"></a><span class="gi">+  &lt;script src="{{ url_for('static', filename='js/main.js') }}"&gt;&lt;/script&gt;</span>
-<a name="rest_code_3451c86b70b142a3a5d7731907465f88-15"></a><span class="gi">+{% endblock %}</span>
+<pre class="code diff"><a name="rest_code_fe0cd17c448d4eae8c39484ebfa25a08-1"></a>               {{ form.hidden_tag() }}
+<a name="rest_code_fe0cd17c448d4eae8c39484ebfa25a08-2"></a>               {{ wtf.form_field(form.task) }}
+<a name="rest_code_fe0cd17c448d4eae8c39484ebfa25a08-3"></a>               &lt;div class="form-group"&gt;
+<a name="rest_code_fe0cd17c448d4eae8c39484ebfa25a08-4"></a><span class="gd">-                &lt;button type="submit" class="btn btn-default" id="submit"&gt;Run&lt;/button&gt;</span>
+<a name="rest_code_fe0cd17c448d4eae8c39484ebfa25a08-5"></a><span class="gi">+                &lt;button type="button" class="btn btn-default" id="submit"&gt;Run&lt;/button&gt;</span>
+<a name="rest_code_fe0cd17c448d4eae8c39484ebfa25a08-6"></a>               &lt;/div&gt;
+<a name="rest_code_fe0cd17c448d4eae8c39484ebfa25a08-7"></a>             &lt;/form&gt;
+<a name="rest_code_fe0cd17c448d4eae8c39484ebfa25a08-8"></a>           &lt;/div&gt;
+<a name="rest_code_fe0cd17c448d4eae8c39484ebfa25a08-9"></a>         &lt;/div&gt;
+<a name="rest_code_fe0cd17c448d4eae8c39484ebfa25a08-10"></a>       &lt;/div&gt;
+<a name="rest_code_fe0cd17c448d4eae8c39484ebfa25a08-11"></a> {% endblock %}
+<a name="rest_code_fe0cd17c448d4eae8c39484ebfa25a08-12"></a><span class="gi">+</span>
+<a name="rest_code_fe0cd17c448d4eae8c39484ebfa25a08-13"></a><span class="gi">+{% block app_scripts %}</span>
+<a name="rest_code_fe0cd17c448d4eae8c39484ebfa25a08-14"></a><span class="gi">+  &lt;script src="{{ url_for('static', filename='js/main.js') }}"&gt;&lt;/script&gt;</span>
+<a name="rest_code_fe0cd17c448d4eae8c39484ebfa25a08-15"></a><span class="gi">+{% endblock %}</span>
 </pre>
 <p>We change the <cite>button</cite> type from <cite>submit</cite> to <cite>button</cite> so that it doesn't send a POST when clicked.
 We send an Ajax query to <cite>$SCRIPT_ROOT/_run_task</cite> instead.</p>
 <p>This is our new <cite>app/main/views.py</cite>:</p>
-<pre class="code python"><a name="rest_code_12a4cf3625e941bdaef3601c633b3781-1"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
-<a name="rest_code_12a4cf3625e941bdaef3601c633b3781-2"></a><span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">tasks</span>
-<a name="rest_code_12a4cf3625e941bdaef3601c633b3781-3"></a><span class="kn">from</span> <span class="nn">.forms</span> <span class="kn">import</span> <span class="n">TaskForm</span>
-<a name="rest_code_12a4cf3625e941bdaef3601c633b3781-4"></a>
-<a name="rest_code_12a4cf3625e941bdaef3601c633b3781-5"></a><span class="n">bp</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s1">'main'</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
-<a name="rest_code_12a4cf3625e941bdaef3601c633b3781-6"></a>
-<a name="rest_code_12a4cf3625e941bdaef3601c633b3781-7"></a>
-<a name="rest_code_12a4cf3625e941bdaef3601c633b3781-8"></a><span class="nd">@bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/_run_task'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'POST'</span><span class="p">])</span>
-<a name="rest_code_12a4cf3625e941bdaef3601c633b3781-9"></a><span class="k">def</span> <span class="nf">run_task</span><span class="p">():</span>
-<a name="rest_code_12a4cf3625e941bdaef3601c633b3781-10"></a>    <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'task'</span><span class="p">)</span>
-<a name="rest_code_12a4cf3625e941bdaef3601c633b3781-11"></a>    <span class="k">try</span><span class="p">:</span>
-<a name="rest_code_12a4cf3625e941bdaef3601c633b3781-12"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">tasks</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
-<a name="rest_code_12a4cf3625e941bdaef3601c633b3781-13"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a name="rest_code_12a4cf3625e941bdaef3601c633b3781-14"></a>        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">'message'</span><span class="p">:</span> <span class="s1">'Task failed: </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">)}),</span> <span class="mi">500</span>
-<a name="rest_code_12a4cf3625e941bdaef3601c633b3781-15"></a>    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">'result'</span><span class="p">:</span> <span class="n">result</span><span class="p">})</span>
-<a name="rest_code_12a4cf3625e941bdaef3601c633b3781-16"></a>
-<a name="rest_code_12a4cf3625e941bdaef3601c633b3781-17"></a>
-<a name="rest_code_12a4cf3625e941bdaef3601c633b3781-18"></a><span class="nd">@bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/'</span><span class="p">)</span>
-<a name="rest_code_12a4cf3625e941bdaef3601c633b3781-19"></a><span class="k">def</span> <span class="nf">index</span><span class="p">():</span>
-<a name="rest_code_12a4cf3625e941bdaef3601c633b3781-20"></a>    <span class="n">form</span> <span class="o">=</span> <span class="n">TaskForm</span><span class="p">()</span>
-<a name="rest_code_12a4cf3625e941bdaef3601c633b3781-21"></a>    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">'index.html'</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">)</span>
+<pre class="code python"><a name="rest_code_30c26204529a4c3b925d736c698a6d25-1"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
+<a name="rest_code_30c26204529a4c3b925d736c698a6d25-2"></a><span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">tasks</span>
+<a name="rest_code_30c26204529a4c3b925d736c698a6d25-3"></a><span class="kn">from</span> <span class="nn">.forms</span> <span class="kn">import</span> <span class="n">TaskForm</span>
+<a name="rest_code_30c26204529a4c3b925d736c698a6d25-4"></a>
+<a name="rest_code_30c26204529a4c3b925d736c698a6d25-5"></a><span class="n">bp</span> <span class="o">=</span> <span class="n">Blueprint</span><span class="p">(</span><span class="s1">'main'</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">)</span>
+<a name="rest_code_30c26204529a4c3b925d736c698a6d25-6"></a>
+<a name="rest_code_30c26204529a4c3b925d736c698a6d25-7"></a>
+<a name="rest_code_30c26204529a4c3b925d736c698a6d25-8"></a><span class="nd">@bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/_run_task'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'POST'</span><span class="p">])</span>
+<a name="rest_code_30c26204529a4c3b925d736c698a6d25-9"></a><span class="k">def</span> <span class="nf">run_task</span><span class="p">():</span>
+<a name="rest_code_30c26204529a4c3b925d736c698a6d25-10"></a>    <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'task'</span><span class="p">)</span>
+<a name="rest_code_30c26204529a4c3b925d736c698a6d25-11"></a>    <span class="k">try</span><span class="p">:</span>
+<a name="rest_code_30c26204529a4c3b925d736c698a6d25-12"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">tasks</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+<a name="rest_code_30c26204529a4c3b925d736c698a6d25-13"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a name="rest_code_30c26204529a4c3b925d736c698a6d25-14"></a>        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">'message'</span><span class="p">:</span> <span class="s1">'Task failed: </span><span class="si">{}</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">)}),</span> <span class="mi">500</span>
+<a name="rest_code_30c26204529a4c3b925d736c698a6d25-15"></a>    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">'result'</span><span class="p">:</span> <span class="n">result</span><span class="p">})</span>
+<a name="rest_code_30c26204529a4c3b925d736c698a6d25-16"></a>
+<a name="rest_code_30c26204529a4c3b925d736c698a6d25-17"></a>
+<a name="rest_code_30c26204529a4c3b925d736c698a6d25-18"></a><span class="nd">@bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/'</span><span class="p">)</span>
+<a name="rest_code_30c26204529a4c3b925d736c698a6d25-19"></a><span class="k">def</span> <span class="nf">index</span><span class="p">():</span>
+<a name="rest_code_30c26204529a4c3b925d736c698a6d25-20"></a>    <span class="n">form</span> <span class="o">=</span> <span class="n">TaskForm</span><span class="p">()</span>
+<a name="rest_code_30c26204529a4c3b925d736c698a6d25-21"></a>    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span><span class="s1">'index.html'</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">)</span>
 </pre>
 <p>Let's run this new example:</p>
 <pre class="literal-block">$ git checkout c1ccfe8b3a39079ab80f813b5733b324c8b65c6f
@@ -394,24 +395,24 @@ That's better, but the server is still busy during the processing. If you try to
 It is designed to have a low barrier entry.
 What do we need to integrate <a class="reference external" href="http://python-rq.org">RQ</a> in our <a class="reference external" href="http://flask.pocoo.org">Flask</a> web app?</p>
 <p>Let's first add some variables in <cite>app/settings.py</cite>:</p>
-<pre class="code python"><a name="rest_code_17d2b636b4f84769b759176df4e95f83-1"></a><span class="c1"># The Redis database to use</span>
-<a name="rest_code_17d2b636b4f84769b759176df4e95f83-2"></a><span class="n">REDIS_URL</span> <span class="o">=</span> <span class="s1">'redis://redis:6379/0'</span>
-<a name="rest_code_17d2b636b4f84769b759176df4e95f83-3"></a><span class="c1"># The queues to listen on</span>
-<a name="rest_code_17d2b636b4f84769b759176df4e95f83-4"></a><span class="n">QUEUES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'default'</span><span class="p">]</span>
+<pre class="code python"><a name="rest_code_04bdff28116640dcbf3a06ef1b96fa26-1"></a><span class="c1"># The Redis database to use</span>
+<a name="rest_code_04bdff28116640dcbf3a06ef1b96fa26-2"></a><span class="n">REDIS_URL</span> <span class="o">=</span> <span class="s1">'redis://redis:6379/0'</span>
+<a name="rest_code_04bdff28116640dcbf3a06ef1b96fa26-3"></a><span class="c1"># The queues to listen on</span>
+<a name="rest_code_04bdff28116640dcbf3a06ef1b96fa26-4"></a><span class="n">QUEUES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'default'</span><span class="p">]</span>
 </pre>
 <p>To execute a background job, we need a worker.
 <a class="reference external" href="http://python-rq.org">RQ</a> comes with the <cite>rq worker</cite> command to start a worker. To integrate it
 better with our Flask app, we are going to write a simple <a class="reference external" href="https://flask-script.readthedocs.io/en/latest/">Flask-Script</a>
 command. We add the following to our <cite>manage.py</cite>:</p>
-<pre class="code python"><a name="rest_code_82f790c6b1ac4ac5b36b02e34a834edf-1"></a><span class="kn">from</span> <span class="nn">rq</span> <span class="kn">import</span> <span class="n">Connection</span><span class="p">,</span> <span class="n">Worker</span>
-<a name="rest_code_82f790c6b1ac4ac5b36b02e34a834edf-2"></a>
-<a name="rest_code_82f790c6b1ac4ac5b36b02e34a834edf-3"></a><span class="nd">@manager</span><span class="o">.</span><span class="n">command</span>
-<a name="rest_code_82f790c6b1ac4ac5b36b02e34a834edf-4"></a><span class="k">def</span> <span class="nf">runworker</span><span class="p">():</span>
-<a name="rest_code_82f790c6b1ac4ac5b36b02e34a834edf-5"></a>    <span class="n">redis_url</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">'REDIS_URL'</span><span class="p">]</span>
-<a name="rest_code_82f790c6b1ac4ac5b36b02e34a834edf-6"></a>    <span class="n">redis_connection</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">from_url</span><span class="p">(</span><span class="n">redis_url</span><span class="p">)</span>
-<a name="rest_code_82f790c6b1ac4ac5b36b02e34a834edf-7"></a>    <span class="k">with</span> <span class="n">Connection</span><span class="p">(</span><span class="n">redis_connection</span><span class="p">):</span>
-<a name="rest_code_82f790c6b1ac4ac5b36b02e34a834edf-8"></a>        <span class="n">worker</span> <span class="o">=</span> <span class="n">Worker</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">'QUEUES'</span><span class="p">])</span>
-<a name="rest_code_82f790c6b1ac4ac5b36b02e34a834edf-9"></a>        <span class="n">worker</span><span class="o">.</span><span class="n">work</span><span class="p">()</span>
+<pre class="code python"><a name="rest_code_083f603b45794402b6718dba26d85b18-1"></a><span class="kn">from</span> <span class="nn">rq</span> <span class="kn">import</span> <span class="n">Connection</span><span class="p">,</span> <span class="n">Worker</span>
+<a name="rest_code_083f603b45794402b6718dba26d85b18-2"></a>
+<a name="rest_code_083f603b45794402b6718dba26d85b18-3"></a><span class="nd">@manager</span><span class="o">.</span><span class="n">command</span>
+<a name="rest_code_083f603b45794402b6718dba26d85b18-4"></a><span class="k">def</span> <span class="nf">runworker</span><span class="p">():</span>
+<a name="rest_code_083f603b45794402b6718dba26d85b18-5"></a>    <span class="n">redis_url</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">'REDIS_URL'</span><span class="p">]</span>
+<a name="rest_code_083f603b45794402b6718dba26d85b18-6"></a>    <span class="n">redis_connection</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">from_url</span><span class="p">(</span><span class="n">redis_url</span><span class="p">)</span>
+<a name="rest_code_083f603b45794402b6718dba26d85b18-7"></a>    <span class="k">with</span> <span class="n">Connection</span><span class="p">(</span><span class="n">redis_connection</span><span class="p">):</span>
+<a name="rest_code_083f603b45794402b6718dba26d85b18-8"></a>        <span class="n">worker</span> <span class="o">=</span> <span class="n">Worker</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">'QUEUES'</span><span class="p">])</span>
+<a name="rest_code_083f603b45794402b6718dba26d85b18-9"></a>        <span class="n">worker</span><span class="o">.</span><span class="n">work</span><span class="p">()</span>
 </pre>
 <p>The Manager runs the command inside a Flask test context, meaning we can
 access the app config from within the worker.
@@ -423,73 +424,73 @@ Everything is in <cite>app/settings.py</cite> and can be overwritten by <em>LOCA
 One way to do that is to pass the connection when creating the <em>Queue</em>. This is a bit tedious.
 <a class="reference external" href="http://python-rq.org">RQ</a> has the notion of <a class="reference external" href="http://python-rq.org/docs/connections/">connection context</a>. We take advantage of that
 and register a function to push the connection and pop it before and after a request (<cite>app/main/views.py</cite>):</p>
-<pre class="code python"><a name="rest_code_26b76a023e624578aebdf276ad122fbf-1"></a><span class="kn">import</span> <span class="nn">redis</span>
-<a name="rest_code_26b76a023e624578aebdf276ad122fbf-2"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">current_app</span><span class="p">,</span> <span class="n">g</span>
-<a name="rest_code_26b76a023e624578aebdf276ad122fbf-3"></a><span class="kn">from</span> <span class="nn">rq</span> <span class="kn">import</span> <span class="n">push_connection</span><span class="p">,</span> <span class="n">pop_connection</span><span class="p">,</span> <span class="n">Queue</span>
-<a name="rest_code_26b76a023e624578aebdf276ad122fbf-4"></a>
-<a name="rest_code_26b76a023e624578aebdf276ad122fbf-5"></a>
-<a name="rest_code_26b76a023e624578aebdf276ad122fbf-6"></a><span class="k">def</span> <span class="nf">get_redis_connection</span><span class="p">():</span>
-<a name="rest_code_26b76a023e624578aebdf276ad122fbf-7"></a>    <span class="n">redis_connection</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="s1">'_redis_connection'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-<a name="rest_code_26b76a023e624578aebdf276ad122fbf-8"></a>    <span class="k">if</span> <span class="n">redis_connection</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-<a name="rest_code_26b76a023e624578aebdf276ad122fbf-9"></a>        <span class="n">redis_url</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">'REDIS_URL'</span><span class="p">]</span>
-<a name="rest_code_26b76a023e624578aebdf276ad122fbf-10"></a>        <span class="n">redis_connection</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">_redis_connection</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">from_url</span><span class="p">(</span><span class="n">redis_url</span><span class="p">)</span>
-<a name="rest_code_26b76a023e624578aebdf276ad122fbf-11"></a>    <span class="k">return</span> <span class="n">redis_connection</span>
-<a name="rest_code_26b76a023e624578aebdf276ad122fbf-12"></a>
-<a name="rest_code_26b76a023e624578aebdf276ad122fbf-13"></a>
-<a name="rest_code_26b76a023e624578aebdf276ad122fbf-14"></a><span class="nd">@bp</span><span class="o">.</span><span class="n">before_request</span>
-<a name="rest_code_26b76a023e624578aebdf276ad122fbf-15"></a><span class="k">def</span> <span class="nf">push_rq_connection</span><span class="p">():</span>
-<a name="rest_code_26b76a023e624578aebdf276ad122fbf-16"></a>    <span class="n">push_connection</span><span class="p">(</span><span class="n">get_redis_connection</span><span class="p">())</span>
-<a name="rest_code_26b76a023e624578aebdf276ad122fbf-17"></a>
-<a name="rest_code_26b76a023e624578aebdf276ad122fbf-18"></a>
-<a name="rest_code_26b76a023e624578aebdf276ad122fbf-19"></a><span class="nd">@bp</span><span class="o">.</span><span class="n">teardown_request</span>
-<a name="rest_code_26b76a023e624578aebdf276ad122fbf-20"></a><span class="k">def</span> <span class="nf">pop_rq_connection</span><span class="p">(</span><span class="n">exception</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<a name="rest_code_26b76a023e624578aebdf276ad122fbf-21"></a>    <span class="n">pop_connection</span><span class="p">()</span>
+<pre class="code python"><a name="rest_code_759e4fefb3f2400fb67905d8ecedd5dc-1"></a><span class="kn">import</span> <span class="nn">redis</span>
+<a name="rest_code_759e4fefb3f2400fb67905d8ecedd5dc-2"></a><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Blueprint</span><span class="p">,</span> <span class="n">render_template</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">current_app</span><span class="p">,</span> <span class="n">g</span>
+<a name="rest_code_759e4fefb3f2400fb67905d8ecedd5dc-3"></a><span class="kn">from</span> <span class="nn">rq</span> <span class="kn">import</span> <span class="n">push_connection</span><span class="p">,</span> <span class="n">pop_connection</span><span class="p">,</span> <span class="n">Queue</span>
+<a name="rest_code_759e4fefb3f2400fb67905d8ecedd5dc-4"></a>
+<a name="rest_code_759e4fefb3f2400fb67905d8ecedd5dc-5"></a>
+<a name="rest_code_759e4fefb3f2400fb67905d8ecedd5dc-6"></a><span class="k">def</span> <span class="nf">get_redis_connection</span><span class="p">():</span>
+<a name="rest_code_759e4fefb3f2400fb67905d8ecedd5dc-7"></a>    <span class="n">redis_connection</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="s1">'_redis_connection'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<a name="rest_code_759e4fefb3f2400fb67905d8ecedd5dc-8"></a>    <span class="k">if</span> <span class="n">redis_connection</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a name="rest_code_759e4fefb3f2400fb67905d8ecedd5dc-9"></a>        <span class="n">redis_url</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">'REDIS_URL'</span><span class="p">]</span>
+<a name="rest_code_759e4fefb3f2400fb67905d8ecedd5dc-10"></a>        <span class="n">redis_connection</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">_redis_connection</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">from_url</span><span class="p">(</span><span class="n">redis_url</span><span class="p">)</span>
+<a name="rest_code_759e4fefb3f2400fb67905d8ecedd5dc-11"></a>    <span class="k">return</span> <span class="n">redis_connection</span>
+<a name="rest_code_759e4fefb3f2400fb67905d8ecedd5dc-12"></a>
+<a name="rest_code_759e4fefb3f2400fb67905d8ecedd5dc-13"></a>
+<a name="rest_code_759e4fefb3f2400fb67905d8ecedd5dc-14"></a><span class="nd">@bp</span><span class="o">.</span><span class="n">before_request</span>
+<a name="rest_code_759e4fefb3f2400fb67905d8ecedd5dc-15"></a><span class="k">def</span> <span class="nf">push_rq_connection</span><span class="p">():</span>
+<a name="rest_code_759e4fefb3f2400fb67905d8ecedd5dc-16"></a>    <span class="n">push_connection</span><span class="p">(</span><span class="n">get_redis_connection</span><span class="p">())</span>
+<a name="rest_code_759e4fefb3f2400fb67905d8ecedd5dc-17"></a>
+<a name="rest_code_759e4fefb3f2400fb67905d8ecedd5dc-18"></a>
+<a name="rest_code_759e4fefb3f2400fb67905d8ecedd5dc-19"></a><span class="nd">@bp</span><span class="o">.</span><span class="n">teardown_request</span>
+<a name="rest_code_759e4fefb3f2400fb67905d8ecedd5dc-20"></a><span class="k">def</span> <span class="nf">pop_rq_connection</span><span class="p">(</span><span class="n">exception</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<a name="rest_code_759e4fefb3f2400fb67905d8ecedd5dc-21"></a>    <span class="n">pop_connection</span><span class="p">()</span>
 </pre>
 <p>This makes it easy to create a <em>Queue</em> in a request or application context.</p>
 <p>The <cite>get_redis_connection</cite> function gets the Redis connection and stores it in the <em>flask.g</em> object.
 This is the same as what is explained for SQLite <a class="reference external" href="http://flask.pocoo.org/docs/0.11/patterns/sqlite3/">here</a>.</p>
 <p>With that in place, it's easy to enqueue a job. Here are the changes to the <em>run_task</em> function:</p>
-<pre class="code diff"><a name="rest_code_03fbf6f498dd423fbc6acfa418d23372-1"></a> @bp.route('/_run_task', methods=['POST'])
-<a name="rest_code_03fbf6f498dd423fbc6acfa418d23372-2"></a> def run_task():
-<a name="rest_code_03fbf6f498dd423fbc6acfa418d23372-3"></a>     task = request.form.get('task')
-<a name="rest_code_03fbf6f498dd423fbc6acfa418d23372-4"></a><span class="gd">-    try:</span>
-<a name="rest_code_03fbf6f498dd423fbc6acfa418d23372-5"></a><span class="gd">-        result = tasks.run(task)</span>
-<a name="rest_code_03fbf6f498dd423fbc6acfa418d23372-6"></a><span class="gd">-    except Exception as e:</span>
-<a name="rest_code_03fbf6f498dd423fbc6acfa418d23372-7"></a><span class="gd">-        return jsonify({'message': 'Task failed: {}'.format(e)}), 500</span>
-<a name="rest_code_03fbf6f498dd423fbc6acfa418d23372-8"></a><span class="gd">-    return jsonify({'result': result})</span>
-<a name="rest_code_03fbf6f498dd423fbc6acfa418d23372-9"></a><span class="gi">+    q = Queue()</span>
-<a name="rest_code_03fbf6f498dd423fbc6acfa418d23372-10"></a><span class="gi">+    job = q.enqueue(tasks.run, task)</span>
-<a name="rest_code_03fbf6f498dd423fbc6acfa418d23372-11"></a><span class="gi">+    return jsonify({'job_id': job.get_id()})</span>
+<pre class="code diff"><a name="rest_code_fb79c7619f9b4929966818a9275a53bf-1"></a> @bp.route('/_run_task', methods=['POST'])
+<a name="rest_code_fb79c7619f9b4929966818a9275a53bf-2"></a> def run_task():
+<a name="rest_code_fb79c7619f9b4929966818a9275a53bf-3"></a>     task = request.form.get('task')
+<a name="rest_code_fb79c7619f9b4929966818a9275a53bf-4"></a><span class="gd">-    try:</span>
+<a name="rest_code_fb79c7619f9b4929966818a9275a53bf-5"></a><span class="gd">-        result = tasks.run(task)</span>
+<a name="rest_code_fb79c7619f9b4929966818a9275a53bf-6"></a><span class="gd">-    except Exception as e:</span>
+<a name="rest_code_fb79c7619f9b4929966818a9275a53bf-7"></a><span class="gd">-        return jsonify({'message': 'Task failed: {}'.format(e)}), 500</span>
+<a name="rest_code_fb79c7619f9b4929966818a9275a53bf-8"></a><span class="gd">-    return jsonify({'result': result})</span>
+<a name="rest_code_fb79c7619f9b4929966818a9275a53bf-9"></a><span class="gi">+    q = Queue()</span>
+<a name="rest_code_fb79c7619f9b4929966818a9275a53bf-10"></a><span class="gi">+    job = q.enqueue(tasks.run, task)</span>
+<a name="rest_code_fb79c7619f9b4929966818a9275a53bf-11"></a><span class="gi">+    return jsonify({'job_id': job.get_id()})</span>
 </pre>
 <p>We enqeue our task and just return the job id for now.</p>
 <p>Docker and <cite>docker-compose</cite> are now gonna come in handy to start eveything
 (Redis, our web app and a worker). We just have to add the following to our
 <cite>docker-compose.yml</cite> file:</p>
-<pre class="code diff"><a name="rest_code_c276cf49ad8b411390eaca85f0138699-1"></a> - "5000:5000"
-<a name="rest_code_c276cf49ad8b411390eaca85f0138699-2"></a> volumes:
-<a name="rest_code_c276cf49ad8b411390eaca85f0138699-3"></a> - .:/app
-<a name="rest_code_c276cf49ad8b411390eaca85f0138699-4"></a><span class="gi">+    depends_on:</span>
-<a name="rest_code_c276cf49ad8b411390eaca85f0138699-5"></a><span class="gi">+    - redis</span>
-<a name="rest_code_c276cf49ad8b411390eaca85f0138699-6"></a><span class="gi">+  worker:</span>
-<a name="rest_code_c276cf49ad8b411390eaca85f0138699-7"></a><span class="gi">+    image: flaskrqexample</span>
-<a name="rest_code_c276cf49ad8b411390eaca85f0138699-8"></a><span class="gi">+    container_name: flaskrqexample_worker</span>
-<a name="rest_code_c276cf49ad8b411390eaca85f0138699-9"></a><span class="gi">+    environment:</span>
-<a name="rest_code_c276cf49ad8b411390eaca85f0138699-10"></a><span class="gi">+      LOCAL_SETTINGS: /app/settings.cfg</span>
-<a name="rest_code_c276cf49ad8b411390eaca85f0138699-11"></a><span class="gi">+    command: python manage.py runworker</span>
-<a name="rest_code_c276cf49ad8b411390eaca85f0138699-12"></a><span class="gi">+    volumes:</span>
-<a name="rest_code_c276cf49ad8b411390eaca85f0138699-13"></a><span class="gi">+    - .:/app</span>
-<a name="rest_code_c276cf49ad8b411390eaca85f0138699-14"></a><span class="gi">+    depends_on:</span>
-<a name="rest_code_c276cf49ad8b411390eaca85f0138699-15"></a><span class="gi">+    - redis</span>
-<a name="rest_code_c276cf49ad8b411390eaca85f0138699-16"></a><span class="gi">+  redis:</span>
-<a name="rest_code_c276cf49ad8b411390eaca85f0138699-17"></a><span class="gi">+    image: redis:3.2</span>
+<pre class="code diff"><a name="rest_code_496d2964ed0e47ccb0e10be54d5e3ee5-1"></a> - "5000:5000"
+<a name="rest_code_496d2964ed0e47ccb0e10be54d5e3ee5-2"></a> volumes:
+<a name="rest_code_496d2964ed0e47ccb0e10be54d5e3ee5-3"></a> - .:/app
+<a name="rest_code_496d2964ed0e47ccb0e10be54d5e3ee5-4"></a><span class="gi">+    depends_on:</span>
+<a name="rest_code_496d2964ed0e47ccb0e10be54d5e3ee5-5"></a><span class="gi">+    - redis</span>
+<a name="rest_code_496d2964ed0e47ccb0e10be54d5e3ee5-6"></a><span class="gi">+  worker:</span>
+<a name="rest_code_496d2964ed0e47ccb0e10be54d5e3ee5-7"></a><span class="gi">+    image: flaskrqexample</span>
+<a name="rest_code_496d2964ed0e47ccb0e10be54d5e3ee5-8"></a><span class="gi">+    container_name: flaskrqexample_worker</span>
+<a name="rest_code_496d2964ed0e47ccb0e10be54d5e3ee5-9"></a><span class="gi">+    environment:</span>
+<a name="rest_code_496d2964ed0e47ccb0e10be54d5e3ee5-10"></a><span class="gi">+      LOCAL_SETTINGS: /app/settings.cfg</span>
+<a name="rest_code_496d2964ed0e47ccb0e10be54d5e3ee5-11"></a><span class="gi">+    command: python manage.py runworker</span>
+<a name="rest_code_496d2964ed0e47ccb0e10be54d5e3ee5-12"></a><span class="gi">+    volumes:</span>
+<a name="rest_code_496d2964ed0e47ccb0e10be54d5e3ee5-13"></a><span class="gi">+    - .:/app</span>
+<a name="rest_code_496d2964ed0e47ccb0e10be54d5e3ee5-14"></a><span class="gi">+    depends_on:</span>
+<a name="rest_code_496d2964ed0e47ccb0e10be54d5e3ee5-15"></a><span class="gi">+    - redis</span>
+<a name="rest_code_496d2964ed0e47ccb0e10be54d5e3ee5-16"></a><span class="gi">+  redis:</span>
+<a name="rest_code_496d2964ed0e47ccb0e10be54d5e3ee5-17"></a><span class="gi">+    image: redis:3.2</span>
 </pre>
 <p>Don't forget to add <em>redis</em> and <em>rq</em> to your <cite>environment.yml</cite> file!</p>
-<pre class="code diff"><a name="rest_code_5862bbdb1bcc4de2ac99a94aaaf7d4cd-1"></a>   - dominate==2.2.1
-<a name="rest_code_5862bbdb1bcc4de2ac99a94aaaf7d4cd-2"></a>   - flask-bootstrap==3.3.6.0
-<a name="rest_code_5862bbdb1bcc4de2ac99a94aaaf7d4cd-3"></a>   - flask-script==2.0.5
-<a name="rest_code_5862bbdb1bcc4de2ac99a94aaaf7d4cd-4"></a><span class="gi">+  - redis==2.10.5</span>
-<a name="rest_code_5862bbdb1bcc4de2ac99a94aaaf7d4cd-5"></a><span class="gi">+  - rq==0.6.0</span>
-<a name="rest_code_5862bbdb1bcc4de2ac99a94aaaf7d4cd-6"></a>   - visitor==0.1.3
+<pre class="code diff"><a name="rest_code_00ab8fca9dae441eb4d2f2af8dd0b85c-1"></a>   - dominate==2.2.1
+<a name="rest_code_00ab8fca9dae441eb4d2f2af8dd0b85c-2"></a>   - flask-bootstrap==3.3.6.0
+<a name="rest_code_00ab8fca9dae441eb4d2f2af8dd0b85c-3"></a>   - flask-script==2.0.5
+<a name="rest_code_00ab8fca9dae441eb4d2f2af8dd0b85c-4"></a><span class="gi">+  - redis==2.10.5</span>
+<a name="rest_code_00ab8fca9dae441eb4d2f2af8dd0b85c-5"></a><span class="gi">+  - rq==0.6.0</span>
+<a name="rest_code_00ab8fca9dae441eb4d2f2af8dd0b85c-6"></a>   - visitor==0.1.3
 </pre>
 <p>Rebuild the docker image and start the app:</p>
 <pre class="literal-block">$ git checkout 437e710df3df0dd4b153f20027f5f00270b2e1a3
@@ -506,75 +507,75 @@ When launching the job, we return an url to check the status of the job.
 The trick is to periodically call back the same function until the job is finished or failed.</p>
 <p>On the server side, the <cite>job_status</cite> endpoint uses the job_id to retrieve
 the job and to get its status and result.</p>
-<pre class="code python"><a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-1"></a><span class="nd">@bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/status/&lt;job_id&gt;'</span><span class="p">)</span>
-<a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-2"></a><span class="k">def</span> <span class="nf">job_status</span><span class="p">(</span><span class="n">job_id</span><span class="p">):</span>
-<a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-3"></a>    <span class="n">q</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
-<a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-4"></a>    <span class="n">job</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">fetch_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
-<a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-5"></a>    <span class="k">if</span> <span class="n">job</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-<a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-6"></a>        <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'status'</span><span class="p">:</span> <span class="s1">'unknown'</span><span class="p">}</span>
-<a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-7"></a>    <span class="k">else</span><span class="p">:</span>
-<a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-8"></a>        <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
-<a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-9"></a>            <span class="s1">'status'</span><span class="p">:</span> <span class="n">job</span><span class="o">.</span><span class="n">get_status</span><span class="p">(),</span>
-<a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-10"></a>            <span class="s1">'result'</span><span class="p">:</span> <span class="n">job</span><span class="o">.</span><span class="n">result</span><span class="p">,</span>
-<a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-11"></a>        <span class="p">}</span>
-<a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-12"></a>        <span class="k">if</span> <span class="n">job</span><span class="o">.</span><span class="n">is_failed</span><span class="p">:</span>
-<a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-13"></a>            <span class="n">response</span><span class="p">[</span><span class="s1">'message'</span><span class="p">]</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">exc_info</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-14"></a>    <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-<a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-15"></a>
-<a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-16"></a>
-<a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-17"></a><span class="nd">@bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/_run_task'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'POST'</span><span class="p">])</span>
-<a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-18"></a><span class="k">def</span> <span class="nf">run_task</span><span class="p">():</span>
-<a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-19"></a>    <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'task'</span><span class="p">)</span>
-<a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-20"></a>    <span class="n">q</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
-<a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-21"></a>    <span class="n">job</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">tasks</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
-<a name="rest_code_66e8a7e554e949b5ba2b7ab65648ff47-22"></a>    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({}),</span> <span class="mi">202</span><span class="p">,</span> <span class="p">{</span><span class="s1">'Location'</span><span class="p">:</span> <span class="n">url_for</span><span class="p">(</span><span class="s1">'main.job_status'</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">job</span><span class="o">.</span><span class="n">get_id</span><span class="p">())}</span>
+<pre class="code python"><a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-1"></a><span class="nd">@bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/status/&lt;job_id&gt;'</span><span class="p">)</span>
+<a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-2"></a><span class="k">def</span> <span class="nf">job_status</span><span class="p">(</span><span class="n">job_id</span><span class="p">):</span>
+<a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-3"></a>    <span class="n">q</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+<a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-4"></a>    <span class="n">job</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">fetch_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+<a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-5"></a>    <span class="k">if</span> <span class="n">job</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-6"></a>        <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'status'</span><span class="p">:</span> <span class="s1">'unknown'</span><span class="p">}</span>
+<a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-7"></a>    <span class="k">else</span><span class="p">:</span>
+<a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-8"></a>        <span class="n">response</span> <span class="o">=</span> <span class="p">{</span>
+<a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-9"></a>            <span class="s1">'status'</span><span class="p">:</span> <span class="n">job</span><span class="o">.</span><span class="n">get_status</span><span class="p">(),</span>
+<a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-10"></a>            <span class="s1">'result'</span><span class="p">:</span> <span class="n">job</span><span class="o">.</span><span class="n">result</span><span class="p">,</span>
+<a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-11"></a>        <span class="p">}</span>
+<a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-12"></a>        <span class="k">if</span> <span class="n">job</span><span class="o">.</span><span class="n">is_failed</span><span class="p">:</span>
+<a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-13"></a>            <span class="n">response</span><span class="p">[</span><span class="s1">'message'</span><span class="p">]</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">exc_info</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-14"></a>    <span class="k">return</span> <span class="n">jsonify</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+<a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-15"></a>
+<a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-16"></a>
+<a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-17"></a><span class="nd">@bp</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">'/_run_task'</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">'POST'</span><span class="p">])</span>
+<a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-18"></a><span class="k">def</span> <span class="nf">run_task</span><span class="p">():</span>
+<a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-19"></a>    <span class="n">task</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'task'</span><span class="p">)</span>
+<a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-20"></a>    <span class="n">q</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+<a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-21"></a>    <span class="n">job</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">enqueue</span><span class="p">(</span><span class="n">tasks</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
+<a name="rest_code_3d0eb00bc8914c4f812e96362c8f7222-22"></a>    <span class="k">return</span> <span class="n">jsonify</span><span class="p">({}),</span> <span class="mi">202</span><span class="p">,</span> <span class="p">{</span><span class="s1">'Location'</span><span class="p">:</span> <span class="n">url_for</span><span class="p">(</span><span class="s1">'main.job_status'</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="n">job</span><span class="o">.</span><span class="n">get_id</span><span class="p">())}</span>
 </pre>
 <p>The <cite>run_task</cite> function returns an empty response with the <a class="reference external" href="https://httpstatuses.com/202">202</a> status
 code. We use the <em>Location</em> response-header field to pass the <cite>job_status</cite> URL to the
 client.</p>
 <p>On the client side, we retrieve the URL from the header and call the new
 <cite>check_job_status</cite> function.</p>
-<pre class="code diff"><a name="rest_code_d9904a1324a14c18b7dd51644c31f434-1"></a><span class="gu">@@ -28,8 +53,11 @@ $(document).ready(function() {</span>
-<a name="rest_code_d9904a1324a14c18b7dd51644c31f434-2"></a>       data: $("#taskForm").serialize(),
-<a name="rest_code_d9904a1324a14c18b7dd51644c31f434-3"></a>       method: "POST",
-<a name="rest_code_d9904a1324a14c18b7dd51644c31f434-4"></a>       dataType: "json",
-<a name="rest_code_d9904a1324a14c18b7dd51644c31f434-5"></a><span class="gd">-      success: function(data) {</span>
-<a name="rest_code_d9904a1324a14c18b7dd51644c31f434-6"></a><span class="gd">-        flash_alert("Job " + data.job_id + " started...", "info", false);</span>
-<a name="rest_code_d9904a1324a14c18b7dd51644c31f434-7"></a><span class="gi">+      success: function(data, status, request) {</span>
-<a name="rest_code_d9904a1324a14c18b7dd51644c31f434-8"></a><span class="gi">+        $("#submit").attr("disabled", "disabled");</span>
-<a name="rest_code_d9904a1324a14c18b7dd51644c31f434-9"></a><span class="gi">+        flash_alert("Running " + task + "...", "info");</span>
-<a name="rest_code_d9904a1324a14c18b7dd51644c31f434-10"></a><span class="gi">+        var status_url = request.getResponseHeader('Location');</span>
-<a name="rest_code_d9904a1324a14c18b7dd51644c31f434-11"></a><span class="gi">+        check_job_status(status_url);</span>
-<a name="rest_code_d9904a1324a14c18b7dd51644c31f434-12"></a>       },
-<a name="rest_code_d9904a1324a14c18b7dd51644c31f434-13"></a>       error: function(jqXHR, textStatus, errorThrown) {
-<a name="rest_code_d9904a1324a14c18b7dd51644c31f434-14"></a>         flash_alert("Failed to start " + task, "danger");
+<pre class="code diff"><a name="rest_code_d5a45afba6b14528be75be16a43196b6-1"></a><span class="gu">@@ -28,8 +53,11 @@ $(document).ready(function() {</span>
+<a name="rest_code_d5a45afba6b14528be75be16a43196b6-2"></a>       data: $("#taskForm").serialize(),
+<a name="rest_code_d5a45afba6b14528be75be16a43196b6-3"></a>       method: "POST",
+<a name="rest_code_d5a45afba6b14528be75be16a43196b6-4"></a>       dataType: "json",
+<a name="rest_code_d5a45afba6b14528be75be16a43196b6-5"></a><span class="gd">-      success: function(data) {</span>
+<a name="rest_code_d5a45afba6b14528be75be16a43196b6-6"></a><span class="gd">-        flash_alert("Job " + data.job_id + " started...", "info", false);</span>
+<a name="rest_code_d5a45afba6b14528be75be16a43196b6-7"></a><span class="gi">+      success: function(data, status, request) {</span>
+<a name="rest_code_d5a45afba6b14528be75be16a43196b6-8"></a><span class="gi">+        $("#submit").attr("disabled", "disabled");</span>
+<a name="rest_code_d5a45afba6b14528be75be16a43196b6-9"></a><span class="gi">+        flash_alert("Running " + task + "...", "info");</span>
+<a name="rest_code_d5a45afba6b14528be75be16a43196b6-10"></a><span class="gi">+        var status_url = request.getResponseHeader('Location');</span>
+<a name="rest_code_d5a45afba6b14528be75be16a43196b6-11"></a><span class="gi">+        check_job_status(status_url);</span>
+<a name="rest_code_d5a45afba6b14528be75be16a43196b6-12"></a>       },
+<a name="rest_code_d5a45afba6b14528be75be16a43196b6-13"></a>       error: function(jqXHR, textStatus, errorThrown) {
+<a name="rest_code_d5a45afba6b14528be75be16a43196b6-14"></a>         flash_alert("Failed to start " + task, "danger");
 </pre>
 <p>We use <cite>setTimeout</cite> to call back the same function until the job is done (finished
 or failed).</p>
-<pre class="code javascript"><a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-1"></a><span class="kd">function</span> <span class="nx">check_job_status</span><span class="p">(</span><span class="nx">status_url</span><span class="p">)</span> <span class="p">{</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-2"></a>  <span class="nx">$</span><span class="p">.</span><span class="nx">getJSON</span><span class="p">(</span><span class="nx">status_url</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-3"></a>    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-4"></a>    <span class="k">switch</span> <span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">status</span><span class="p">)</span> <span class="p">{</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-5"></a>      <span class="k">case</span> <span class="s2">"unknown"</span><span class="o">:</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-6"></a>          <span class="nx">flash_alert</span><span class="p">(</span><span class="s2">"Unknown job id"</span><span class="p">,</span> <span class="s2">"danger"</span><span class="p">);</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-7"></a>          <span class="nx">$</span><span class="p">(</span><span class="s2">"#submit"</span><span class="p">).</span><span class="nx">removeAttr</span><span class="p">(</span><span class="s2">"disabled"</span><span class="p">);</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-8"></a>          <span class="k">break</span><span class="p">;</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-9"></a>      <span class="k">case</span> <span class="s2">"finished"</span><span class="o">:</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-10"></a>          <span class="nx">flash_alert</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">result</span><span class="p">,</span> <span class="s2">"success"</span><span class="p">);</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-11"></a>          <span class="nx">$</span><span class="p">(</span><span class="s2">"#submit"</span><span class="p">).</span><span class="nx">removeAttr</span><span class="p">(</span><span class="s2">"disabled"</span><span class="p">);</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-12"></a>          <span class="k">break</span><span class="p">;</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-13"></a>      <span class="k">case</span> <span class="s2">"failed"</span><span class="o">:</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-14"></a>          <span class="nx">flash_alert</span><span class="p">(</span><span class="s2">"Job failed: "</span> <span class="o">+</span> <span class="nx">data</span><span class="p">.</span><span class="nx">message</span><span class="p">,</span> <span class="s2">"danger"</span><span class="p">);</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-15"></a>          <span class="nx">$</span><span class="p">(</span><span class="s2">"#submit"</span><span class="p">).</span><span class="nx">removeAttr</span><span class="p">(</span><span class="s2">"disabled"</span><span class="p">);</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-16"></a>          <span class="k">break</span><span class="p">;</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-17"></a>      <span class="k">default</span><span class="o">:</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-18"></a>        <span class="c1">// queued/started/deferred</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-19"></a>        <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-20"></a>          <span class="nx">check_job_status</span><span class="p">(</span><span class="nx">status_url</span><span class="p">);</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-21"></a>        <span class="p">},</span> <span class="mi">500</span><span class="p">);</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-22"></a>    <span class="p">}</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-23"></a>  <span class="p">});</span>
-<a name="rest_code_ff75efa9f55147ccb6a3794f2171524c-24"></a><span class="p">}</span>
+<pre class="code javascript"><a name="rest_code_158f16415b3140f3836867715cb750fb-1"></a><span class="kd">function</span> <span class="nx">check_job_status</span><span class="p">(</span><span class="nx">status_url</span><span class="p">)</span> <span class="p">{</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-2"></a>  <span class="nx">$</span><span class="p">.</span><span class="nx">getJSON</span><span class="p">(</span><span class="nx">status_url</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-3"></a>    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-4"></a>    <span class="k">switch</span> <span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">status</span><span class="p">)</span> <span class="p">{</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-5"></a>      <span class="k">case</span> <span class="s2">"unknown"</span><span class="o">:</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-6"></a>          <span class="nx">flash_alert</span><span class="p">(</span><span class="s2">"Unknown job id"</span><span class="p">,</span> <span class="s2">"danger"</span><span class="p">);</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-7"></a>          <span class="nx">$</span><span class="p">(</span><span class="s2">"#submit"</span><span class="p">).</span><span class="nx">removeAttr</span><span class="p">(</span><span class="s2">"disabled"</span><span class="p">);</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-8"></a>          <span class="k">break</span><span class="p">;</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-9"></a>      <span class="k">case</span> <span class="s2">"finished"</span><span class="o">:</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-10"></a>          <span class="nx">flash_alert</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">result</span><span class="p">,</span> <span class="s2">"success"</span><span class="p">);</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-11"></a>          <span class="nx">$</span><span class="p">(</span><span class="s2">"#submit"</span><span class="p">).</span><span class="nx">removeAttr</span><span class="p">(</span><span class="s2">"disabled"</span><span class="p">);</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-12"></a>          <span class="k">break</span><span class="p">;</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-13"></a>      <span class="k">case</span> <span class="s2">"failed"</span><span class="o">:</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-14"></a>          <span class="nx">flash_alert</span><span class="p">(</span><span class="s2">"Job failed: "</span> <span class="o">+</span> <span class="nx">data</span><span class="p">.</span><span class="nx">message</span><span class="p">,</span> <span class="s2">"danger"</span><span class="p">);</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-15"></a>          <span class="nx">$</span><span class="p">(</span><span class="s2">"#submit"</span><span class="p">).</span><span class="nx">removeAttr</span><span class="p">(</span><span class="s2">"disabled"</span><span class="p">);</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-16"></a>          <span class="k">break</span><span class="p">;</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-17"></a>      <span class="k">default</span><span class="o">:</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-18"></a>        <span class="c1">// queued/started/deferred</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-19"></a>        <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-20"></a>          <span class="nx">check_job_status</span><span class="p">(</span><span class="nx">status_url</span><span class="p">);</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-21"></a>        <span class="p">},</span> <span class="mf">500</span><span class="p">);</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-22"></a>    <span class="p">}</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-23"></a>  <span class="p">});</span>
+<a name="rest_code_158f16415b3140f3836867715cb750fb-24"></a><span class="p">}</span>
 </pre>
 <p>Let's checkout this commit and run our app again:</p>
 <pre class="literal-block">$ git checkout da8360aefb222afc17417a518ac25029566071d6
@@ -636,7 +637,7 @@ and all his posts about Flask!</p>
 
 
         </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
-            Contents © 2020         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2021         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
             
@@ -649,19 +650,8 @@ and all his posts about Flask!</p>
         <script src="../../assets/js/all-nocdn.js"></script><script>
     baguetteBox.run('div#content', {
         ignoreClass: 'islink',
-        captions: function(element) {
-            return element.getElementsByTagName('img')[0].alt;
-    }});
-    </script><script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-  ga('create', 'UA-99836987-1', 'auto');
-  ga('set', 'anonymizeIP', true);
-  ga('send', 'pageview');
-
-</script>
+        captions: function(element){var i=element.getElementsByTagName('img')[0];return i===undefined?'':i.alt;}});
+    </script><!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "7d14dff9ef784b3db826518c0f928eb3"}'>
+</script><!-- End Cloudflare Web Analytics -->
 </body>
 </html>
