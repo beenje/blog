@@ -335,7 +335,7 @@ One way to achieve that would be to use a task queue like Celery_ or RQ_ to run 
 I'm actually using RQ_ in an aiohttp bot I created.
 
 A nice feature of Starlette_ is that you can attach a `background task`_ to a response.
-We can thus run the ``dispatch`` function as a ``BackgrounTask``. This will ensure that the response is sent
+We can thus run the ``dispatch`` function as a ``BackgroundTask``. This will ensure that the response is sent
 as soon as the event has been received and parsed::
 
     from starlette.background import BackgroundTask
