@@ -1062,17 +1062,11 @@ MARKDOWN_EXTENSIONS = ['fenced_code', 'codehilite', 'extra']
 # in the default template (base.tmpl).
 # (translatable)
 BODY_END = """
-<script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-  ga('create', 'UA-99836987-1', 'auto');
-  ga('set', 'anonymizeIP', true);
-  ga('send', 'pageview');
-
+<!-- Cloudflare Web Analytics -->
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+        data-cf-beacon='{"token": "7d14dff9ef784b3db826518c0f928eb3"}'>
 </script>
+<!-- End Cloudflare Web Analytics -->
 """
 
 # The possibility to extract metadata from the filename by using a
