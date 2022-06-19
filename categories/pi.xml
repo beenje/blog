@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about pi)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/pi.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2021 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about pi)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/pi.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2022 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 06 Jan 2021 08:21:41 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Experimenting with asyncio on a Raspberry Pi</title><link>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In a previous post, I described how I built a &lt;a class="reference external" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display"&gt;LEGO Macintosh Classic with
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sun, 19 Jun 2022 20:13:57 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Experimenting with asyncio on a Raspberry Pi</title><link>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;In a previous post, I described how I built a &lt;a class="reference external" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display"&gt;LEGO Macintosh Classic with
 a Raspberry Pi and e-paper display&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;For testing purpose I installed the clock demo which is part of the
 &lt;a class="reference external" href="https://github.com/embeddedartists/gratis"&gt;Embedded Artists repository&lt;/a&gt;.
@@ -22,9 +22,9 @@ I learnt asynchronous programming with &lt;a class="reference external" href="ht
 a few years ago. If you are not familiar with asynchronous programming, I really recommend
 it. I wrote a few applications using &lt;a class="reference external" href="https://twistedmatrix.com"&gt;Twisted&lt;/a&gt; but I haven't had
 the opportunity to use asyncio yet. Here is a very good occasion!&lt;/p&gt;
-&lt;div class="section" id="asyncio"&gt;
+&lt;section id="asyncio"&gt;
 &lt;h2&gt;asyncio&lt;/h2&gt;
-&lt;div class="section" id="rest-api-using-aiohttp"&gt;
+&lt;section id="rest-api-using-aiohttp"&gt;
 &lt;h3&gt;REST API using aiohttp&lt;/h3&gt;
 &lt;p&gt;There are already several asyncio web frameworks to build an HTTP server.
 I decided to go with &lt;a class="reference external" href="http://aiohttp.readthedocs.io/en/stable/"&gt;aiohttp&lt;/a&gt;
@@ -78,8 +78,8 @@ async def post_message(request):
 @login_required
 async def index(request):
     return web.json_response({'message': 'Welcome to LegoMac {}!'.format(request.user)})&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="raspberry-pi-gpio-and-asyncio"&gt;
+&lt;/section&gt;
+&lt;section id="raspberry-pi-gpio-and-asyncio"&gt;
 &lt;h3&gt;Raspberry Pi GPIO and asyncio&lt;/h3&gt;
 &lt;p&gt;The default Python package to control the Raspberry Pi GPIO seems to be
 &lt;a class="reference external" href="https://pypi.python.org/pypi/RPi.GPIO"&gt;RPi.GPIO&lt;/a&gt;.
@@ -93,8 +93,8 @@ It's basically a (incomplete) port of the original Python client provided
 with pigpio, but far sufficient for my need. I just want to get a
 notification when pressing the button on top of the screen.&lt;/p&gt;
 &lt;p&gt;There is an example how to achieve that: &lt;a class="reference external" href="https://github.com/PierreRust/apigpio/blob/master/samples/gpio_notification.py"&gt;gpio_notification.py&lt;/a&gt;.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="e-paper-display-and-asyncio"&gt;
+&lt;/section&gt;
+&lt;section id="e-paper-display-and-asyncio"&gt;
 &lt;h3&gt;E-paper display and asyncio&lt;/h3&gt;
 &lt;p&gt;The last remaining piece is to make the e-paper display play nicely with
 asyncio.&lt;/p&gt;
@@ -124,11 +124,11 @@ async def create(cls, *args, **kwargs):
         ...&lt;/pre&gt;
 &lt;p&gt;To create an instance of the EPD class, use:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;epd = await EPD.create([path='/path/to/epd'], [auto=boolean])&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="section" id="putting-everything-together-with-aiohttp"&gt;
+&lt;/section&gt;
+&lt;/section&gt;
+&lt;section id="putting-everything-together-with-aiohttp"&gt;
 &lt;h2&gt;Putting everything together with aiohttp&lt;/h2&gt;
-&lt;div class="section" id="running-the-clock-as-a-background-task"&gt;
+&lt;section id="running-the-clock-as-a-background-task"&gt;
 &lt;h3&gt;Running the clock as a background task&lt;/h3&gt;
 &lt;p&gt;For the clock, I adapted the &lt;a class="reference external" href="https://github.com/embeddedartists/gratis/blob/master/PlatformWithOS/demo/Clock27.py"&gt;clock demo&lt;/a&gt;
 from Embedded Artists repository.&lt;/p&gt;
@@ -168,8 +168,8 @@ def init_app():
     app.on_startup.append(start_background_tasks)
     app.on_cleanup.append(cleanup_background_tasks)
     ...&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="stop-the-clock-and-display-a-message"&gt;
+&lt;/section&gt;
+&lt;section id="stop-the-clock-and-display-a-message"&gt;
 &lt;h3&gt;Stop the clock and display a message&lt;/h3&gt;
 &lt;p&gt;When receiving a message, I first cancel the clock background task and
 send the messages to the e-paper display using &lt;cite&gt;ensure_future&lt;/cite&gt; so that
@@ -190,8 +190,8 @@ async def post_message(request):
     now = datetime.datetime.now(request.app['timezone'])
     helpers.ensure_future(request.app['epd'].display_message(message, request.user, now))
     return web.json_response({'message': message}, status=201)&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="start-the-clock-when-pressing-the-button"&gt;
+&lt;/section&gt;
+&lt;section id="start-the-clock-when-pressing-the-button"&gt;
 &lt;h3&gt;Start the clock when pressing the button&lt;/h3&gt;
 &lt;p&gt;To be able to restart the clock when pressing the button, I connect to the
 pigpiod when starting the app (in &lt;cite&gt;start_background_tasks&lt;/cite&gt;) and register
@@ -214,9 +214,9 @@ task is done:&lt;/p&gt;
     if app['clock'].done():
         logger.info('restart clock')
         app['clock'] = app.loop.create_task(display_clock(app))&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="section" id="running-on-the-pi"&gt;
+&lt;/section&gt;
+&lt;/section&gt;
+&lt;section id="running-on-the-pi"&gt;
 &lt;h2&gt;Running on the Pi&lt;/h2&gt;
 &lt;p&gt;You might have noticed that I used some syntax that is Python 3.6 only.
 I don't really see myself using something else when starting a new project
@@ -243,7 +243,7 @@ that very easy if you use docker. So that's what I chose.&lt;/p&gt;
 &lt;li&gt;&lt;p&gt;pigpiod&lt;/p&gt;&lt;/li&gt;
 &lt;li&gt;&lt;p&gt;aiolegomac&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;div class="section" id="traefik"&gt;
+&lt;section id="traefik"&gt;
 &lt;h3&gt;traefik&lt;/h3&gt;
 &lt;p&gt;There are no official Traefik docker images for arm yet, but an &lt;a class="reference external" href="https://github.com/containous/traefik/issues/1665"&gt;issue&lt;/a&gt; is currently opened.
 So it should arrive soon!&lt;/p&gt;
@@ -259,8 +259,8 @@ RUN wget -O /usr/local/bin/traefik https://github.com/containous/traefik/release
   &amp;amp;&amp;amp; chmod a+x /usr/local/bin/traefik
 
 ENTRYPOINT ["/usr/local/bin/traefik"]&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="pigpiod"&gt;
+&lt;/section&gt;
+&lt;section id="pigpiod"&gt;
 &lt;h3&gt;pigpiod&lt;/h3&gt;
 &lt;p&gt;For pigpiod, I first created an image based on &lt;cite&gt;arm32v6/alpine&lt;/cite&gt; but I noticed I couldn't send
 a SIGTERM to the daemon to stop it properly... I'm not sure why. Alpine being based on &lt;cite&gt;musl&lt;/cite&gt; instead
@@ -306,8 +306,8 @@ EXPOSE 8888
 
 ENTRYPOINT ["/usr/local/bin/pigpiod", "-g"]&lt;/pre&gt;
 &lt;p&gt;Note that the container has to run in privileged mode to access the GPIO.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="aiolegomac"&gt;
+&lt;/section&gt;
+&lt;section id="aiolegomac"&gt;
 &lt;h3&gt;aiolegomac&lt;/h3&gt;
 &lt;p&gt;For the main application, the Dockerfile is quite standard for a Python application:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;FROM resin/raspberry-pi-python:3.6
@@ -341,9 +341,9 @@ CMD ["run.py"]&lt;/pre&gt;
 As it uses libfuse to represent the e-paper display as a virtual directory of files,
 the easiest was to install it on the host and to mount it as a volume inside the docker
 container.&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="section" id="deployment"&gt;
+&lt;/section&gt;
+&lt;/section&gt;
+&lt;section id="deployment"&gt;
 &lt;h2&gt;Deployment&lt;/h2&gt;
 &lt;p&gt;To install all that on the Pi, I wrote a small &lt;a class="reference external" href="https://www.ansible.com"&gt;Ansible&lt;/a&gt; playbook.&lt;/p&gt;
 &lt;ol class="arabic"&gt;
@@ -371,10 +371,10 @@ So be patient :-) Just go and do something else.&lt;/p&gt;
 &lt;p&gt;When the full playbook is complete (it took about 55 minutes for me),
 you'll have a server with HTTPS support (thanks to Let's Encrypt) running on the Pi. It's displaying
 the clock every minute and you can send messages to it!&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="client"&gt;
+&lt;/section&gt;
+&lt;section id="client"&gt;
 &lt;h2&gt;Client&lt;/h2&gt;
-&lt;div class="section" id="httpie"&gt;
+&lt;section id="httpie"&gt;
 &lt;h3&gt;HTTPie&lt;/h3&gt;
 &lt;p&gt;To test the server you can of course use &lt;a class="reference external" href="https://curl.haxx.se"&gt;curl&lt;/a&gt;
 but I really like &lt;a class="reference external" href="https://httpie.org"&gt;HTTPie&lt;/a&gt;. It's much more user
@@ -436,8 +436,8 @@ Server: Python/3.6 aiohttp/2.2.3
 }&lt;/pre&gt;
 &lt;p&gt;Message sent!
 HTTPie is nice for testing, but we can make a small script to easily send messages from the command line.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="requests"&gt;
+&lt;/section&gt;
+&lt;section id="requests"&gt;
 &lt;h3&gt;requests&lt;/h3&gt;
 &lt;p&gt;&lt;a class="reference external" href="http://docs.python-requests.org"&gt;requests&lt;/a&gt; is of course the HTTP library to use in Python.&lt;/p&gt;
 &lt;p&gt;So let's write a small script to send messages to our server.
@@ -517,9 +517,9 @@ Password:
 Message sent&lt;/pre&gt;
 &lt;img alt="/images/legomac/zen_of_python.jpg" src="http://beenje.github.io/blog/images/legomac/zen_of_python.jpg"&gt;
 &lt;p&gt;Sending a new message won't request the password as the token was saved in the config file.&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="section" id="conclusion"&gt;
+&lt;/section&gt;
+&lt;/section&gt;
+&lt;section id="conclusion"&gt;
 &lt;h2&gt;Conclusion&lt;/h2&gt;
 &lt;p&gt;I have a nice little aiohttp server running on my Raspberry Pi that can receive and display messages.
 asyncio is quite pleasant to work with. I really like the async/await syntax.&lt;/p&gt;
@@ -531,14 +531,14 @@ asyncio is quite pleasant to work with. I really like the async/await syntax.&lt
 &lt;p&gt;Why did I only write a command line script to send messages and no web interface?
 Don't worry, that's planned! I could have used Jinja2. But I'd like to try a javascript framework.
 So that will be the subject of another post.&lt;/p&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>Ansible</category><category>docker</category><category>lego</category><category>pi</category><category>python</category><guid>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</guid><pubDate>Tue, 18 Jul 2017 20:46:17 GMT</pubDate></item><item><title>My LEGO Macintosh Classic with Raspberry Pi and e-paper display</title><link>http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;UPDATED 2019-11-24&lt;/p&gt;
+&lt;/section&gt;</description><category>Ansible</category><category>docker</category><category>lego</category><category>pi</category><category>python</category><guid>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</guid><pubDate>Tue, 18 Jul 2017 20:46:17 GMT</pubDate></item><item><title>My LEGO Macintosh Classic with Raspberry Pi and e-paper display</title><link>http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;UPDATED 2019-11-24&lt;/p&gt;
 &lt;p&gt;Beginning of April I read an inspiring blog post from Jannis Hermanns
 about a &lt;a class="reference external" href="https://jann.is/lego-macintosh-classic/"&gt;LEGO Machintosh Classic with e-paper display&lt;/a&gt;.  It was a really nice and cool article.&lt;/p&gt;
 &lt;p&gt;I've been playing with some Raspberry Pis before but only with
 &lt;a class="reference external" href="http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible"&gt;software&lt;/a&gt;.
 I have been willing to fiddle with hardware for some time.
 This was the perfect opportunity!&lt;/p&gt;
-&lt;div class="section" id="lego-digital-designer"&gt;
+&lt;section id="lego-digital-designer"&gt;
 &lt;h2&gt;LEGO Digital Designer&lt;/h2&gt;
 &lt;p&gt;I decided to try to make my own LEGO Macintosh based on Jannis work.
 His blog post is quite detailed with even a list of links with all the
@@ -555,15 +555,15 @@ I also wanted to check if it was possible to use the button located on top
 of the display.&lt;/p&gt;
 &lt;p&gt;My .lxf file is on &lt;a class="reference external" href="https://github.com/beenje/legomac/tree/master/ldd"&gt;github&lt;/a&gt;.&lt;/p&gt;
 &lt;a class="reference external image-reference" href="http://beenje.github.io/blog/images/legomac/legomac_ldd.png"&gt;&lt;img alt="/images/legomac/legomac_ldd.thumbnail.png" src="http://beenje.github.io/blog/images/legomac/legomac_ldd.thumbnail.png"&gt;&lt;/a&gt;
-&lt;/div&gt;
-&lt;div class="section" id="e-paper-display"&gt;
+&lt;/section&gt;
+&lt;section id="e-paper-display"&gt;
 &lt;h2&gt;E-paper display&lt;/h2&gt;
 &lt;p&gt;When I was about to order the &lt;a class="reference external" href="http://www.embeddedartists.com/products/displays/lcd_27_epaper.php"&gt;2.7 inch e-paper display from Embedded Artists&lt;/a&gt;, I
 noticed that Embedded Artists was located in Malmö, where I live :-).&lt;/p&gt;
 &lt;p&gt;I e-mailed them and I was granted to pick up my order at their office!
 A big thanks to them!&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="raspbery-pi-zero-w"&gt;
+&lt;/section&gt;
+&lt;section id="raspbery-pi-zero-w"&gt;
 &lt;h2&gt;Raspbery Pi Zero W&lt;/h2&gt;
 &lt;p&gt;The Raspberry Pi Zero W comes with Wifi which is really nice.
 It does not come with the soldered GPIO header. I was starting to look at
@@ -573,8 +573,8 @@ existing soldering iron when I discovered this &lt;a class="reference external" 
 I used the installation jig and it was really easy to install.
 There is a nice &lt;a class="reference external" href="https://youtu.be/VDJ2-feg2lk"&gt;video&lt;/a&gt; that explains how
 to proceed:&lt;/p&gt;
-&lt;iframe width="200" height="113" src="https://www.youtube.com/embed/VDJ2-feg2lk?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen&gt;&lt;/iframe&gt;&lt;/div&gt;
-&lt;div class="section" id="connecting-the-display-to-the-pi"&gt;
+&lt;iframe width="200" height="113" src="https://www.youtube.com/embed/VDJ2-feg2lk?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen title="Bilge Tank 072 - STOP! HAMMER TIME!"&gt;&lt;/iframe&gt;&lt;/section&gt;
+&lt;section id="connecting-the-display-to-the-pi"&gt;
 &lt;h2&gt;Connecting the display to the Pi&lt;/h2&gt;
 &lt;p&gt;Based on Jannis article I initially thought it wasn't possible to use a ribbon
 cable (due to space), so I ordered some Jumper Wires.
@@ -596,8 +596,8 @@ Carried away by my enthusiasm, I actually cut a bit too much on the left side
 &lt;a class="reference external image-reference" href="http://beenje.github.io/blog/images/legomac/drilling_right.jpg"&gt;&lt;img alt="/images/legomac/drilling_right.thumbnail.jpg" src="http://beenje.github.io/blog/images/legomac/drilling_right.thumbnail.jpg"&gt;&lt;/a&gt;
 &lt;p&gt;Everything fitted nicely in the lego case:&lt;/p&gt;
 &lt;a class="reference external image-reference" href="http://beenje.github.io/blog/images/legomac/ribbon_cable.jpg"&gt;&lt;img alt="/images/legomac/ribbon_cable.thumbnail.jpg" src="http://beenje.github.io/blog/images/legomac/ribbon_cable.thumbnail.jpg"&gt;&lt;/a&gt;
-&lt;/div&gt;
-&lt;div class="section" id="button-on-top"&gt;
+&lt;/section&gt;
+&lt;section id="button-on-top"&gt;
 &lt;h2&gt;Button on top&lt;/h2&gt;
 &lt;p&gt;With the ribbon cable, the button on top of the display is connected to pin
 15 on the Raspberry Pi (BCM GPIO22).
@@ -610,8 +610,8 @@ I added a little piece of foam inside the brick to keep it straight.&lt;/p&gt;
 &lt;a class="reference external image-reference" href="http://beenje.github.io/blog/images/legomac/button_front.jpg"&gt;&lt;img alt="/images/legomac/button_front.thumbnail.jpg" src="http://beenje.github.io/blog/images/legomac/button_front.thumbnail.jpg"&gt;&lt;/a&gt;
 &lt;p&gt;Of course I move away from the Macintosh Classic design here...
 but &lt;a class="reference external" href="https://www.python.org/dev/peps/pep-0020/"&gt;practicality beats purity&lt;/a&gt; :-)&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="pi-configuration"&gt;
+&lt;/section&gt;
+&lt;section id="pi-configuration"&gt;
 &lt;h2&gt;Pi configuration&lt;/h2&gt;
 &lt;p&gt;Jannis article made me discover &lt;a class="reference external" href="https://resin.io"&gt;resin.io&lt;/a&gt;,
 which is a really interesting project. I did a few tests on a Raspberry Pi 3 and it was a nice experience.
@@ -716,8 +716,8 @@ $ cd legomac
 $ ansible-playbook -i hosts -k epd-demo.yml&lt;/pre&gt;
 &lt;p&gt;That's it!&lt;/p&gt;
 &lt;p&gt;Of course don't forget to change the default password on your Pi.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="one-more-thing"&gt;
+&lt;/section&gt;
+&lt;section id="one-more-thing"&gt;
 &lt;h2&gt;One more thing&lt;/h2&gt;
 &lt;p&gt;There isn't much Python in this article but the Pi is running some
 Python code.
@@ -729,17 +729,17 @@ Thanks again to @mkennedy for the stickers!&lt;/p&gt;
 &lt;a class="reference external image-reference" href="http://beenje.github.io/blog/images/legomac/talkpythontome.jpg"&gt;&lt;img alt="/images/legomac/talkpythontome.thumbnail.jpg" src="http://beenje.github.io/blog/images/legomac/talkpythontome.thumbnail.jpg"&gt;&lt;/a&gt;
 &lt;p&gt;Below are a few pictures. You can see more on &lt;a class="reference external" href="https://flic.kr/s/aHskVAadfo"&gt;flickr&lt;/a&gt;.&lt;/p&gt;
 
-&lt;div id="slides_0a9f293b98484640b1e526f005ecaeb8" class="carousel slide" data-ride="carousel"&gt;
+&lt;div id="slides_aa7793c34c6e465bafd424b61a40108d" class="carousel slide" data-ride="carousel"&gt;
     &lt;ol class="carousel-indicators"&gt;
-            &lt;li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="0" class="active"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="1"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="2"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="3"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="4"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="5"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="6"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="7"&gt;
-            &lt;/li&gt;&lt;li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="8"&gt;
+            &lt;li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="0" class="active"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="1"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="2"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="3"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="4"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="5"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="6"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="7"&gt;
+            &lt;/li&gt;&lt;li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="8"&gt;
     &lt;/li&gt;&lt;/ol&gt;
     &lt;div class="carousel-inner"&gt;
                 &lt;div class="carousel-item active"&gt;&lt;img class="d-block w-100" src="http://beenje.github.io/blog/images/legomac/legomac.jpg" alt=""&gt;&lt;/div&gt;
@@ -752,23 +752,23 @@ Thanks again to @mkennedy for the stickers!&lt;/p&gt;
                 &lt;div class="carousel-item"&gt;&lt;img class="d-block w-100" src="http://beenje.github.io/blog/images/legomac/button_front.jpg" alt=""&gt;&lt;/div&gt;
                 &lt;div class="carousel-item"&gt;&lt;img class="d-block w-100" src="http://beenje.github.io/blog/images/legomac/button_top.jpg" alt=""&gt;&lt;/div&gt;
     &lt;/div&gt;
-      &lt;a class="carousel-control-prev" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_0a9f293b98484640b1e526f005ecaeb8" role="button" data-slide="prev"&gt;
+      &lt;a class="carousel-control-prev" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_aa7793c34c6e465bafd424b61a40108d" role="button" data-slide="prev"&gt;
     &lt;span class="carousel-control-prev-icon" aria-hidden="true"&gt;&lt;/span&gt;
     &lt;span class="sr-only"&gt;Previous&lt;/span&gt;
   &lt;/a&gt;
-  &lt;a class="carousel-control-next" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_0a9f293b98484640b1e526f005ecaeb8" role="button" data-slide="next"&gt;
+  &lt;a class="carousel-control-next" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_aa7793c34c6e465bafd424b61a40108d" role="button" data-slide="next"&gt;
     &lt;span class="carousel-control-next-icon" aria-hidden="true"&gt;&lt;/span&gt;
     &lt;span class="sr-only"&gt;Next&lt;/span&gt;
   &lt;/a&gt;
 &lt;/div&gt;
 
-&lt;/div&gt;
-&lt;div class="section" id="next"&gt;
+&lt;/section&gt;
+&lt;section id="next"&gt;
 &lt;h2&gt;Next&lt;/h2&gt;
 &lt;p&gt;I didn't build this LEGO Macintosh to use it as a simple clock :-)
 I have a few ideas. I'll start with a small web server so that I can receive and display messages.
 That will be the subject of another &lt;a class="reference external" href="http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi"&gt;blog post&lt;/a&gt;!&lt;/p&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>lego</category><category>Mac</category><category>pi</category><category>python</category><guid>http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/</guid><pubDate>Tue, 23 May 2017 20:39:12 GMT</pubDate></item><item><title>OpenVPN source based routing</title><link>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I already spoke about installing OpenVPN on a Raspberry Pi in another blog
+&lt;/section&gt;</description><category>lego</category><category>Mac</category><category>pi</category><category>python</category><guid>http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/</guid><pubDate>Tue, 23 May 2017 20:39:12 GMT</pubDate></item><item><title>OpenVPN source based routing</title><link>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;I already spoke about installing OpenVPN on a Raspberry Pi in another blog
 &lt;a class="reference external" href="http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible"&gt;post&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;I only connect to this VPN server to access content that requires a french IP address.
 I use OpenVPN Connect App on my iPad and &lt;a class="reference external" href="https://tunnelblick.net"&gt;Tunnelblick&lt;/a&gt;
@@ -779,7 +779,7 @@ There is no VPN client available...&lt;/p&gt;
 It's a nice router running a free operating system based on
 OpenWrt with automatic updates.
 If you haven't heard about it, you should check it out.&lt;/p&gt;
-&lt;div class="section" id="configuring-openvpn-client-on-openwrt"&gt;
+&lt;section id="configuring-openvpn-client-on-openwrt"&gt;
 &lt;h2&gt;Configuring OpenVPN client on OpenWrt&lt;/h2&gt;
 &lt;p&gt;Installing an OpenVPN client on OpenWrt is not very difficult.
 Here is a quick summary.&lt;/p&gt;
@@ -831,8 +831,8 @@ To use Google DNS, add the following two lines to the wan interface in &lt;cite&
 &lt;p&gt;If you run &lt;cite&gt;/etc/init.d/openvpn start&lt;/cite&gt; with this config, you should connect successfully!
 All the traffic will go via the VPN. That's nice but it's not what I want.
 I only want my Apple TV traffic to go via the VPN. How to achieve that?&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="source-based-routing"&gt;
+&lt;/section&gt;
+&lt;section id="source-based-routing"&gt;
 &lt;h2&gt;Source based routing&lt;/h2&gt;
 &lt;p&gt;I quickly found this &lt;a class="reference external" href="https://wiki.openwrt.org/doc/networking/routing"&gt;wiki page&lt;/a&gt; to implement source
 based routing. Exactly what I want. What took me some time to realize is
@@ -929,15 +929,15 @@ down scripts by openvpn.&lt;/p&gt;
 &lt;p&gt;If we run &lt;cite&gt;/etc/init.d/openvpn start&lt;/cite&gt; with this config, only the traffic
 from the 192.168.75.20 IP address will go via the VPN!&lt;/p&gt;
 &lt;p&gt;Run &lt;cite&gt;/etc/init.d/openvpn stop&lt;/cite&gt; to close the tunnel.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="conclusion"&gt;
+&lt;/section&gt;
+&lt;section id="conclusion"&gt;
 &lt;h2&gt;Conclusion&lt;/h2&gt;
 &lt;p&gt;This is a nice way to route traffic through a VPN based on the source IP
 address.&lt;/p&gt;
 &lt;p&gt;You can of course use the router webinterface to stop and start openvpn.
 In &lt;a class="reference external" href="http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container"&gt;another post&lt;/a&gt;,
 I'll talk about an even more user friendly way to control it.&lt;/p&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>AppleTV</category><category>OpenWrt</category><category>pi</category><category>VPN</category><guid>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</guid><pubDate>Fri, 20 Jan 2017 20:46:16 GMT</pubDate></item><item><title>Installing OpenVPN on a Raspberry Pi with Ansible</title><link>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I have to confess that I initially decided to install a VPN,
+&lt;/section&gt;</description><category>AppleTV</category><category>OpenWrt</category><category>pi</category><category>VPN</category><guid>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</guid><pubDate>Fri, 20 Jan 2017 20:46:16 GMT</pubDate></item><item><title>Installing OpenVPN on a Raspberry Pi with Ansible</title><link>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;I have to confess that I initially decided to install a VPN,
 not to secure my connection when using a free Wireless Acces Point in an
 airport or hotel, but to watch Netflix :-)&lt;/p&gt;
 &lt;p&gt;I had a VPS in France where I installed sniproxy to access Netflix.
@@ -1096,4 +1096,4 @@ a certificate without regenerating everything).&lt;/p&gt;
 &lt;p&gt;The full playbook can be found on &lt;a class="reference external" href="https://github.com/beenje/pi_openvpn"&gt;github&lt;/a&gt;.
 The README includes some quick instructions.&lt;/p&gt;
 &lt;p&gt;I now have a private VPN in France and one at home that I can use to
-securely access my NAS from anywhere!&lt;/p&gt;&lt;/div&gt;</description><category>Ansible</category><category>pi</category><category>VPN</category><guid>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</guid><pubDate>Mon, 18 Jul 2016 20:26:28 GMT</pubDate></item></channel></rss>
+securely access my NAS from anywhere!&lt;/p&gt;</description><category>Ansible</category><category>pi</category><category>VPN</category><guid>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</guid><pubDate>Mon, 18 Jul 2016 20:26:28 GMT</pubDate></item></channel></rss>

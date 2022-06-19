@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about tika)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/tika.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2021 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about tika)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/tika.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2022 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 06 Jan 2021 07:52:51 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Parsing and indexing PDF in Python</title><link>http://beenje.github.io/blog/posts/parsing-and-indexing-pdf-in-python/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sun, 19 Jun 2022 20:13:57 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Parsing and indexing PDF in Python</title><link>http://beenje.github.io/blog/posts/parsing-and-indexing-pdf-in-python/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;&lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
 &lt;p&gt;I have a &lt;a href="http://www.getdoxie.com"&gt;Doxie Go&lt;/a&gt; scanner and I scan all the documents I receive in paper.
@@ -110,10 +110,8 @@ On MacOS, you can install it using &lt;a href="http://brew.sh"&gt;Homebrew&lt;/a
 
 
 &lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
-
         &lt;iframe width="600" height="870" src="http://www.cbu.edu.zm/downloads/pdf-sample.pdf" frameborder="0" allowfullscreen&gt;&lt;/iframe&gt;
-        
-&lt;/div&gt;
+        &lt;/div&gt;
 
 &lt;/div&gt;
 
@@ -1054,4 +1052,4 @@ You can let the library starts the server or use Docker to start your own.&lt;/p
 
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>elasticsearch</category><category>python</category><category>tika</category><guid>http://beenje.github.io/blog/posts/parsing-and-indexing-pdf-in-python/</guid><pubDate>Wed, 16 Nov 2016 20:59:23 GMT</pubDate></item></channel></rss>
+&lt;/div&gt;</description><category>elasticsearch</category><category>python</category><category>tika</category><guid>http://beenje.github.io/blog/posts/parsing-and-indexing-pdf-in-python/</guid><pubDate>Wed, 16 Nov 2016 20:59:23 GMT</pubDate></item></channel></rss>

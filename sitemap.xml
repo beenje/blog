@@ -7,7 +7,7 @@
                         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
  <url>
   <loc>http://beenje.github.io/blog/</loc>
-  <lastmod>2021-01-06T07:52:00Z</lastmod>
+  <lastmod>2022-06-13T18:51:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/2016/</loc>
@@ -26,12 +26,16 @@
   <lastmod>2021-01-06T07:52:00Z</lastmod>
  </url>
  <url>
+  <loc>http://beenje.github.io/blog/2022/</loc>
+  <lastmod>2022-06-13T18:51:00Z</lastmod>
+ </url>
+ <url>
   <loc>http://beenje.github.io/blog/archive.html</loc>
-  <lastmod>2021-01-06T07:52:00Z</lastmod>
+  <lastmod>2022-06-19T20:13:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/</loc>
-  <lastmod>2021-01-06T07:52:00Z</lastmod>
+  <lastmod>2022-06-13T19:09:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/categories/aiohttp/</loc>
@@ -234,6 +238,10 @@
   <lastmod>2021-01-06T07:52:00Z</lastmod>
  </url>
  <url>
+  <loc>http://beenje.github.io/blog/categories/tango/</loc>
+  <lastmod>2022-06-13T19:09:00Z</lastmod>
+ </url>
+ <url>
   <loc>http://beenje.github.io/blog/categories/tika/</loc>
   <lastmod>2021-01-06T07:52:00Z</lastmod>
  </url>
@@ -267,11 +275,11 @@
  </url>
  <url>
   <loc>http://beenje.github.io/blog/index-1.html</loc>
-  <lastmod>2021-01-06T08:21:00Z</lastmod>
+  <lastmod>2022-06-19T20:13:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/index-2.html</loc>
-  <lastmod>2021-01-06T08:21:00Z</lastmod>
+  <lastmod>2022-06-19T20:13:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/pages/about/</loc>
@@ -290,12 +298,20 @@
   <lastmod>2021-01-06T07:52:00Z</lastmod>
  </url>
  <url>
+  <loc>http://beenje.github.io/blog/posts/compiling-tango-with-conda/</loc>
+  <lastmod>2022-06-13T19:07:00Z</lastmod>
+ </url>
+ <url>
   <loc>http://beenje.github.io/blog/posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/</loc>
   <lastmod>2021-01-06T07:52:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/crontab-and-date/</loc>
   <lastmod>2021-01-06T07:52:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/posts/developing-and-compiling-tango-with-conda/</loc>
+  <lastmod>2022-06-19T20:12:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/docker-and-conda/</loc>
@@ -368,6 +384,10 @@
  <url>
   <loc>http://beenje.github.io/blog/posts/switching-from-git-bigfile-to-git-lfs/</loc>
   <lastmod>2021-01-06T07:52:00Z</lastmod>
+ </url>
+ <url>
+  <loc>http://beenje.github.io/blog/posts/test-md/</loc>
+  <lastmod>2022-06-13T19:09:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/using-epics-base-with-conda-on-linux-macos-and-windows/</loc>

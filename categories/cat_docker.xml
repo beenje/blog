@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about docker)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/cat_docker.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2021 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about docker)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/cat_docker.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2022 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 06 Jan 2021 08:21:40 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Dockerfile anti-patterns and best practices</title><link>http://beenje.github.io/blog/posts/dockerfile-anti-patterns-and-best-practices/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I've been using &lt;a class="reference external" href="https://www.docker.com"&gt;Docker&lt;/a&gt; for some time now.
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sun, 19 Jun 2022 20:13:56 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Dockerfile anti-patterns and best practices</title><link>http://beenje.github.io/blog/posts/dockerfile-anti-patterns-and-best-practices/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;I've been using &lt;a class="reference external" href="https://www.docker.com"&gt;Docker&lt;/a&gt; for some time now.
 There is already a lot of documentation available online but I recently
 saw the same "anti-patterns" several times, so I thought it was worth writing a post about
 it.&lt;/p&gt;
 &lt;p&gt;I won't repeat all the &lt;a class="reference external" href="https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/"&gt;Best practices for writing Dockerfiles&lt;/a&gt; here.
 You should definitively read that page.&lt;/p&gt;
 &lt;p&gt;I want to emphasize some things that took me some time to understand.&lt;/p&gt;
-&lt;div class="section" id="avoid-invalidating-the-cache"&gt;
+&lt;section id="avoid-invalidating-the-cache"&gt;
 &lt;h2&gt;Avoid invalidating the cache&lt;/h2&gt;
 &lt;p&gt;Let's take a simple example with a Python application:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;FROM python:3.6
@@ -46,8 +46,8 @@ CMD ["ap.py"]&lt;/pre&gt;
 &lt;em&gt;requirements.txt&lt;/em&gt; file changes. It will use the cache otherwise.&lt;/p&gt;
 &lt;p&gt;This is much more efficient and will save you quite some time if you have
 many requirements to install.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="minimize-the-number-of-layers"&gt;
+&lt;/section&gt;
+&lt;section id="minimize-the-number-of-layers"&gt;
 &lt;h2&gt;Minimize the number of layers&lt;/h2&gt;
 &lt;p&gt;What does that really mean?&lt;/p&gt;
 &lt;p&gt;Each &lt;a class="reference external" href="https://www.docker.com"&gt;Docker&lt;/a&gt; image references a list of read-only layers that represent
@@ -126,8 +126,8 @@ IMAGE               CREATED              CREATED BY                             
 There isn't much more to say :-)&lt;/p&gt;
 &lt;p&gt;If you want to know more about images and layers, you should read the
 documentation: &lt;a class="reference external" href="https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/"&gt;Understand images, containers, and storage drivers&lt;/a&gt;.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="conclusion"&gt;
+&lt;/section&gt;
+&lt;section id="conclusion"&gt;
 &lt;h2&gt;Conclusion&lt;/h2&gt;
 &lt;p&gt;Avoid invalidating the cache:&lt;/p&gt;
 &lt;ul class="simple"&gt;
@@ -141,7 +141,7 @@ late as possible&lt;/p&gt;&lt;/li&gt;
 &lt;li&gt;&lt;p&gt;put related commands in the same RUN instruction&lt;/p&gt;&lt;/li&gt;
 &lt;li&gt;&lt;p&gt;remove files in the same RUN command that created them&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>docker</category><guid>http://beenje.github.io/blog/posts/dockerfile-anti-patterns-and-best-practices/</guid><pubDate>Thu, 16 Mar 2017 21:10:49 GMT</pubDate></item><item><title>Docker and conda</title><link>http://beenje.github.io/blog/posts/docker-and-conda/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I just read a blog post about &lt;a class="reference external" href="http://fmgdata.kinja.com/using-docker-with-conda-environments-1790901398"&gt;Using Docker with Conda Environments&lt;/a&gt;.
+&lt;/section&gt;</description><category>docker</category><guid>http://beenje.github.io/blog/posts/dockerfile-anti-patterns-and-best-practices/</guid><pubDate>Thu, 16 Mar 2017 21:10:49 GMT</pubDate></item><item><title>Docker and conda</title><link>http://beenje.github.io/blog/posts/docker-and-conda/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;I just read a blog post about &lt;a class="reference external" href="http://fmgdata.kinja.com/using-docker-with-conda-environments-1790901398"&gt;Using Docker with Conda Environments&lt;/a&gt;.
 I do things slightly differently so I thought I would share an example of
 Dockerfile I use:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;FROM continuumio/miniconda3:latest
@@ -187,4 +187,4 @@ if you haven't heard of it yet.&lt;/p&gt;&lt;/li&gt;
 make the image a bit smaller.&lt;/p&gt;&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;I switched from virtualenv to &lt;a class="reference external" href="https://conda.io"&gt;conda&lt;/a&gt; a while ago and I really enjoy it.
-A big thanks to &lt;a class="reference external" href="https://www.continuum.io"&gt;Continuum Analytics&lt;/a&gt;!&lt;/p&gt;&lt;/div&gt;</description><category>conda</category><category>docker</category><category>python</category><guid>http://beenje.github.io/blog/posts/docker-and-conda/</guid><pubDate>Sat, 28 Jan 2017 22:32:56 GMT</pubDate></item></channel></rss>
+A big thanks to &lt;a class="reference external" href="https://www.continuum.io"&gt;Continuum Analytics&lt;/a&gt;!&lt;/p&gt;</description><category>conda</category><category>docker</category><category>python</category><guid>http://beenje.github.io/blog/posts/docker-and-conda/</guid><pubDate>Sat, 28 Jan 2017 22:32:56 GMT</pubDate></item></channel></rss>

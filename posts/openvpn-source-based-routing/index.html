@@ -93,7 +93,7 @@ bg-dark
             <time class="published dt-published" datetime="2017-01-20T21:46:16+01:00" itemprop="datePublished" title="2017-01-20 21:46">2017-01-20 21:46</time></a>
             </p>
                 <p class="commentline">
-        
+    
     <a href="#disqus_thread" data-disqus-identifier="cache/posts/openvpn-source-based-routing.html">Comments</a>
 
 
@@ -105,8 +105,7 @@ bg-dark
         
 
     </header><div class="e-content entry-content" itemprop="articleBody text">
-    <div>
-<p>I already spoke about installing OpenVPN on a Raspberry Pi in another blog
+    <p>I already spoke about installing OpenVPN on a Raspberry Pi in another blog
 <a class="reference external" href="../installing-openvpn-on-a-raspberry-pi-with-ansible">post</a>.</p>
 <p>I only connect to this VPN server to access content that requires a french IP address.
 I use OpenVPN Connect App on my iPad and <a class="reference external" href="https://tunnelblick.net">Tunnelblick</a>
@@ -117,8 +116,7 @@ There is no VPN client available...</p>
 It's a nice router running a free operating system based on
 OpenWrt with automatic updates.
 If you haven't heard about it, you should check it out.</p>
-<div class="section" id="configuring-openvpn-client-on-openwrt">
-<h2>Configuring OpenVPN client on OpenWrt</h2>
+<section id="configuring-openvpn-client-on-openwrt"><h2>Configuring OpenVPN client on OpenWrt</h2>
 <p>Installing an OpenVPN client on OpenWrt is not very difficult.
 Here is a quick summary.</p>
 <ol class="arabic">
@@ -173,9 +171,7 @@ To use Google DNS, add the following two lines to the wan interface in <cite>/et
 <p>If you run <cite>/etc/init.d/openvpn start</cite> with this config, you should connect successfully!
 All the traffic will go via the VPN. That's nice but it's not what I want.
 I only want my Apple TV traffic to go via the VPN. How to achieve that?</p>
-</div>
-<div class="section" id="source-based-routing">
-<h2>Source based routing</h2>
+</section><section id="source-based-routing"><h2>Source based routing</h2>
 <p>I quickly found this <a class="reference external" href="https://wiki.openwrt.org/doc/networking/routing">wiki page</a> to implement source
 based routing. Exactly what I want. What took me some time to realize is
 that before to do that I had to ignore the routes pushed by the server.</p>
@@ -275,17 +271,14 @@ down scripts by openvpn.</p>
 <p>If we run <cite>/etc/init.d/openvpn start</cite> with this config, only the traffic
 from the 192.168.75.20 IP address will go via the VPN!</p>
 <p>Run <cite>/etc/init.d/openvpn stop</cite> to close the tunnel.</p>
-</div>
-<div class="section" id="conclusion">
-<h2>Conclusion</h2>
+</section><section id="conclusion"><h2>Conclusion</h2>
 <p>This is a nice way to route traffic through a VPN based on the source IP
 address.</p>
 <p>You can of course use the router webinterface to stop and start openvpn.
 In <a class="reference external" href="../home-assistant-on-turris-omnia-via-lxc-container">another post</a>,
 I'll talk about an even more user friendly way to control it.</p>
+</section>
 </div>
-</div>
-    </div>
     <aside class="postpromonav"><nav><ul itemprop="keywords" class="tags">
 <li><a class="tag p-category" href="../../categories/appletv/" rel="tag">AppleTV</a></li>
             <li><a class="tag p-category" href="../../categories/openwrt/" rel="tag">OpenWrt</a></li>
@@ -301,7 +294,7 @@ I'll talk about an even more user friendly way to control it.</p>
             </li>
         </ul></nav></aside><section class="comments hidden-print"><h2>Comments</h2>
         
-        
+    
         <div id="disqus_thread"></div>
         <script>
         var disqus_shortname ="tchutchut",
@@ -322,7 +315,7 @@ I'll talk about an even more user friendly way to control it.</p>
 
 
         </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
-            Contents © 2021         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2022         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
             

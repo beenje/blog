@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about https)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/https.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2021 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about https)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/https.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2022 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 06 Jan 2021 08:21:41 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Running your application over HTTPS with traefik</title><link>http://beenje.github.io/blog/posts/running-your-application-over-https-with-traefik/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I just read another very clear article from Miguel Grinberg about &lt;a class="reference external" href="https://blog.miguelgrinberg.com/post/running-your-flask-application-over-https"&gt;Running Your Flask
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sun, 19 Jun 2022 20:13:57 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Running your application over HTTPS with traefik</title><link>http://beenje.github.io/blog/posts/running-your-application-over-https-with-traefik/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;I just read another very clear article from Miguel Grinberg about &lt;a class="reference external" href="https://blog.miguelgrinberg.com/post/running-your-flask-application-over-https"&gt;Running Your Flask
 Application Over HTTPS&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;As the title suggests, it describes different ways to run a flask application over HTTPS.
 I have been using &lt;a class="reference external" href="http://flask.pocoo.org"&gt;flask&lt;/a&gt; for quite some time, but I didn't even know about
@@ -14,7 +14,7 @@ past.&lt;/p&gt;
 &lt;p&gt;If your app is available on the internet, you should definitively use
 Let's Encrypt. But if your app is only supposed to be used internally
 on a private network, a self-signed certificate is an option.&lt;/p&gt;
-&lt;div class="section" id="traefik"&gt;
+&lt;section id="traefik"&gt;
 &lt;h2&gt;Traefik&lt;/h2&gt;
 &lt;p&gt;I now often use &lt;a class="reference external" href="https://www.docker.com"&gt;docker&lt;/a&gt; to deploy my applications.
 I was looking for a way to automatically configure Let's Encrypt.
@@ -74,8 +74,8 @@ exposedbydefault = false&lt;/pre&gt;
 challenges for most new issuance&lt;/a&gt;.
 Traefik added &lt;a class="reference external" href="https://github.com/containous/traefik/pull/2701"&gt;support for the HTTP-01 challenge&lt;/a&gt;. I updated the above
 configuration to use this validation method: &lt;cite&gt;[acme.httpChallenge]&lt;/cite&gt;.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="a-simple-example"&gt;
+&lt;/section&gt;
+&lt;section id="a-simple-example"&gt;
 &lt;h2&gt;A simple example&lt;/h2&gt;
 &lt;p&gt;I created a dummy example just to show how to run a flask application over
 HTTPS with traefik and Let's Encrypt.
@@ -124,8 +124,8 @@ gave me an A rating :-)&lt;/p&gt;
 &lt;img alt="/images/flask_traefik/traefik_ssl_report.png" src="http://beenje.github.io/blog/images/flask_traefik/traefik_ssl_report.png"&gt;
 &lt;p&gt;Not as good as the A+ for Miguel's site, but not that bad!
 Especially considering there isn't any specific SSL setup.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="a-more-realistic-deployment"&gt;
+&lt;/section&gt;
+&lt;section id="a-more-realistic-deployment"&gt;
 &lt;h2&gt;A more realistic deployment&lt;/h2&gt;
 &lt;p&gt;As I already mentioned, traefik is made to automatically discover backends (docker containers in my case).
 So you usually run it by itself.&lt;/p&gt;
@@ -199,11 +199,11 @@ Note that the &lt;cite&gt;traefik.port&lt;/cite&gt; label is only required if th
 It's thus not needed in our example.&lt;/p&gt;
 &lt;p&gt;That's basically it. As you can see, &lt;a class="reference external" href="https://www.docker.com"&gt;docker&lt;/a&gt; and &lt;a class="reference external" href="http://docs.ansible.com/ansible/"&gt;Ansible&lt;/a&gt; make the deployment easy.
 And &lt;a class="reference external" href="https://traefik.io"&gt;traefik&lt;/a&gt; takes care of the Let's Encrypt certificate.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="conclusion"&gt;
+&lt;/section&gt;
+&lt;section id="conclusion"&gt;
 &lt;h2&gt;Conclusion&lt;/h2&gt;
 &lt;p&gt;Traefik comes with many other features and is well &lt;a class="reference external" href="https://docs.traefik.io"&gt;documented&lt;/a&gt;.
 You should check &lt;a class="reference external" href="https://docs.traefik.io/#docker"&gt;this Docker example&lt;/a&gt; that demonstrates load-balancing.
 Really cool.&lt;/p&gt;
 &lt;p&gt;If you use &lt;a class="reference external" href="https://www.docker.com"&gt;docker&lt;/a&gt;, you should really give &lt;a class="reference external" href="https://traefik.io"&gt;traefik&lt;/a&gt; a try!&lt;/p&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>flask</category><category>https</category><category>python</category><category>traefik</category><guid>http://beenje.github.io/blog/posts/running-your-application-over-https-with-traefik/</guid><pubDate>Thu, 08 Jun 2017 19:49:46 GMT</pubDate></item></channel></rss>
+&lt;/section&gt;</description><category>flask</category><category>https</category><category>python</category><category>traefik</category><guid>http://beenje.github.io/blog/posts/running-your-application-over-https-with-traefik/</guid><pubDate>Thu, 08 Jun 2017 19:49:46 GMT</pubDate></item></channel></rss>

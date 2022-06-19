@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about VPN)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/vpn.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2021 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about VPN)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/vpn.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2022 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 06 Jan 2021 08:21:41 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Home Assistant on Turris Omnia via LXC container</title><link>http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In a previous post, I described &lt;a class="reference external" href="http://beenje.github.io/blog/posts/openvpn-source-based-routing"&gt;how to install OpenVPN client on a Turris
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sun, 19 Jun 2022 20:13:57 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Home Assistant on Turris Omnia via LXC container</title><link>http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;In a previous post, I described &lt;a class="reference external" href="http://beenje.github.io/blog/posts/openvpn-source-based-routing"&gt;how to install OpenVPN client on a Turris
 Omnia router&lt;/a&gt;. To start or stop the
 client, I was using the command line and mentioned the LuCi Web User
 Interface.&lt;/p&gt;
@@ -27,7 +27,7 @@ Anyway, there is another feature I wanted to try: &lt;a class="reference externa
 application, so it's easy to install in a linux container and would allow
 to easily keep the version up-to-date.&lt;/p&gt;
 &lt;p&gt;So let's start!&lt;/p&gt;
-&lt;div class="section" id="create-a-lxc-container"&gt;
+&lt;section id="create-a-lxc-container"&gt;
 &lt;h2&gt;Create a LXC container&lt;/h2&gt;
 &lt;p&gt;As described &lt;a class="reference external" href="https://www.turris.cz/doc/en/howto/lxc"&gt;here&lt;/a&gt;, you can
 create a LXC container via the LuCI web interface or via the command
@@ -94,8 +94,8 @@ root@LXC_NAME:~# apt-get install -y dbus vim&lt;/pre&gt;
 &lt;pre class="literal-block"&gt;root@LXC_NAME:~# exit
 root@turris:~# lxc-attach -n homeassistant
 root@homeassistant:~#&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="install-home-assistant"&gt;
+&lt;/section&gt;
+&lt;section id="install-home-assistant"&gt;
 &lt;h2&gt;Install Home Assistant&lt;/h2&gt;
 &lt;p&gt;Next, we just have to follow the &lt;a class="reference external" href="https://home-assistant.io/getting-started/installation-virtualenv/"&gt;Home Assistant installation instructions&lt;/a&gt;.
 They are well detailed. I'll just quickly repeat them here to make it
@@ -118,8 +118,8 @@ Check the created configuration file:
 &lt;p&gt;You can comment out the &lt;cite&gt;introduction:&lt;/cite&gt; line:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;# Show links to resources in log and frontend
 #introduction:&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="add-a-switch-to-home-assistant"&gt;
+&lt;/section&gt;
+&lt;section id="add-a-switch-to-home-assistant"&gt;
 &lt;h2&gt;Add a switch to Home Assistant&lt;/h2&gt;
 &lt;p&gt;To start and stop our VPN we define a &lt;a class="reference external" href="https://home-assistant.io/components/switch.command_line/"&gt;Command Line Switch&lt;/a&gt; that
 triggers the openvpn script on the router.
@@ -165,8 +165,8 @@ even if the VPN is started or stopped without using the application.&lt;/p&gt;
 &lt;p&gt;If you go to &lt;em&gt;http://&amp;lt;container IP&amp;gt;:8123&lt;/em&gt;, you should see something like
 that:&lt;/p&gt;
 &lt;img alt="/images/hass_home.png" src="http://beenje.github.io/blog/images/hass_home.png"&gt;
-&lt;/div&gt;
-&lt;div class="section" id="automatically-start-home-assistant"&gt;
+&lt;/section&gt;
+&lt;section id="automatically-start-home-assistant"&gt;
 &lt;h2&gt;Automatically start Home Assistant&lt;/h2&gt;
 &lt;p&gt;Let's configure &lt;a class="reference external" href="https://home-assistant.io/getting-started/autostart-systemd/"&gt;systemd&lt;/a&gt; to automatically
 start the application.
@@ -198,8 +198,8 @@ Set the following in &lt;cite&gt;/etc/config/lxc-auto&lt;/cite&gt;:&lt;/p&gt;
 config container
   option name homeassistant
   option timeout 60&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="make-it-easy-to-access-home-assistant"&gt;
+&lt;/section&gt;
+&lt;section id="make-it-easy-to-access-home-assistant"&gt;
 &lt;h2&gt;Make it easy to access Home Assistant&lt;/h2&gt;
 &lt;p&gt;There is one more thing we want to do: assign a fixed IP to the container.
 This can be done like for any machines on the LAN via the &lt;em&gt;DHCP and DNS&lt;/em&gt; settings in LuCI interface.
@@ -208,7 +208,7 @@ In &lt;em&gt;Static Leases&lt;/em&gt;, assign a fixed IP to the container MAC ad
 create a bookmark or add an icon to your phone and tablet home screen.
 This makes it easy for anyone at home to turn the VPN on and off!&lt;/p&gt;
 &lt;img alt="/images/hass_icon.png" src="http://beenje.github.io/blog/images/hass_icon.png"&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>home-assistant</category><category>LXC</category><category>OpenWrt</category><category>turris</category><category>VPN</category><guid>http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container/</guid><pubDate>Thu, 26 Jan 2017 21:01:30 GMT</pubDate></item><item><title>OpenVPN source based routing</title><link>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I already spoke about installing OpenVPN on a Raspberry Pi in another blog
+&lt;/section&gt;</description><category>home-assistant</category><category>LXC</category><category>OpenWrt</category><category>turris</category><category>VPN</category><guid>http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container/</guid><pubDate>Thu, 26 Jan 2017 21:01:30 GMT</pubDate></item><item><title>OpenVPN source based routing</title><link>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;I already spoke about installing OpenVPN on a Raspberry Pi in another blog
 &lt;a class="reference external" href="http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible"&gt;post&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;I only connect to this VPN server to access content that requires a french IP address.
 I use OpenVPN Connect App on my iPad and &lt;a class="reference external" href="https://tunnelblick.net"&gt;Tunnelblick&lt;/a&gt;
@@ -219,7 +219,7 @@ There is no VPN client available...&lt;/p&gt;
 It's a nice router running a free operating system based on
 OpenWrt with automatic updates.
 If you haven't heard about it, you should check it out.&lt;/p&gt;
-&lt;div class="section" id="configuring-openvpn-client-on-openwrt"&gt;
+&lt;section id="configuring-openvpn-client-on-openwrt"&gt;
 &lt;h2&gt;Configuring OpenVPN client on OpenWrt&lt;/h2&gt;
 &lt;p&gt;Installing an OpenVPN client on OpenWrt is not very difficult.
 Here is a quick summary.&lt;/p&gt;
@@ -271,8 +271,8 @@ To use Google DNS, add the following two lines to the wan interface in &lt;cite&
 &lt;p&gt;If you run &lt;cite&gt;/etc/init.d/openvpn start&lt;/cite&gt; with this config, you should connect successfully!
 All the traffic will go via the VPN. That's nice but it's not what I want.
 I only want my Apple TV traffic to go via the VPN. How to achieve that?&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="source-based-routing"&gt;
+&lt;/section&gt;
+&lt;section id="source-based-routing"&gt;
 &lt;h2&gt;Source based routing&lt;/h2&gt;
 &lt;p&gt;I quickly found this &lt;a class="reference external" href="https://wiki.openwrt.org/doc/networking/routing"&gt;wiki page&lt;/a&gt; to implement source
 based routing. Exactly what I want. What took me some time to realize is
@@ -369,15 +369,15 @@ down scripts by openvpn.&lt;/p&gt;
 &lt;p&gt;If we run &lt;cite&gt;/etc/init.d/openvpn start&lt;/cite&gt; with this config, only the traffic
 from the 192.168.75.20 IP address will go via the VPN!&lt;/p&gt;
 &lt;p&gt;Run &lt;cite&gt;/etc/init.d/openvpn stop&lt;/cite&gt; to close the tunnel.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="conclusion"&gt;
+&lt;/section&gt;
+&lt;section id="conclusion"&gt;
 &lt;h2&gt;Conclusion&lt;/h2&gt;
 &lt;p&gt;This is a nice way to route traffic through a VPN based on the source IP
 address.&lt;/p&gt;
 &lt;p&gt;You can of course use the router webinterface to stop and start openvpn.
 In &lt;a class="reference external" href="http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container"&gt;another post&lt;/a&gt;,
 I'll talk about an even more user friendly way to control it.&lt;/p&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>AppleTV</category><category>OpenWrt</category><category>pi</category><category>VPN</category><guid>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</guid><pubDate>Fri, 20 Jan 2017 20:46:16 GMT</pubDate></item><item><title>Installing OpenVPN on a Raspberry Pi with Ansible</title><link>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I have to confess that I initially decided to install a VPN,
+&lt;/section&gt;</description><category>AppleTV</category><category>OpenWrt</category><category>pi</category><category>VPN</category><guid>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</guid><pubDate>Fri, 20 Jan 2017 20:46:16 GMT</pubDate></item><item><title>Installing OpenVPN on a Raspberry Pi with Ansible</title><link>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;I have to confess that I initially decided to install a VPN,
 not to secure my connection when using a free Wireless Acces Point in an
 airport or hotel, but to watch Netflix :-)&lt;/p&gt;
 &lt;p&gt;I had a VPS in France where I installed sniproxy to access Netflix.
@@ -536,4 +536,4 @@ a certificate without regenerating everything).&lt;/p&gt;
 &lt;p&gt;The full playbook can be found on &lt;a class="reference external" href="https://github.com/beenje/pi_openvpn"&gt;github&lt;/a&gt;.
 The README includes some quick instructions.&lt;/p&gt;
 &lt;p&gt;I now have a private VPN in France and one at home that I can use to
-securely access my NAS from anywhere!&lt;/p&gt;&lt;/div&gt;</description><category>Ansible</category><category>pi</category><category>VPN</category><guid>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</guid><pubDate>Mon, 18 Jul 2016 20:26:28 GMT</pubDate></item></channel></rss>
+securely access my NAS from anywhere!&lt;/p&gt;</description><category>Ansible</category><category>pi</category><category>VPN</category><guid>http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible/</guid><pubDate>Mon, 18 Jul 2016 20:26:28 GMT</pubDate></item></channel></rss>

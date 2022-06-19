@@ -69,7 +69,219 @@ bg-dark
 
     
 <div class="postindex">
-    <article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/" class="u-url">My LEGO Macintosh Classic with Raspberry Pi and e-paper display</a></h1>
+    <article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/running-your-application-over-https-with-traefik/" class="u-url">Running your application over HTTPS with traefik</a></h1>
+        <div class="metadata">
+            <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                Benjamin Bertrand
+            </span></p>
+            <p class="dateline">
+            <a href="posts/running-your-application-over-https-with-traefik/" rel="bookmark">
+            <time class="published dt-published" datetime="2017-06-08T21:49:46+02:00" itemprop="datePublished" title="2017-06-08 21:49">2017-06-08 21:49</time></a>
+            </p>
+                <p class="commentline">
+    
+    <a href="posts/running-your-application-over-https-with-traefik/#disqus_thread" data-disqus-identifier="cache/posts/running-your-application-over-https-with-traefik.html">Comments</a>
+
+
+        </p>
+</div>
+    </header><div class="e-content entry-content">
+    <p>I just read another very clear article from Miguel Grinberg about <a class="reference external" href="https://blog.miguelgrinberg.com/post/running-your-flask-application-over-https">Running Your Flask
+Application Over HTTPS</a>.</p>
+<p>As the title suggests, it describes different ways to run a flask application over HTTPS.
+I have been using <a class="reference external" href="http://flask.pocoo.org">flask</a> for quite some time, but I didn't even know about
+the <cite>ssl_context</cite> argument. You should definitively check his article!</p>
+<p>Using <a class="reference external" href="https://nginx.org/en/">nginx</a> as a reverse proxy with a self-signed certificate or <a class="reference external" href="https://letsencrypt.org">Let’s
+Encrypt</a> are two options I have been using in the
+past.</p>
+<p>If your app is available on the internet, you should definitively use
+Let's Encrypt. But if your app is only supposed to be used internally
+on a private network, a self-signed certificate is an option.</p>
+<section id="traefik"><h2>Traefik</h2>
+<p>I now often use <a class="reference external" href="https://www.docker.com">docker</a> to deploy my applications.
+I was looking for a way to automatically configure Let's Encrypt.
+I initially found <a class="reference external" href="https://github.com/jwilder/nginx-proxy">nginx-proxy</a>
+and <a class="reference external" href="https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion">docker-letsencrypt-nginx-proxy-companion</a>. This
+was interesting but wasn't that straight forward to setup.</p>
+<p>I then discovered <a class="reference external" href="https://traefik.io">traefik</a>: "a modern HTTP reverse proxy
+and load balancer made to deploy microservices with ease". And that's
+really the case! I've used it to deploy several applications and I
+was impressed. It's written in go, so single binary. There is also a tiny docker
+image that makes it easy to deploy. It includes Let's Encrypt support (with automatic renewal),
+websocket support (no specific setup required)... And many other features.</p>
+<p>Here is a <cite>traefik.toml</cite> configuration example:</p>
+<pre class="literal-block">defaultEntryPoints = ["http", "https"]
+
+[web]
+# Port for the status page
+address = ":8080"
+
+# Entrypoints, http and https
+[entryPoints]
+  # http should be redirected to https
+  [entryPoints.http]
+  address = ":80"
+    [entryPoints.http.redirect]
+    entryPoint = "https"
+  # https is the default
+  [entryPoints.https]
+  address = ":443"
+    [entryPoints.https.tls]
+
+# Enable ACME (Let's Encrypt): automatic SSL
+[acme]
+# Email address used for registration
+email = "test@traefik.io"
+storageFile = "/etc/traefik/acme/acme.json"
+entryPoint = "https"
+onDemand = false
+OnHostRule = true
+  # Use a HTTP-01 acme challenge rather than TLS-SNI-01 challenge
+  [acme.httpChallenge]
+  entryPoint = "http"
+
+# Enable Docker configuration backend
+[docker]
+endpoint = "unix:///var/run/docker.sock"
+domain = "example.com"
+watch = true
+exposedbydefault = false</pre>
+<p>With this simple configuration, you get:</p>
+<ul class="simple">
+<li><p>HTTP redirect on HTTPS</p></li>
+<li><p>Let's Encrypt support</p></li>
+<li><p>Docker backend support</p></li>
+</ul>
+<p>UPDATE (2018-03-04): as mentioned by @jackminardi in the comments, Let's Encrypt <a class="reference external" href="https://community.letsencrypt.org/t/important-what-you-need-to-know-about-tls-sni-validation-issues/50811">disabled the TLS-SNI
+challenges for most new issuance</a>.
+Traefik added <a class="reference external" href="https://github.com/containous/traefik/pull/2701">support for the HTTP-01 challenge</a>. I updated the above
+configuration to use this validation method: <cite>[acme.httpChallenge]</cite>.</p>
+</section><section id="a-simple-example"><h2>A simple example</h2>
+<p>I created a dummy example just to show how to run a flask application over
+HTTPS with traefik and Let's Encrypt.
+Note that traefik is made to dynamically discover backends. So you usually
+don't run it with your app in the same docker-compose.yml file. It usually
+runs separately. But to make it easier, I put both in the same file:</p>
+<pre class="literal-block">version: '2'
+services:
+  flask:
+    build: ./flask
+    image: flask
+    command: uwsgi --http-socket 0.0.0.0:5000 --wsgi-file app.py --callable app
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=flask"
+      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE}"
+  traefik:
+    image: traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.toml:/etc/traefik/traefik.toml:ro
+      - ./traefik/acme:/etc/traefik/acme
+    ports:
+     - "80:80"
+     - "443:443"
+     - "8080:8080"</pre>
+<p>Traefik requires access to the docker socket to listen for changes in the
+backends. It can thus automatically discover when you start and stop
+containers. You can ovverride default behaviour by using labels in your
+container.</p>
+<p>Supposing you own the myhost.example.com domain and have access to ports 80 and 443
+(you can setup port forwarding if you run that on your machine behind a
+router at home), you can run:</p>
+<pre class="literal-block">$ git clone https://github.com/beenje/flask_traefik_letsencrypt.git
+$ cd flask_traefik_letsencrypt
+$ export TRAEFIK_FRONTEND_RULE=Host:myhost.example.com
+$ docker-compose up</pre>
+<p>Voilà! Our flask app is available over HTTPS with a real SSL certificate!</p>
+<img alt="/images/flask_traefik/hello_world.png" src="images/flask_traefik/hello_world.png"><p>Traefik discovered the flask docker container and requested a certificate for our domain.
+All that automatically!</p>
+<p>Traefik even comes with a nice dashboard:</p>
+<img alt="/images/flask_traefik/traefik_dashboard.png" src="images/flask_traefik/traefik_dashboard.png"><p>With this simple configuration, <a class="reference external" href="https://www.ssllabs.com/index.html">Qualys SSL Labs</a>
+gave me an A rating :-)</p>
+<img alt="/images/flask_traefik/traefik_ssl_report.png" src="images/flask_traefik/traefik_ssl_report.png"><p>Not as good as the A+ for Miguel's site, but not that bad!
+Especially considering there isn't any specific SSL setup.</p>
+</section><section id="a-more-realistic-deployment"><h2>A more realistic deployment</h2>
+<p>As I already mentioned, traefik is made to automatically discover backends (docker containers in my case).
+So you usually run it by itself.</p>
+<p>Here is an example how it can be deployed using <a class="reference external" href="http://docs.ansible.com/ansible/">Ansible</a>:</p>
+<pre class="literal-block">---
+- name: create traefik directories
+  file:
+    path: /etc/traefik/acme
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: create traefik.toml
+  template:
+    src: traefik.toml.j2
+    dest: /etc/traefik/traefik.toml
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart traefik
+
+- name: create traefik network
+  docker_network:
+    name: "{{traefik_network}}"
+    state: present
+
+- name: launch traefik container with letsencrypt support
+  docker_container:
+    name: traefik_proxy
+    image: "traefik:{{traefik_version}}"
+    state: started
+    restart_policy: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "{{traefik_dashboard_port}}:8080"
+    volumes:
+      - /etc/traefik/traefik.toml:/etc/traefik/traefik.toml:ro
+      - /etc/traefik/acme:/etc/traefik/acme:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    # purge networks so that the container is only part of
+    # {{traefik_network}} (and not the default bridge network)
+    purge_networks: yes
+    networks:
+      - name: "{{traefik_network}}"
+
+- name: force all notified handlers to run
+  meta: flush_handlers</pre>
+<p>Nothing strange here. It's quite similar to what we had in our docker-compose.yml file.
+We created a specific <cite>traefik_network</cite>. Our docker containers will have to be on that same network.</p>
+<p>Here is how we could deploy a flask application on the same server using another ansible role:</p>
+<pre class="literal-block">- name: launch flask container
+  docker_container:
+    name: flask
+    image: flask
+    command: uwsgi --http-socket 0.0.0.0:5000 --wsgi-file app.py --callable app
+    state: started
+    restart_policy: always
+    purge_networks: yes
+    networks:
+      - name: "{{traefik_network}}"
+    labels:
+      traefik.enable: "true"
+      traefik.backend: "flask"
+      traefik.frontend.rule: "Host:myhost.example.com"
+      traefik.port: "5000"</pre>
+<p>We make sure the container is on the same network as the traefik proxy.
+Note that the <cite>traefik.port</cite> label is only required if the container exposes multiple ports.
+It's thus not needed in our example.</p>
+<p>That's basically it. As you can see, <a class="reference external" href="https://www.docker.com">docker</a> and <a class="reference external" href="http://docs.ansible.com/ansible/">Ansible</a> make the deployment easy.
+And <a class="reference external" href="https://traefik.io">traefik</a> takes care of the Let's Encrypt certificate.</p>
+</section><section id="conclusion"><h2>Conclusion</h2>
+<p>Traefik comes with many other features and is well <a class="reference external" href="https://docs.traefik.io">documented</a>.
+You should check <a class="reference external" href="https://docs.traefik.io/#docker">this Docker example</a> that demonstrates load-balancing.
+Really cool.</p>
+<p>If you use <a class="reference external" href="https://www.docker.com">docker</a>, you should really give <a class="reference external" href="https://traefik.io">traefik</a> a try!</p>
+</section>
+</div>
+    </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/" class="u-url">My LEGO Macintosh Classic with Raspberry Pi and e-paper display</a></h1>
         <div class="metadata">
             <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
                 Benjamin Bertrand
@@ -79,23 +291,21 @@ bg-dark
             <time class="published dt-published" datetime="2017-05-23T22:39:12+02:00" itemprop="datePublished" title="2017-05-23 22:39">2017-05-23 22:39</time></a>
             </p>
                 <p class="commentline">
-        
+    
     <a href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#disqus_thread" data-disqus-identifier="cache/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display.html">Comments</a>
 
 
         </p>
 </div>
     </header><div class="e-content entry-content">
-    <div>
-<p>UPDATED 2019-11-24</p>
+    <p>UPDATED 2019-11-24</p>
 <p>Beginning of April I read an inspiring blog post from Jannis Hermanns
 about a <a class="reference external" href="https://jann.is/lego-macintosh-classic/">LEGO Machintosh Classic with e-paper display</a>.  It was a really nice and cool article.</p>
 <p>I've been playing with some Raspberry Pis before but only with
 <a class="reference external" href="posts/installing-openvpn-on-a-raspberry-pi-with-ansible">software</a>.
 I have been willing to fiddle with hardware for some time.
 This was the perfect opportunity!</p>
-<div class="section" id="lego-digital-designer">
-<h2>LEGO Digital Designer</h2>
+<section id="lego-digital-designer"><h2>LEGO Digital Designer</h2>
 <p>I decided to try to make my own LEGO Macintosh based on Jannis work.
 His blog post is quite detailed with even a list of links with all the
 required components.</p>
@@ -111,16 +321,12 @@ I also wanted to check if it was possible to use the button located on top
 of the display.</p>
 <p>My .lxf file is on <a class="reference external" href="https://github.com/beenje/legomac/tree/master/ldd">github</a>.</p>
 <a class="reference external image-reference" href="images/legomac/legomac_ldd.png"><img alt="/images/legomac/legomac_ldd.thumbnail.png" src="images/legomac/legomac_ldd.thumbnail.png"></a>
-</div>
-<div class="section" id="e-paper-display">
-<h2>E-paper display</h2>
+</section><section id="e-paper-display"><h2>E-paper display</h2>
 <p>When I was about to order the <a class="reference external" href="http://www.embeddedartists.com/products/displays/lcd_27_epaper.php">2.7 inch e-paper display from Embedded Artists</a>, I
 noticed that Embedded Artists was located in Malmö, where I live :-).</p>
 <p>I e-mailed them and I was granted to pick up my order at their office!
 A big thanks to them!</p>
-</div>
-<div class="section" id="raspbery-pi-zero-w">
-<h2>Raspbery Pi Zero W</h2>
+</section><section id="raspbery-pi-zero-w"><h2>Raspbery Pi Zero W</h2>
 <p>The Raspberry Pi Zero W comes with Wifi which is really nice.
 It does not come with the soldered GPIO header. I was starting to look at
 existing soldering iron when I discovered this <a class="reference external" href="https://shop.pimoroni.com/products/gpio-hammer-header">GPIO Hammer Header</a>:</p>
@@ -129,10 +335,7 @@ existing soldering iron when I discovered this <a class="reference external" hre
 I used the installation jig and it was really easy to install.
 There is a nice <a class="reference external" href="https://youtu.be/VDJ2-feg2lk">video</a> that explains how
 to proceed:</p>
-<iframe width="200" height="113" src="https://www.youtube.com/embed/VDJ2-feg2lk?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-</div>
-<div class="section" id="connecting-the-display-to-the-pi">
-<h2>Connecting the display to the Pi</h2>
+<iframe width="200" height="113" src="https://www.youtube.com/embed/VDJ2-feg2lk?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen title="Bilge Tank 072 - STOP! HAMMER TIME!"></iframe></section><section id="connecting-the-display-to-the-pi"><h2>Connecting the display to the Pi</h2>
 <p>Based on Jannis article I initially thought it wasn't possible to use a ribbon
 cable (due to space), so I ordered some Jumper Wires.
 I connected the display to the Pi using the serial expansion
@@ -153,9 +356,7 @@ Carried away by my enthusiasm, I actually cut a bit too much on the left side
 <a class="reference external image-reference" href="images/legomac/drilling_right.jpg"><img alt="/images/legomac/drilling_right.thumbnail.jpg" src="images/legomac/drilling_right.thumbnail.jpg"></a>
 <p>Everything fitted nicely in the lego case:</p>
 <a class="reference external image-reference" href="images/legomac/ribbon_cable.jpg"><img alt="/images/legomac/ribbon_cable.thumbnail.jpg" src="images/legomac/ribbon_cable.thumbnail.jpg"></a>
-</div>
-<div class="section" id="button-on-top">
-<h2>Button on top</h2>
+</section><section id="button-on-top"><h2>Button on top</h2>
 <p>With the ribbon cable, the button on top of the display is connected to pin
 15 on the Raspberry Pi (BCM GPIO22).
 The <cite>ImageDemoButton.py</cite> part of the <a class="reference external" href="https://github.com/embeddedartists/gratis">demo</a>
@@ -167,9 +368,7 @@ I added a little piece of foam inside the brick to keep it straight.</p>
 <a class="reference external image-reference" href="images/legomac/button_front.jpg"><img alt="/images/legomac/button_front.thumbnail.jpg" src="images/legomac/button_front.thumbnail.jpg"></a>
 <p>Of course I move away from the Macintosh Classic design here...
 but <a class="reference external" href="https://www.python.org/dev/peps/pep-0020/">practicality beats purity</a> :-)</p>
-</div>
-<div class="section" id="pi-configuration">
-<h2>Pi configuration</h2>
+</section><section id="pi-configuration"><h2>Pi configuration</h2>
 <p>Jannis article made me discover <a class="reference external" href="https://resin.io">resin.io</a>,
 which is a really interesting project. I did a few tests on a Raspberry Pi 3 and it was a nice experience.
 But when I received my Pi Zero W, it wasn't supported by resinOS yet... This isn't the case anymore!
@@ -273,9 +472,7 @@ $ cd legomac
 $ ansible-playbook -i hosts -k epd-demo.yml</pre>
 <p>That's it!</p>
 <p>Of course don't forget to change the default password on your Pi.</p>
-</div>
-<div class="section" id="one-more-thing">
-<h2>One more thing</h2>
+</section><section id="one-more-thing"><h2>One more thing</h2>
 <p>There isn't much Python in this article but the Pi is running some
 Python code.
 I couldn't resist putting a <a class="reference external" href="https://talkpython.fm">Talk Python To Me</a>
@@ -286,25 +483,25 @@ Thanks again to @mkennedy for the stickers!</p>
 <a class="reference external image-reference" href="images/legomac/talkpythontome.jpg"><img alt="/images/legomac/talkpythontome.thumbnail.jpg" src="images/legomac/talkpythontome.thumbnail.jpg"></a>
 <p>Below are a few pictures. You can see more on <a class="reference external" href="https://flic.kr/s/aHskVAadfo">flickr</a>.</p>
 
-<div id="slides_0a9f293b98484640b1e526f005ecaeb8" class="carousel slide" data-ride="carousel">
+<div id="slides_aa7793c34c6e465bafd424b61a40108d" class="carousel slide" data-ride="carousel">
     <ol class="carousel-indicators">
-<li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="0" class="active">
+<li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="0" class="active">
             </li>
-<li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="1">
+<li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="1">
             </li>
-<li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="2">
+<li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="2">
             </li>
-<li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="3">
+<li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="3">
             </li>
-<li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="4">
+<li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="4">
             </li>
-<li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="5">
+<li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="5">
             </li>
-<li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="6">
+<li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="6">
             </li>
-<li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="7">
+<li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="7">
             </li>
-<li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="8">
+<li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="8">
     </li>
 </ol>
 <div class="carousel-inner">
@@ -318,25 +515,22 @@ Thanks again to @mkennedy for the stickers!</p>
                 <div class="carousel-item"><img class="d-block w-100" src="images/legomac/button_front.jpg" alt=""></div>
                 <div class="carousel-item"><img class="d-block w-100" src="images/legomac/button_top.jpg" alt=""></div>
     </div>
-      <a class="carousel-control-prev" href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_0a9f293b98484640b1e526f005ecaeb8" role="button" data-slide="prev">
+      <a class="carousel-control-prev" href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_aa7793c34c6e465bafd424b61a40108d" role="button" data-slide="prev">
     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
     <span class="sr-only">Previous</span>
   </a>
-  <a class="carousel-control-next" href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_0a9f293b98484640b1e526f005ecaeb8" role="button" data-slide="next">
+  <a class="carousel-control-next" href="posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display/#slides_aa7793c34c6e465bafd424b61a40108d" role="button" data-slide="next">
     <span class="carousel-control-next-icon" aria-hidden="true"></span>
     <span class="sr-only">Next</span>
   </a>
 </div>
 
-</div>
-<div class="section" id="next">
-<h2>Next</h2>
+</section><section id="next"><h2>Next</h2>
 <p>I didn't build this LEGO Macintosh to use it as a simple clock :-)
 I have a few ideas. I'll start with a small web server so that I can receive and display messages.
 That will be the subject of another <a class="reference external" href="posts/experimenting-with-asyncio-on-a-raspberry-pi">blog post</a>!</p>
+</section>
 </div>
-</div>
-    </div>
     </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/dockerfile-anti-patterns-and-best-practices/" class="u-url">Dockerfile anti-patterns and best practices</a></h1>
         <div class="metadata">
             <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
@@ -347,23 +541,21 @@ That will be the subject of another <a class="reference external" href="posts/ex
             <time class="published dt-published" datetime="2017-03-16T22:10:49+01:00" itemprop="datePublished" title="2017-03-16 22:10">2017-03-16 22:10</time></a>
             </p>
                 <p class="commentline">
-        
+    
     <a href="posts/dockerfile-anti-patterns-and-best-practices/#disqus_thread" data-disqus-identifier="cache/posts/dockerfile-anti-patterns-and-best-practices.html">Comments</a>
 
 
         </p>
 </div>
     </header><div class="e-content entry-content">
-    <div>
-<p>I've been using <a class="reference external" href="https://www.docker.com">Docker</a> for some time now.
+    <p>I've been using <a class="reference external" href="https://www.docker.com">Docker</a> for some time now.
 There is already a lot of documentation available online but I recently
 saw the same "anti-patterns" several times, so I thought it was worth writing a post about
 it.</p>
 <p>I won't repeat all the <a class="reference external" href="https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/">Best practices for writing Dockerfiles</a> here.
 You should definitively read that page.</p>
 <p>I want to emphasize some things that took me some time to understand.</p>
-<div class="section" id="avoid-invalidating-the-cache">
-<h2>Avoid invalidating the cache</h2>
+<section id="avoid-invalidating-the-cache"><h2>Avoid invalidating the cache</h2>
 <p>Let's take a simple example with a Python application:</p>
 <pre class="literal-block">FROM python:3.6
 
@@ -398,9 +590,7 @@ CMD ["ap.py"]</pre>
 <em>requirements.txt</em> file changes. It will use the cache otherwise.</p>
 <p>This is much more efficient and will save you quite some time if you have
 many requirements to install.</p>
-</div>
-<div class="section" id="minimize-the-number-of-layers">
-<h2>Minimize the number of layers</h2>
+</section><section id="minimize-the-number-of-layers"><h2>Minimize the number of layers</h2>
 <p>What does that really mean?</p>
 <p>Each <a class="reference external" href="https://www.docker.com">Docker</a> image references a list of read-only layers that represent
 filesystem differences. Every command in your Dockerfile will create a new
@@ -478,9 +668,7 @@ IMAGE               CREATED              CREATED BY                             
 There isn't much more to say :-)</p>
 <p>If you want to know more about images and layers, you should read the
 documentation: <a class="reference external" href="https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/">Understand images, containers, and storage drivers</a>.</p>
-</div>
-<div class="section" id="conclusion">
-<h2>Conclusion</h2>
+</section><section id="conclusion"><h2>Conclusion</h2>
 <p>Avoid invalidating the cache:</p>
 <ul class="simple">
 <li><p>start your Dockerfile with commands that should not change often</p></li>
@@ -492,10 +680,8 @@ late as possible</p></li>
 <ul class="simple">
 <li><p>put related commands in the same RUN instruction</p></li>
 <li><p>remove files in the same RUN command that created them</p></li>
-</ul>
+</ul></section>
 </div>
-</div>
-    </div>
     </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/" class="u-url">Control your accessories from Home Assistant with Siri and HomeKit</a></h1>
         <div class="metadata">
             <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
@@ -506,21 +692,19 @@ late as possible</p></li>
             <time class="published dt-published" datetime="2017-02-16T22:58:56+01:00" itemprop="datePublished" title="2017-02-16 22:58">2017-02-16 22:58</time></a>
             </p>
                 <p class="commentline">
-        
+    
     <a href="posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/#disqus_thread" data-disqus-identifier="cache/posts/control-your-accessories-from-home-assistant-with-siri-and-homekit.html">Comments</a>
 
 
         </p>
 </div>
     </header><div class="e-content entry-content">
-    <div>
-<p>While reading more about <a class="reference external" href="https://home-assistant.io">Home Assistant</a>, I
+    <p>While reading more about <a class="reference external" href="https://home-assistant.io">Home Assistant</a>, I
 discovered it was possible to control your accessories from Home Assistant
 with Siri and HomeKit. I decided to give that a try.</p>
 <p>This requires to install <a class="reference external" href="https://github.com/nfarina/homebridge">Homebridge</a> and
 the <a class="reference external" href="https://github.com/home-assistant/homebridge-homeassistant">homebridge-homeassitant plugin</a>.</p>
-<div class="section" id="install-homebridge">
-<h2>Install Homebridge</h2>
+<section id="install-homebridge"><h2>Install Homebridge</h2>
 <p>Homebridge is a lightweight NodeJS server that emulates the iOS HomeKit
 API. Let's install it in the same <a class="reference external" href="posts/home-assistant-on-turris-omnia-via-lxc-container">LXC container as Home Assistant</a>:</p>
 <pre class="literal-block">root@turris:~# lxc-attach -n homeassistant</pre>
@@ -546,9 +730,7 @@ root@homeassistant:~# cd /usr/lib/node_modules/homebridge/
 root@homeassistant:/usr/lib/node_modules/homebridge# npm install --unsafe-perm bignum
 root@homeassistant:/usr/lib/node_modules/homebridge# cd ../hap-nodejs/node_modules/mdns/
 root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# node-gyp BUILDTYPE=Release rebuild</pre>
-</div>
-<div class="section" id="install-and-configure-homebridge-homeassistant-plugin">
-<h2>Install and configure homebridge-homeassistant plugin</h2>
+</section><section id="install-and-configure-homebridge-homeassistant-plugin"><h2>Install and configure homebridge-homeassistant plugin</h2>
 <pre class="literal-block">root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# cd
 root@homeassistant:~# npm install -g --unsafe-perm homebridge-homeassistant</pre>
 <p>Try to start Homebridge:</p>
@@ -579,9 +761,7 @@ EOF</pre>
 You will need the PIN code to add the Homebridge accessory to HomeKit.</p>
 <p>Check the <a class="reference external" href="https://github.com/home-assistant/homebridge-homeassistant#configuration">Home Assistant plugin page</a>
 for more information on how to configure the plugin.</p>
-</div>
-<div class="section" id="automatically-start-homebridge">
-<h2>Automatically start Homebridge</h2>
+</section><section id="automatically-start-homebridge"><h2>Automatically start Homebridge</h2>
 <p>Let's configure systemd.
 Create the file <cite>/etc/systemd/system/home-assistant@homebridge.service</cite>:</p>
 <pre class="literal-block">root@homeassistant:~# cat &lt;&lt;EOF &gt;&gt; /etc/systemd/system/home-assistant@homebridge.service
@@ -605,9 +785,7 @@ EOF</pre>
 root@homeassistant:~# systemctl enable home-assistant@homebridge
 Created symlink from /etc/systemd/system/multi-user.target.wants/home-assistant@homebridge.service to /etc/systemd/system/home-assistant@homebridge.service.
 root@homeassistant:~# systemctl start home-assistant@homebridge</pre>
-</div>
-<div class="section" id="adding-homebridge-to-ios">
-<h2>Adding Homebridge to iOS</h2>
+</section><section id="adding-homebridge-to-ios"><h2>Adding Homebridge to iOS</h2>
 <p>Homebridge and the Home Assistant plugin are now running.
 Using the Home app on your iOS device, you should be able to add the accessory "Homebridge".
 See <a class="reference external" href="https://github.com/nfarina/homebridge#adding-homebridge-to-ios">Homebridge README</a> for
@@ -620,9 +798,8 @@ more information. You will need to enter the <em>PIN code</em> defined in your
 As described in the <a class="reference external" href="https://github.com/nfarina/homebridge#interacting-with-your-devices">README</a>,
 avoid names usually used by Siri like "Radio" or "Sonos".</p>
 <p>That's it! Homebridge is really a nice addition to Home Assistant if you have some iOS devices at home.</p>
+</section>
 </div>
-</div>
-    </div>
     </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/docker-and-conda/" class="u-url">Docker and conda</a></h1>
         <div class="metadata">
             <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
@@ -633,15 +810,14 @@ avoid names usually used by Siri like "Radio" or "Sonos".</p>
             <time class="published dt-published" datetime="2017-01-28T23:32:56+01:00" itemprop="datePublished" title="2017-01-28 23:32">2017-01-28 23:32</time></a>
             </p>
                 <p class="commentline">
-        
+    
     <a href="posts/docker-and-conda/#disqus_thread" data-disqus-identifier="cache/posts/docker-and-conda.html">Comments</a>
 
 
         </p>
 </div>
     </header><div class="e-content entry-content">
-    <div>
-<p>I just read a blog post about <a class="reference external" href="http://fmgdata.kinja.com/using-docker-with-conda-environments-1790901398">Using Docker with Conda Environments</a>.
+    <p>I just read a blog post about <a class="reference external" href="http://fmgdata.kinja.com/using-docker-with-conda-environments-1790901398">Using Docker with Conda Environments</a>.
 I do things slightly differently so I thought I would share an example of
 Dockerfile I use:</p>
 <pre class="literal-block">FROM continuumio/miniconda3:latest
@@ -688,7 +864,6 @@ make the image a bit smaller.</p></li>
 </ol>
 <p>I switched from virtualenv to <a class="reference external" href="https://conda.io">conda</a> a while ago and I really enjoy it.
 A big thanks to <a class="reference external" href="https://www.continuum.io">Continuum Analytics</a>!</p>
-</div>
     </div>
     </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/home-assistant-on-turris-omnia-via-lxc-container/" class="u-url">Home Assistant on Turris Omnia via LXC container</a></h1>
         <div class="metadata">
@@ -700,15 +875,14 @@ A big thanks to <a class="reference external" href="https://www.continuum.io">Co
             <time class="published dt-published" datetime="2017-01-26T22:01:30+01:00" itemprop="datePublished" title="2017-01-26 22:01">2017-01-26 22:01</time></a>
             </p>
                 <p class="commentline">
-        
+    
     <a href="posts/home-assistant-on-turris-omnia-via-lxc-container/#disqus_thread" data-disqus-identifier="cache/posts/home-assistant-on-turris-omnia-via-lxc-container.html">Comments</a>
 
 
         </p>
 </div>
     </header><div class="e-content entry-content">
-    <div>
-<p>In a previous post, I described <a class="reference external" href="posts/openvpn-source-based-routing">how to install OpenVPN client on a Turris
+    <p>In a previous post, I described <a class="reference external" href="posts/openvpn-source-based-routing">how to install OpenVPN client on a Turris
 Omnia router</a>. To start or stop the
 client, I was using the command line and mentioned the LuCi Web User
 Interface.</p>
@@ -732,8 +906,7 @@ Anyway, there is another feature I wanted to try: <a class="reference external" 
 application, so it's easy to install in a linux container and would allow
 to easily keep the version up-to-date.</p>
 <p>So let's start!</p>
-<div class="section" id="create-a-lxc-container">
-<h2>Create a LXC container</h2>
+<section id="create-a-lxc-container"><h2>Create a LXC container</h2>
 <p>As described <a class="reference external" href="https://www.turris.cz/doc/en/howto/lxc">here</a>, you can
 create a LXC container via the LuCI web interface or via the command
 line:</p>
@@ -799,9 +972,7 @@ root@LXC_NAME:~# apt-get install -y dbus vim</pre>
 <pre class="literal-block">root@LXC_NAME:~# exit
 root@turris:~# lxc-attach -n homeassistant
 root@homeassistant:~#</pre>
-</div>
-<div class="section" id="install-home-assistant">
-<h2>Install Home Assistant</h2>
+</section><section id="install-home-assistant"><h2>Install Home Assistant</h2>
 <p>Next, we just have to follow the <a class="reference external" href="https://home-assistant.io/getting-started/installation-virtualenv/">Home Assistant installation instructions</a>.
 They are well detailed. I'll just quickly repeat them here to make it
 easier to follow but you should refer to the official page for any update:</p>
@@ -823,9 +994,7 @@ Check the created configuration file:
 <p>You can comment out the <cite>introduction:</cite> line:</p>
 <pre class="literal-block"># Show links to resources in log and frontend
 #introduction:</pre>
-</div>
-<div class="section" id="add-a-switch-to-home-assistant">
-<h2>Add a switch to Home Assistant</h2>
+</section><section id="add-a-switch-to-home-assistant"><h2>Add a switch to Home Assistant</h2>
 <p>To start and stop our VPN we define a <a class="reference external" href="https://home-assistant.io/components/switch.command_line/">Command Line Switch</a> that
 triggers the openvpn script on the router.
 Add the following at the end of the file:</p>
@@ -869,10 +1038,7 @@ Our new configuration becomes:</p>
 even if the VPN is started or stopped without using the application.</p>
 <p>If you go to <em>http://&lt;container IP&gt;:8123</em>, you should see something like
 that:</p>
-<img alt="/images/hass_home.png" src="images/hass_home.png">
-</div>
-<div class="section" id="automatically-start-home-assistant">
-<h2>Automatically start Home Assistant</h2>
+<img alt="/images/hass_home.png" src="images/hass_home.png"></section><section id="automatically-start-home-assistant"><h2>Automatically start Home Assistant</h2>
 <p>Let's configure <a class="reference external" href="https://home-assistant.io/getting-started/autostart-systemd/">systemd</a> to automatically
 start the application.
 Create the file <cite>/etc/systemd/system/home-assistant@homeassistant.service</cite>:</p>
@@ -903,19 +1069,15 @@ Set the following in <cite>/etc/config/lxc-auto</cite>:</p>
 config container
   option name homeassistant
   option timeout 60</pre>
-</div>
-<div class="section" id="make-it-easy-to-access-home-assistant">
-<h2>Make it easy to access Home Assistant</h2>
+</section><section id="make-it-easy-to-access-home-assistant"><h2>Make it easy to access Home Assistant</h2>
 <p>There is one more thing we want to do: assign a fixed IP to the container.
 This can be done like for any machines on the LAN via the <em>DHCP and DNS</em> settings in LuCI interface.
 In <em>Static Leases</em>, assign a fixed IP to the container MAC address.</p>
 <p>Now that the container has a fixed IP, go to <em>http://&lt;container IP&gt;:8123</em> and
 create a bookmark or add an icon to your phone and tablet home screen.
 This makes it easy for anyone at home to turn the VPN on and off!</p>
-<img alt="/images/hass_icon.png" src="images/hass_icon.png">
+<img alt="/images/hass_icon.png" src="images/hass_icon.png"></section>
 </div>
-</div>
-    </div>
     </article>
 </div>
 
@@ -924,7 +1086,7 @@ This makes it easy for anyone at home to turn the VPN on and off!</p>
             <li class="next"><a href="index-1.html" rel="next">Older posts</a></li>
         </ul>
 <script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
-            Contents © 2021         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2022         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
             

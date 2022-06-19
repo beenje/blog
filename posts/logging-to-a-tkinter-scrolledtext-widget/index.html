@@ -92,7 +92,7 @@ bg-dark
             <time class="published dt-published" datetime="2017-12-28T21:31:25+01:00" itemprop="datePublished" title="2017-12-28 21:31">2017-12-28 21:31</time></a>
             </p>
                 <p class="commentline">
-        
+    
     <a href="#disqus_thread" data-disqus-identifier="cache/posts/logging-to-a-tkinter-scrolledtext-widget.html">Comments</a>
 
 
@@ -104,8 +104,7 @@ bg-dark
         
 
     </header><div class="e-content entry-content" itemprop="articleBody text">
-    <div>
-<p>I've been programming in Python for almost 10 years.
+    <p>I've been programming in Python for almost 10 years.
 I did many CLI tools, some web applications (mainly using <a class="reference external" href="http://flask.pocoo.org">Flask</a>),
 but I had never built a GUI.</p>
 <p><a class="reference external" href="https://riverbankcomputing.com/software/pyqt/intro">PyQt</a> seems to be one of the most popular framework. I had a look at it but I was not hooked.
@@ -118,8 +117,7 @@ I didn't know that <a class="reference external" href="http://www.tkdocs.com">Tk
 The <a class="reference external" href="http://www.tkdocs.com/tutorial/index.html">official tutorial</a> is quite nice and comes with code examples in different languages (including Python).</p>
 <p>The GUI I needed to write wasn't very advanced.
 I wanted to have a kind of console where to display log messages.</p>
-<div class="section" id="texthandler">
-<h2>TextHandler</h2>
+<section id="texthandler"><h2>TextHandler</h2>
 <p>I quickly found an <a class="reference external" href="https://gist.github.com/moshekaplan/c425f861de7bbf28ef06">example</a> on
 <a class="reference external" href="https://stackoverflow.com/questions/13318742/python-logging-to-tkinter-text-widget">StackOverflow</a>
 to send Python logging to a tkinter Text widget:</p>
@@ -150,9 +148,7 @@ And you can only write to a tkinter widget from the main thread.</p>
 <p>This is explained in <a class="reference external" href="https://stackoverflow.com/questions/43909849/tkinter-python-crashes-on-new-thread-trying-to-log-on-main-thread">another StackOverflow question</a>
 but I didn't like the proposed solution.
 If you implement specific methods as explained (<cite>put_line_to_queue</cite>), you lose the advantage of just calling the log function from different parts of the program.</p>
-</div>
-<div class="section" id="queuehandler">
-<h2>QueueHandler</h2>
+</section><section id="queuehandler"><h2>QueueHandler</h2>
 <p>Using a <a class="reference external" href="https://docs.python.org/3/library/queue.html">Queue</a> is indeed the way to share data between threads.
 So I implemented a simple QueueHandler:</p>
 <pre class="literal-block">class QueueHandler(logging.Handler):
@@ -247,10 +243,7 @@ class ConsoleUi:
         self._stop_event.set()</pre>
 <p>The full code is available on <a class="reference external" href="https://github.com/beenje/tkinter-logging-text-widget">github</a>.
 If you checkout the version v0.1.0 and run it, you'll see something like that:</p>
-<img alt="/images/tkinter/logging_handler.png" src="../../images/tkinter/logging_handler.png">
-</div>
-<div class="section" id="pane-layout">
-<h2>3-pane layout</h2>
+<img alt="/images/tkinter/logging_handler.png" src="../../images/tkinter/logging_handler.png"></section><section id="pane-layout"><h2>3-pane layout</h2>
 <p>The <cite>ConsoleUi</cite> class takes a frame as argument. It makes it easy to
 integrate in another layout. Let's see an example with a <a class="reference external" href="http://www.tkdocs.com/tutorial/complex.html#panedwindow">Paned Window
 widget</a> to
@@ -334,16 +327,13 @@ class.</p>
 <img alt="/images/tkinter/paned_window.png" src="../../images/tkinter/paned_window.png"><p>The main window and the different panes can be resized nicely:</p>
 <img alt="/images/tkinter/paned_window_resized.png" src="../../images/tkinter/paned_window_resized.png"><p>As already mentioned, the full example is available on <a class="reference external" href="https://github.com/beenje/tkinter-logging-text-widget">github</a>.
 You can checkout the version v0.2.0 to see the 3-pane layout.</p>
-</div>
-<div class="section" id="conclusion">
-<h2>Conclusion</h2>
+</section><section id="conclusion"><h2>Conclusion</h2>
 <p>I want to give some credit to <a class="reference external" href="https://docs.python.org/3.6/library/tkinter.html">tkinter</a>. It doesn't have a steep learning curve and allows to easily create some nice GUI.
 You can continue using what you know in Python (Queue, Threads, modules like <a class="reference external" href="http://pyserial.readthedocs.io/en/latest/">pySerial</a>).
 I can only recomment it if you are familiar with Python and want to create a simple GUI.
 That being said, I'll probably try to dive more in <a class="reference external" href="https://riverbankcomputing.com/software/pyqt/intro">PyQt</a> when I have more time.</p>
+</section>
 </div>
-</div>
-    </div>
     <aside class="postpromonav"><nav><ul itemprop="keywords" class="tags">
 <li><a class="tag p-category" href="../../categories/gui/" rel="tag">gui</a></li>
             <li><a class="tag p-category" href="../../categories/python/" rel="tag">python</a></li>
@@ -358,7 +348,7 @@ That being said, I'll probably try to dive more in <a class="reference external"
             </li>
         </ul></nav></aside><section class="comments hidden-print"><h2>Comments</h2>
         
-        
+    
         <div id="disqus_thread"></div>
         <script>
         var disqus_shortname ="tchutchut",
@@ -379,7 +369,7 @@ That being said, I'll probably try to dive more in <a class="reference external"
 
 
         </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
-            Contents © 2021         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2022         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
             

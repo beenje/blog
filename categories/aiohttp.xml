@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about aiohttp)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/aiohttp.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2021 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about aiohttp)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/aiohttp.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2022 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 06 Jan 2021 08:21:41 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Building a GitLab bot using gidgetlab and aiohttp</title><link>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;At PyCon 2018, &lt;a class="reference external" href="https://github.com/Mariatta"&gt;Mariatta&lt;/a&gt; held a &lt;a class="reference external" href="https://us.pycon.org/2018/schedule/presentation/41/"&gt;Build-a-GitHub-Bot Workshop&lt;/a&gt;. The full
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sun, 19 Jun 2022 20:13:56 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Building a GitLab bot using gidgetlab and aiohttp</title><link>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;At PyCon 2018, &lt;a class="reference external" href="https://github.com/Mariatta"&gt;Mariatta&lt;/a&gt; held a &lt;a class="reference external" href="https://us.pycon.org/2018/schedule/presentation/41/"&gt;Build-a-GitHub-Bot Workshop&lt;/a&gt;. The full
 documentation can be found on &lt;a class="reference external" href="https://github.com/Mariatta/github-bot-tutorial"&gt;GitHub&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;I went through the tutorial and really enjoyed it.
 This is how I discovered &lt;a class="reference external" href="https://gidgethub.readthedocs.io/en/latest/"&gt;gidgethub&lt;/a&gt; from &lt;a class="reference external" href="https://github.com/brettcannon"&gt;Brett Cannon&lt;/a&gt;, an async GitHub
@@ -16,17 +16,17 @@ but to show the differences for GitLab. So I strongly suggest that you check the
 &lt;a class="reference external" href="https://github-bot-tutorial.readthedocs.io/en/latest/"&gt;github-bot-tutorial&lt;/a&gt; first. I won't go in as much details.&lt;/p&gt;
 &lt;p&gt;Note that this post will describe how to interact with gitlab.com but
 gidgetlab can of course be used with a private GitLab instance!&lt;/p&gt;
-&lt;div class="section" id="using-gidgetlab-on-the-command-line"&gt;
+&lt;section id="using-gidgetlab-on-the-command-line"&gt;
 &lt;h2&gt;Using gidgetlab on the command line&lt;/h2&gt;
 &lt;p&gt;This is the equivalent of &lt;a class="reference external" href="https://github-bot-tutorial.readthedocs.io/en/latest/gidgethub-cmd-line.html"&gt;using gidgethub on the command line&lt;/a&gt;.
 So let's create an issue on GitLab using the API via the command line, instead of the GitLab website.&lt;/p&gt;
-&lt;div class="section" id="install-gidgetlab-and-aiohttp"&gt;
+&lt;section id="install-gidgetlab-and-aiohttp"&gt;
 &lt;h3&gt;Install gidgetlab and aiohttp&lt;/h3&gt;
 &lt;p&gt;Install &lt;code class="docutils literal"&gt;gidgetlab&lt;/code&gt; and &lt;code class="docutils literal"&gt;aiohttp&lt;/code&gt; if you have not already. Using a virtual environment
 is recommended.&lt;/p&gt;
 &lt;pre class="literal-block"&gt;python3.6 -m pip install gidgetlab[aiohttp]&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="create-a-gitlab-personal-access-token"&gt;
+&lt;/section&gt;
+&lt;section id="create-a-gitlab-personal-access-token"&gt;
 &lt;h3&gt;Create a GitLab Personal Access Token&lt;/h3&gt;
 &lt;p&gt;In order to use GitLab's API, you'll need to create a personal access token
 that will be used to authenticate yourself to GitLab.&lt;/p&gt;
@@ -46,8 +46,8 @@ in a text file for now. If you have a password manager like 1password, use that.
 need to revoke it and create another one.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
-&lt;/div&gt;
-&lt;div class="section" id="store-the-personal-access-token-as-an-environment-variable"&gt;
+&lt;/section&gt;
+&lt;section id="store-the-personal-access-token-as-an-environment-variable"&gt;
 &lt;h3&gt;Store the Personal Access Token as an environment variable&lt;/h3&gt;
 &lt;p&gt;In Unix / Mac OS:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;export GL_ACCESS_TOKEN=your token&lt;/pre&gt;
@@ -55,8 +55,8 @@ need to revoke it and create another one.&lt;/p&gt;
 &lt;pre class="literal-block"&gt;set GL_ACCESS_TOKEN=your token&lt;/pre&gt;
 &lt;p&gt;Note that these will only set the token for the current process. If you want
 this value stored permanently, you have to edit the bashrc file.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="create-an-issue"&gt;
+&lt;/section&gt;
+&lt;section id="create-an-issue"&gt;
 &lt;h3&gt;Create an issue&lt;/h3&gt;
 &lt;p&gt;Open a new file, for example &lt;code class="docutils literal"&gt;create_issue.py&lt;/code&gt; in your favorite editor.&lt;/p&gt;
 &lt;p&gt;Copy the following into &lt;code class="docutils literal"&gt;create_issue.py&lt;/code&gt;.
@@ -119,8 +119,8 @@ Save and run it in the command line:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;python3.6 -m create_issue&lt;/pre&gt;
 &lt;p&gt;There should be a new issue created in the strange-relationship project. Check it out:
 &lt;a class="reference external" href="https://gitlab.com/beenje/strange-relationship/issues"&gt;https://gitlab.com/beenje/strange-relationship/issues&lt;/a&gt;&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="comment-on-issue"&gt;
+&lt;/section&gt;
+&lt;section id="comment-on-issue"&gt;
 &lt;h3&gt;Comment on issue&lt;/h3&gt;
 &lt;p&gt;Let's try a different exercise, to get ourselves more familiar with GitLab's API.
 Take a look at GitLab's &lt;a class="reference external" href="https://docs.gitlab.com/ee/api/issues.html#comments-on-issues"&gt;create a comment&lt;/a&gt; documentation: &lt;code class="docutils literal"&gt;POST &lt;span class="pre"&gt;/projects/:id/issues/:issue_iid/notes&lt;/span&gt;&lt;/code&gt;&lt;/p&gt;
@@ -130,8 +130,8 @@ Take a look at GitLab's &lt;a class="reference external" href="https://docs.gitl
     data={"body": "This is a comment"},
 )&lt;/pre&gt;
 &lt;p&gt;Replace &lt;code class="docutils literal"&gt;1&lt;/code&gt; with the issue number you created.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="close-the-issue"&gt;
+&lt;/section&gt;
+&lt;section id="close-the-issue"&gt;
 &lt;h3&gt;Close the issue&lt;/h3&gt;
 &lt;p&gt;Let's now close the issue that you've just created.&lt;/p&gt;
 &lt;p&gt;Take a look at the documentation to &lt;a class="reference external" href="https://docs.gitlab.com/ee/api/issues.html#edit-issue"&gt;edit an issue&lt;/a&gt;.&lt;/p&gt;
@@ -144,15 +144,15 @@ editing an issue, and setting the &lt;code class="docutils literal"&gt;state_eve
     data={"state_event": "close"},
 )&lt;/pre&gt;
 &lt;p&gt;Replace &lt;code class="docutils literal"&gt;1&lt;/code&gt; with the issue number you created.&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="section" id="using-gidgetlab-to-respond-to-webhooks"&gt;
+&lt;/section&gt;
+&lt;/section&gt;
+&lt;section id="using-gidgetlab-to-respond-to-webhooks"&gt;
 &lt;h2&gt;Using gidgetlab to respond to webhooks&lt;/h2&gt;
 &lt;p&gt;In the previous example, we've been interacting with GitLab by doing actions:
 making requests to GitLab. And we've been doing that locally on our own machine.&lt;/p&gt;
 &lt;p&gt;In this section we'll use what we know so far and start building an actual bot:
 a webserver that responds to GitLab webhook events.&lt;/p&gt;
-&lt;div class="section" id="gitlabbot"&gt;
+&lt;section id="gitlabbot"&gt;
 &lt;h3&gt;GitLabBot&lt;/h3&gt;
 &lt;p&gt;&lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/"&gt;gidgetlab&lt;/a&gt; actually provides a &lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/aiohttp.html"&gt;GitLabBot class&lt;/a&gt; to easily create an aiohttp
 web server that reponds to GitLab webhooks.&lt;/p&gt;
@@ -171,8 +171,8 @@ if __name__ == "__main__":
 &lt;p&gt;That's it. You have an aiohttp web server running on port 8080.
 Of course, it won't do that much. You'll have to register some events if
 you want the bot to perform some actions. We'll see that later.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="webhook-events"&gt;
+&lt;/section&gt;
+&lt;section id="webhook-events"&gt;
 &lt;h3&gt;Webhook events&lt;/h3&gt;
 &lt;p&gt;When an event is triggered in GitLab, GitLab can notify you about the event by
 sending a POST request along with the payload.&lt;/p&gt;
@@ -190,8 +190,8 @@ That's usually not on your laptop.&lt;/p&gt;
 Heroku is a platform as a service and makes it easy to deploy and run your app in the cloud.
 There are alternatives and you can of course use on your own servers if you want.&lt;/p&gt;
 &lt;p&gt;For testing purpose, you can actually use your own laptop thanks to &lt;a class="reference external" href="https://ngrok.com"&gt;ngrok&lt;/a&gt;.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="ngrok"&gt;
+&lt;/section&gt;
+&lt;section id="ngrok"&gt;
 &lt;h3&gt;Ngrok&lt;/h3&gt;
 &lt;p&gt;&lt;a class="reference external" href="https://ngrok.com"&gt;Ngrok&lt;/a&gt; exposes local servers behind NATs and firewalls to the public internet over secure tunnels.
 It's an easy way to test locally a webservice.&lt;/p&gt;
@@ -219,8 +219,8 @@ Just open &lt;a class="reference external" href="http://127.0.0.1:4040"&gt;http:
 405 as reply. Only POST methods are handled by the bot.&lt;/p&gt;
 &lt;p&gt;If you don't have any service listening on port 8080 and try to access the
 URL given by ngrok, you'll get a 502.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="add-the-gitlab-webhook"&gt;
+&lt;/section&gt;
+&lt;section id="add-the-gitlab-webhook"&gt;
 &lt;h3&gt;Add the GitLab Webhook&lt;/h3&gt;
 &lt;p&gt;Now that we have a local webservice that can receive requests thanks to ngrok,
 let's create a webhook on GitLab. If you haven't done so yet, create your
@@ -233,15 +233,15 @@ own project on GitLab.&lt;/p&gt;
 &lt;li&gt;&lt;p&gt;Leave &lt;strong&gt;Enable SSL verification&lt;/strong&gt; enabled&lt;/p&gt;&lt;/li&gt;
 &lt;li&gt;&lt;p&gt;Click &lt;strong&gt;Add webhook&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;/div&gt;
-&lt;div class="section" id="update-the-config-variables-in-your-environment"&gt;
+&lt;/section&gt;
+&lt;section id="update-the-config-variables-in-your-environment"&gt;
 &lt;h3&gt;Update the Config Variables in your environment&lt;/h3&gt;
 &lt;p&gt;First, export the secret webhook token you just created:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;export GL_SECRET=&amp;lt;secret token&amp;gt;&lt;/pre&gt;
 &lt;p&gt;Then, if not already done, export your GitLab personal access token:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;export GL_ACCESS_TOKEN=&amp;lt;acess token&amp;gt;&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="your-first-gitlab-bot"&gt;
+&lt;/section&gt;
+&lt;section id="your-first-gitlab-bot"&gt;
 &lt;h3&gt;Your first GitLab bot!&lt;/h3&gt;
 &lt;p&gt;Let's start with a bot that responds to every newly created issue in your project.
 For example, whenever someone creates an issue, the bot will automatically say something like:
@@ -337,9 +337,9 @@ page. You should see a new comment added to the issue!&lt;/p&gt;
 &lt;p&gt;Of course, using ngrok on your laptop was for testing only.
 To use it in production, you should deploy it to a server or the cloud.
 You can check the GitHub bot tutorial to see how to &lt;a class="reference external" href="http://github-bot-tutorial.readthedocs.io/en/latest/gidgethub-for-webhooks.html#deploy-to-heroku"&gt;deploy your webservice to Heroku&lt;/a&gt;.&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="section" id="conclusion"&gt;
+&lt;/section&gt;
+&lt;/section&gt;
+&lt;section id="conclusion"&gt;
 &lt;h2&gt;Conclusion&lt;/h2&gt;
 &lt;p&gt;Hopefully this gave you an idea of what can be done with &lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/"&gt;gidgetlab&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;If you are interested, try to perform the other exercices described in the
@@ -348,4 +348,4 @@ to build something cool :-)
 And check my post about &lt;a class="reference external" href="http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-starlette-and-httpx"&gt;building a GitLab bot with Starlette and HTTPX&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;Again, a big thanks to &lt;a class="reference external" href="https://github.com/Mariatta"&gt;Mariatta&lt;/a&gt; for her tutorial and to &lt;a class="reference external" href="https://github.com/brettcannon"&gt;Brett Cannon&lt;/a&gt; for
 &lt;a class="reference external" href="https://gidgethub.readthedocs.io/en/latest/"&gt;gidgethub&lt;/a&gt;! This project wouldn't exist otherwise.&lt;/p&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>aiohttp</category><category>bot</category><category>gidgetlab</category><category>gitlab</category><category>python</category><guid>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp/</guid><pubDate>Mon, 17 Sep 2018 20:40:15 GMT</pubDate></item></channel></rss>
+&lt;/section&gt;</description><category>aiohttp</category><category>bot</category><category>gidgetlab</category><category>gitlab</category><category>python</category><guid>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp/</guid><pubDate>Mon, 17 Sep 2018 20:40:15 GMT</pubDate></item></channel></rss>

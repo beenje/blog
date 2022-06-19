@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about home-assistant)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/home-assistant.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2021 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about home-assistant)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/home-assistant.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2022 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 06 Jan 2021 08:21:41 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Control your accessories from Home Assistant with Siri and HomeKit</title><link>http://beenje.github.io/blog/posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;While reading more about &lt;a class="reference external" href="https://home-assistant.io"&gt;Home Assistant&lt;/a&gt;, I
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sun, 19 Jun 2022 20:13:57 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Control your accessories from Home Assistant with Siri and HomeKit</title><link>http://beenje.github.io/blog/posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;While reading more about &lt;a class="reference external" href="https://home-assistant.io"&gt;Home Assistant&lt;/a&gt;, I
 discovered it was possible to control your accessories from Home Assistant
 with Siri and HomeKit. I decided to give that a try.&lt;/p&gt;
 &lt;p&gt;This requires to install &lt;a class="reference external" href="https://github.com/nfarina/homebridge"&gt;Homebridge&lt;/a&gt; and
 the &lt;a class="reference external" href="https://github.com/home-assistant/homebridge-homeassistant"&gt;homebridge-homeassitant plugin&lt;/a&gt;.&lt;/p&gt;
-&lt;div class="section" id="install-homebridge"&gt;
+&lt;section id="install-homebridge"&gt;
 &lt;h2&gt;Install Homebridge&lt;/h2&gt;
 &lt;p&gt;Homebridge is a lightweight NodeJS server that emulates the iOS HomeKit
 API. Let's install it in the same &lt;a class="reference external" href="http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container"&gt;LXC container as Home Assistant&lt;/a&gt;:&lt;/p&gt;
@@ -35,8 +35,8 @@ root@homeassistant:~# cd /usr/lib/node_modules/homebridge/
 root@homeassistant:/usr/lib/node_modules/homebridge# npm install --unsafe-perm bignum
 root@homeassistant:/usr/lib/node_modules/homebridge# cd ../hap-nodejs/node_modules/mdns/
 root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# node-gyp BUILDTYPE=Release rebuild&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="install-and-configure-homebridge-homeassistant-plugin"&gt;
+&lt;/section&gt;
+&lt;section id="install-and-configure-homebridge-homeassistant-plugin"&gt;
 &lt;h2&gt;Install and configure homebridge-homeassistant plugin&lt;/h2&gt;
 &lt;pre class="literal-block"&gt;root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# cd
 root@homeassistant:~# npm install -g --unsafe-perm homebridge-homeassistant&lt;/pre&gt;
@@ -68,8 +68,8 @@ EOF&lt;/pre&gt;
 You will need the PIN code to add the Homebridge accessory to HomeKit.&lt;/p&gt;
 &lt;p&gt;Check the &lt;a class="reference external" href="https://github.com/home-assistant/homebridge-homeassistant#configuration"&gt;Home Assistant plugin page&lt;/a&gt;
 for more information on how to configure the plugin.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="automatically-start-homebridge"&gt;
+&lt;/section&gt;
+&lt;section id="automatically-start-homebridge"&gt;
 &lt;h2&gt;Automatically start Homebridge&lt;/h2&gt;
 &lt;p&gt;Let's configure systemd.
 Create the file &lt;cite&gt;/etc/systemd/system/home-assistant@homebridge.service&lt;/cite&gt;:&lt;/p&gt;
@@ -94,8 +94,8 @@ EOF&lt;/pre&gt;
 root@homeassistant:~# systemctl enable home-assistant@homebridge
 Created symlink from /etc/systemd/system/multi-user.target.wants/home-assistant@homebridge.service to /etc/systemd/system/home-assistant@homebridge.service.
 root@homeassistant:~# systemctl start home-assistant@homebridge&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="adding-homebridge-to-ios"&gt;
+&lt;/section&gt;
+&lt;section id="adding-homebridge-to-ios"&gt;
 &lt;h2&gt;Adding Homebridge to iOS&lt;/h2&gt;
 &lt;p&gt;Homebridge and the Home Assistant plugin are now running.
 Using the Home app on your iOS device, you should be able to add the accessory "Homebridge".
@@ -112,7 +112,7 @@ more information. You will need to enter the &lt;em&gt;PIN code&lt;/em&gt; defin
 As described in the &lt;a class="reference external" href="https://github.com/nfarina/homebridge#interacting-with-your-devices"&gt;README&lt;/a&gt;,
 avoid names usually used by Siri like "Radio" or "Sonos".&lt;/p&gt;
 &lt;p&gt;That's it! Homebridge is really a nice addition to Home Assistant if you have some iOS devices at home.&lt;/p&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>home-assistant</category><category>iOS</category><category>LXC</category><category>turris</category><guid>http://beenje.github.io/blog/posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/</guid><pubDate>Thu, 16 Feb 2017 21:58:56 GMT</pubDate></item><item><title>Home Assistant on Turris Omnia via LXC container</title><link>http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In a previous post, I described &lt;a class="reference external" href="http://beenje.github.io/blog/posts/openvpn-source-based-routing"&gt;how to install OpenVPN client on a Turris
+&lt;/section&gt;</description><category>home-assistant</category><category>iOS</category><category>LXC</category><category>turris</category><guid>http://beenje.github.io/blog/posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/</guid><pubDate>Thu, 16 Feb 2017 21:58:56 GMT</pubDate></item><item><title>Home Assistant on Turris Omnia via LXC container</title><link>http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;In a previous post, I described &lt;a class="reference external" href="http://beenje.github.io/blog/posts/openvpn-source-based-routing"&gt;how to install OpenVPN client on a Turris
 Omnia router&lt;/a&gt;. To start or stop the
 client, I was using the command line and mentioned the LuCi Web User
 Interface.&lt;/p&gt;
@@ -136,7 +136,7 @@ Anyway, there is another feature I wanted to try: &lt;a class="reference externa
 application, so it's easy to install in a linux container and would allow
 to easily keep the version up-to-date.&lt;/p&gt;
 &lt;p&gt;So let's start!&lt;/p&gt;
-&lt;div class="section" id="create-a-lxc-container"&gt;
+&lt;section id="create-a-lxc-container"&gt;
 &lt;h2&gt;Create a LXC container&lt;/h2&gt;
 &lt;p&gt;As described &lt;a class="reference external" href="https://www.turris.cz/doc/en/howto/lxc"&gt;here&lt;/a&gt;, you can
 create a LXC container via the LuCI web interface or via the command
@@ -203,8 +203,8 @@ root@LXC_NAME:~# apt-get install -y dbus vim&lt;/pre&gt;
 &lt;pre class="literal-block"&gt;root@LXC_NAME:~# exit
 root@turris:~# lxc-attach -n homeassistant
 root@homeassistant:~#&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="install-home-assistant"&gt;
+&lt;/section&gt;
+&lt;section id="install-home-assistant"&gt;
 &lt;h2&gt;Install Home Assistant&lt;/h2&gt;
 &lt;p&gt;Next, we just have to follow the &lt;a class="reference external" href="https://home-assistant.io/getting-started/installation-virtualenv/"&gt;Home Assistant installation instructions&lt;/a&gt;.
 They are well detailed. I'll just quickly repeat them here to make it
@@ -227,8 +227,8 @@ Check the created configuration file:
 &lt;p&gt;You can comment out the &lt;cite&gt;introduction:&lt;/cite&gt; line:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;# Show links to resources in log and frontend
 #introduction:&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="add-a-switch-to-home-assistant"&gt;
+&lt;/section&gt;
+&lt;section id="add-a-switch-to-home-assistant"&gt;
 &lt;h2&gt;Add a switch to Home Assistant&lt;/h2&gt;
 &lt;p&gt;To start and stop our VPN we define a &lt;a class="reference external" href="https://home-assistant.io/components/switch.command_line/"&gt;Command Line Switch&lt;/a&gt; that
 triggers the openvpn script on the router.
@@ -274,8 +274,8 @@ even if the VPN is started or stopped without using the application.&lt;/p&gt;
 &lt;p&gt;If you go to &lt;em&gt;http://&amp;lt;container IP&amp;gt;:8123&lt;/em&gt;, you should see something like
 that:&lt;/p&gt;
 &lt;img alt="/images/hass_home.png" src="http://beenje.github.io/blog/images/hass_home.png"&gt;
-&lt;/div&gt;
-&lt;div class="section" id="automatically-start-home-assistant"&gt;
+&lt;/section&gt;
+&lt;section id="automatically-start-home-assistant"&gt;
 &lt;h2&gt;Automatically start Home Assistant&lt;/h2&gt;
 &lt;p&gt;Let's configure &lt;a class="reference external" href="https://home-assistant.io/getting-started/autostart-systemd/"&gt;systemd&lt;/a&gt; to automatically
 start the application.
@@ -307,8 +307,8 @@ Set the following in &lt;cite&gt;/etc/config/lxc-auto&lt;/cite&gt;:&lt;/p&gt;
 config container
   option name homeassistant
   option timeout 60&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="make-it-easy-to-access-home-assistant"&gt;
+&lt;/section&gt;
+&lt;section id="make-it-easy-to-access-home-assistant"&gt;
 &lt;h2&gt;Make it easy to access Home Assistant&lt;/h2&gt;
 &lt;p&gt;There is one more thing we want to do: assign a fixed IP to the container.
 This can be done like for any machines on the LAN via the &lt;em&gt;DHCP and DNS&lt;/em&gt; settings in LuCI interface.
@@ -317,4 +317,4 @@ In &lt;em&gt;Static Leases&lt;/em&gt;, assign a fixed IP to the container MAC ad
 create a bookmark or add an icon to your phone and tablet home screen.
 This makes it easy for anyone at home to turn the VPN on and off!&lt;/p&gt;
 &lt;img alt="/images/hass_icon.png" src="http://beenje.github.io/blog/images/hass_icon.png"&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>home-assistant</category><category>LXC</category><category>OpenWrt</category><category>turris</category><category>VPN</category><guid>http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container/</guid><pubDate>Thu, 26 Jan 2017 21:01:30 GMT</pubDate></item></channel></rss>
+&lt;/section&gt;</description><category>home-assistant</category><category>LXC</category><category>OpenWrt</category><category>turris</category><category>VPN</category><guid>http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container/</guid><pubDate>Thu, 26 Jan 2017 21:01:30 GMT</pubDate></item></channel></rss>

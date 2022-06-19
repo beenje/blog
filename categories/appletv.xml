@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about AppleTV)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/appletv.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2021 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about AppleTV)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/appletv.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2022 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 06 Jan 2021 08:21:41 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>OpenVPN source based routing</title><link>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I already spoke about installing OpenVPN on a Raspberry Pi in another blog
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sun, 19 Jun 2022 20:13:57 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>OpenVPN source based routing</title><link>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;I already spoke about installing OpenVPN on a Raspberry Pi in another blog
 &lt;a class="reference external" href="http://beenje.github.io/blog/posts/installing-openvpn-on-a-raspberry-pi-with-ansible"&gt;post&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;I only connect to this VPN server to access content that requires a french IP address.
 I use OpenVPN Connect App on my iPad and &lt;a class="reference external" href="https://tunnelblick.net"&gt;Tunnelblick&lt;/a&gt;
@@ -14,7 +14,7 @@ There is no VPN client available...&lt;/p&gt;
 It's a nice router running a free operating system based on
 OpenWrt with automatic updates.
 If you haven't heard about it, you should check it out.&lt;/p&gt;
-&lt;div class="section" id="configuring-openvpn-client-on-openwrt"&gt;
+&lt;section id="configuring-openvpn-client-on-openwrt"&gt;
 &lt;h2&gt;Configuring OpenVPN client on OpenWrt&lt;/h2&gt;
 &lt;p&gt;Installing an OpenVPN client on OpenWrt is not very difficult.
 Here is a quick summary.&lt;/p&gt;
@@ -66,8 +66,8 @@ To use Google DNS, add the following two lines to the wan interface in &lt;cite&
 &lt;p&gt;If you run &lt;cite&gt;/etc/init.d/openvpn start&lt;/cite&gt; with this config, you should connect successfully!
 All the traffic will go via the VPN. That's nice but it's not what I want.
 I only want my Apple TV traffic to go via the VPN. How to achieve that?&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="source-based-routing"&gt;
+&lt;/section&gt;
+&lt;section id="source-based-routing"&gt;
 &lt;h2&gt;Source based routing&lt;/h2&gt;
 &lt;p&gt;I quickly found this &lt;a class="reference external" href="https://wiki.openwrt.org/doc/networking/routing"&gt;wiki page&lt;/a&gt; to implement source
 based routing. Exactly what I want. What took me some time to realize is
@@ -164,12 +164,12 @@ down scripts by openvpn.&lt;/p&gt;
 &lt;p&gt;If we run &lt;cite&gt;/etc/init.d/openvpn start&lt;/cite&gt; with this config, only the traffic
 from the 192.168.75.20 IP address will go via the VPN!&lt;/p&gt;
 &lt;p&gt;Run &lt;cite&gt;/etc/init.d/openvpn stop&lt;/cite&gt; to close the tunnel.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="conclusion"&gt;
+&lt;/section&gt;
+&lt;section id="conclusion"&gt;
 &lt;h2&gt;Conclusion&lt;/h2&gt;
 &lt;p&gt;This is a nice way to route traffic through a VPN based on the source IP
 address.&lt;/p&gt;
 &lt;p&gt;You can of course use the router webinterface to stop and start openvpn.
 In &lt;a class="reference external" href="http://beenje.github.io/blog/posts/home-assistant-on-turris-omnia-via-lxc-container"&gt;another post&lt;/a&gt;,
 I'll talk about an even more user friendly way to control it.&lt;/p&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>AppleTV</category><category>OpenWrt</category><category>pi</category><category>VPN</category><guid>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</guid><pubDate>Fri, 20 Jan 2017 20:46:16 GMT</pubDate></item></channel></rss>
+&lt;/section&gt;</description><category>AppleTV</category><category>OpenWrt</category><category>pi</category><category>VPN</category><guid>http://beenje.github.io/blog/posts/openvpn-source-based-routing/</guid><pubDate>Fri, 20 Jan 2017 20:46:16 GMT</pubDate></item></channel></rss>

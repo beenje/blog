@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about javascript)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/javascript.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2021 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about javascript)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/javascript.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2022 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 06 Jan 2021 07:52:49 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Parsing JavaScript rendered pages in Python with pyppeteer</title><link>http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sun, 19 Jun 2022 20:13:57 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Parsing JavaScript rendered pages in Python with pyppeteer</title><link>http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;&lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
 &lt;h2 id="Parsing-JavaScript-rendered-pages-in-Python-with-pyppeteer"&gt;Parsing JavaScript rendered pages in Python with pyppeteer&lt;a class="anchor-link" href="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/#Parsing-JavaScript-rendered-pages-in-Python-with-pyppeteer"&gt;¶&lt;/a&gt;&lt;/h2&gt;
@@ -175,8 +175,7 @@ The results are available here: &lt;a href="http://results.neptron.se/#/lundalop
 
 
 
-&lt;div class="output_html rendered_html output_subarea "&gt;
-ï»¿
+&lt;div class="output_html rendered_html output_subarea "&gt;ï»¿
 
 
     &lt;title ng-bind="event.name || 'Neptron Timing'"&gt;Neptron Timing&lt;/title&gt;
@@ -282,7 +281,6 @@ window.setInterval(fixLidingloppetMessage, 1000);
 
 
 
-
 &lt;/div&gt;
 
 &lt;/div&gt;
@@ -368,8 +366,7 @@ By googling, I found &lt;a href="https://github.com/kennethreitz/requests-html"&
 
 
 
-&lt;div class="output_html rendered_html output_subarea "&gt;
-&lt;table&gt;
+&lt;div class="output_html rendered_html output_subarea "&gt;&lt;table&gt;
                 &lt;thead&gt;
                     &lt;tr&gt;
                         &lt;th class="res-favorite"&gt; &lt;/th&gt;
@@ -454,8 +451,7 @@ By googling, I found &lt;a href="https://github.com/kennethreitz/requests-html"&
                         &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="25" class="ng-binding"&gt;25&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="25" class="ng-binding"&gt;25&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="6675" class="ng-binding"&gt;6675&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Kristian  Haggärde" class="ng-binding"&gt;Kristian  Haggärde&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Björnstorps IF" class="ng-binding"&gt;Björnstorps IF&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="37:34" class="ng-binding"&gt;37:34&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
                     &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;
                 &lt;/tbody&gt;
-            &lt;/table&gt;
-&lt;/div&gt;
+            &lt;/table&gt;&lt;/div&gt;
 
 &lt;/div&gt;
 
@@ -648,8 +644,7 @@ I initially tried to use the &lt;code&gt;table&lt;/code&gt; selector but that so
 
 
 
-&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
-&lt;div&gt;
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;&lt;div&gt;
 &lt;style scoped&gt;
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -1033,8 +1028,7 @@ I initially tried to use the &lt;code&gt;table&lt;/code&gt; selector but that so
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;
 
 &lt;/div&gt;
 
@@ -1328,8 +1322,7 @@ Get table from page 114
 
 
 
-&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
-&lt;div&gt;
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;&lt;div&gt;
 &lt;style scoped&gt;
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -1433,8 +1426,7 @@ Get table from page 114
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;
 
 &lt;/div&gt;
 
@@ -1464,8 +1456,7 @@ Get table from page 114
 
 
 
-&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
-&lt;div&gt;
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;&lt;div&gt;
 &lt;style scoped&gt;
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -1569,8 +1560,7 @@ Get table from page 114
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;
 
 &lt;/div&gt;
 
@@ -1619,4 +1609,4 @@ Anyway, I'll probably look more at Pyppeteer for web application testing.&lt;/p&
 
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>javascript</category><category>pandas</category><category>pyppeteer</category><category>python</category><category>request-html</category><category>requests</category><guid>http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/</guid><pubDate>Sat, 02 Jun 2018 20:54:45 GMT</pubDate></item></channel></rss>
+&lt;/div&gt;</description><category>javascript</category><category>pandas</category><category>pyppeteer</category><category>python</category><category>request-html</category><category>requests</category><guid>http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/</guid><pubDate>Sat, 02 Jun 2018 20:54:45 GMT</pubDate></item></channel></rss>

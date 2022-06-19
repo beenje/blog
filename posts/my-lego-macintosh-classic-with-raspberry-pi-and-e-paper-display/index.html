@@ -93,7 +93,7 @@ bg-dark
             <time class="published dt-published" datetime="2017-05-23T22:39:12+02:00" itemprop="datePublished" title="2017-05-23 22:39">2017-05-23 22:39</time></a>
             </p>
                 <p class="commentline">
-        
+    
     <a href="#disqus_thread" data-disqus-identifier="cache/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display.html">Comments</a>
 
 
@@ -105,16 +105,14 @@ bg-dark
         
 
     </header><div class="e-content entry-content" itemprop="articleBody text">
-    <div>
-<p>UPDATED 2019-11-24</p>
+    <p>UPDATED 2019-11-24</p>
 <p>Beginning of April I read an inspiring blog post from Jannis Hermanns
 about a <a class="reference external" href="https://jann.is/lego-macintosh-classic/">LEGO Machintosh Classic with e-paper display</a>.  It was a really nice and cool article.</p>
 <p>I've been playing with some Raspberry Pis before but only with
 <a class="reference external" href="../installing-openvpn-on-a-raspberry-pi-with-ansible">software</a>.
 I have been willing to fiddle with hardware for some time.
 This was the perfect opportunity!</p>
-<div class="section" id="lego-digital-designer">
-<h2>LEGO Digital Designer</h2>
+<section id="lego-digital-designer"><h2>LEGO Digital Designer</h2>
 <p>I decided to try to make my own LEGO Macintosh based on Jannis work.
 His blog post is quite detailed with even a list of links with all the
 required components.</p>
@@ -130,16 +128,12 @@ I also wanted to check if it was possible to use the button located on top
 of the display.</p>
 <p>My .lxf file is on <a class="reference external" href="https://github.com/beenje/legomac/tree/master/ldd">github</a>.</p>
 <a class="reference external image-reference" href="../../images/legomac/legomac_ldd.png"><img alt="/images/legomac/legomac_ldd.thumbnail.png" src="../../images/legomac/legomac_ldd.thumbnail.png"></a>
-</div>
-<div class="section" id="e-paper-display">
-<h2>E-paper display</h2>
+</section><section id="e-paper-display"><h2>E-paper display</h2>
 <p>When I was about to order the <a class="reference external" href="http://www.embeddedartists.com/products/displays/lcd_27_epaper.php">2.7 inch e-paper display from Embedded Artists</a>, I
 noticed that Embedded Artists was located in Malmö, where I live :-).</p>
 <p>I e-mailed them and I was granted to pick up my order at their office!
 A big thanks to them!</p>
-</div>
-<div class="section" id="raspbery-pi-zero-w">
-<h2>Raspbery Pi Zero W</h2>
+</section><section id="raspbery-pi-zero-w"><h2>Raspbery Pi Zero W</h2>
 <p>The Raspberry Pi Zero W comes with Wifi which is really nice.
 It does not come with the soldered GPIO header. I was starting to look at
 existing soldering iron when I discovered this <a class="reference external" href="https://shop.pimoroni.com/products/gpio-hammer-header">GPIO Hammer Header</a>:</p>
@@ -148,10 +142,7 @@ existing soldering iron when I discovered this <a class="reference external" hre
 I used the installation jig and it was really easy to install.
 There is a nice <a class="reference external" href="https://youtu.be/VDJ2-feg2lk">video</a> that explains how
 to proceed:</p>
-<iframe width="200" height="113" src="https://www.youtube.com/embed/VDJ2-feg2lk?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-</div>
-<div class="section" id="connecting-the-display-to-the-pi">
-<h2>Connecting the display to the Pi</h2>
+<iframe width="200" height="113" src="https://www.youtube.com/embed/VDJ2-feg2lk?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen title="Bilge Tank 072 - STOP! HAMMER TIME!"></iframe></section><section id="connecting-the-display-to-the-pi"><h2>Connecting the display to the Pi</h2>
 <p>Based on Jannis article I initially thought it wasn't possible to use a ribbon
 cable (due to space), so I ordered some Jumper Wires.
 I connected the display to the Pi using the serial expansion
@@ -172,9 +163,7 @@ Carried away by my enthusiasm, I actually cut a bit too much on the left side
 <a class="reference external image-reference" href="../../images/legomac/drilling_right.jpg"><img alt="/images/legomac/drilling_right.thumbnail.jpg" src="../../images/legomac/drilling_right.thumbnail.jpg"></a>
 <p>Everything fitted nicely in the lego case:</p>
 <a class="reference external image-reference" href="../../images/legomac/ribbon_cable.jpg"><img alt="/images/legomac/ribbon_cable.thumbnail.jpg" src="../../images/legomac/ribbon_cable.thumbnail.jpg"></a>
-</div>
-<div class="section" id="button-on-top">
-<h2>Button on top</h2>
+</section><section id="button-on-top"><h2>Button on top</h2>
 <p>With the ribbon cable, the button on top of the display is connected to pin
 15 on the Raspberry Pi (BCM GPIO22).
 The <cite>ImageDemoButton.py</cite> part of the <a class="reference external" href="https://github.com/embeddedartists/gratis">demo</a>
@@ -186,9 +175,7 @@ I added a little piece of foam inside the brick to keep it straight.</p>
 <a class="reference external image-reference" href="../../images/legomac/button_front.jpg"><img alt="/images/legomac/button_front.thumbnail.jpg" src="../../images/legomac/button_front.thumbnail.jpg"></a>
 <p>Of course I move away from the Macintosh Classic design here...
 but <a class="reference external" href="https://www.python.org/dev/peps/pep-0020/">practicality beats purity</a> :-)</p>
-</div>
-<div class="section" id="pi-configuration">
-<h2>Pi configuration</h2>
+</section><section id="pi-configuration"><h2>Pi configuration</h2>
 <p>Jannis article made me discover <a class="reference external" href="https://resin.io">resin.io</a>,
 which is a really interesting project. I did a few tests on a Raspberry Pi 3 and it was a nice experience.
 But when I received my Pi Zero W, it wasn't supported by resinOS yet... This isn't the case anymore!
@@ -292,9 +279,7 @@ $ cd legomac
 $ ansible-playbook -i hosts -k epd-demo.yml</pre>
 <p>That's it!</p>
 <p>Of course don't forget to change the default password on your Pi.</p>
-</div>
-<div class="section" id="one-more-thing">
-<h2>One more thing</h2>
+</section><section id="one-more-thing"><h2>One more thing</h2>
 <p>There isn't much Python in this article but the Pi is running some
 Python code.
 I couldn't resist putting a <a class="reference external" href="https://talkpython.fm">Talk Python To Me</a>
@@ -305,25 +290,25 @@ Thanks again to @mkennedy for the stickers!</p>
 <a class="reference external image-reference" href="../../images/legomac/talkpythontome.jpg"><img alt="/images/legomac/talkpythontome.thumbnail.jpg" src="../../images/legomac/talkpythontome.thumbnail.jpg"></a>
 <p>Below are a few pictures. You can see more on <a class="reference external" href="https://flic.kr/s/aHskVAadfo">flickr</a>.</p>
 
-<div id="slides_0a9f293b98484640b1e526f005ecaeb8" class="carousel slide" data-ride="carousel">
+<div id="slides_aa7793c34c6e465bafd424b61a40108d" class="carousel slide" data-ride="carousel">
     <ol class="carousel-indicators">
-<li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="0" class="active">
+<li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="0" class="active">
             </li>
-<li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="1">
+<li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="1">
             </li>
-<li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="2">
+<li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="2">
             </li>
-<li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="3">
+<li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="3">
             </li>
-<li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="4">
+<li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="4">
             </li>
-<li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="5">
+<li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="5">
             </li>
-<li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="6">
+<li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="6">
             </li>
-<li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="7">
+<li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="7">
             </li>
-<li data-target="#slides_0a9f293b98484640b1e526f005ecaeb8" data-slide-to="8">
+<li data-target="#slides_aa7793c34c6e465bafd424b61a40108d" data-slide-to="8">
     </li>
 </ol>
 <div class="carousel-inner">
@@ -337,25 +322,22 @@ Thanks again to @mkennedy for the stickers!</p>
                 <div class="carousel-item"><img class="d-block w-100" src="../../images/legomac/button_front.jpg" alt=""></div>
                 <div class="carousel-item"><img class="d-block w-100" src="../../images/legomac/button_top.jpg" alt=""></div>
     </div>
-      <a class="carousel-control-prev" href="#slides_0a9f293b98484640b1e526f005ecaeb8" role="button" data-slide="prev">
+      <a class="carousel-control-prev" href="#slides_aa7793c34c6e465bafd424b61a40108d" role="button" data-slide="prev">
     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
     <span class="sr-only">Previous</span>
   </a>
-  <a class="carousel-control-next" href="#slides_0a9f293b98484640b1e526f005ecaeb8" role="button" data-slide="next">
+  <a class="carousel-control-next" href="#slides_aa7793c34c6e465bafd424b61a40108d" role="button" data-slide="next">
     <span class="carousel-control-next-icon" aria-hidden="true"></span>
     <span class="sr-only">Next</span>
   </a>
 </div>
 
-</div>
-<div class="section" id="next">
-<h2>Next</h2>
+</section><section id="next"><h2>Next</h2>
 <p>I didn't build this LEGO Macintosh to use it as a simple clock :-)
 I have a few ideas. I'll start with a small web server so that I can receive and display messages.
 That will be the subject of another <a class="reference external" href="../experimenting-with-asyncio-on-a-raspberry-pi">blog post</a>!</p>
+</section>
 </div>
-</div>
-    </div>
     <aside class="postpromonav"><nav><ul itemprop="keywords" class="tags">
 <li><a class="tag p-category" href="../../categories/lego/" rel="tag">lego</a></li>
             <li><a class="tag p-category" href="../../categories/mac/" rel="tag">Mac</a></li>
@@ -371,7 +353,7 @@ That will be the subject of another <a class="reference external" href="../exper
             </li>
         </ul></nav></aside><section class="comments hidden-print"><h2>Comments</h2>
         
-        
+    
         <div id="disqus_thread"></div>
         <script>
         var disqus_shortname ="tchutchut",
@@ -392,7 +374,7 @@ That will be the subject of another <a class="reference external" href="../exper
 
 
         </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
-            Contents © 2021         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2022         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
             

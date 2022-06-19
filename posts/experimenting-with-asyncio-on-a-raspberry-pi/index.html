@@ -94,7 +94,7 @@ bg-dark
             <time class="published dt-published" datetime="2017-07-18T22:46:17+02:00" itemprop="datePublished" title="2017-07-18 22:46">2017-07-18 22:46</time></a>
             </p>
                 <p class="commentline">
-        
+    
     <a href="#disqus_thread" data-disqus-identifier="cache/posts/experimenting-with-asyncio-on-a-raspberry-pi.html">Comments</a>
 
 
@@ -106,8 +106,7 @@ bg-dark
         
 
     </header><div class="e-content entry-content" itemprop="articleBody text">
-    <div>
-<p>In a previous post, I described how I built a <a class="reference external" href="../my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display">LEGO Macintosh Classic with
+    <p>In a previous post, I described how I built a <a class="reference external" href="../my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display">LEGO Macintosh Classic with
 a Raspberry Pi and e-paper display</a>.</p>
 <p>For testing purpose I installed the clock demo which is part of the
 <a class="reference external" href="https://github.com/embeddedartists/gratis">Embedded Artists repository</a>.
@@ -125,10 +124,8 @@ I learnt asynchronous programming with <a class="reference external" href="http:
 a few years ago. If you are not familiar with asynchronous programming, I really recommend
 it. I wrote a few applications using <a class="reference external" href="https://twistedmatrix.com">Twisted</a> but I haven't had
 the opportunity to use asyncio yet. Here is a very good occasion!</p>
-<div class="section" id="asyncio">
-<h2>asyncio</h2>
-<div class="section" id="rest-api-using-aiohttp">
-<h3>REST API using aiohttp</h3>
+<section id="asyncio"><h2>asyncio</h2>
+<section id="rest-api-using-aiohttp"><h3>REST API using aiohttp</h3>
 <p>There are already several asyncio web frameworks to build an HTTP server.
 I decided to go with <a class="reference external" href="http://aiohttp.readthedocs.io/en/stable/">aiohttp</a>
 which is kind of the default one.</p>
@@ -181,9 +178,7 @@ async def post_message(request):
 @login_required
 async def index(request):
     return web.json_response({'message': 'Welcome to LegoMac {}!'.format(request.user)})</pre>
-</div>
-<div class="section" id="raspberry-pi-gpio-and-asyncio">
-<h3>Raspberry Pi GPIO and asyncio</h3>
+</section><section id="raspberry-pi-gpio-and-asyncio"><h3>Raspberry Pi GPIO and asyncio</h3>
 <p>The default Python package to control the Raspberry Pi GPIO seems to be
 <a class="reference external" href="https://pypi.python.org/pypi/RPi.GPIO">RPi.GPIO</a>.
 That's at least what is used in the <a class="reference external" href="https://github.com/embeddedartists/gratis/blob/master/PlatformWithOS/demo/ImageDemoButton.py">ImageDemoButton.py from Embedded Artists</a>.</p>
@@ -196,9 +191,7 @@ It's basically a (incomplete) port of the original Python client provided
 with pigpio, but far sufficient for my need. I just want to get a
 notification when pressing the button on top of the screen.</p>
 <p>There is an example how to achieve that: <a class="reference external" href="https://github.com/PierreRust/apigpio/blob/master/samples/gpio_notification.py">gpio_notification.py</a>.</p>
-</div>
-<div class="section" id="e-paper-display-and-asyncio">
-<h3>E-paper display and asyncio</h3>
+</section><section id="e-paper-display-and-asyncio"><h3>E-paper display and asyncio</h3>
 <p>The last remaining piece is to make the e-paper display play nicely with
 asyncio.</p>
 <p>The EPD driver uses the fuse library. It allows the display to be
@@ -227,12 +220,8 @@ async def create(cls, *args, **kwargs):
         ...</pre>
 <p>To create an instance of the EPD class, use:</p>
 <pre class="literal-block">epd = await EPD.create([path='/path/to/epd'], [auto=boolean])</pre>
-</div>
-</div>
-<div class="section" id="putting-everything-together-with-aiohttp">
-<h2>Putting everything together with aiohttp</h2>
-<div class="section" id="running-the-clock-as-a-background-task">
-<h3>Running the clock as a background task</h3>
+</section></section><section id="putting-everything-together-with-aiohttp"><h2>Putting everything together with aiohttp</h2>
+<section id="running-the-clock-as-a-background-task"><h3>Running the clock as a background task</h3>
 <p>For the clock, I adapted the <a class="reference external" href="https://github.com/embeddedartists/gratis/blob/master/PlatformWithOS/demo/Clock27.py">clock demo</a>
 from Embedded Artists repository.</p>
 <p>As described in aiohttp documentation I created a <a class="reference external" href="http://aiohttp.readthedocs.io/en/stable/web.html#background-tasks">background task</a> to display the clock
@@ -271,9 +260,7 @@ def init_app():
     app.on_startup.append(start_background_tasks)
     app.on_cleanup.append(cleanup_background_tasks)
     ...</pre>
-</div>
-<div class="section" id="stop-the-clock-and-display-a-message">
-<h3>Stop the clock and display a message</h3>
+</section><section id="stop-the-clock-and-display-a-message"><h3>Stop the clock and display a message</h3>
 <p>When receiving a message, I first cancel the clock background task and
 send the messages to the e-paper display using <cite>ensure_future</cite> so that
 I can return a json response without having to wait for the message to be
@@ -293,9 +280,7 @@ async def post_message(request):
     now = datetime.datetime.now(request.app['timezone'])
     helpers.ensure_future(request.app['epd'].display_message(message, request.user, now))
     return web.json_response({'message': message}, status=201)</pre>
-</div>
-<div class="section" id="start-the-clock-when-pressing-the-button">
-<h3>Start the clock when pressing the button</h3>
+</section><section id="start-the-clock-when-pressing-the-button"><h3>Start the clock when pressing the button</h3>
 <p>To be able to restart the clock when pressing the button, I connect to the
 pigpiod when starting the app (in <cite>start_background_tasks</cite>) and register
 the <cite>on_input</cite> callback:</p>
@@ -317,10 +302,7 @@ task is done:</p>
     if app['clock'].done():
         logger.info('restart clock')
         app['clock'] = app.loop.create_task(display_clock(app))</pre>
-</div>
-</div>
-<div class="section" id="running-on-the-pi">
-<h2>Running on the Pi</h2>
+</section></section><section id="running-on-the-pi"><h2>Running on the Pi</h2>
 <p>You might have noticed that I used some syntax that is Python 3.6 only.
 I don't really see myself using something else when starting a new project
 today :-)
@@ -346,8 +328,7 @@ that very easy if you use docker. So that's what I chose.</p>
 <li><p>pigpiod</p></li>
 <li><p>aiolegomac</p></li>
 </ul>
-<div class="section" id="traefik">
-<h3>traefik</h3>
+<section id="traefik"><h3>traefik</h3>
 <p>There are no official Traefik docker images for arm yet, but an <a class="reference external" href="https://github.com/containous/traefik/issues/1665">issue</a> is currently opened.
 So it should arrive soon!</p>
 <p>In the meantime I created my own:</p>
@@ -362,9 +343,7 @@ RUN wget -O /usr/local/bin/traefik https://github.com/containous/traefik/release
   &amp;&amp; chmod a+x /usr/local/bin/traefik
 
 ENTRYPOINT ["/usr/local/bin/traefik"]</pre>
-</div>
-<div class="section" id="pigpiod">
-<h3>pigpiod</h3>
+</section><section id="pigpiod"><h3>pigpiod</h3>
 <p>For pigpiod, I first created an image based on <cite>arm32v6/alpine</cite> but I noticed I couldn't send
 a SIGTERM to the daemon to stop it properly... I'm not sure why. Alpine being based on <cite>musl</cite> instead
 of <cite>glibc</cite> might be the problem. Here is the Dockerfile I tried:</p>
@@ -409,9 +388,7 @@ EXPOSE 8888
 
 ENTRYPOINT ["/usr/local/bin/pigpiod", "-g"]</pre>
 <p>Note that the container has to run in privileged mode to access the GPIO.</p>
-</div>
-<div class="section" id="aiolegomac">
-<h3>aiolegomac</h3>
+</section><section id="aiolegomac"><h3>aiolegomac</h3>
 <p>For the main application, the Dockerfile is quite standard for a Python application:</p>
 <pre class="literal-block">FROM resin/raspberry-pi-python:3.6
 
@@ -444,10 +421,7 @@ CMD ["run.py"]</pre>
 As it uses libfuse to represent the e-paper display as a virtual directory of files,
 the easiest was to install it on the host and to mount it as a volume inside the docker
 container.</p>
-</div>
-</div>
-<div class="section" id="deployment">
-<h2>Deployment</h2>
+</section></section><section id="deployment"><h2>Deployment</h2>
 <p>To install all that on the Pi, I wrote a small <a class="reference external" href="https://www.ansible.com">Ansible</a> playbook.</p>
 <ol class="arabic">
 <li><p>Configure the Pi as described in my <a class="reference external" href="../my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display">previous post</a>.</p></li>
@@ -477,11 +451,8 @@ So be patient :-) Just go and do something else.</p>
 <p>When the full playbook is complete (it took about 55 minutes for me),
 you'll have a server with HTTPS support (thanks to Let's Encrypt) running on the Pi. It's displaying
 the clock every minute and you can send messages to it!</p>
-</div>
-<div class="section" id="client">
-<h2>Client</h2>
-<div class="section" id="httpie">
-<h3>HTTPie</h3>
+</section><section id="client"><h2>Client</h2>
+<section id="httpie"><h3>HTTPie</h3>
 <p>To test the server you can of course use <a class="reference external" href="https://curl.haxx.se">curl</a>
 but I really like <a class="reference external" href="https://httpie.org">HTTPie</a>. It's much more user
 friendly.</p>
@@ -542,9 +513,7 @@ Server: Python/3.6 aiohttp/2.2.3
 }</pre>
 <p>Message sent!
 HTTPie is nice for testing, but we can make a small script to easily send messages from the command line.</p>
-</div>
-<div class="section" id="requests">
-<h3>requests</h3>
+</section><section id="requests"><h3>requests</h3>
 <p><a class="reference external" href="http://docs.python-requests.org">requests</a> is of course the HTTP library to use in Python.</p>
 <p>So let's write a small script to send messages to our server.
 We'll store the server url and username to use in a small yaml configuration file.
@@ -622,10 +591,7 @@ username: john</pre>
 Password:
 Message sent</pre>
 <img alt="/images/legomac/zen_of_python.jpg" src="../../images/legomac/zen_of_python.jpg"><p>Sending a new message won't request the password as the token was saved in the config file.</p>
-</div>
-</div>
-<div class="section" id="conclusion">
-<h2>Conclusion</h2>
+</section></section><section id="conclusion"><h2>Conclusion</h2>
 <p>I have a nice little aiohttp server running on my Raspberry Pi that can receive and display messages.
 asyncio is quite pleasant to work with. I really like the async/await syntax.</p>
 <p>All the code is on github:</p>
@@ -636,9 +602,8 @@ asyncio is quite pleasant to work with. I really like the async/await syntax.</p
 <p>Why did I only write a command line script to send messages and no web interface?
 Don't worry, that's planned! I could have used Jinja2. But I'd like to try a javascript framework.
 So that will be the subject of another post.</p>
+</section>
 </div>
-</div>
-    </div>
     <aside class="postpromonav"><nav><ul itemprop="keywords" class="tags">
 <li><a class="tag p-category" href="../../categories/ansible/" rel="tag">Ansible</a></li>
             <li><a class="tag p-category" href="../../categories/docker/" rel="tag">docker</a></li>
@@ -655,7 +620,7 @@ So that will be the subject of another post.</p>
             </li>
         </ul></nav></aside><section class="comments hidden-print"><h2>Comments</h2>
         
-        
+    
         <div id="disqus_thread"></div>
         <script>
         var disqus_shortname ="tchutchut",
@@ -676,7 +641,7 @@ So that will be the subject of another post.</p>
 
 
         </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
-            Contents © 2021         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2022         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
             

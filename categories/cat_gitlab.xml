@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about gitlab)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/cat_gitlab.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2021 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog (Posts about gitlab)</title><link>http://beenje.github.io/blog/</link><description></description><atom:link href="http://beenje.github.io/blog/categories/cat_gitlab.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2022 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 06 Jan 2021 08:21:40 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>GitLab Container Registry and proxy</title><link>http://beenje.github.io/blog/posts/gitlab-container-registry-and-proxy/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;div class="section" id="gitlab-on-synology"&gt;
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sun, 19 Jun 2022 20:13:57 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>GitLab Container Registry and proxy</title><link>http://beenje.github.io/blog/posts/gitlab-container-registry-and-proxy/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;section id="gitlab-on-synology"&gt;
 &lt;h2&gt;GitLab on Synology&lt;/h2&gt;
 &lt;p&gt;I installed GitLab CE on a Synology RackStation RS815+ at work.
 It has an Intel Atom C2538 that allows to run &lt;a class="reference external" href="https://www.docker.com"&gt;Docker&lt;/a&gt; on the NAS.&lt;/p&gt;
@@ -13,17 +13,18 @@ The documentation to use the image is quite clear and can be found &lt;a class="
 I wanted to access GitLab using HTTPS, so I disabled port 443 in nginx
 configuration. To do that I had to modify the template
 &lt;cite&gt;/usr/syno/share/nginx/WWWService.mustache&lt;/cite&gt; and reboot the NAS:&lt;/p&gt;
-&lt;pre class="code diff"&gt;&lt;a name="rest_code_4320fa419db442aa82f648acae975c04-1"&gt;&lt;/a&gt;&lt;span class="gd"&gt;--- WWWService.mustache.org 2016-08-16 23:25:06.000000000 +0100&lt;/span&gt;
-&lt;a name="rest_code_4320fa419db442aa82f648acae975c04-2"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+++ WWWService.mustache 2016-09-19 13:53:45.256735700 +0100&lt;/span&gt;
-&lt;a name="rest_code_4320fa419db442aa82f648acae975c04-3"&gt;&lt;/a&gt;&lt;span class="gu"&gt;@@ -1,8 +1,6 @@&lt;/span&gt;
-&lt;a name="rest_code_4320fa419db442aa82f648acae975c04-4"&gt;&lt;/a&gt; server {
-&lt;a name="rest_code_4320fa419db442aa82f648acae975c04-5"&gt;&lt;/a&gt;     listen 80 default_server{{#reuseport}} reuseport{{/reuseport}};
-&lt;a name="rest_code_4320fa419db442aa82f648acae975c04-6"&gt;&lt;/a&gt;     listen [::]:80 default_server{{#reuseport}} reuseport{{/reuseport}};
-&lt;a name="rest_code_4320fa419db442aa82f648acae975c04-7"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    listen 443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};&lt;/span&gt;
-&lt;a name="rest_code_4320fa419db442aa82f648acae975c04-8"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    listen [::]:443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};&lt;/span&gt;
-&lt;a name="rest_code_4320fa419db442aa82f648acae975c04-9"&gt;&lt;/a&gt;
-&lt;a name="rest_code_4320fa419db442aa82f648acae975c04-10"&gt;&lt;/a&gt;     server_name _;
-&lt;/pre&gt;&lt;p&gt;The port 22 is also already used by the ssh daemon so I decided to use
+&lt;div class="code"&gt;&lt;pre class="code diff"&gt;&lt;a id="rest_code_c1eff3846f3e4440b6866c5f031bbe5e-1" name="rest_code_c1eff3846f3e4440b6866c5f031bbe5e-1" href="http://beenje.github.io/blog/posts/gitlab-container-registry-and-proxy/#rest_code_c1eff3846f3e4440b6866c5f031bbe5e-1"&gt;&lt;/a&gt;&lt;span class="gd"&gt;--- WWWService.mustache.org 2016-08-16 23:25:06.000000000 +0100&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;a id="rest_code_c1eff3846f3e4440b6866c5f031bbe5e-2" name="rest_code_c1eff3846f3e4440b6866c5f031bbe5e-2" href="http://beenje.github.io/blog/posts/gitlab-container-registry-and-proxy/#rest_code_c1eff3846f3e4440b6866c5f031bbe5e-2"&gt;&lt;/a&gt;&lt;span class="gi"&gt;+++ WWWService.mustache 2016-09-19 13:53:45.256735700 +0100&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;a id="rest_code_c1eff3846f3e4440b6866c5f031bbe5e-3" name="rest_code_c1eff3846f3e4440b6866c5f031bbe5e-3" href="http://beenje.github.io/blog/posts/gitlab-container-registry-and-proxy/#rest_code_c1eff3846f3e4440b6866c5f031bbe5e-3"&gt;&lt;/a&gt;&lt;span class="gu"&gt;@@ -1,8 +1,6 @@&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;a id="rest_code_c1eff3846f3e4440b6866c5f031bbe5e-4" name="rest_code_c1eff3846f3e4440b6866c5f031bbe5e-4" href="http://beenje.github.io/blog/posts/gitlab-container-registry-and-proxy/#rest_code_c1eff3846f3e4440b6866c5f031bbe5e-4"&gt;&lt;/a&gt;&lt;span class="w"&gt; &lt;/span&gt;server {&lt;span class="w"&gt;&lt;/span&gt;
+&lt;a id="rest_code_c1eff3846f3e4440b6866c5f031bbe5e-5" name="rest_code_c1eff3846f3e4440b6866c5f031bbe5e-5" href="http://beenje.github.io/blog/posts/gitlab-container-registry-and-proxy/#rest_code_c1eff3846f3e4440b6866c5f031bbe5e-5"&gt;&lt;/a&gt;&lt;span class="w"&gt; &lt;/span&gt;    listen 80 default_server{{#reuseport}} reuseport{{/reuseport}};&lt;span class="w"&gt;&lt;/span&gt;
+&lt;a id="rest_code_c1eff3846f3e4440b6866c5f031bbe5e-6" name="rest_code_c1eff3846f3e4440b6866c5f031bbe5e-6" href="http://beenje.github.io/blog/posts/gitlab-container-registry-and-proxy/#rest_code_c1eff3846f3e4440b6866c5f031bbe5e-6"&gt;&lt;/a&gt;&lt;span class="w"&gt; &lt;/span&gt;    listen [::]:80 default_server{{#reuseport}} reuseport{{/reuseport}};&lt;span class="w"&gt;&lt;/span&gt;
+&lt;a id="rest_code_c1eff3846f3e4440b6866c5f031bbe5e-7" name="rest_code_c1eff3846f3e4440b6866c5f031bbe5e-7" href="http://beenje.github.io/blog/posts/gitlab-container-registry-and-proxy/#rest_code_c1eff3846f3e4440b6866c5f031bbe5e-7"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    listen 443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;a id="rest_code_c1eff3846f3e4440b6866c5f031bbe5e-8" name="rest_code_c1eff3846f3e4440b6866c5f031bbe5e-8" href="http://beenje.github.io/blog/posts/gitlab-container-registry-and-proxy/#rest_code_c1eff3846f3e4440b6866c5f031bbe5e-8"&gt;&lt;/a&gt;&lt;span class="gd"&gt;-    listen [::]:443 default_server ssl{{#reuseport}} reuseport{{/reuseport}};&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;a id="rest_code_c1eff3846f3e4440b6866c5f031bbe5e-9" name="rest_code_c1eff3846f3e4440b6866c5f031bbe5e-9" href="http://beenje.github.io/blog/posts/gitlab-container-registry-and-proxy/#rest_code_c1eff3846f3e4440b6866c5f031bbe5e-9"&gt;&lt;/a&gt;
+&lt;a id="rest_code_c1eff3846f3e4440b6866c5f031bbe5e-10" name="rest_code_c1eff3846f3e4440b6866c5f031bbe5e-10" href="http://beenje.github.io/blog/posts/gitlab-container-registry-and-proxy/#rest_code_c1eff3846f3e4440b6866c5f031bbe5e-10"&gt;&lt;/a&gt;&lt;span class="w"&gt; &lt;/span&gt;    server_name _;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;The port 22 is also already used by the ssh daemon so I decided to use
 the port 2222. I created the directory &lt;cite&gt;/volume1/docker/gitlab&lt;/cite&gt; to store
 all GitLab data. Here are the required variables in the
 &lt;cite&gt;/volume1/docker/gitlab/config/gitlab.rb&lt;/cite&gt; config file:&lt;/p&gt;
@@ -46,8 +47,8 @@ nginx['redirect_http_to_https'] = true&lt;/pre&gt;
     gitlab/gitlab-ce:latest&lt;/pre&gt;
 &lt;p&gt;This has been working fine. Since I heard about &lt;a class="reference external" href="https://about.gitlab.com/2016/05/23/gitlab-container-registry/"&gt;GitLab Container Registry&lt;/a&gt;,
 I've been wanted to give it a try.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="id1"&gt;
+&lt;/section&gt;
+&lt;section id="gitlab-container-registry-1"&gt;
 &lt;h2&gt;GitLab Container Registry&lt;/h2&gt;
 &lt;p&gt;To enable it, I just added to my &lt;cite&gt;gitlab.rb&lt;/cite&gt; file the registry url:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;registry_external_url 'https://mygitlab.example.com:4567'&lt;/pre&gt;
@@ -137,8 +138,8 @@ Password:
 Login Succeeded&lt;/pre&gt;
 &lt;p&gt;Yes! :-)&lt;/p&gt;
 &lt;p&gt;I can now push docker images to my GitLab Container Registry!&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="conclusion"&gt;
+&lt;/section&gt;
+&lt;section id="conclusion"&gt;
 &lt;h2&gt;Conclusion&lt;/h2&gt;
 &lt;p&gt;Setting GitLab Container Registry should have been easy but my proxy
 settings made me lost quite some time... The proxy environment variables (HTTP_PROXY, NO_PROXY...)
@@ -151,4 +152,4 @@ $ docker login foo
 Username: user
 Password:
 Error response from daemon: Get https://foo/v1/users/: dial tcp: lookup foo on xxx.xxx.xx.x:53: no such host&lt;/pre&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>ci</category><category>docker</category><category>git</category><category>gitlab</category><category>synology</category><guid>http://beenje.github.io/blog/posts/gitlab-container-registry-and-proxy/</guid><pubDate>Wed, 21 Sep 2016 20:10:06 GMT</pubDate></item></channel></rss>
+&lt;/section&gt;</description><category>ci</category><category>docker</category><category>git</category><category>gitlab</category><category>synology</category><guid>http://beenje.github.io/blog/posts/gitlab-container-registry-and-proxy/</guid><pubDate>Wed, 21 Sep 2016 20:10:06 GMT</pubDate></item></channel></rss>

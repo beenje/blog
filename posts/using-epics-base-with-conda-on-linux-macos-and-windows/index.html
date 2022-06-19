@@ -94,7 +94,7 @@ bg-dark
             <time class="published dt-published" datetime="2020-05-07T22:33:55+02:00" itemprop="datePublished" title="2020-05-07 22:33">2020-05-07 22:33</time></a>
             </p>
                 <p class="commentline">
-        
+    
     <a href="#disqus_thread" data-disqus-identifier="cache/posts/using-epics-base-with-conda-on-linux-macos-and-windows.html">Comments</a>
 
 
@@ -106,26 +106,21 @@ bg-dark
         
 
     </header><div class="e-content entry-content" itemprop="articleBody text">
-    <div>
-<p>I previously described how to create a <a class="reference external" href="../how-to-setup-a-windows-vm-to-build-conda-packages">Windows VM to build conda packages</a>.
+    <p>I previously described how to create a <a class="reference external" href="../how-to-setup-a-windows-vm-to-build-conda-packages">Windows VM to build conda packages</a>.
 I mentioned this was to update the conda-forge <a class="reference external" href="https://github.com/conda-forge/epics-base-feedstock">epics-base feedstock</a>.
 In this post, I want to share how to use <a class="reference external" href="https://github.com/epics-base/epics-base">EPICS Base</a> with <a class="reference external" href="https://docs.conda.io/en/latest/">conda</a>.</p>
-<div class="section" id="acknowledgement">
-<h2>Acknowledgement</h2>
+<section id="acknowledgement"><h2>Acknowledgement</h2>
 <p>I'm not the original author of the <a class="reference external" href="https://github.com/conda-forge/epics-base-feedstock">epics-base feedstock</a>.
 I want to thank all the people who contributed to that conda recipe.</p>
 <p>All the examples of <a class="reference external" href="https://epics.anl.gov">EPICS</a> usage below come directly from the official website
 <a class="reference external" href="https://epics-controls.org/resources-and-support/documents/getting-started/">Getting Started page</a>.</p>
-</div>
-<div class="section" id="miniconda">
-<h2>Miniconda</h2>
+</section><section id="miniconda"><h2>Miniconda</h2>
 <p>This post assumes some basic knowledge of <a class="reference external" href="https://docs.conda.io/en/latest/">conda</a>.
 If you never used it before, I recommend starting by checking the <a class="reference external" href="https://docs.conda.io/en/latest/">documentation</a>.</p>
 <p>If you don't have <cite>conda</cite> already installed, here are some quick instructions.
 Refer to the <a class="reference external" href="https://conda.io/projects/conda/en/latest/user-guide/install/index.html">official documentation</a>
 for more detailed information.</p>
-<div class="section" id="linux">
-<h3>Linux</h3>
+<section id="linux"><h3>Linux</h3>
 <p>Note that <cite>bzip2</cite> is required to run the installation.</p>
 <pre class="literal-block">curl -LO https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh -bp $HOME/miniconda
@@ -133,23 +128,17 @@ rm -f Miniconda3-latest-Linux-x86_64.sh
 # Let conda update your ~/.bashrc
 source $HOME/miniconda/bin/activate
 conda init</pre>
-</div>
-<div class="section" id="macos">
-<h3>macOS</h3>
+</section><section id="macos"><h3>macOS</h3>
 <pre class="literal-block">curl -LO https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
 bash Miniconda3-latest-MacOSX-x86_64.sh -bp $HOME/miniconda
 rm -f Miniconda3-latest-MacOSX-x86_64.sh
 # Let conda update your ~/.bash_profile
 source $HOME/miniconda/bin/activate
 conda init</pre>
-</div>
-<div class="section" id="windows">
-<h3>Windows</h3>
+</section><section id="windows"><h3>Windows</h3>
 <p>Download and run the Miniconda3 installer from <a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html#windows-installers">https://docs.conda.io/en/latest/miniconda.html#windows-installers</a>.
 To use conda, open the Anaconda Prompt from the start menu.</p>
-</div>
-<div class="section" id="configuration">
-<h3>Configuration</h3>
+</section><section id="configuration"><h3>Configuration</h3>
 <p>On Linux and macOS, if you don't want conda to activate the base environment by default (and modify your PATH),
 you should run:</p>
 <pre class="literal-block">conda config --set auto_activate_base false</pre>
@@ -157,21 +146,15 @@ you should run:</p>
 <p>To be able to install package from <a class="reference external" href="https://conda-forge.org">conda-forge</a>,
 add the <cite>conda-forge</cite> channel to your configuration. This applies to all platforms.</p>
 <pre class="literal-block">conda config --add channels conda-forge</pre>
-</div>
-</div>
-<div class="section" id="installing-epics-base">
-<h2>Installing epics-base</h2>
-<div class="section" id="environment-creation">
-<h3>Environment creation</h3>
+</section></section><section id="installing-epics-base"><h2>Installing epics-base</h2>
+<section id="environment-creation"><h3>Environment creation</h3>
 <p>Now that we have conda installed and configured, getting <cite>epics-base</cite> is as easy
 as running:</p>
 <pre class="literal-block">conda create -y -n epics epics-base</pre>
 <p>Note that you don't need any compiler or to install any other packages.
 The only requirement is conda.
 As of may 2020, the version installed should be 7.0.3.1.</p>
-</div>
-<div class="section" id="environment-activation">
-<h3>Environment activation</h3>
+</section><section id="environment-activation"><h3>Environment activation</h3>
 <p>To start using <a class="reference external" href="https://epics.anl.gov">EPICS</a>, activate the environment:</p>
 <pre class="literal-block">conda activate epics</pre>
 <p>You now have access to all the binaries provided by epics-base:</p>
@@ -214,9 +197,7 @@ Running <code class="docutils literal">conda deactivate</code> will unset those 
 (base) [tux@964ef40cabbb ~]$ echo $PATH
 /home/tux/miniconda/bin:/home/tux/miniconda/condabin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/tux/.local/bin:/home/tux/bin
 (base) [tux@964ef40cabbb ~]$</pre>
-</div>
-<div class="section" id="simple-test">
-<h3>Simple test</h3>
+</section><section id="simple-test"><h3>Simple test</h3>
 <p>With your editor of choice, create the <cite>test.db</cite> file that contains:</p>
 <pre class="literal-block">record(ai, "temperature:water")
 {
@@ -240,18 +221,12 @@ New : temperature:water              21
 temperature:water              21
 (epics) CI0011906:~ $</pre>
 <p>The following screenshots show the result on macOS and Windows.</p>
-<img alt="/images/using-epics-base-with-conda/simple-test-macos.png" src="../../images/using-epics-base-with-conda/simple-test-macos.png"><img alt="/images/using-epics-base-with-conda/simple-test-windows.png" src="../../images/using-epics-base-with-conda/simple-test-windows.png">
-</div>
-</div>
-<div class="section" id="compiling-a-demo-ioc">
-<h2>Compiling a demo IOC</h2>
+<img alt="/images/using-epics-base-with-conda/simple-test-macos.png" src="../../images/using-epics-base-with-conda/simple-test-macos.png"><img alt="/images/using-epics-base-with-conda/simple-test-windows.png" src="../../images/using-epics-base-with-conda/simple-test-windows.png"></section></section><section id="compiling-a-demo-ioc"><h2>Compiling a demo IOC</h2>
 <p>We saw how to use the binaries that come with epics-base. It's worth mentioning
 that you can also compile code using the installed conda package.</p>
-<div class="section" id="pre-requisites">
-<h3>Pre-requisites</h3>
+<section id="pre-requisites"><h3>Pre-requisites</h3>
 <p>The pre-requisites are different depending on the platform.</p>
-<div class="section" id="id1">
-<h4>Linux</h4>
+<section id="linux-1"><h4>Linux</h4>
 <p>There is no distribution specific dependencies to install.
 All requirements will be installed with conda.</p>
 <p>We could use the existing <cite>epics</cite> environment but we'll create a new one
@@ -259,21 +234,16 @@ to demonstrate that several environments can coexist in parallel.</p>
 <p>Create and activate the <cite>epics-dev</cite> environment:</p>
 <pre class="literal-block">conda create -y -n epics-dev epics-base make compilers
 conda activate epics-dev</pre>
-</div>
-<div class="section" id="id2">
-<h4>macOS</h4>
+</section><section id="macos-1"><h4>macOS</h4>
 <p>Conda provides the clang compilers for macOS. But the macOS SDK is still required.
 The SDK license prevents it from being bundled in the conda package.
 The SDK has to be installed manually. For compatibility issue, conda packages
 are built with the 10.9 SDK. To compile code locally that you don't plan
 to share, using a more recent version should be fine.</p>
-<div class="section" id="solution-1-current-sdk">
-<h5>Solution 1: current SDK</h5>
+<section id="solution-1-current-sdk"><h5>Solution 1: current SDK</h5>
 <p>Install Xcode Command Line Tools by running:</p>
 <pre class="literal-block">xcode-select --install</pre>
-</div>
-<div class="section" id="solution-2-10-9-sdk">
-<h5>Solution 2: 10.9 SDK</h5>
+</section><section id="solution-2-10-9-sdk"><h5>Solution 2: 10.9 SDK</h5>
 <p>As mentioned in <a class="reference external" href="https://docs.conda.io/projects/conda-build/en/latest/resources/compiler-tools.html#macos-sdk">conda-build documentation</a>,
 the 10.9 SDK can be downloaded from:</p>
 <ul class="simple">
@@ -297,10 +267,7 @@ the <cite>compilers</cite> package. It should detect your Xcode installation:</p
 <pre class="literal-block">export CONDA_BUILD_SYSROOT=/opt/MacOSX10.9.sdk</pre>
 <p>The variable <code class="docutils literal">MACOSX_DEPLOYMENT_TARGET</code>, you have to set manually:</p>
 <pre class="literal-block">export MACOSX_DEPLOYMENT_TARGET=10.9</pre>
-</div>
-</div>
-<div class="section" id="id3">
-<h4>Windows</h4>
+</section></section><section id="windows-1"><h4>Windows</h4>
 <p>On Windows, you need to install the Visual C++ compilers.
 You only need to download the <strong>Build Tools for Visual Studio 2017</strong>. Refer
 to the post on <a class="reference external" href="../how-to-setup-a-windows-vm-to-build-conda-packages">how to setup a Windows VM to build conda packages</a> for
@@ -313,10 +280,7 @@ Note that we also need to install the <cite>epics-base-static-libs</cite> to com
 The static libraries were moved to a subpackage to make <cite>epics-base</cite> package smaller.
 They are not needed most of the time on Linux and macOS. Maybe they should be part of
 the default package on Windows?</p>
-</div>
-</div>
-<div class="section" id="ioc-creation">
-<h3>IOC creation</h3>
+</section></section><section id="ioc-creation"><h3>IOC creation</h3>
 <p>Make sure you activated the <cite>epics-dev</cite> environment you created.
 Note that we didn't have to specify <cite>perl</cite> when creating the environment.
 It's installed with <cite>epics-base</cite> as run dependency.</p>
@@ -418,19 +382,15 @@ IEUser:circle:y
 IEUser:calcExample
 ...</pre>
 <p>We have a running IOC on all 3 platforms!</p>
-</div>
-</div>
-<div class="section" id="summary">
-<h2>Summary</h2>
+</section></section><section id="summary"><h2>Summary</h2>
 <p>I hope this post showed you how easy conda make it to install <a class="reference external" href="https://github.com/epics-base/epics-base">EPICS Base</a> on Linux, macOS and Windows.
 We saw that this package can also be used to compile an IOC. That being said, if you want to use
 various EPICS modules, this is probably not the best solution today. As long as those modules
 aren't available as conda packages at least.
 But if all you need is <a class="reference external" href="https://github.com/epics-base/epics-base">EPICS Base</a>, to interact with IOCs on other machines for example, then I'd
 really recommend <a class="reference external" href="https://docs.conda.io/en/latest/">conda</a>.</p>
+</section>
 </div>
-</div>
-    </div>
     <aside class="postpromonav"><nav><ul itemprop="keywords" class="tags">
 <li><a class="tag p-category" href="../../categories/conda/" rel="tag">conda</a></li>
             <li><a class="tag p-category" href="../../categories/epics/" rel="tag">epics</a></li>
@@ -448,7 +408,7 @@ really recommend <a class="reference external" href="https://docs.conda.io/en/la
             </li>
         </ul></nav></aside><section class="comments hidden-print"><h2>Comments</h2>
         
-        
+    
         <div id="disqus_thread"></div>
         <script>
         var disqus_shortname ="tchutchut",
@@ -469,7 +429,7 @@ really recommend <a class="reference external" href="https://docs.conda.io/en/la
 
 
         </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
-            Contents © 2021         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2022         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
             

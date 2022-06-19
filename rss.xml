@@ -1,9 +1,380 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog</title><link>http://beenje.github.io/blog/</link><description>Notes to myself</description><atom:link href="http://beenje.github.io/blog/rss.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2021 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
+<?xml-stylesheet type="text/xsl" href="assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tchut-Tchut Blog</title><link>http://beenje.github.io/blog/</link><description>Notes to myself</description><atom:link href="http://beenje.github.io/blog/rss.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2022 &lt;a href="mailto:beenje@gmail.com"&gt;Benjamin Bertrand&lt;/a&gt; 
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Wed, 06 Jan 2021 08:21:41 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Building a GitLab bot using gidgetlab, Starlette and HTTPX</title><link>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-starlette-and-httpx/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I previously described how to create a &lt;a class="reference external" href="http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp"&gt;GitLab bot using gidgetlab and aiohttp&lt;/a&gt;.
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sun, 19 Jun 2022 20:20:27 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Developing and compiling tango with conda</title><link>http://beenje.github.io/blog/posts/developing-and-compiling-tango-with-conda/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;&lt;a href="https://docs.conda.io/en/latest/"&gt;Conda&lt;/a&gt; is a popular package manager that can quickly install binary packages and their dependencies.&lt;/p&gt;
+&lt;p&gt;Many &lt;a href="https://www.tango-controls.org"&gt;Tango&lt;/a&gt; packages are available on &lt;a href="https://github.com/conda-forge"&gt;conda-forge&lt;/a&gt;: &lt;code&gt;pytango&lt;/code&gt;, &lt;code&gt;tango-test&lt;/code&gt;, &lt;code&gt;tango-database&lt;/code&gt;, &lt;code&gt;tango-starter&lt;/code&gt;, &lt;code&gt;tango-admin&lt;/code&gt;...
+Most are still Linux only, but a few are also available for Windows (like &lt;code&gt;pytango&lt;/code&gt; and &lt;code&gt;tango-test&lt;/code&gt;).&lt;/p&gt;
+&lt;p&gt;What many people don't know or don't think about is that conda can also be used to setup a development environment.
+The required compilers and build tools, used by &lt;a href="https://docs.conda.io/projects/conda-build/en/latest/index.html"&gt;conda-build&lt;/a&gt; to compile and create packages, can be installed as any conda package.&lt;/p&gt;
+&lt;p&gt;This is something I often do before to create a recipe to check how to compile a software.&lt;/p&gt;
+&lt;h3&gt;Installing conda/mamba&lt;/h3&gt;
+&lt;p&gt;If you don't have conda already installed, I recommend using &lt;a href="https://github.com/conda-forge/miniforge"&gt;Mambaforge&lt;/a&gt;, an alternative to &lt;a href="https://docs.conda.io/en/latest/miniconda.html"&gt;miniconda&lt;/a&gt;.
+&lt;a href="https://github.com/conda-forge/miniforge"&gt;Mambaforge&lt;/a&gt; is a minimal installer for conda that also inludes &lt;a href="https://mamba.readthedocs.io/en/latest/index.html"&gt;mamba&lt;/a&gt; and is configured with &lt;a href="https://github.com/conda-forge"&gt;conda-forge&lt;/a&gt; as the default and only channel.&lt;/p&gt;
+&lt;p&gt;If you haven't heard of &lt;code&gt;mamba&lt;/code&gt; before, check &lt;a href="https://github.com/mamba-org/mamba"&gt;https://github.com/mamba-org/mamba&lt;/a&gt;. &lt;code&gt;mamba&lt;/code&gt; is a fast alternative conda client. You can use it as a drop-in replacement for conda and benefit from faster download and dependency solving.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;conda&lt;/code&gt; is also gaining from this development as &lt;code&gt;libmamba&lt;/code&gt; was integrated in conda 4.12.0: &lt;a href="https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community"&gt;https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community&lt;/a&gt;. At this time, it's still an experimental feature that needs to be enabled explicitly.&lt;/p&gt;
+&lt;p&gt;To install &lt;code&gt;conda&lt;/code&gt; and &lt;code&gt;mamba&lt;/code&gt; on Unix like platforms:&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;curl -L -O &lt;span class="s2"&gt;"https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-&lt;/span&gt;&lt;span class="k"&gt;$(&lt;/span&gt;uname&lt;span class="k"&gt;)&lt;/span&gt;&lt;span class="s2"&gt;-&lt;/span&gt;&lt;span class="k"&gt;$(&lt;/span&gt;uname -m&lt;span class="k"&gt;)&lt;/span&gt;&lt;span class="s2"&gt;.sh"&lt;/span&gt;
+bash Mambaforge-&lt;span class="k"&gt;$(&lt;/span&gt;uname&lt;span class="k"&gt;)&lt;/span&gt;-&lt;span class="k"&gt;$(&lt;/span&gt;uname -m&lt;span class="k"&gt;)&lt;/span&gt;.sh  -f -b -p ~/mambaforge
+~/mambaforge/bin/mamba init
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;On Windows, use the &lt;a href="https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Windows-x86_64.exe"&gt;Mambaforge-Windows-x86_64.exe&lt;/a&gt; installer.&lt;/p&gt;
+&lt;p&gt;The rest of this post will assume you have conda/mamba installed and conda-forge set as the default channel:&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;$ conda config --show channels
+channels:
+  - conda-forge
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;If you are used to &lt;code&gt;conda&lt;/code&gt; and don't want to install &lt;code&gt;mamba&lt;/code&gt;, this isn't an issue. Both are interchangeable.
+Just run &lt;code&gt;conda&lt;/code&gt; instead of &lt;code&gt;mamba&lt;/code&gt;. Out of habit I often still run &lt;code&gt;conda activate&lt;/code&gt; as this wasn't initially supported by &lt;code&gt;mamba&lt;/code&gt;, but this isn't the case anymore.&lt;/p&gt;
+&lt;h3&gt;Compiling cppTango in a conda environment&lt;/h3&gt;
+&lt;p&gt;Let's say you want to compile &lt;a href="https://gitlab.com/tango-controls/cppTango"&gt;cppTango&lt;/a&gt; to work on a bug fix or new feature.
+To build it on your Linux distribution, you can of course install all the requirements with your OS package manager (apt, yum, dnf...).
+Depending of your OS, versions will differ as well as package names between distributions.&lt;/p&gt;
+&lt;p&gt;Conda provides a solution that is OS independent. Create the following &lt;code&gt;tango-dev&lt;/code&gt; environment:&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;mamba create -y -n tango-dev make cmake cxx-compiler libtool pkg-config jpeg omniorb cppzmq zeromq tango-idl
+mamba activate tango-dev
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;To know the list of packages to install, you can refer to the official &lt;a href="https://github.com/conda-forge/cpptango-feedstock/blob/main/recipe/meta.yaml#L25"&gt;cpptango-feedstock&lt;/a&gt;. I added &lt;code&gt;jpeg&lt;/code&gt; here as it's a new requirement to build the main branch.&lt;/p&gt;
+&lt;p&gt;Activating the &lt;code&gt;tango-dev&lt;/code&gt; environment will export a few variables, like &lt;code&gt;CC&lt;/code&gt;, &lt;code&gt;CXX&lt;/code&gt; and &lt;code&gt;CMAKE_ARGS&lt;/code&gt;.
+You should pass the latter to cmake:&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;$ &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="nv"&gt;$CC&lt;/span&gt;
+/home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-cc
+$ &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="nv"&gt;$CXX&lt;/span&gt;
+/home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-c++
+$ &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="nv"&gt;$CMAKE_ARGS&lt;/span&gt;
+-DCMAKE_AR&lt;span class="o"&gt;=&lt;/span&gt;/home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-ar -DCMAKE_CXX_COMPILER_AR&lt;span class="o"&gt;=&lt;/span&gt;/home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-gcc-ar -DCMAKE_C_COMPILER_AR&lt;span class="o"&gt;=&lt;/span&gt;/home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-gcc-ar -DCMAKE_RANLIB&lt;span class="o"&gt;=&lt;/span&gt;/home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-ranlib -DCMAKE_CXX_COMPILER_RANLIB&lt;span class="o"&gt;=&lt;/span&gt;/home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-gcc-ranlib -DCMAKE_C_COMPILER_RANLIB&lt;span class="o"&gt;=&lt;/span&gt;/home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-gcc-ranlib -DCMAKE_LINKER&lt;span class="o"&gt;=&lt;/span&gt;/home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-ld -DCMAKE_STRIP&lt;span class="o"&gt;=&lt;/span&gt;/home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-strip
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Note that when using &lt;a href="https://docs.conda.io/projects/conda-build/en/latest/index.html"&gt;conda-build&lt;/a&gt; even more options are automatically added to &lt;code&gt;CMAKE_ARGS&lt;/code&gt;, like &lt;code&gt;CMAKE_INSTALL_PREFIX&lt;/code&gt; and &lt;code&gt;CMAKE_INSTALL_LIBDIR&lt;/code&gt;.
+We need to pass those manually in our case. Use &lt;code&gt;CONDA_PREFIX&lt;/code&gt; to refer to the current activated environment (this variable is automatically set by conda).&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;&lt;span class="o"&gt;(&lt;/span&gt;tango-dev&lt;span class="o"&gt;)&lt;/span&gt; vagrant@bullseye:~$ git clone https://gitlab.com/tango-controls/cppTango.git
+&lt;span class="o"&gt;(&lt;/span&gt;tango-dev&lt;span class="o"&gt;)&lt;/span&gt; vagrant@bullseye:~$ &lt;span class="nb"&gt;cd&lt;/span&gt; cppTango
+&lt;span class="o"&gt;(&lt;/span&gt;tango-dev&lt;span class="o"&gt;)&lt;/span&gt; vagrant@bullseye:~/cppTango$ cmake &lt;span class="nv"&gt;$CMAKE_ARGS&lt;/span&gt; &lt;span class="se"&gt;\&lt;/span&gt;
+      -DCMAKE_BUILD_TYPE&lt;span class="o"&gt;=&lt;/span&gt;Debug &lt;span class="se"&gt;\&lt;/span&gt;
+      -DCMAKE_INSTALL_PREFIX&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;"&lt;/span&gt;&lt;span class="nv"&gt;$CONDA_PREFIX&lt;/span&gt;&lt;span class="s2"&gt;"&lt;/span&gt; &lt;span class="se"&gt;\&lt;/span&gt;
+      -DCMAKE_INSTALL_LIBDIR&lt;span class="o"&gt;=&lt;/span&gt;lib &lt;span class="se"&gt;\&lt;/span&gt;
+      -S . -B build
+-- The C compiler identification is GNU &lt;span class="m"&gt;10&lt;/span&gt;.3.0
+-- The CXX compiler identification is GNU &lt;span class="m"&gt;10&lt;/span&gt;.3.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - &lt;span class="k"&gt;done&lt;/span&gt;
+-- Check &lt;span class="k"&gt;for&lt;/span&gt; working C compiler: /home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - &lt;span class="k"&gt;done&lt;/span&gt;
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - &lt;span class="k"&gt;done&lt;/span&gt;
+-- Check &lt;span class="k"&gt;for&lt;/span&gt; working CXX compiler: /home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - &lt;span class="k"&gt;done&lt;/span&gt;
+-- Found PkgConfig: /home/vagrant/mambaforge/envs/tango-dev/bin/pkg-config &lt;span class="o"&gt;(&lt;/span&gt;found version &lt;span class="s2"&gt;"0.29.2"&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+-- CMake: version &lt;span class="m"&gt;3&lt;/span&gt;.23.2
+-- Target platform: Linux &lt;span class="m"&gt;64&lt;/span&gt;-bit
+-- C++ Compiler: GNU with version &lt;span class="m"&gt;10&lt;/span&gt;.3.0
+-- C Compiler: GNU with version &lt;span class="m"&gt;10&lt;/span&gt;.3.0
+-- Build type: Debug
+-- Environment: &lt;span class="nv"&gt;TANGO_HOST&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;
+-- Checking &lt;span class="k"&gt;for&lt;/span&gt; one of the modules &lt;span class="s1"&gt;'tangoidl'&lt;/span&gt;
+-- Checking &lt;span class="k"&gt;for&lt;/span&gt; one of the modules &lt;span class="s1"&gt;'omniORB4'&lt;/span&gt;
+-- Checking &lt;span class="k"&gt;for&lt;/span&gt; one of the modules &lt;span class="s1"&gt;'omniCOS4'&lt;/span&gt;
+-- Checking &lt;span class="k"&gt;for&lt;/span&gt; one of the modules &lt;span class="s1"&gt;'omniDynamic4'&lt;/span&gt;
+-- Checking &lt;span class="k"&gt;for&lt;/span&gt; one of the modules &lt;span class="s1"&gt;'libzmq'&lt;/span&gt;
+-- Found JPEG: /home/vagrant/mambaforge/envs/tango-dev/lib/libjpeg.so &lt;span class="o"&gt;(&lt;/span&gt;found version &lt;span class="s2"&gt;"90"&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+-- Check &lt;span class="k"&gt;if&lt;/span&gt; cppzmq is present and recent enough: TRUE
+-- Check &lt;span class="k"&gt;if&lt;/span&gt; libzmq version is &amp;gt;&lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="m"&gt;4&lt;/span&gt;.0.5: TRUE
+-- Looking &lt;span class="k"&gt;for&lt;/span&gt; pthread.h
+-- Looking &lt;span class="k"&gt;for&lt;/span&gt; pthread.h - found
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Looking &lt;span class="k"&gt;for&lt;/span&gt; pthread_create &lt;span class="k"&gt;in&lt;/span&gt; pthreads
+-- Looking &lt;span class="k"&gt;for&lt;/span&gt; pthread_create &lt;span class="k"&gt;in&lt;/span&gt; pthreads - not found
+-- Looking &lt;span class="k"&gt;for&lt;/span&gt; pthread_create &lt;span class="k"&gt;in&lt;/span&gt; pthread
+-- Looking &lt;span class="k"&gt;for&lt;/span&gt; pthread_create &lt;span class="k"&gt;in&lt;/span&gt; pthread - found
+-- Found Threads: TRUE
+-- Looking &lt;span class="k"&gt;for&lt;/span&gt; io.h
+-- Looking &lt;span class="k"&gt;for&lt;/span&gt; io.h - not found
+-- Looking &lt;span class="k"&gt;for&lt;/span&gt; unistd.h
+-- Looking &lt;span class="k"&gt;for&lt;/span&gt; unistd.h - found
+-- Could NOT find Doxygen &lt;span class="o"&gt;(&lt;/span&gt;missing: DOXYGEN_EXECUTABLE&lt;span class="o"&gt;)&lt;/span&gt;
+CMake Warning at cppapi/doxygen/CMakeLists.txt:10 &lt;span class="o"&gt;(&lt;/span&gt;message&lt;span class="o"&gt;)&lt;/span&gt;:
+  Could not find doxygen/dot, therefore the documentation can not be built.
+
+
+Using &lt;span class="nv"&gt;OMNIIDL_PATH&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;
+Using &lt;span class="nv"&gt;IDL&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;/home/vagrant/mambaforge/envs/tango-dev/include
+&lt;span class="nv"&gt;HOST_NAME&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;bullseye
+-- Configuring &lt;span class="k"&gt;done&lt;/span&gt;
+-- Generating &lt;span class="k"&gt;done&lt;/span&gt;
+-- Build files have been written to: /home/vagrant/cppTango/build
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Note that if you want to build the documentation, you can install &lt;code&gt;doxygen&lt;/code&gt; and &lt;code&gt;graphviz&lt;/code&gt;: &lt;code&gt;mamba install doxygen graphviz&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;To build: &lt;code&gt;cmake --build build -j2&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;To test: &lt;code&gt;cmake --build build --target test&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;To install: &lt;code&gt;cmake --build build --target install&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Those commands were run on Debian 11.3 but would work on any Linux distribution.&lt;/p&gt;
+&lt;p&gt;Let's look at another example with &lt;a href="https://gitlab.com/tango-controls/TangoDatabase"&gt;TangoDatabase&lt;/a&gt;.&lt;/p&gt;
+&lt;h3&gt;Building TangoDatabase with conda&lt;/h3&gt;
+&lt;p&gt;What if you want to work on &lt;a href="https://gitlab.com/tango-controls/TangoDatabase"&gt;TangoDatabase&lt;/a&gt;?
+You could build it against the current release of &lt;code&gt;cppTango&lt;/code&gt;. Check the requirements in the official &lt;a href="https://github.com/conda-forge/tango-database-feedstock/blob/main/recipe/meta.yaml#L16"&gt;tango-database-feedstock&lt;/a&gt;:&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;$ mamba create -y -n tango-stable-dev cmake make cxx-compiler libtool pkg-config cppzmq cpptango mysql-devel omniorb
+$ mamba list -n tango-stable-dev &lt;span class="p"&gt;|&lt;/span&gt; grep cpptango
+cpptango                  &lt;span class="m"&gt;9&lt;/span&gt;.3.5                he78764c_1    conda-forge
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;What if you want to work against &lt;code&gt;cppTango&lt;/code&gt; main branch? You could of course re-use the previous environment where you compiled it yourself. But there is another option! For development purpose, each commit to &lt;code&gt;cppTango&lt;/code&gt; main branch,
+creates and publishes a conda package to the &lt;code&gt;tango-controls&lt;/code&gt; channel: &lt;a href="https://anaconda.org/tango-controls/cpptango"&gt;https://anaconda.org/tango-controls/cpptango&lt;/a&gt; (Linux only).
+Let's use that package from the &lt;code&gt;tango-controls/label/dev&lt;/code&gt; channel.&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;$ mamba create -y -n tango-main-dev -c tango-controls/label/dev cmake make cxx-compiler libtool pkg-config cppzmq cpptango mysql-devel omniorb
+$ mamba list -n tango-main-dev &lt;span class="p"&gt;|&lt;/span&gt; grep cpptango
+cpptango                  &lt;span class="m"&gt;9&lt;/span&gt;.4.0dev0             g5beab02d    tango-controls/label/dev
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;We can now build &lt;code&gt;TangoDatabase&lt;/code&gt; in the &lt;code&gt;tango-main-dev&lt;/code&gt; environment.&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;&lt;span class="o"&gt;(&lt;/span&gt;base&lt;span class="o"&gt;)&lt;/span&gt; vagrant@bullseye:~$ conda activate tango-main-dev
+&lt;span class="o"&gt;(&lt;/span&gt;tango-main-dev&lt;span class="o"&gt;)&lt;/span&gt; vagrant@bullseye:~$ git clone https://gitlab.com/tango-controls/TangoDatabase.git
+&lt;span class="o"&gt;(&lt;/span&gt;tango-main-dev&lt;span class="o"&gt;)&lt;/span&gt; vagrant@bullseye:~$ &lt;span class="nb"&gt;cd&lt;/span&gt; TangoDatabase/
+&lt;span class="o"&gt;(&lt;/span&gt;tango-main-dev&lt;span class="o"&gt;)&lt;/span&gt; vagrant@bullseye:~/TangoDatabase$ cmake &lt;span class="nv"&gt;$CMAKE_ARGS&lt;/span&gt; &lt;span class="se"&gt;\&lt;/span&gt;
+      -DCMAKE_BUILD_TYPE&lt;span class="o"&gt;=&lt;/span&gt;Debug &lt;span class="se"&gt;\&lt;/span&gt;
+      -DCMAKE_INSTALL_PREFIX&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;$CONDA_PREFIX&lt;/span&gt; &lt;span class="se"&gt;\&lt;/span&gt;
+      -DMYSQL_INCLUDE_DIR&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;$CONDA_PREFIX&lt;/span&gt;/include/mysql &lt;span class="se"&gt;\&lt;/span&gt;
+      -S . -B build
+&lt;span class="o"&gt;(&lt;/span&gt;tango-main-dev&lt;span class="o"&gt;)&lt;/span&gt; vagrant@bullseye:~/TangoDatabase$ cmake --build build -j2
+&lt;span class="o"&gt;(&lt;/span&gt;tango-main-dev&lt;span class="o"&gt;)&lt;/span&gt; vagrant@bullseye:~/TangoDatabase$ ./build/Databaseds --help
+main&lt;span class="o"&gt;()&lt;/span&gt;: arrived
+usage :  ./build/Databaseds instance_name &lt;span class="o"&gt;[&lt;/span&gt;-v&lt;span class="o"&gt;[&lt;/span&gt;trace level&lt;span class="o"&gt;]]&lt;/span&gt; &lt;span class="o"&gt;[&lt;/span&gt;-file&lt;span class="o"&gt;=&lt;/span&gt;&amp;lt;file_name&amp;gt; &lt;span class="p"&gt;|&lt;/span&gt; -nodb &lt;span class="o"&gt;[&lt;/span&gt;-dlist &amp;lt;device name list&amp;gt;&lt;span class="o"&gt;]&lt;/span&gt; &lt;span class="o"&gt;]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Linux is well supported. What about other operating systems?&lt;/p&gt;
+&lt;h3&gt;Building cppTango on macOS&lt;/h3&gt;
+&lt;p&gt;Yes, Tango on macOS! This still isn't supported officially but &lt;a href="https://gitlab.com/tjuerges"&gt;Thomas Juerges&lt;/a&gt; is working on it. At the time of this writing, this hasn't been merged upstream and you need to use the &lt;a href="https://gitlab.com/tjuerges/cppTango/-/tree/main-macOS_build"&gt;main-macOS_build branch&lt;/a&gt; from his &lt;a href="https://gitlab.com/tjuerges/cppTango"&gt;repository&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Note that this is not an official Tango Controls blessed repository, nor does Tango Controls officially support macOS.&lt;/p&gt;
+&lt;p&gt;To build this fork, Thomas created a repository with some scripts to help installing all required dependencies using &lt;a href="https://brew.sh"&gt;brew&lt;/a&gt;: &lt;a href="https://gitlab.com/tjuerges/build_tango"&gt;https://gitlab.com/tjuerges/build_tango&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;This works nicely, but we'll look here at an alternative with conda.&lt;/p&gt;
+&lt;p&gt;Conda provides the clang compilers for macOS but the macOS SDK is still required. Due to its license it can't be installed with conda. If you haven't already done, install the Xcode Command Line Tools by running &lt;code&gt;xcode-select --install&lt;/code&gt;. All the rest will be installed with conda.&lt;/p&gt;
+&lt;p&gt;Let's create the same &lt;code&gt;tango-dev&lt;/code&gt; environment as on Linux:&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;mamba create -y -n tango-dev make cmake cxx-compiler libtool pkg-config jpeg omniorb cppzmq zeromq tango-idl
+conda activate tango-dev
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;This environment is actually not exacly identical to the Linux one as the &lt;code&gt;cxx-compiler&lt;/code&gt; meta-package will install &lt;code&gt;clang&lt;/code&gt; on macOS and &lt;code&gt;gcc/gxx&lt;/code&gt; on Linux:&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;&lt;span class="o"&gt;(&lt;/span&gt;tango-dev&lt;span class="o"&gt;)&lt;/span&gt; ➜  ~ $ &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="nv"&gt;$CC&lt;/span&gt;
+x86_64-apple-darwin13.4.0-clang
+&lt;span class="o"&gt;(&lt;/span&gt;tango-dev&lt;span class="o"&gt;)&lt;/span&gt; ➜  ~ $ &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="nv"&gt;$CXX&lt;/span&gt;
+x86_64-apple-darwin13.4.0-clang++
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Compile the &lt;code&gt;main-macOS_build&lt;/code&gt; branch:&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;&lt;span class="o"&gt;(&lt;/span&gt;tango-dev&lt;span class="o"&gt;)&lt;/span&gt; ➜  Tango $ git clone https://gitlab.com/tjuerges/cppTango.git
+&lt;span class="o"&gt;(&lt;/span&gt;tango-dev&lt;span class="o"&gt;)&lt;/span&gt; ➜  Tango $ &lt;span class="nb"&gt;cd&lt;/span&gt; cppTango
+&lt;span class="o"&gt;(&lt;/span&gt;tango-dev&lt;span class="o"&gt;)&lt;/span&gt; ➜  cppTango git:&lt;span class="o"&gt;(&lt;/span&gt;main&lt;span class="o"&gt;)&lt;/span&gt; $ git checkout main-macOS_build
+branch &lt;span class="s1"&gt;'main-macOS_build'&lt;/span&gt; &lt;span class="nb"&gt;set&lt;/span&gt; up to track &lt;span class="s1"&gt;'origin/main-macOS_build'&lt;/span&gt;.
+Switched to a new branch &lt;span class="s1"&gt;'main-macOS_build'&lt;/span&gt;
+&lt;span class="o"&gt;(&lt;/span&gt;tango-dev&lt;span class="o"&gt;)&lt;/span&gt; ➜  cppTango git:&lt;span class="o"&gt;(&lt;/span&gt;main-macOS_build&lt;span class="o"&gt;)&lt;/span&gt; $ cmake &lt;span class="nv"&gt;$CMAKE_ARGS&lt;/span&gt; &lt;span class="se"&gt;\&lt;/span&gt;
+      -DCMAKE_BUILD_TYPE&lt;span class="o"&gt;=&lt;/span&gt;Debug &lt;span class="se"&gt;\&lt;/span&gt;
+      -DCMAKE_INSTALL_PREFIX&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;"&lt;/span&gt;&lt;span class="nv"&gt;$CONDA_PREFIX&lt;/span&gt;&lt;span class="s2"&gt;"&lt;/span&gt; &lt;span class="se"&gt;\&lt;/span&gt;
+      -DCMAKE_INSTALL_LIBDIR&lt;span class="o"&gt;=&lt;/span&gt;lib &lt;span class="se"&gt;\&lt;/span&gt;
+      -S . -B build
+-- The C compiler identification is Clang &lt;span class="m"&gt;13&lt;/span&gt;.0.1
+-- The CXX compiler identification is Clang &lt;span class="m"&gt;13&lt;/span&gt;.0.1
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - &lt;span class="k"&gt;done&lt;/span&gt;
+-- Check &lt;span class="k"&gt;for&lt;/span&gt; working C compiler: /Users/benjaminbertrand/miniconda/envs/tango-dev/bin/x86_64-apple-darwin13.4.0-clang - skipped
+-- Detecting C compile features
+-- Detecting C compile features - &lt;span class="k"&gt;done&lt;/span&gt;
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - &lt;span class="k"&gt;done&lt;/span&gt;
+-- Check &lt;span class="k"&gt;for&lt;/span&gt; working CXX compiler: /Users/benjaminbertrand/miniconda/envs/tango-dev/bin/x86_64-apple-darwin13.4.0-clang++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - &lt;span class="k"&gt;done&lt;/span&gt;
+-- Found PkgConfig: /Users/benjaminbertrand/miniconda/envs/tango-dev/bin/pkg-config &lt;span class="o"&gt;(&lt;/span&gt;found version &lt;span class="s2"&gt;"0.29.2"&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+-- CMake: version &lt;span class="m"&gt;3&lt;/span&gt;.23.2
+-- Target platform: Darwin &lt;span class="m"&gt;64&lt;/span&gt;-bit
+-- C++ Compiler: Clang with version &lt;span class="m"&gt;13&lt;/span&gt;.0.1
+-- C Compiler: Clang with version &lt;span class="m"&gt;13&lt;/span&gt;.0.1
+-- Build type: Debug
+-- Environment: &lt;span class="nv"&gt;TANGO_HOST&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;
+-- Checking &lt;span class="k"&gt;for&lt;/span&gt; one of the modules &lt;span class="s1"&gt;'tangoidl'&lt;/span&gt;
+-- Checking &lt;span class="k"&gt;for&lt;/span&gt; one of the modules &lt;span class="s1"&gt;'omniORB4'&lt;/span&gt;
+-- Checking &lt;span class="k"&gt;for&lt;/span&gt; one of the modules &lt;span class="s1"&gt;'omniCOS4'&lt;/span&gt;
+-- Checking &lt;span class="k"&gt;for&lt;/span&gt; one of the modules &lt;span class="s1"&gt;'omniDynamic4'&lt;/span&gt;
+-- Checking &lt;span class="k"&gt;for&lt;/span&gt; one of the modules &lt;span class="s1"&gt;'libzmq'&lt;/span&gt;
+-- Found JPEG: /Users/benjaminbertrand/miniconda/envs/tango-dev/lib/libjpeg.dylib &lt;span class="o"&gt;(&lt;/span&gt;found version &lt;span class="s2"&gt;"90"&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+-- Check &lt;span class="k"&gt;if&lt;/span&gt; cppzmq is present and recent enough: TRUE
+-- Check &lt;span class="k"&gt;if&lt;/span&gt; libzmq version is &amp;gt;&lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="m"&gt;4&lt;/span&gt;.0.5: TRUE
+-- Looking &lt;span class="k"&gt;for&lt;/span&gt; pthread.h
+-- Looking &lt;span class="k"&gt;for&lt;/span&gt; pthread.h - found
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Looking &lt;span class="k"&gt;for&lt;/span&gt; io.h
+-- Looking &lt;span class="k"&gt;for&lt;/span&gt; io.h - not found
+-- Looking &lt;span class="k"&gt;for&lt;/span&gt; unistd.h
+-- Looking &lt;span class="k"&gt;for&lt;/span&gt; unistd.h - found
+-- Could NOT find Doxygen &lt;span class="o"&gt;(&lt;/span&gt;missing: DOXYGEN_EXECUTABLE&lt;span class="o"&gt;)&lt;/span&gt;
+CMake Warning at cppapi/doxygen/CMakeLists.txt:10 &lt;span class="o"&gt;(&lt;/span&gt;message&lt;span class="o"&gt;)&lt;/span&gt;:
+  Could not find doxygen/dot, therefore the documentation can not be built.
+
+
+Using &lt;span class="nv"&gt;OMNIIDL_PATH&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;
+Using &lt;span class="nv"&gt;IDL&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;/Users/benjaminbertrand/miniconda/envs/tango-dev/include
+&lt;span class="nv"&gt;HOST_NAME&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;benjimbp.local
+-- Configuring &lt;span class="k"&gt;done&lt;/span&gt;
+-- Generating &lt;span class="k"&gt;done&lt;/span&gt;
+-- Build files have been written to: /Users/benjaminbertrand/Dev/Tango/cppTango/build
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Build and install as on Linux:&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;cmake --build build -j4
+cmake --build build --target install
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;If you prefer you can also run &lt;code&gt;make&lt;/code&gt; directly:&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;&lt;span class="nb"&gt;cd&lt;/span&gt; build
+make -j4
+make install
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;As you can see, the instructions, including how to create the &lt;code&gt;tango-dev&lt;/code&gt; environment, were the same as on Linux!&lt;/p&gt;
+&lt;p&gt;We can now build &lt;code&gt;pytango&lt;/code&gt;. Support was recently added to the &lt;code&gt;develop_9.4&lt;/code&gt; branch in &lt;a href="https://gitlab.com/tango-controls/pytango/-/merge_requests/459"&gt;MR 459&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;We first need to add a few extra dependencies required to build &lt;code&gt;pytango&lt;/code&gt;: &lt;code&gt;mamba install -y boost numpy six&lt;/code&gt;.
+&lt;code&gt;six&lt;/code&gt; is only required at runtime, not build time, but we add it now as we'll want to run &lt;code&gt;pytango&lt;/code&gt; to test it.&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;&lt;span class="nb"&gt;cd&lt;/span&gt; ..
+git clone https://gitlab.com/tango-controls/pytango.git
+git checkout -b develop_9.4 origin/develop_9.4
+&lt;span class="nb"&gt;cd&lt;/span&gt; pytango
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;You first need to export the &lt;code&gt;BOOST_PYTHON_LIB&lt;/code&gt; variable based on the installed python version. You can check it by running &lt;code&gt;python --version&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;&lt;span class="o"&gt;(&lt;/span&gt;tango-dev&lt;span class="o"&gt;)&lt;/span&gt; ➜  pytango git:&lt;span class="o"&gt;(&lt;/span&gt;develop_9.4&lt;span class="o"&gt;)&lt;/span&gt; $ python --version
+Python &lt;span class="m"&gt;3&lt;/span&gt;.10.5
+
+&lt;span class="o"&gt;(&lt;/span&gt;tango-dev&lt;span class="o"&gt;)&lt;/span&gt; ➜  pytango git:&lt;span class="o"&gt;(&lt;/span&gt;develop_9.4&lt;span class="o"&gt;)&lt;/span&gt; $ &lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;BOOST_PYTHON_LIB&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;boost_python310
+&lt;span class="o"&gt;(&lt;/span&gt;tango-dev&lt;span class="o"&gt;)&lt;/span&gt; ➜  pytango git:&lt;span class="o"&gt;(&lt;/span&gt;develop_9.4&lt;span class="o"&gt;)&lt;/span&gt; $ python -m pip install --no-binary&lt;span class="o"&gt;=&lt;/span&gt;:all: --ignore-installed --no-deps .
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Let's try it:&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;&lt;span class="o"&gt;(&lt;/span&gt;tango-dev&lt;span class="o"&gt;)&lt;/span&gt; ➜  ~ $ python -c &lt;span class="s2"&gt;"import tango; print(tango.utils.info())"&lt;/span&gt;
+PyTango &lt;span class="m"&gt;9&lt;/span&gt;.3.4 &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="m"&gt;9&lt;/span&gt;, &lt;span class="m"&gt;3&lt;/span&gt;, &lt;span class="m"&gt;4&lt;/span&gt;, &lt;span class="s1"&gt;'dev'&lt;/span&gt;, &lt;span class="m"&gt;0&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+PyTango compiled with:
+    Python : &lt;span class="m"&gt;3&lt;/span&gt;.10.5
+    Numpy  : &lt;span class="m"&gt;1&lt;/span&gt;.22.4
+    Tango  : &lt;span class="m"&gt;9&lt;/span&gt;.4.0
+    Boost  : &lt;span class="m"&gt;1&lt;/span&gt;.78.0
+
+PyTango runtime is:
+    Python : &lt;span class="m"&gt;3&lt;/span&gt;.10.5
+    Numpy  : &lt;span class="m"&gt;1&lt;/span&gt;.22.4
+    Tango  : &lt;span class="m"&gt;9&lt;/span&gt;.4.0
+
+PyTango running on:
+uname_result&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;system&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'Darwin'&lt;/span&gt;, &lt;span class="nv"&gt;node&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'benjimbp.local'&lt;/span&gt;, &lt;span class="nv"&gt;release&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'21.4.0'&lt;/span&gt;, &lt;span class="nv"&gt;version&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'Darwin Kernel Version 21.4.0: Fri Mar 18 00:45:05 PDT 2022; root:xnu-8020.101.4~15/RELEASE_X86_64'&lt;/span&gt;, &lt;span class="nv"&gt;machine&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s1"&gt;'x86_64'&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Hurray!&lt;/p&gt;
+&lt;h3&gt;Compiling on Windows&lt;/h3&gt;
+&lt;p&gt;To compile on Windows you first need to install the &lt;strong&gt;Build Tools for Visual Studio 2017&lt;/strong&gt;. This is the version recommended by conda-forge to create Windows packages. To compile locally, you should be able to use a more recent version.
+I described in a previous post how to create a &lt;a href="http://beenje.github.io/blog/posts/how-to-setup-a-windows-vm-to-build-conda-packages&amp;gt;"&gt;Windows VM to build conda packages&lt;/a&gt;.
+You can refer to it for more details.&lt;/p&gt;
+&lt;p&gt;We will compile TangoTest v3.4 as an example.&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;&lt;span class="gp gp-VirtualEnv"&gt;(base)&lt;/span&gt; &lt;span class="go"&gt;Z:\&amp;gt;mamba create -y -n tango-dev cmake cxx-compiler cppzmq cpptango omniorb&lt;/span&gt;
+&lt;span class="gp gp-VirtualEnv"&gt;(base)&lt;/span&gt; &lt;span class="go"&gt;Z:\&amp;gt;mamba activate tango-dev&lt;/span&gt;
+&lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\&amp;gt;git clone https://gitlab.com/tango-controls/TangoTest.git&lt;/span&gt;
+&lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\&amp;gt;cd TangoTest&lt;/span&gt;
+&lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\&amp;gt;git checkout 3.4&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;As there is no &lt;code&gt;pkg-config&lt;/code&gt; on Windows, there are a few extra variables to pass to cmake. Let's create a small &lt;code&gt;bld.bat&lt;/code&gt; script to make that easier:&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;&lt;span class="k"&gt;setlocal&lt;/span&gt; EnableDelayedExpansion
+
+&lt;span class="k"&gt;set&lt;/span&gt; &lt;span class="nv"&gt;LIBRARY_PREFIX&lt;/span&gt;&lt;span class="p"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;%CONDA_PREFIX%&lt;/span&gt;\Library
+&lt;span class="k"&gt;set&lt;/span&gt; &lt;span class="nv"&gt;LIBRARY_LIB&lt;/span&gt;&lt;span class="p"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;%CONDA_PREFIX%&lt;/span&gt;\Library\lib
+&lt;span class="k"&gt;set&lt;/span&gt; &lt;span class="nv"&gt;LIBRARY_INC&lt;/span&gt;&lt;span class="p"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;%CONDA_PREFIX%&lt;/span&gt;\Library\include
+
+cmake -G &lt;span class="s2"&gt;"NMake Makefiles"&lt;/span&gt; &lt;span class="se"&gt;^&lt;/span&gt;
+&lt;span class="se"&gt; &lt;/span&gt;     -DCMAKE_CXX_FLAGS=&lt;span class="s2"&gt;"-DLOG4TANGO_HAS_DLL -DTANGO_HAS_DLL"&lt;/span&gt; &lt;span class="se"&gt;^&lt;/span&gt;
+&lt;span class="se"&gt; &lt;/span&gt;     -DCMAKE_INSTALL_PREFIX:PATH=&lt;span class="s2"&gt;"&lt;/span&gt;&lt;span class="nv"&gt;%LIBRARY_PREFIX%&lt;/span&gt;&lt;span class="s2"&gt;"&lt;/span&gt; &lt;span class="se"&gt;^&lt;/span&gt;
+&lt;span class="se"&gt; &lt;/span&gt;     -DCMAKE_PREFIX_PATH:PATH=&lt;span class="s2"&gt;"&lt;/span&gt;&lt;span class="nv"&gt;%LIBRARY_PREFIX%&lt;/span&gt;&lt;span class="s2"&gt;"&lt;/span&gt; &lt;span class="se"&gt;^&lt;/span&gt;
+&lt;span class="se"&gt; &lt;/span&gt;     -DTANGO_PKG_LIBRARY_DIRS:PATH=&lt;span class="s2"&gt;"&lt;/span&gt;&lt;span class="nv"&gt;%LIBRARY_LIB%&lt;/span&gt;&lt;span class="s2"&gt;"&lt;/span&gt; &lt;span class="se"&gt;^&lt;/span&gt;
+&lt;span class="se"&gt; &lt;/span&gt;     -DTANGO_PKG_INCLUDE_DIRS:PATH=&lt;span class="s2"&gt;"&lt;/span&gt;&lt;span class="nv"&gt;%LIBRARY_INC%&lt;/span&gt;&lt;span class="s2"&gt;"&lt;/span&gt; &lt;span class="se"&gt;^&lt;/span&gt;
+&lt;span class="se"&gt; &lt;/span&gt;     -DTANGO_PKG_LIBRARIES=&lt;span class="s2"&gt;"tango;omniORB4_rt;omniDynamic4_rt;COS4_rt;omnithread_rt;libzmq-mt-4_3_4;comctl32;wsock32;Ws2_32"&lt;/span&gt; &lt;span class="se"&gt;^&lt;/span&gt;
+&lt;span class="se"&gt; &lt;/span&gt;     -S . -B build
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;This script is based on the one from the &lt;a href="https://github.com/conda-forge/tango-test-feedstock/blob/main/recipe/bld.bat"&gt;official recipe&lt;/a&gt;.
+The variables &lt;code&gt;LIBRARY_PREFIX&lt;/code&gt;, &lt;code&gt;LIBRARY_LIB&lt;/code&gt; and &lt;code&gt;LIBRARY_INC&lt;/code&gt; are automatically set by &lt;code&gt;conda-build&lt;/code&gt;. When compiling manually we define them using &lt;code&gt;CONDA_PREFIX&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Run &lt;code&gt;bld.bat&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;&lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\TangoTest&amp;gt;bld.bat&lt;/span&gt;
+&lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\TangoTest&amp;gt;setlocal EnableDelayedExpansion&lt;/span&gt;
+&lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\TangoTest&amp;gt;set LIBRARY_PREFIX=C:\Users\beenj\mambaforge\envs\tango-dev\Library&lt;/span&gt;
+&lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\TangoTest&amp;gt;set LIBRARY_LIB=C:\Users\beenj\mambaforge\envs\tango-dev\Library\lib&lt;/span&gt;
+&lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\TangoTest&amp;gt;set LIBRARY_INC=C:\Users\beenj\mambaforge\envs\tango-dev\Library\include&lt;/span&gt;
+&lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\TangoTest&amp;gt;cmake -G "NMake Makefiles"       -DCMAKE_CXX_FLAGS="-DLOG4TANGO_HAS_DLL -DTANGO_HAS_DLL"       -DCMAKE_INSTALL_PREFIX:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library"       -DCMAKE_PREFIX_PATH:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library"       -DTANGO_PKG_LIBRARY_DIRS:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library\lib"       -DTANGO_PKG_INCLUDE_DIRS:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library\include"       -DTANGO_PKG_LIBRARIES="tango;omniORB4_rt;omniDynamic4_rt;COS4_rt;omnithread_rt;libzmq-mt-4_3_4;comctl32;wsock32;Ws2_32"       -S . -B build&lt;/span&gt;
+&lt;span class="go"&gt;-- The CXX compiler identification is MSVC 19.16.27045.0&lt;/span&gt;
+&lt;span class="go"&gt;-- Detecting CXX compiler ABI info&lt;/span&gt;
+&lt;span class="go"&gt;-- Detecting CXX compiler ABI info - done&lt;/span&gt;
+&lt;span class="go"&gt;-- Check for working CXX compiler: C:/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/VC/Tools/MSVC/14.16.27023/bin/Hostx64/x64/cl.exe - skipped&lt;/span&gt;
+&lt;span class="go"&gt;-- Detecting CXX compile features&lt;/span&gt;
+&lt;span class="go"&gt;-- Detecting CXX compile features - done&lt;/span&gt;
+&lt;span class="go"&gt;-- Could NOT find PkgConfig (missing: PKG_CONFIG_EXECUTABLE)&lt;/span&gt;
+&lt;span class="go"&gt;-- Configuring done&lt;/span&gt;
+&lt;span class="go"&gt;-- Generating done&lt;/span&gt;
+&lt;span class="go"&gt;-- Build files have been written to: Z:/TangoTest/build&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;We can now compile:&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;&lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\TangoTest&amp;gt;cmake --build build&lt;/span&gt;
+&lt;span class="go"&gt;[ 16%] Building CXX object CMakeFiles/TangoTest.dir/ClassFactory.cpp.obj&lt;/span&gt;
+&lt;span class="go"&gt;ClassFactory.cpp&lt;/span&gt;
+&lt;span class="go"&gt;Z:\TangoTest\ClassFactory.cpp(57): fatal error C1083: Cannot open include file: 'tango.h': No such file or directory&lt;/span&gt;
+&lt;span class="go"&gt;NMAKE : fatal error U1077: 'C:\Users\beenj\mambaforge\envs\tango-dev\Library\bin\cmake.exe' : return code '0x2'&lt;/span&gt;
+&lt;span class="go"&gt;Stop.&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Something went wrong...
+&lt;code&gt;tango.h&lt;/code&gt; wans't found. This is because includes were recently moved in Windows. See &lt;a href="https://gitlab.com/tango-controls/cppTango/-/merge_requests/924"&gt;MR924&lt;/a&gt;. There is actually a patch for that in the &lt;a href="https://github.com/conda-forge/tango-test-feedstock/blob/main/recipe/tango-include-dirs.patch"&gt;recipe&lt;/a&gt;.
+Update the &lt;code&gt;CMakeLists.txt&lt;/code&gt; to add &lt;code&gt;${TANGO_PKG_INCLUDE_DIRS}/tango&lt;/code&gt; to the include directories.&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;&lt;span class="w"&gt;(tango-dev) Z:\TangoTest&amp;gt;git diff&lt;/span&gt;
+&lt;span class="gh"&gt;diff --git a/CMakeLists.txt b/CMakeLists.txt&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="gh"&gt;index 5f96806..f36f348 100644&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="gd"&gt;--- a/CMakeLists.txt&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="gi"&gt;+++ b/CMakeLists.txt&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="gu"&gt;@@ -26,7 +26,7 @@ set(HEADERS&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt; &lt;/span&gt;link_directories(${TANGO_PKG_LIBRARY_DIRS})&lt;span class="w"&gt;&lt;/span&gt;
+
+&lt;span class="w"&gt; &lt;/span&gt;add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="gd"&gt;-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${TANGO_PKG_INCLUDE_DIRS})&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="gi"&gt;+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${TANGO_PKG_INCLUDE_DIRS} ${TANGO_PKG_INCLUDE_DIRS}/tango)&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt; &lt;/span&gt;target_compile_options(${PROJECT_NAME} PUBLIC ${TANGO_PKG_CFLAGS_OTHER})&lt;span class="w"&gt;&lt;/span&gt;
+&lt;span class="w"&gt; &lt;/span&gt;target_link_libraries(${PROJECT_NAME} PUBLIC ${TANGO_PKG_LIBRARIES})&lt;span class="w"&gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Run &lt;code&gt;cmake&lt;/code&gt; again:&lt;/p&gt;
+&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;&lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\TangoTest&amp;gt;bld.bat&lt;/span&gt;
+&lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\TangoTest&amp;gt;cmake --build build&lt;/span&gt;
+
+&lt;span class="go"&gt;[100%] Linking CXX executable TangoTest.exe&lt;/span&gt;
+&lt;span class="go"&gt;[100%] Built target TangoTest&lt;/span&gt;
+&lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\TangoTest&amp;gt;cd build&lt;/span&gt;
+&lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\TangoTest\build&amp;gt;TangoTest.exe --help&lt;/span&gt;
+&lt;span class="go"&gt;usage :  TangoTest.exe instance_name [-v[trace level]] [-file=&amp;lt;file_name&amp;gt; | -nodb [-dlist &amp;lt;device name list&amp;gt;] ]&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+&lt;p&gt;Build successful on Windows!&lt;/p&gt;
+&lt;h3&gt;Conclusion&lt;/h3&gt;
+&lt;p&gt;&lt;a href="https://docs.conda.io/en/latest/"&gt;Conda&lt;/a&gt; gives a reliable way to install binary packages whatever the operating system.
+The long list of packages maintained by &lt;a href="https://github.com/conda-forge"&gt;conda-forge&lt;/a&gt; includes compilers and build tools,
+allowing to easily setup a development environment which is OS independent.
+You can rely on modern versions of those tools even on an older OS.&lt;/p&gt;
+&lt;p&gt;Naturally conda main goal is to avoid having you to compile by installing pre-build packages :-).
+This is for development and testing only. Compile only what you need.
+And if something is missing, submit it to conda-forge &lt;a href="https://github.com/conda-forge/staged-recipes"&gt;staged-recipes&lt;/a&gt;!&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://docs.conda.io/en/latest/"&gt;Conda&lt;/a&gt; is of course just an alternative.
+Sometimes you do have to compile natively to check a platform compatibility.
+Use the solution that works for you!&lt;/p&gt;</description><category>conda</category><category>linux</category><category>Mac</category><category>python</category><category>tango</category><category>windows</category><guid>http://beenje.github.io/blog/posts/developing-and-compiling-tango-with-conda/</guid><pubDate>Fri, 17 Jun 2022 18:53:19 GMT</pubDate></item><item><title>Building a GitLab bot using gidgetlab, Starlette and HTTPX</title><link>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-starlette-and-httpx/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;I previously described how to create a &lt;a class="reference external" href="http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp"&gt;GitLab bot using gidgetlab and aiohttp&lt;/a&gt;.
 I recently read and became curious about &lt;a class="reference external" href="https://fastapi.tiangolo.com"&gt;FastAPI&lt;/a&gt; and &lt;a class="reference external" href="https://www.starlette.io"&gt;Starlette&lt;/a&gt;. The latter seemed
 like a good fit for a GitLab bot and a nice way to experiment with it for me.&lt;/p&gt;
 &lt;p&gt;If you haven't heard about &lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/"&gt;gidgetlab&lt;/a&gt;, I recommend starting with my &lt;a class="reference external" href="http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp"&gt;previous post&lt;/a&gt;.
@@ -13,15 +384,15 @@ I won't explain again how to create an access token or configure a webhook.&lt;/
 &lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/"&gt;gidgetlab&lt;/a&gt; supports several HTTP clients. I recently added &lt;a class="reference external" href="https://www.python-httpx.org"&gt;HTTPX&lt;/a&gt;, thanks to &lt;a class="reference external" href="https://gidgethub.readthedocs.io/en/latest/"&gt;gidgethub&lt;/a&gt; once again.
 It's described as the next-generation HTTP client for Python and will play well with &lt;a class="reference external" href="https://www.starlette.io"&gt;Starlette&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;Let's start by a small example on how to use &lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/"&gt;gidgetlab&lt;/a&gt; with &lt;a class="reference external" href="https://www.python-httpx.org"&gt;HTTPX&lt;/a&gt;.&lt;/p&gt;
-&lt;div class="section" id="using-gidgetlab-with-httpx-on-the-command-line"&gt;
+&lt;section id="using-gidgetlab-with-httpx-on-the-command-line"&gt;
 &lt;h2&gt;Using gidgetlab with HTTPX on the command line&lt;/h2&gt;
-&lt;div class="section" id="install-gidgetlab-and-httpx"&gt;
+&lt;section id="install-gidgetlab-and-httpx"&gt;
 &lt;h3&gt;Install gidgetlab and httpx&lt;/h3&gt;
 &lt;p&gt;Install &lt;code class="docutils literal"&gt;gidgetlab&lt;/code&gt; and &lt;code class="docutils literal"&gt;httpx&lt;/code&gt; if you have not already. Using a virtual environment
 is recommended.&lt;/p&gt;
 &lt;pre class="literal-block"&gt;python3 -m pip install gidgetlab[httpx]&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="create-an-issue"&gt;
+&lt;/section&gt;
+&lt;section id="create-an-issue"&gt;
 &lt;h3&gt;Create an issue&lt;/h3&gt;
 &lt;p&gt;We'll use the same example as in the &lt;a class="reference external" href="http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp"&gt;previous post&lt;/a&gt; but replace &lt;a class="reference external" href="https://docs.aiohttp.org/en/stable/"&gt;aiohttp&lt;/a&gt; with &lt;a class="reference external" href="https://www.python-httpx.org"&gt;httpx&lt;/a&gt;.
 Copy the following into the file &lt;code class="docutils literal"&gt;create_issue.py&lt;/code&gt; using your favorite editor:&lt;/p&gt;
@@ -86,9 +457,9 @@ asyncio.run(main())&lt;/pre&gt;
 &lt;pre class="literal-block"&gt;python3 -m create_issue&lt;/pre&gt;
 &lt;p&gt;There should be a new issue created in the strange-relationship project. Check it out:
 &lt;a class="reference external" href="https://gitlab.com/beenje/strange-relationship/issues"&gt;https://gitlab.com/beenje/strange-relationship/issues&lt;/a&gt;&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="section" id="using-starlette-to-build-a-gitlab-bot"&gt;
+&lt;/section&gt;
+&lt;/section&gt;
+&lt;section id="using-starlette-to-build-a-gitlab-bot"&gt;
 &lt;h2&gt;Using Starlette to build a GitLab bot&lt;/h2&gt;
 &lt;p&gt;&lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/"&gt;gidgetlab&lt;/a&gt; provides a &lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/aiohttp.html"&gt;GitLabBot class&lt;/a&gt; to create an aiohttp
 web server that reponds to GitLab webhooks.
@@ -108,7 +479,7 @@ async def issue_opened_event(event, gl, *args, **kwargs):
 
 if __name__ == "__main__":
     bot.run()&lt;/pre&gt;
-&lt;div class="section" id="starlette-bot"&gt;
+&lt;section id="starlette-bot"&gt;
 &lt;h3&gt;Starlette bot&lt;/h3&gt;
 &lt;p&gt;In the same virtual environment as before install &lt;a class="reference external" href="https://www.starlette.io"&gt;Starlette&lt;/a&gt; and uvicorn:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;python3 -m pip install starlette uvicorn&lt;/pre&gt;
@@ -161,8 +532,8 @@ INFO:     Application startup complete.&lt;/pre&gt;
 &lt;p&gt;That's it. We have an ASGI server running on port 8000 that can receive events from GitLab.
 We could test it by using ngrok as in the previous post.
 This time we'll just fake some events using &lt;a class="reference external" href="https://httpie.org"&gt;httpie&lt;/a&gt;.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="testing-with-httpie"&gt;
+&lt;/section&gt;
+&lt;section id="testing-with-httpie"&gt;
 &lt;h3&gt;Testing with httpie&lt;/h3&gt;
 &lt;p&gt;For testing purpose, let's add a dummy event handler that is easy to trigger.&lt;/p&gt;
 &lt;pre class="literal-block"&gt;@router.register("Push Hook")
@@ -193,8 +564,8 @@ uvicorn --reload bot:app
 http POST 127.0.0.1:8000 x-gitlab-token:12345 "X-Gitlab-Event:Push Hook" Content-Type:application/json&lt;/pre&gt;
 &lt;p&gt;You can see both examples on the following screenshot.&lt;/p&gt;
 &lt;img alt="/images/gitlab-bot-starlette/httpie-push-hook.png" src="http://beenje.github.io/blog/images/gitlab-bot-starlette/httpie-push-hook.png"&gt;
-&lt;/div&gt;
-&lt;div class="section" id="starlette-startup-and-shutdown-events"&gt;
+&lt;/section&gt;
+&lt;section id="starlette-startup-and-shutdown-events"&gt;
 &lt;h3&gt;Starlette startup and shutdown events&lt;/h3&gt;
 &lt;p&gt;&lt;a class="reference external" href="https://www.starlette.io"&gt;Starlette&lt;/a&gt; can register event handlers to run on startup and shutdown.
 Instead of creating a new httpx client on every new request, we could re-use the same.&lt;/p&gt;
@@ -227,8 +598,8 @@ app = Starlette(
 )&lt;/pre&gt;
 &lt;p&gt;In the &lt;code class="docutils literal"&gt;create_client&lt;/code&gt; function, we also store the GitLabAPI instance on the &lt;code class="docutils literal"&gt;app.state&lt;/code&gt;.
 This allows us to access it using &lt;code class="docutils literal"&gt;request.app&lt;/code&gt; in the request and to close the httpx client on application shutdown.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="background-tasks"&gt;
+&lt;/section&gt;
+&lt;section id="background-tasks"&gt;
 &lt;h3&gt;Background tasks&lt;/h3&gt;
 &lt;p&gt;In the above code, the &lt;code class="docutils literal"&gt;Response&lt;/code&gt; is only sent when all the dispatched event handlers have been executed.
 Some event handlers might take some time to run if you trigger many actions or you might want to sleep
@@ -276,8 +647,8 @@ It doesn't matter how long each handler takes.&lt;/p&gt;
 As &lt;code class="docutils literal"&gt;router.dispatch&lt;/code&gt; is an async function, &lt;a class="reference external" href="https://www.starlette.io"&gt;Starlette&lt;/a&gt; will just await on it.
 If an event handler is performing some blocking action, it should be run in a thread or process pool.
 Otherwise the above code is all that is required.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="better-error-handling"&gt;
+&lt;/section&gt;
+&lt;section id="better-error-handling"&gt;
 &lt;h3&gt;Better error handling&lt;/h3&gt;
 &lt;p&gt;One thing we didn't pay attention to is error handling.
 What happens if &lt;code class="docutils literal"&gt;gidgetlab.sansio.Event.from_http&lt;/code&gt; raises an Exception?
@@ -304,9 +675,9 @@ async def webhook(request: Request) -&amp;gt; Response:
     return Response(status_code=200, background=task)&lt;/pre&gt;
 &lt;img alt="/images/gitlab-bot-starlette/handle-exceptions.png" src="http://beenje.github.io/blog/images/gitlab-bot-starlette/handle-exceptions.png"&gt;
 &lt;p&gt;Much nicer now! Everything is in place for a production ready bot.&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="section" id="conclusion"&gt;
+&lt;/section&gt;
+&lt;/section&gt;
+&lt;section id="conclusion"&gt;
 &lt;h2&gt;Conclusion&lt;/h2&gt;
 &lt;p&gt;I really enjoyed working with &lt;a class="reference external" href="https://www.starlette.io"&gt;Starlette&lt;/a&gt;. It made building a GitLab bot with &lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/"&gt;gidgetlab&lt;/a&gt; very easy.
 We saw how to use &lt;a class="reference external" href="https://www.starlette.io/events/"&gt;Events&lt;/a&gt; and
@@ -318,24 +689,24 @@ in the background is really perfect for our bot.&lt;/p&gt;
 &lt;li&gt;&lt;p&gt;&lt;a class="reference external" href="https://gitlab.com/beenje/gitlab-bot-starlette"&gt;https://gitlab.com/beenje/gitlab-bot-starlette&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
 &lt;li&gt;&lt;p&gt;&lt;a class="reference external" href="https://github.com/beenje/gitlab-bot-starlette"&gt;https://github.com/beenje/gitlab-bot-starlette&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>asyncio</category><category>bot</category><category>gidgetlab</category><category>gitlab</category><category>httpie</category><category>httpx</category><category>python</category><category>starlette</category><guid>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-starlette-and-httpx/</guid><pubDate>Sun, 31 May 2020 19:51:53 GMT</pubDate></item><item><title>Using epics-base with conda on Linux, macOS and Windows</title><link>http://beenje.github.io/blog/posts/using-epics-base-with-conda-on-linux-macos-and-windows/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I previously described how to create a &lt;a class="reference external" href="http://beenje.github.io/blog/posts/how-to-setup-a-windows-vm-to-build-conda-packages"&gt;Windows VM to build conda packages&lt;/a&gt;.
+&lt;/section&gt;</description><category>asyncio</category><category>bot</category><category>gidgetlab</category><category>gitlab</category><category>httpie</category><category>httpx</category><category>python</category><category>starlette</category><guid>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-starlette-and-httpx/</guid><pubDate>Sun, 31 May 2020 19:51:53 GMT</pubDate></item><item><title>Using epics-base with conda on Linux, macOS and Windows</title><link>http://beenje.github.io/blog/posts/using-epics-base-with-conda-on-linux-macos-and-windows/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;I previously described how to create a &lt;a class="reference external" href="http://beenje.github.io/blog/posts/how-to-setup-a-windows-vm-to-build-conda-packages"&gt;Windows VM to build conda packages&lt;/a&gt;.
 I mentioned this was to update the conda-forge &lt;a class="reference external" href="https://github.com/conda-forge/epics-base-feedstock"&gt;epics-base feedstock&lt;/a&gt;.
 In this post, I want to share how to use &lt;a class="reference external" href="https://github.com/epics-base/epics-base"&gt;EPICS Base&lt;/a&gt; with &lt;a class="reference external" href="https://docs.conda.io/en/latest/"&gt;conda&lt;/a&gt;.&lt;/p&gt;
-&lt;div class="section" id="acknowledgement"&gt;
+&lt;section id="acknowledgement"&gt;
 &lt;h2&gt;Acknowledgement&lt;/h2&gt;
 &lt;p&gt;I'm not the original author of the &lt;a class="reference external" href="https://github.com/conda-forge/epics-base-feedstock"&gt;epics-base feedstock&lt;/a&gt;.
 I want to thank all the people who contributed to that conda recipe.&lt;/p&gt;
 &lt;p&gt;All the examples of &lt;a class="reference external" href="https://epics.anl.gov"&gt;EPICS&lt;/a&gt; usage below come directly from the official website
 &lt;a class="reference external" href="https://epics-controls.org/resources-and-support/documents/getting-started/"&gt;Getting Started page&lt;/a&gt;.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="miniconda"&gt;
+&lt;/section&gt;
+&lt;section id="miniconda"&gt;
 &lt;h2&gt;Miniconda&lt;/h2&gt;
 &lt;p&gt;This post assumes some basic knowledge of &lt;a class="reference external" href="https://docs.conda.io/en/latest/"&gt;conda&lt;/a&gt;.
 If you never used it before, I recommend starting by checking the &lt;a class="reference external" href="https://docs.conda.io/en/latest/"&gt;documentation&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;If you don't have &lt;cite&gt;conda&lt;/cite&gt; already installed, here are some quick instructions.
 Refer to the &lt;a class="reference external" href="https://conda.io/projects/conda/en/latest/user-guide/install/index.html"&gt;official documentation&lt;/a&gt;
 for more detailed information.&lt;/p&gt;
-&lt;div class="section" id="linux"&gt;
+&lt;section id="linux"&gt;
 &lt;h3&gt;Linux&lt;/h3&gt;
 &lt;p&gt;Note that &lt;cite&gt;bzip2&lt;/cite&gt; is required to run the installation.&lt;/p&gt;
 &lt;pre class="literal-block"&gt;curl -LO https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
@@ -344,8 +715,8 @@ rm -f Miniconda3-latest-Linux-x86_64.sh
 # Let conda update your ~/.bashrc
 source $HOME/miniconda/bin/activate
 conda init&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="macos"&gt;
+&lt;/section&gt;
+&lt;section id="macos"&gt;
 &lt;h3&gt;macOS&lt;/h3&gt;
 &lt;pre class="literal-block"&gt;curl -LO https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
 bash Miniconda3-latest-MacOSX-x86_64.sh -bp $HOME/miniconda
@@ -353,13 +724,13 @@ rm -f Miniconda3-latest-MacOSX-x86_64.sh
 # Let conda update your ~/.bash_profile
 source $HOME/miniconda/bin/activate
 conda init&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="windows"&gt;
+&lt;/section&gt;
+&lt;section id="windows"&gt;
 &lt;h3&gt;Windows&lt;/h3&gt;
 &lt;p&gt;Download and run the Miniconda3 installer from &lt;a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html#windows-installers"&gt;https://docs.conda.io/en/latest/miniconda.html#windows-installers&lt;/a&gt;.
 To use conda, open the Anaconda Prompt from the start menu.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="configuration"&gt;
+&lt;/section&gt;
+&lt;section id="configuration"&gt;
 &lt;h3&gt;Configuration&lt;/h3&gt;
 &lt;p&gt;On Linux and macOS, if you don't want conda to activate the base environment by default (and modify your PATH),
 you should run:&lt;/p&gt;
@@ -368,11 +739,11 @@ you should run:&lt;/p&gt;
 &lt;p&gt;To be able to install package from &lt;a class="reference external" href="https://conda-forge.org"&gt;conda-forge&lt;/a&gt;,
 add the &lt;cite&gt;conda-forge&lt;/cite&gt; channel to your configuration. This applies to all platforms.&lt;/p&gt;
 &lt;pre class="literal-block"&gt;conda config --add channels conda-forge&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="section" id="installing-epics-base"&gt;
+&lt;/section&gt;
+&lt;/section&gt;
+&lt;section id="installing-epics-base"&gt;
 &lt;h2&gt;Installing epics-base&lt;/h2&gt;
-&lt;div class="section" id="environment-creation"&gt;
+&lt;section id="environment-creation"&gt;
 &lt;h3&gt;Environment creation&lt;/h3&gt;
 &lt;p&gt;Now that we have conda installed and configured, getting &lt;cite&gt;epics-base&lt;/cite&gt; is as easy
 as running:&lt;/p&gt;
@@ -380,8 +751,8 @@ as running:&lt;/p&gt;
 &lt;p&gt;Note that you don't need any compiler or to install any other packages.
 The only requirement is conda.
 As of may 2020, the version installed should be 7.0.3.1.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="environment-activation"&gt;
+&lt;/section&gt;
+&lt;section id="environment-activation"&gt;
 &lt;h3&gt;Environment activation&lt;/h3&gt;
 &lt;p&gt;To start using &lt;a class="reference external" href="https://epics.anl.gov"&gt;EPICS&lt;/a&gt;, activate the environment:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;conda activate epics&lt;/pre&gt;
@@ -425,8 +796,8 @@ Running &lt;code class="docutils literal"&gt;conda deactivate&lt;/code&gt; will 
 (base) [tux@964ef40cabbb ~]$ echo $PATH
 /home/tux/miniconda/bin:/home/tux/miniconda/condabin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/home/tux/.local/bin:/home/tux/bin
 (base) [tux@964ef40cabbb ~]$&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="simple-test"&gt;
+&lt;/section&gt;
+&lt;section id="simple-test"&gt;
 &lt;h3&gt;Simple test&lt;/h3&gt;
 &lt;p&gt;With your editor of choice, create the &lt;cite&gt;test.db&lt;/cite&gt; file that contains:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;record(ai, "temperature:water")
@@ -453,16 +824,16 @@ temperature:water              21
 &lt;p&gt;The following screenshots show the result on macOS and Windows.&lt;/p&gt;
 &lt;img alt="/images/using-epics-base-with-conda/simple-test-macos.png" src="http://beenje.github.io/blog/images/using-epics-base-with-conda/simple-test-macos.png"&gt;
 &lt;img alt="/images/using-epics-base-with-conda/simple-test-windows.png" src="http://beenje.github.io/blog/images/using-epics-base-with-conda/simple-test-windows.png"&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="section" id="compiling-a-demo-ioc"&gt;
+&lt;/section&gt;
+&lt;/section&gt;
+&lt;section id="compiling-a-demo-ioc"&gt;
 &lt;h2&gt;Compiling a demo IOC&lt;/h2&gt;
 &lt;p&gt;We saw how to use the binaries that come with epics-base. It's worth mentioning
 that you can also compile code using the installed conda package.&lt;/p&gt;
-&lt;div class="section" id="pre-requisites"&gt;
+&lt;section id="pre-requisites"&gt;
 &lt;h3&gt;Pre-requisites&lt;/h3&gt;
 &lt;p&gt;The pre-requisites are different depending on the platform.&lt;/p&gt;
-&lt;div class="section" id="id1"&gt;
+&lt;section id="linux-1"&gt;
 &lt;h4&gt;Linux&lt;/h4&gt;
 &lt;p&gt;There is no distribution specific dependencies to install.
 All requirements will be installed with conda.&lt;/p&gt;
@@ -471,20 +842,20 @@ to demonstrate that several environments can coexist in parallel.&lt;/p&gt;
 &lt;p&gt;Create and activate the &lt;cite&gt;epics-dev&lt;/cite&gt; environment:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;conda create -y -n epics-dev epics-base make compilers
 conda activate epics-dev&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="id2"&gt;
+&lt;/section&gt;
+&lt;section id="macos-1"&gt;
 &lt;h4&gt;macOS&lt;/h4&gt;
 &lt;p&gt;Conda provides the clang compilers for macOS. But the macOS SDK is still required.
 The SDK license prevents it from being bundled in the conda package.
 The SDK has to be installed manually. For compatibility issue, conda packages
 are built with the 10.9 SDK. To compile code locally that you don't plan
 to share, using a more recent version should be fine.&lt;/p&gt;
-&lt;div class="section" id="solution-1-current-sdk"&gt;
+&lt;section id="solution-1-current-sdk"&gt;
 &lt;h5&gt;Solution 1: current SDK&lt;/h5&gt;
 &lt;p&gt;Install Xcode Command Line Tools by running:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;xcode-select --install&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="solution-2-10-9-sdk"&gt;
+&lt;/section&gt;
+&lt;section id="solution-2-10-9-sdk"&gt;
 &lt;h5&gt;Solution 2: 10.9 SDK&lt;/h5&gt;
 &lt;p&gt;As mentioned in &lt;a class="reference external" href="https://docs.conda.io/projects/conda-build/en/latest/resources/compiler-tools.html#macos-sdk"&gt;conda-build documentation&lt;/a&gt;,
 the 10.9 SDK can be downloaded from:&lt;/p&gt;
@@ -509,9 +880,9 @@ the &lt;cite&gt;compilers&lt;/cite&gt; package. It should detect your Xcode inst
 &lt;pre class="literal-block"&gt;export CONDA_BUILD_SYSROOT=/opt/MacOSX10.9.sdk&lt;/pre&gt;
 &lt;p&gt;The variable &lt;code class="docutils literal"&gt;MACOSX_DEPLOYMENT_TARGET&lt;/code&gt;, you have to set manually:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;export MACOSX_DEPLOYMENT_TARGET=10.9&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="section" id="id3"&gt;
+&lt;/section&gt;
+&lt;/section&gt;
+&lt;section id="windows-1"&gt;
 &lt;h4&gt;Windows&lt;/h4&gt;
 &lt;p&gt;On Windows, you need to install the Visual C++ compilers.
 You only need to download the &lt;strong&gt;Build Tools for Visual Studio 2017&lt;/strong&gt;. Refer
@@ -525,9 +896,9 @@ Note that we also need to install the &lt;cite&gt;epics-base-static-libs&lt;/cit
 The static libraries were moved to a subpackage to make &lt;cite&gt;epics-base&lt;/cite&gt; package smaller.
 They are not needed most of the time on Linux and macOS. Maybe they should be part of
 the default package on Windows?&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="section" id="ioc-creation"&gt;
+&lt;/section&gt;
+&lt;/section&gt;
+&lt;section id="ioc-creation"&gt;
 &lt;h3&gt;IOC creation&lt;/h3&gt;
 &lt;p&gt;Make sure you activated the &lt;cite&gt;epics-dev&lt;/cite&gt; environment you created.
 Note that we didn't have to specify &lt;cite&gt;perl&lt;/cite&gt; when creating the environment.
@@ -630,9 +1001,9 @@ IEUser:circle:y
 IEUser:calcExample
 ...&lt;/pre&gt;
 &lt;p&gt;We have a running IOC on all 3 platforms!&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="section" id="summary"&gt;
+&lt;/section&gt;
+&lt;/section&gt;
+&lt;section id="summary"&gt;
 &lt;h2&gt;Summary&lt;/h2&gt;
 &lt;p&gt;I hope this post showed you how easy conda make it to install &lt;a class="reference external" href="https://github.com/epics-base/epics-base"&gt;EPICS Base&lt;/a&gt; on Linux, macOS and Windows.
 We saw that this package can also be used to compile an IOC. That being said, if you want to use
@@ -640,13 +1011,13 @@ various EPICS modules, this is probably not the best solution today. As long as 
 aren't available as conda packages at least.
 But if all you need is &lt;a class="reference external" href="https://github.com/epics-base/epics-base"&gt;EPICS Base&lt;/a&gt;, to interact with IOCs on other machines for example, then I'd
 really recommend &lt;a class="reference external" href="https://docs.conda.io/en/latest/"&gt;conda&lt;/a&gt;.&lt;/p&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>conda</category><category>epics</category><category>linux</category><category>Mac</category><category>python</category><category>windows</category><guid>http://beenje.github.io/blog/posts/using-epics-base-with-conda-on-linux-macos-and-windows/</guid><pubDate>Thu, 07 May 2020 20:33:55 GMT</pubDate></item><item><title>How to setup a Windows VM to build conda packages</title><link>http://beenje.github.io/blog/posts/how-to-setup-a-windows-vm-to-build-conda-packages/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I mostly work on macOS and Linux and I have almost no development experience on Windows.
+&lt;/section&gt;</description><category>conda</category><category>epics</category><category>linux</category><category>Mac</category><category>python</category><category>windows</category><guid>http://beenje.github.io/blog/posts/using-epics-base-with-conda-on-linux-macos-and-windows/</guid><pubDate>Thu, 07 May 2020 20:33:55 GMT</pubDate></item><item><title>How to setup a Windows VM to build conda packages</title><link>http://beenje.github.io/blog/posts/how-to-setup-a-windows-vm-to-build-conda-packages/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;I mostly work on macOS and Linux and I have almost no development experience on Windows.
 I recently wanted to update the &lt;a class="reference external" href="https://github.com/conda-forge/epics-base-feedstock"&gt;epics-base feedstock&lt;/a&gt;
 on &lt;a class="reference external" href="https://github.com/conda-forge"&gt;conda-forge&lt;/a&gt;.
 The goal was to have it working on the 3 platforms. A good opportunity to try building on Windows.&lt;/p&gt;
 &lt;p&gt;As explained in &lt;a class="reference external" href="https://conda-forge.org/docs/maintainer/knowledge_base.html#particularities-on-windows"&gt;conda-forge documentation&lt;/a&gt;,
 it's possible to test Windows builds even if you don't work on Windows.&lt;/p&gt;
-&lt;div class="section" id="create-a-windows-virtual-machine"&gt;
+&lt;section id="create-a-windows-virtual-machine"&gt;
 &lt;h2&gt;Create a Windows Virtual Machine&lt;/h2&gt;
 &lt;p&gt;The first step is to download a Virtual Machine from &lt;a class="reference external" href="https://developer.microsoft.com/en-us/microsoft-edge/tools/vms/"&gt;https://developer.microsoft.com/en-us/microsoft-edge/tools/vms/&lt;/a&gt;.&lt;/p&gt;
 &lt;img alt="/images/setup-windows-vm-conda/download-vm.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/download-vm.png"&gt;
@@ -661,11 +1032,11 @@ it's possible to test Windows builds even if you don't work on Windows.&lt;/p&gt
 &lt;img alt="/images/setup-windows-vm-conda/msedge-win10-login.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/msedge-win10-login.png"&gt;
 &lt;p&gt;As mentioned on the download page, the password is "Passw0rd!".&lt;/p&gt;
 &lt;img alt="/images/setup-windows-vm-conda/msedge-win10-home.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/msedge-win10-home.png"&gt;
-&lt;/div&gt;
-&lt;div class="section" id="developer-tools-installation"&gt;
+&lt;/section&gt;
+&lt;section id="developer-tools-installation"&gt;
 &lt;h2&gt;Developer tools installation&lt;/h2&gt;
 &lt;p&gt;Now that we have a Windows VM, we need a few developers tools to build conda packages.&lt;/p&gt;
-&lt;div class="section" id="vscode"&gt;
+&lt;section id="vscode"&gt;
 &lt;h3&gt;VScode&lt;/h3&gt;
 &lt;p&gt;We'll first need an editor. I've been a &lt;a class="reference external" href="https://www.vim.org"&gt;Vim&lt;/a&gt; user for many years, but have to say I started to use VScode more lately,
 with &lt;a class="reference external" href="https://github.com/VSCodeVim/Vim"&gt;VSCodeVim&lt;/a&gt; of course :-).
@@ -674,14 +1045,14 @@ I can only recommend it.&lt;/p&gt;
 &lt;p&gt;Download VScode from &lt;a class="reference external" href="https://code.visualstudio.com/"&gt;https://code.visualstudio.com/&lt;/a&gt;.&lt;/p&gt;
 &lt;img alt="/images/setup-windows-vm-conda/download-vscode.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/download-vscode.png"&gt;
 &lt;p&gt;Obviously, an editor is very personal. Pick the one you prefer!&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="git"&gt;
+&lt;/section&gt;
+&lt;section id="git"&gt;
 &lt;h3&gt;Git&lt;/h3&gt;
 &lt;p&gt;To work with code, &lt;a class="reference external" href="https://git-scm.org"&gt;Git&lt;/a&gt; is essential.
 Download and install it from &lt;a class="reference external" href="https://git-scm.com/downloads"&gt;https://git-scm.com/downloads&lt;/a&gt;.&lt;/p&gt;
 &lt;img alt="/images/setup-windows-vm-conda/download-git.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/download-git.png"&gt;
-&lt;/div&gt;
-&lt;div class="section" id="microsofts-visual-c"&gt;
+&lt;/section&gt;
+&lt;section id="microsofts-visual-c"&gt;
 &lt;h3&gt;Microsoft’s Visual C++&lt;/h3&gt;
 &lt;p&gt;To compile native code (C, C++, etc.) on Windows, we need Microsoft’s Visual C++.
 As explained in this &lt;a class="reference external" href="https://wiki.python.org/moin/WindowsCompilers"&gt;Python wiki&lt;/a&gt;,
@@ -702,8 +1073,8 @@ You don't need to download the full Visual Studio edition.&lt;/p&gt;
 &lt;img alt="/images/setup-windows-vm-conda/install-build-tools-for-visual-studio-2017.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/install-build-tools-for-visual-studio-2017.png"&gt;
 &lt;p&gt;The installation process will take some time. Be patient.&lt;/p&gt;
 &lt;img alt="/images/setup-windows-vm-conda/visual-studio-installer.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/visual-studio-installer.png"&gt;
-&lt;/div&gt;
-&lt;div class="section" id="miniconda3"&gt;
+&lt;/section&gt;
+&lt;section id="miniconda3"&gt;
 &lt;h3&gt;Miniconda3&lt;/h3&gt;
 &lt;p&gt;Now that we have an editor, Git and Windows C++ compilers, the last tool missing is &lt;a class="reference external" href="https://docs.conda.io/en/latest/"&gt;conda&lt;/a&gt;.
 Download and install Miniconda3 from &lt;a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html#windows-installers"&gt;https://docs.conda.io/en/latest/miniconda.html#windows-installers&lt;/a&gt;.&lt;/p&gt;
@@ -739,9 +1110,9 @@ You can tune that file to your needs. I'll comment out Python 3.6.&lt;/p&gt;
   - 3.7.* *_cpython&lt;/pre&gt;
 &lt;p&gt;That's it! We now have all the tools required to build conda packages locally on Windows.&lt;/p&gt;
 &lt;img alt="/images/setup-windows-vm-conda/conda-info.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/conda-info.png"&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="section" id="testing"&gt;
+&lt;/section&gt;
+&lt;/section&gt;
+&lt;section id="testing"&gt;
 &lt;h2&gt;Testing&lt;/h2&gt;
 &lt;p&gt;To check that everything is setup properly, let's try to build an existing conda recipe
 that requires a compiler.
@@ -753,13 +1124,13 @@ cd cython-feedstock
 conda build recipe&lt;/pre&gt;
 &lt;p&gt;The build should succeed and create the &lt;cite&gt;cython-0.29.17-py37h1834ac0_0.tar.bz2&lt;/cite&gt; package.&lt;/p&gt;
 &lt;img alt="/images/setup-windows-vm-conda/cython-build.png" src="http://beenje.github.io/blog/images/setup-windows-vm-conda/cython-build.png"&gt;
-&lt;/div&gt;
-&lt;div class="section" id="summary"&gt;
+&lt;/section&gt;
+&lt;section id="summary"&gt;
 &lt;h2&gt;Summary&lt;/h2&gt;
 &lt;p&gt;We now have a VM with all the tools required to build and
 test locally conda packages on Windows.&lt;/p&gt;
 &lt;p&gt;In a coming post, I'll detail how I built epics-base on Linux, macOS and Windows.&lt;/p&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>conda</category><category>epics</category><category>python</category><category>windows</category><guid>http://beenje.github.io/blog/posts/how-to-setup-a-windows-vm-to-build-conda-packages/</guid><pubDate>Sun, 03 May 2020 20:00:42 GMT</pubDate></item><item><title>Searching by date in Elasticsearch</title><link>http://beenje.github.io/blog/posts/searching-by-date-in-elasticsearch/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/section&gt;</description><category>conda</category><category>epics</category><category>python</category><category>windows</category><guid>http://beenje.github.io/blog/posts/how-to-setup-a-windows-vm-to-build-conda-packages/</guid><pubDate>Sun, 03 May 2020 20:00:42 GMT</pubDate></item><item><title>Searching by date in Elasticsearch</title><link>http://beenje.github.io/blog/posts/searching-by-date-in-elasticsearch/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;&lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
 &lt;p&gt;I recently indexed some documents in Elasticsearch at work and had issues retrieving what I wanted by date. Googling didn't get me very useful results, except the official &lt;a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html"&gt;documentation&lt;/a&gt;. I thought it was worth sharing what wasn't obvious to me by reading the documentation.&lt;/p&gt;
@@ -1899,7 +2270,7 @@ test locally conda packages on Windows.&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 
-&lt;/div&gt;&lt;/div&gt;</description><category>elasticsearch</category><category>python</category><guid>http://beenje.github.io/blog/posts/searching-by-date-in-elasticsearch/</guid><pubDate>Wed, 11 Mar 2020 18:08:16 GMT</pubDate></item><item><title>Building a GitLab bot using gidgetlab and aiohttp</title><link>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;At PyCon 2018, &lt;a class="reference external" href="https://github.com/Mariatta"&gt;Mariatta&lt;/a&gt; held a &lt;a class="reference external" href="https://us.pycon.org/2018/schedule/presentation/41/"&gt;Build-a-GitHub-Bot Workshop&lt;/a&gt;. The full
+&lt;/div&gt;</description><category>elasticsearch</category><category>python</category><guid>http://beenje.github.io/blog/posts/searching-by-date-in-elasticsearch/</guid><pubDate>Wed, 11 Mar 2020 18:08:16 GMT</pubDate></item><item><title>Building a GitLab bot using gidgetlab and aiohttp</title><link>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;At PyCon 2018, &lt;a class="reference external" href="https://github.com/Mariatta"&gt;Mariatta&lt;/a&gt; held a &lt;a class="reference external" href="https://us.pycon.org/2018/schedule/presentation/41/"&gt;Build-a-GitHub-Bot Workshop&lt;/a&gt;. The full
 documentation can be found on &lt;a class="reference external" href="https://github.com/Mariatta/github-bot-tutorial"&gt;GitHub&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;I went through the tutorial and really enjoyed it.
 This is how I discovered &lt;a class="reference external" href="https://gidgethub.readthedocs.io/en/latest/"&gt;gidgethub&lt;/a&gt; from &lt;a class="reference external" href="https://github.com/brettcannon"&gt;Brett Cannon&lt;/a&gt;, an async GitHub
@@ -1912,17 +2283,17 @@ but to show the differences for GitLab. So I strongly suggest that you check the
 &lt;a class="reference external" href="https://github-bot-tutorial.readthedocs.io/en/latest/"&gt;github-bot-tutorial&lt;/a&gt; first. I won't go in as much details.&lt;/p&gt;
 &lt;p&gt;Note that this post will describe how to interact with gitlab.com but
 gidgetlab can of course be used with a private GitLab instance!&lt;/p&gt;
-&lt;div class="section" id="using-gidgetlab-on-the-command-line"&gt;
+&lt;section id="using-gidgetlab-on-the-command-line"&gt;
 &lt;h2&gt;Using gidgetlab on the command line&lt;/h2&gt;
 &lt;p&gt;This is the equivalent of &lt;a class="reference external" href="https://github-bot-tutorial.readthedocs.io/en/latest/gidgethub-cmd-line.html"&gt;using gidgethub on the command line&lt;/a&gt;.
 So let's create an issue on GitLab using the API via the command line, instead of the GitLab website.&lt;/p&gt;
-&lt;div class="section" id="install-gidgetlab-and-aiohttp"&gt;
+&lt;section id="install-gidgetlab-and-aiohttp"&gt;
 &lt;h3&gt;Install gidgetlab and aiohttp&lt;/h3&gt;
 &lt;p&gt;Install &lt;code class="docutils literal"&gt;gidgetlab&lt;/code&gt; and &lt;code class="docutils literal"&gt;aiohttp&lt;/code&gt; if you have not already. Using a virtual environment
 is recommended.&lt;/p&gt;
 &lt;pre class="literal-block"&gt;python3.6 -m pip install gidgetlab[aiohttp]&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="create-a-gitlab-personal-access-token"&gt;
+&lt;/section&gt;
+&lt;section id="create-a-gitlab-personal-access-token"&gt;
 &lt;h3&gt;Create a GitLab Personal Access Token&lt;/h3&gt;
 &lt;p&gt;In order to use GitLab's API, you'll need to create a personal access token
 that will be used to authenticate yourself to GitLab.&lt;/p&gt;
@@ -1942,8 +2313,8 @@ in a text file for now. If you have a password manager like 1password, use that.
 need to revoke it and create another one.&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
-&lt;/div&gt;
-&lt;div class="section" id="store-the-personal-access-token-as-an-environment-variable"&gt;
+&lt;/section&gt;
+&lt;section id="store-the-personal-access-token-as-an-environment-variable"&gt;
 &lt;h3&gt;Store the Personal Access Token as an environment variable&lt;/h3&gt;
 &lt;p&gt;In Unix / Mac OS:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;export GL_ACCESS_TOKEN=your token&lt;/pre&gt;
@@ -1951,8 +2322,8 @@ need to revoke it and create another one.&lt;/p&gt;
 &lt;pre class="literal-block"&gt;set GL_ACCESS_TOKEN=your token&lt;/pre&gt;
 &lt;p&gt;Note that these will only set the token for the current process. If you want
 this value stored permanently, you have to edit the bashrc file.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="create-an-issue"&gt;
+&lt;/section&gt;
+&lt;section id="create-an-issue"&gt;
 &lt;h3&gt;Create an issue&lt;/h3&gt;
 &lt;p&gt;Open a new file, for example &lt;code class="docutils literal"&gt;create_issue.py&lt;/code&gt; in your favorite editor.&lt;/p&gt;
 &lt;p&gt;Copy the following into &lt;code class="docutils literal"&gt;create_issue.py&lt;/code&gt;.
@@ -2015,8 +2386,8 @@ Save and run it in the command line:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;python3.6 -m create_issue&lt;/pre&gt;
 &lt;p&gt;There should be a new issue created in the strange-relationship project. Check it out:
 &lt;a class="reference external" href="https://gitlab.com/beenje/strange-relationship/issues"&gt;https://gitlab.com/beenje/strange-relationship/issues&lt;/a&gt;&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="comment-on-issue"&gt;
+&lt;/section&gt;
+&lt;section id="comment-on-issue"&gt;
 &lt;h3&gt;Comment on issue&lt;/h3&gt;
 &lt;p&gt;Let's try a different exercise, to get ourselves more familiar with GitLab's API.
 Take a look at GitLab's &lt;a class="reference external" href="https://docs.gitlab.com/ee/api/issues.html#comments-on-issues"&gt;create a comment&lt;/a&gt; documentation: &lt;code class="docutils literal"&gt;POST &lt;span class="pre"&gt;/projects/:id/issues/:issue_iid/notes&lt;/span&gt;&lt;/code&gt;&lt;/p&gt;
@@ -2026,8 +2397,8 @@ Take a look at GitLab's &lt;a class="reference external" href="https://docs.gitl
     data={"body": "This is a comment"},
 )&lt;/pre&gt;
 &lt;p&gt;Replace &lt;code class="docutils literal"&gt;1&lt;/code&gt; with the issue number you created.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="close-the-issue"&gt;
+&lt;/section&gt;
+&lt;section id="close-the-issue"&gt;
 &lt;h3&gt;Close the issue&lt;/h3&gt;
 &lt;p&gt;Let's now close the issue that you've just created.&lt;/p&gt;
 &lt;p&gt;Take a look at the documentation to &lt;a class="reference external" href="https://docs.gitlab.com/ee/api/issues.html#edit-issue"&gt;edit an issue&lt;/a&gt;.&lt;/p&gt;
@@ -2040,15 +2411,15 @@ editing an issue, and setting the &lt;code class="docutils literal"&gt;state_eve
     data={"state_event": "close"},
 )&lt;/pre&gt;
 &lt;p&gt;Replace &lt;code class="docutils literal"&gt;1&lt;/code&gt; with the issue number you created.&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="section" id="using-gidgetlab-to-respond-to-webhooks"&gt;
+&lt;/section&gt;
+&lt;/section&gt;
+&lt;section id="using-gidgetlab-to-respond-to-webhooks"&gt;
 &lt;h2&gt;Using gidgetlab to respond to webhooks&lt;/h2&gt;
 &lt;p&gt;In the previous example, we've been interacting with GitLab by doing actions:
 making requests to GitLab. And we've been doing that locally on our own machine.&lt;/p&gt;
 &lt;p&gt;In this section we'll use what we know so far and start building an actual bot:
 a webserver that responds to GitLab webhook events.&lt;/p&gt;
-&lt;div class="section" id="gitlabbot"&gt;
+&lt;section id="gitlabbot"&gt;
 &lt;h3&gt;GitLabBot&lt;/h3&gt;
 &lt;p&gt;&lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/"&gt;gidgetlab&lt;/a&gt; actually provides a &lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/aiohttp.html"&gt;GitLabBot class&lt;/a&gt; to easily create an aiohttp
 web server that reponds to GitLab webhooks.&lt;/p&gt;
@@ -2067,8 +2438,8 @@ if __name__ == "__main__":
 &lt;p&gt;That's it. You have an aiohttp web server running on port 8080.
 Of course, it won't do that much. You'll have to register some events if
 you want the bot to perform some actions. We'll see that later.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="webhook-events"&gt;
+&lt;/section&gt;
+&lt;section id="webhook-events"&gt;
 &lt;h3&gt;Webhook events&lt;/h3&gt;
 &lt;p&gt;When an event is triggered in GitLab, GitLab can notify you about the event by
 sending a POST request along with the payload.&lt;/p&gt;
@@ -2086,8 +2457,8 @@ That's usually not on your laptop.&lt;/p&gt;
 Heroku is a platform as a service and makes it easy to deploy and run your app in the cloud.
 There are alternatives and you can of course use on your own servers if you want.&lt;/p&gt;
 &lt;p&gt;For testing purpose, you can actually use your own laptop thanks to &lt;a class="reference external" href="https://ngrok.com"&gt;ngrok&lt;/a&gt;.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="ngrok"&gt;
+&lt;/section&gt;
+&lt;section id="ngrok"&gt;
 &lt;h3&gt;Ngrok&lt;/h3&gt;
 &lt;p&gt;&lt;a class="reference external" href="https://ngrok.com"&gt;Ngrok&lt;/a&gt; exposes local servers behind NATs and firewalls to the public internet over secure tunnels.
 It's an easy way to test locally a webservice.&lt;/p&gt;
@@ -2115,8 +2486,8 @@ Just open &lt;a class="reference external" href="http://127.0.0.1:4040"&gt;http:
 405 as reply. Only POST methods are handled by the bot.&lt;/p&gt;
 &lt;p&gt;If you don't have any service listening on port 8080 and try to access the
 URL given by ngrok, you'll get a 502.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="add-the-gitlab-webhook"&gt;
+&lt;/section&gt;
+&lt;section id="add-the-gitlab-webhook"&gt;
 &lt;h3&gt;Add the GitLab Webhook&lt;/h3&gt;
 &lt;p&gt;Now that we have a local webservice that can receive requests thanks to ngrok,
 let's create a webhook on GitLab. If you haven't done so yet, create your
@@ -2129,15 +2500,15 @@ own project on GitLab.&lt;/p&gt;
 &lt;li&gt;&lt;p&gt;Leave &lt;strong&gt;Enable SSL verification&lt;/strong&gt; enabled&lt;/p&gt;&lt;/li&gt;
 &lt;li&gt;&lt;p&gt;Click &lt;strong&gt;Add webhook&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;/div&gt;
-&lt;div class="section" id="update-the-config-variables-in-your-environment"&gt;
+&lt;/section&gt;
+&lt;section id="update-the-config-variables-in-your-environment"&gt;
 &lt;h3&gt;Update the Config Variables in your environment&lt;/h3&gt;
 &lt;p&gt;First, export the secret webhook token you just created:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;export GL_SECRET=&amp;lt;secret token&amp;gt;&lt;/pre&gt;
 &lt;p&gt;Then, if not already done, export your GitLab personal access token:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;export GL_ACCESS_TOKEN=&amp;lt;acess token&amp;gt;&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="your-first-gitlab-bot"&gt;
+&lt;/section&gt;
+&lt;section id="your-first-gitlab-bot"&gt;
 &lt;h3&gt;Your first GitLab bot!&lt;/h3&gt;
 &lt;p&gt;Let's start with a bot that responds to every newly created issue in your project.
 For example, whenever someone creates an issue, the bot will automatically say something like:
@@ -2233,9 +2604,9 @@ page. You should see a new comment added to the issue!&lt;/p&gt;
 &lt;p&gt;Of course, using ngrok on your laptop was for testing only.
 To use it in production, you should deploy it to a server or the cloud.
 You can check the GitHub bot tutorial to see how to &lt;a class="reference external" href="http://github-bot-tutorial.readthedocs.io/en/latest/gidgethub-for-webhooks.html#deploy-to-heroku"&gt;deploy your webservice to Heroku&lt;/a&gt;.&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="section" id="conclusion"&gt;
+&lt;/section&gt;
+&lt;/section&gt;
+&lt;section id="conclusion"&gt;
 &lt;h2&gt;Conclusion&lt;/h2&gt;
 &lt;p&gt;Hopefully this gave you an idea of what can be done with &lt;a class="reference external" href="https://gidgetlab.readthedocs.io/en/latest/"&gt;gidgetlab&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;If you are interested, try to perform the other exercices described in the
@@ -2244,7 +2615,7 @@ to build something cool :-)
 And check my post about &lt;a class="reference external" href="http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-starlette-and-httpx"&gt;building a GitLab bot with Starlette and HTTPX&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;Again, a big thanks to &lt;a class="reference external" href="https://github.com/Mariatta"&gt;Mariatta&lt;/a&gt; for her tutorial and to &lt;a class="reference external" href="https://github.com/brettcannon"&gt;Brett Cannon&lt;/a&gt; for
 &lt;a class="reference external" href="https://gidgethub.readthedocs.io/en/latest/"&gt;gidgethub&lt;/a&gt;! This project wouldn't exist otherwise.&lt;/p&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>aiohttp</category><category>bot</category><category>gidgetlab</category><category>gitlab</category><category>python</category><guid>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp/</guid><pubDate>Mon, 17 Sep 2018 20:40:15 GMT</pubDate></item><item><title>Parsing JavaScript rendered pages in Python with pyppeteer</title><link>http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/section&gt;</description><category>aiohttp</category><category>bot</category><category>gidgetlab</category><category>gitlab</category><category>python</category><guid>http://beenje.github.io/blog/posts/building-a-gitlab-bot-using-gidgetlab-and-aiohttp/</guid><pubDate>Mon, 17 Sep 2018 20:40:15 GMT</pubDate></item><item><title>Parsing JavaScript rendered pages in Python with pyppeteer</title><link>http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;&lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
 &lt;h2 id="Parsing-JavaScript-rendered-pages-in-Python-with-pyppeteer"&gt;Parsing JavaScript rendered pages in Python with pyppeteer&lt;a class="anchor-link" href="http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/#Parsing-JavaScript-rendered-pages-in-Python-with-pyppeteer"&gt;¶&lt;/a&gt;&lt;/h2&gt;
@@ -2416,8 +2787,7 @@ The results are available here: &lt;a href="http://results.neptron.se/#/lundalop
 
 
 
-&lt;div class="output_html rendered_html output_subarea "&gt;
-ï»¿
+&lt;div class="output_html rendered_html output_subarea "&gt;ï»¿
 
 
     &lt;title ng-bind="event.name || 'Neptron Timing'"&gt;Neptron Timing&lt;/title&gt;
@@ -2523,7 +2893,6 @@ window.setInterval(fixLidingloppetMessage, 1000);
 
 
 
-
 &lt;/div&gt;
 
 &lt;/div&gt;
@@ -2609,8 +2978,7 @@ By googling, I found &lt;a href="https://github.com/kennethreitz/requests-html"&
 
 
 
-&lt;div class="output_html rendered_html output_subarea "&gt;
-&lt;table&gt;
+&lt;div class="output_html rendered_html output_subarea "&gt;&lt;table&gt;
                 &lt;thead&gt;
                     &lt;tr&gt;
                         &lt;th class="res-favorite"&gt; &lt;/th&gt;
@@ -2695,8 +3063,7 @@ By googling, I found &lt;a href="https://github.com/kennethreitz/requests-html"&
                         &lt;!-- ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByRace " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="25" class="ng-binding"&gt;25&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-placeByCategory " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="25" class="ng-binding"&gt;25&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-startNo " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="6675" class="ng-binding"&gt;6675&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-category " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="P10" class="ng-binding"&gt;P10&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-name " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Kristian  Haggärde" class="ng-binding"&gt;Kristian  Haggärde&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-flag " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="" class="ng-binding"&gt;&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-association " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Björnstorps IF" class="ng-binding"&gt;Björnstorps IF&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-lastSplitPoint " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finish" class="ng-binding"&gt;Finish&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-time " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="37:34" class="ng-binding"&gt;37:34&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;&lt;td class="res-status " ng-click="vm.openResult(row.result)" ng-repeat="cell in row.cells"&gt;&lt;div data-value="Finished" class="ng-binding"&gt;Finished&lt;/div&gt;&lt;/td&gt;&lt;!-- end ngRepeat: cell in row.cells --&gt;
                     &lt;/tr&gt;&lt;!-- end ngRepeat: row in vm.resultsRows --&gt;
                 &lt;/tbody&gt;
-            &lt;/table&gt;
-&lt;/div&gt;
+            &lt;/table&gt;&lt;/div&gt;
 
 &lt;/div&gt;
 
@@ -2889,8 +3256,7 @@ I initially tried to use the &lt;code&gt;table&lt;/code&gt; selector but that so
 
 
 
-&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
-&lt;div&gt;
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;&lt;div&gt;
 &lt;style scoped&gt;
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -3274,8 +3640,7 @@ I initially tried to use the &lt;code&gt;table&lt;/code&gt; selector but that so
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;
 
 &lt;/div&gt;
 
@@ -3569,8 +3934,7 @@ Get table from page 114
 
 
 
-&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
-&lt;div&gt;
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;&lt;div&gt;
 &lt;style scoped&gt;
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -3674,8 +4038,7 @@ Get table from page 114
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;
 
 &lt;/div&gt;
 
@@ -3705,8 +4068,7 @@ Get table from page 114
 
 
 
-&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
-&lt;div&gt;
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;&lt;div&gt;
 &lt;style scoped&gt;
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -3810,8 +4172,7 @@ Get table from page 114
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;
 
 &lt;/div&gt;
 
@@ -3860,7 +4221,7 @@ Anyway, I'll probably look more at Pyppeteer for web application testing.&lt;/p&
 
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>javascript</category><category>pandas</category><category>pyppeteer</category><category>python</category><category>request-html</category><category>requests</category><guid>http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/</guid><pubDate>Sat, 02 Jun 2018 20:54:45 GMT</pubDate></item><item><title>Parsing HTML Tables in Python with pandas</title><link>http://beenje.github.io/blog/posts/parsing-html-tables-in-python-with-pandas/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
+&lt;/div&gt;</description><category>javascript</category><category>pandas</category><category>pyppeteer</category><category>python</category><category>request-html</category><category>requests</category><guid>http://beenje.github.io/blog/posts/parsing-javascript-rendered-pages-in-python-with-pyppeteer/</guid><pubDate>Sat, 02 Jun 2018 20:54:45 GMT</pubDate></item><item><title>Parsing HTML Tables in Python with pandas</title><link>http://beenje.github.io/blog/posts/parsing-html-tables-in-python-with-pandas/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div class="cell border-box-sizing text_cell rendered"&gt;&lt;div class="prompt input_prompt"&gt;
 &lt;/div&gt;&lt;div class="inner_cell"&gt;
 &lt;div class="text_cell_render border-box-sizing rendered_html"&gt;
 &lt;p&gt;Not long ago, I needed to parse some HTML tables from our confluence website at work. I first thought: I'm gonna need &lt;a href="http://docs.python-requests.org/en/master/"&gt;requests&lt;/a&gt; and &lt;a href="https://www.crummy.com/software/BeautifulSoup/bs4/doc/"&gt;BeautifulSoup&lt;/a&gt;. As HTML tables are well defined, I did some quick googling to see if there was some recipe or lib to parse them and I found a link to &lt;a href="https://pandas.pydata.org"&gt;pandas&lt;/a&gt;. What? Can pandas do that too?&lt;/p&gt;
@@ -3960,8 +4321,7 @@ So let's read it.&lt;/p&gt;
 
 
 
-&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
-&lt;div&gt;
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;&lt;div&gt;
 &lt;style scoped&gt;
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -4041,8 +4401,7 @@ So let's read it.&lt;/p&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;
 
 &lt;/div&gt;
 
@@ -4156,7 +4515,6 @@ So let's read it.&lt;/p&gt;
 
 
 &lt;div class="output_html rendered_html output_subarea "&gt;
-
 &lt;table&gt;
   &lt;thead&gt;
     &lt;tr&gt;
@@ -4183,7 +4541,6 @@ So let's read it.&lt;/p&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-
 &lt;/div&gt;
 
 &lt;/div&gt;
@@ -4260,8 +4617,7 @@ So let's read it.&lt;/p&gt;
 
 
 
-&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
-&lt;div&gt;
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;&lt;div&gt;
 &lt;style scoped&gt;
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -4305,8 +4661,7 @@ So let's read it.&lt;/p&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;
 
 &lt;/div&gt;
 
@@ -4344,8 +4699,7 @@ So let's read it.&lt;/p&gt;
 
 
 
-&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
-&lt;div&gt;
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;&lt;div&gt;
 &lt;style scoped&gt;
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -4383,8 +4737,7 @@ So let's read it.&lt;/p&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;
 
 &lt;/div&gt;
 
@@ -4458,8 +4811,7 @@ So let's read it.&lt;/p&gt;
 
 
 
-&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
-&lt;div&gt;
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;&lt;div&gt;
 &lt;style scoped&gt;
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -4509,8 +4861,7 @@ So let's read it.&lt;/p&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;
 
 &lt;/div&gt;
 
@@ -4548,8 +4899,7 @@ So let's read it.&lt;/p&gt;
 
 
 
-&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
-&lt;div&gt;
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;&lt;div&gt;
 &lt;style scoped&gt;
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -4593,8 +4943,7 @@ So let's read it.&lt;/p&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;
 
 &lt;/div&gt;
 
@@ -4739,8 +5088,7 @@ So let's read it.&lt;/p&gt;
 
 
 
-&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
-&lt;div&gt;
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;&lt;div&gt;
 &lt;style scoped&gt;
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -4820,8 +5168,7 @@ So let's read it.&lt;/p&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;
 
 &lt;/div&gt;
 
@@ -4877,8 +5224,7 @@ So let's read it.&lt;/p&gt;
 
 
 
-&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
-&lt;div&gt;
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;&lt;div&gt;
 &lt;style scoped&gt;
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -4996,8 +5342,7 @@ So let's read it.&lt;/p&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;
 
 &lt;/div&gt;
 
@@ -5146,8 +5491,7 @@ So let's read it.&lt;/p&gt;
 
 
 
-&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
-&lt;div&gt;
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;&lt;div&gt;
 &lt;style scoped&gt;
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -5265,8 +5609,7 @@ So let's read it.&lt;/p&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;
 
 &lt;/div&gt;
 
@@ -5366,8 +5709,7 @@ So let's read it.&lt;/p&gt;
 
 
 
-&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
-&lt;div&gt;
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;&lt;div&gt;
 &lt;style scoped&gt;
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -5464,8 +5806,7 @@ So let's read it.&lt;/p&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;
 
 &lt;/div&gt;
 
@@ -5504,8 +5845,7 @@ So let's read it.&lt;/p&gt;
 
 
 
-&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
-&lt;div&gt;
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;&lt;div&gt;
 &lt;style scoped&gt;
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -5960,8 +6300,7 @@ So let's read it.&lt;/p&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;388 rows × 4 columns&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;
 
 &lt;/div&gt;
 
@@ -6000,8 +6339,7 @@ So let's read it.&lt;/p&gt;
 
 
 
-&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
-&lt;div&gt;
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;&lt;div&gt;
 &lt;style scoped&gt;
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -6456,8 +6794,7 @@ So let's read it.&lt;/p&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;380 rows × 4 columns&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;
 
 &lt;/div&gt;
 
@@ -6495,8 +6832,7 @@ So let's read it.&lt;/p&gt;
 
 
 
-&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;
-&lt;div&gt;
+&lt;div class="output_html rendered_html output_subarea output_execute_result"&gt;&lt;div&gt;
 &lt;style scoped&gt;
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
@@ -6530,8 +6866,7 @@ So let's read it.&lt;/p&gt;
     &lt;/tr&gt;
   &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+&lt;/div&gt;&lt;/div&gt;
 
 &lt;/div&gt;
 
@@ -6601,7 +6936,7 @@ You can find the notebook on &lt;a href="https://github.com/beenje/blog/blob/mas
 &lt;/div&gt;
 &lt;/div&gt;
 
-&lt;/div&gt;&lt;/div&gt;</description><category>pandas</category><category>python</category><category>requests</category><guid>http://beenje.github.io/blog/posts/parsing-html-tables-in-python-with-pandas/</guid><pubDate>Tue, 27 Mar 2018 20:31:12 GMT</pubDate></item><item><title>Logging to a Tkinter ScrolledText Widget</title><link>http://beenje.github.io/blog/posts/logging-to-a-tkinter-scrolledtext-widget/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I've been programming in Python for almost 10 years.
+&lt;/div&gt;</description><category>pandas</category><category>python</category><category>requests</category><guid>http://beenje.github.io/blog/posts/parsing-html-tables-in-python-with-pandas/</guid><pubDate>Tue, 27 Mar 2018 20:31:12 GMT</pubDate></item><item><title>Logging to a Tkinter ScrolledText Widget</title><link>http://beenje.github.io/blog/posts/logging-to-a-tkinter-scrolledtext-widget/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;I've been programming in Python for almost 10 years.
 I did many CLI tools, some web applications (mainly using &lt;a class="reference external" href="http://flask.pocoo.org"&gt;Flask&lt;/a&gt;),
 but I had never built a GUI.&lt;/p&gt;
 &lt;p&gt;&lt;a class="reference external" href="https://riverbankcomputing.com/software/pyqt/intro"&gt;PyQt&lt;/a&gt; seems to be one of the most popular framework. I had a look at it but I was not hooked.
@@ -6614,7 +6949,7 @@ I didn't know that &lt;a class="reference external" href="http://www.tkdocs.com"
 The &lt;a class="reference external" href="http://www.tkdocs.com/tutorial/index.html"&gt;official tutorial&lt;/a&gt; is quite nice and comes with code examples in different languages (including Python).&lt;/p&gt;
 &lt;p&gt;The GUI I needed to write wasn't very advanced.
 I wanted to have a kind of console where to display log messages.&lt;/p&gt;
-&lt;div class="section" id="texthandler"&gt;
+&lt;section id="texthandler"&gt;
 &lt;h2&gt;TextHandler&lt;/h2&gt;
 &lt;p&gt;I quickly found an &lt;a class="reference external" href="https://gist.github.com/moshekaplan/c425f861de7bbf28ef06"&gt;example&lt;/a&gt; on
 &lt;a class="reference external" href="https://stackoverflow.com/questions/13318742/python-logging-to-tkinter-text-widget"&gt;StackOverflow&lt;/a&gt;
@@ -6646,8 +6981,8 @@ And you can only write to a tkinter widget from the main thread.&lt;/p&gt;
 &lt;p&gt;This is explained in &lt;a class="reference external" href="https://stackoverflow.com/questions/43909849/tkinter-python-crashes-on-new-thread-trying-to-log-on-main-thread"&gt;another StackOverflow question&lt;/a&gt;
 but I didn't like the proposed solution.
 If you implement specific methods as explained (&lt;cite&gt;put_line_to_queue&lt;/cite&gt;), you lose the advantage of just calling the log function from different parts of the program.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="queuehandler"&gt;
+&lt;/section&gt;
+&lt;section id="queuehandler"&gt;
 &lt;h2&gt;QueueHandler&lt;/h2&gt;
 &lt;p&gt;Using a &lt;a class="reference external" href="https://docs.python.org/3/library/queue.html"&gt;Queue&lt;/a&gt; is indeed the way to share data between threads.
 So I implemented a simple QueueHandler:&lt;/p&gt;
@@ -6744,8 +7079,8 @@ class ConsoleUi:
 &lt;p&gt;The full code is available on &lt;a class="reference external" href="https://github.com/beenje/tkinter-logging-text-widget"&gt;github&lt;/a&gt;.
 If you checkout the version v0.1.0 and run it, you'll see something like that:&lt;/p&gt;
 &lt;img alt="/images/tkinter/logging_handler.png" src="http://beenje.github.io/blog/images/tkinter/logging_handler.png"&gt;
-&lt;/div&gt;
-&lt;div class="section" id="pane-layout"&gt;
+&lt;/section&gt;
+&lt;section id="pane-layout"&gt;
 &lt;h2&gt;3-pane layout&lt;/h2&gt;
 &lt;p&gt;The &lt;cite&gt;ConsoleUi&lt;/cite&gt; class takes a frame as argument. It makes it easy to
 integrate in another layout. Let's see an example with a &lt;a class="reference external" href="http://www.tkdocs.com/tutorial/complex.html#panedwindow"&gt;Paned Window
@@ -6832,14 +7167,14 @@ class.&lt;/p&gt;
 &lt;img alt="/images/tkinter/paned_window_resized.png" src="http://beenje.github.io/blog/images/tkinter/paned_window_resized.png"&gt;
 &lt;p&gt;As already mentioned, the full example is available on &lt;a class="reference external" href="https://github.com/beenje/tkinter-logging-text-widget"&gt;github&lt;/a&gt;.
 You can checkout the version v0.2.0 to see the 3-pane layout.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="conclusion"&gt;
+&lt;/section&gt;
+&lt;section id="conclusion"&gt;
 &lt;h2&gt;Conclusion&lt;/h2&gt;
 &lt;p&gt;I want to give some credit to &lt;a class="reference external" href="https://docs.python.org/3.6/library/tkinter.html"&gt;tkinter&lt;/a&gt;. It doesn't have a steep learning curve and allows to easily create some nice GUI.
 You can continue using what you know in Python (Queue, Threads, modules like &lt;a class="reference external" href="http://pyserial.readthedocs.io/en/latest/"&gt;pySerial&lt;/a&gt;).
 I can only recomment it if you are familiar with Python and want to create a simple GUI.
 That being said, I'll probably try to dive more in &lt;a class="reference external" href="https://riverbankcomputing.com/software/pyqt/intro"&gt;PyQt&lt;/a&gt; when I have more time.&lt;/p&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>gui</category><category>python</category><category>tkinter</category><guid>http://beenje.github.io/blog/posts/logging-to-a-tkinter-scrolledtext-widget/</guid><pubDate>Thu, 28 Dec 2017 20:31:25 GMT</pubDate></item><item><title>Experimenting with asyncio on a Raspberry Pi</title><link>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;In a previous post, I described how I built a &lt;a class="reference external" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display"&gt;LEGO Macintosh Classic with
+&lt;/section&gt;</description><category>gui</category><category>python</category><category>tkinter</category><guid>http://beenje.github.io/blog/posts/logging-to-a-tkinter-scrolledtext-widget/</guid><pubDate>Thu, 28 Dec 2017 20:31:25 GMT</pubDate></item><item><title>Experimenting with asyncio on a Raspberry Pi</title><link>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;In a previous post, I described how I built a &lt;a class="reference external" href="http://beenje.github.io/blog/posts/my-lego-macintosh-classic-with-raspberry-pi-and-e-paper-display"&gt;LEGO Macintosh Classic with
 a Raspberry Pi and e-paper display&lt;/a&gt;.&lt;/p&gt;
 &lt;p&gt;For testing purpose I installed the clock demo which is part of the
 &lt;a class="reference external" href="https://github.com/embeddedartists/gratis"&gt;Embedded Artists repository&lt;/a&gt;.
@@ -6858,9 +7193,9 @@ I learnt asynchronous programming with &lt;a class="reference external" href="ht
 a few years ago. If you are not familiar with asynchronous programming, I really recommend
 it. I wrote a few applications using &lt;a class="reference external" href="https://twistedmatrix.com"&gt;Twisted&lt;/a&gt; but I haven't had
 the opportunity to use asyncio yet. Here is a very good occasion!&lt;/p&gt;
-&lt;div class="section" id="asyncio"&gt;
+&lt;section id="asyncio"&gt;
 &lt;h2&gt;asyncio&lt;/h2&gt;
-&lt;div class="section" id="rest-api-using-aiohttp"&gt;
+&lt;section id="rest-api-using-aiohttp"&gt;
 &lt;h3&gt;REST API using aiohttp&lt;/h3&gt;
 &lt;p&gt;There are already several asyncio web frameworks to build an HTTP server.
 I decided to go with &lt;a class="reference external" href="http://aiohttp.readthedocs.io/en/stable/"&gt;aiohttp&lt;/a&gt;
@@ -6914,8 +7249,8 @@ async def post_message(request):
 @login_required
 async def index(request):
     return web.json_response({'message': 'Welcome to LegoMac {}!'.format(request.user)})&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="raspberry-pi-gpio-and-asyncio"&gt;
+&lt;/section&gt;
+&lt;section id="raspberry-pi-gpio-and-asyncio"&gt;
 &lt;h3&gt;Raspberry Pi GPIO and asyncio&lt;/h3&gt;
 &lt;p&gt;The default Python package to control the Raspberry Pi GPIO seems to be
 &lt;a class="reference external" href="https://pypi.python.org/pypi/RPi.GPIO"&gt;RPi.GPIO&lt;/a&gt;.
@@ -6929,8 +7264,8 @@ It's basically a (incomplete) port of the original Python client provided
 with pigpio, but far sufficient for my need. I just want to get a
 notification when pressing the button on top of the screen.&lt;/p&gt;
 &lt;p&gt;There is an example how to achieve that: &lt;a class="reference external" href="https://github.com/PierreRust/apigpio/blob/master/samples/gpio_notification.py"&gt;gpio_notification.py&lt;/a&gt;.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="e-paper-display-and-asyncio"&gt;
+&lt;/section&gt;
+&lt;section id="e-paper-display-and-asyncio"&gt;
 &lt;h3&gt;E-paper display and asyncio&lt;/h3&gt;
 &lt;p&gt;The last remaining piece is to make the e-paper display play nicely with
 asyncio.&lt;/p&gt;
@@ -6960,11 +7295,11 @@ async def create(cls, *args, **kwargs):
         ...&lt;/pre&gt;
 &lt;p&gt;To create an instance of the EPD class, use:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;epd = await EPD.create([path='/path/to/epd'], [auto=boolean])&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="section" id="putting-everything-together-with-aiohttp"&gt;
+&lt;/section&gt;
+&lt;/section&gt;
+&lt;section id="putting-everything-together-with-aiohttp"&gt;
 &lt;h2&gt;Putting everything together with aiohttp&lt;/h2&gt;
-&lt;div class="section" id="running-the-clock-as-a-background-task"&gt;
+&lt;section id="running-the-clock-as-a-background-task"&gt;
 &lt;h3&gt;Running the clock as a background task&lt;/h3&gt;
 &lt;p&gt;For the clock, I adapted the &lt;a class="reference external" href="https://github.com/embeddedartists/gratis/blob/master/PlatformWithOS/demo/Clock27.py"&gt;clock demo&lt;/a&gt;
 from Embedded Artists repository.&lt;/p&gt;
@@ -7004,8 +7339,8 @@ def init_app():
     app.on_startup.append(start_background_tasks)
     app.on_cleanup.append(cleanup_background_tasks)
     ...&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="stop-the-clock-and-display-a-message"&gt;
+&lt;/section&gt;
+&lt;section id="stop-the-clock-and-display-a-message"&gt;
 &lt;h3&gt;Stop the clock and display a message&lt;/h3&gt;
 &lt;p&gt;When receiving a message, I first cancel the clock background task and
 send the messages to the e-paper display using &lt;cite&gt;ensure_future&lt;/cite&gt; so that
@@ -7026,8 +7361,8 @@ async def post_message(request):
     now = datetime.datetime.now(request.app['timezone'])
     helpers.ensure_future(request.app['epd'].display_message(message, request.user, now))
     return web.json_response({'message': message}, status=201)&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="start-the-clock-when-pressing-the-button"&gt;
+&lt;/section&gt;
+&lt;section id="start-the-clock-when-pressing-the-button"&gt;
 &lt;h3&gt;Start the clock when pressing the button&lt;/h3&gt;
 &lt;p&gt;To be able to restart the clock when pressing the button, I connect to the
 pigpiod when starting the app (in &lt;cite&gt;start_background_tasks&lt;/cite&gt;) and register
@@ -7050,9 +7385,9 @@ task is done:&lt;/p&gt;
     if app['clock'].done():
         logger.info('restart clock')
         app['clock'] = app.loop.create_task(display_clock(app))&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="section" id="running-on-the-pi"&gt;
+&lt;/section&gt;
+&lt;/section&gt;
+&lt;section id="running-on-the-pi"&gt;
 &lt;h2&gt;Running on the Pi&lt;/h2&gt;
 &lt;p&gt;You might have noticed that I used some syntax that is Python 3.6 only.
 I don't really see myself using something else when starting a new project
@@ -7079,7 +7414,7 @@ that very easy if you use docker. So that's what I chose.&lt;/p&gt;
 &lt;li&gt;&lt;p&gt;pigpiod&lt;/p&gt;&lt;/li&gt;
 &lt;li&gt;&lt;p&gt;aiolegomac&lt;/p&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;div class="section" id="traefik"&gt;
+&lt;section id="traefik"&gt;
 &lt;h3&gt;traefik&lt;/h3&gt;
 &lt;p&gt;There are no official Traefik docker images for arm yet, but an &lt;a class="reference external" href="https://github.com/containous/traefik/issues/1665"&gt;issue&lt;/a&gt; is currently opened.
 So it should arrive soon!&lt;/p&gt;
@@ -7095,8 +7430,8 @@ RUN wget -O /usr/local/bin/traefik https://github.com/containous/traefik/release
   &amp;amp;&amp;amp; chmod a+x /usr/local/bin/traefik
 
 ENTRYPOINT ["/usr/local/bin/traefik"]&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="section" id="pigpiod"&gt;
+&lt;/section&gt;
+&lt;section id="pigpiod"&gt;
 &lt;h3&gt;pigpiod&lt;/h3&gt;
 &lt;p&gt;For pigpiod, I first created an image based on &lt;cite&gt;arm32v6/alpine&lt;/cite&gt; but I noticed I couldn't send
 a SIGTERM to the daemon to stop it properly... I'm not sure why. Alpine being based on &lt;cite&gt;musl&lt;/cite&gt; instead
@@ -7142,8 +7477,8 @@ EXPOSE 8888
 
 ENTRYPOINT ["/usr/local/bin/pigpiod", "-g"]&lt;/pre&gt;
 &lt;p&gt;Note that the container has to run in privileged mode to access the GPIO.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="aiolegomac"&gt;
+&lt;/section&gt;
+&lt;section id="aiolegomac"&gt;
 &lt;h3&gt;aiolegomac&lt;/h3&gt;
 &lt;p&gt;For the main application, the Dockerfile is quite standard for a Python application:&lt;/p&gt;
 &lt;pre class="literal-block"&gt;FROM resin/raspberry-pi-python:3.6
@@ -7177,9 +7512,9 @@ CMD ["run.py"]&lt;/pre&gt;
 As it uses libfuse to represent the e-paper display as a virtual directory of files,
 the easiest was to install it on the host and to mount it as a volume inside the docker
 container.&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="section" id="deployment"&gt;
+&lt;/section&gt;
+&lt;/section&gt;
+&lt;section id="deployment"&gt;
 &lt;h2&gt;Deployment&lt;/h2&gt;
 &lt;p&gt;To install all that on the Pi, I wrote a small &lt;a class="reference external" href="https://www.ansible.com"&gt;Ansible&lt;/a&gt; playbook.&lt;/p&gt;
 &lt;ol class="arabic"&gt;
@@ -7207,10 +7542,10 @@ So be patient :-) Just go and do something else.&lt;/p&gt;
 &lt;p&gt;When the full playbook is complete (it took about 55 minutes for me),
 you'll have a server with HTTPS support (thanks to Let's Encrypt) running on the Pi. It's displaying
 the clock every minute and you can send messages to it!&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="client"&gt;
+&lt;/section&gt;
+&lt;section id="client"&gt;
 &lt;h2&gt;Client&lt;/h2&gt;
-&lt;div class="section" id="httpie"&gt;
+&lt;section id="httpie"&gt;
 &lt;h3&gt;HTTPie&lt;/h3&gt;
 &lt;p&gt;To test the server you can of course use &lt;a class="reference external" href="https://curl.haxx.se"&gt;curl&lt;/a&gt;
 but I really like &lt;a class="reference external" href="https://httpie.org"&gt;HTTPie&lt;/a&gt;. It's much more user
@@ -7272,8 +7607,8 @@ Server: Python/3.6 aiohttp/2.2.3
 }&lt;/pre&gt;
 &lt;p&gt;Message sent!
 HTTPie is nice for testing, but we can make a small script to easily send messages from the command line.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="requests"&gt;
+&lt;/section&gt;
+&lt;section id="requests"&gt;
 &lt;h3&gt;requests&lt;/h3&gt;
 &lt;p&gt;&lt;a class="reference external" href="http://docs.python-requests.org"&gt;requests&lt;/a&gt; is of course the HTTP library to use in Python.&lt;/p&gt;
 &lt;p&gt;So let's write a small script to send messages to our server.
@@ -7353,9 +7688,9 @@ Password:
 Message sent&lt;/pre&gt;
 &lt;img alt="/images/legomac/zen_of_python.jpg" src="http://beenje.github.io/blog/images/legomac/zen_of_python.jpg"&gt;
 &lt;p&gt;Sending a new message won't request the password as the token was saved in the config file.&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class="section" id="conclusion"&gt;
+&lt;/section&gt;
+&lt;/section&gt;
+&lt;section id="conclusion"&gt;
 &lt;h2&gt;Conclusion&lt;/h2&gt;
 &lt;p&gt;I have a nice little aiohttp server running on my Raspberry Pi that can receive and display messages.
 asyncio is quite pleasant to work with. I really like the async/await syntax.&lt;/p&gt;
@@ -7367,207 +7702,4 @@ asyncio is quite pleasant to work with. I really like the async/await syntax.&lt
 &lt;p&gt;Why did I only write a command line script to send messages and no web interface?
 Don't worry, that's planned! I could have used Jinja2. But I'd like to try a javascript framework.
 So that will be the subject of another post.&lt;/p&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>Ansible</category><category>docker</category><category>lego</category><category>pi</category><category>python</category><guid>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</guid><pubDate>Tue, 18 Jul 2017 20:46:17 GMT</pubDate></item><item><title>Running your application over HTTPS with traefik</title><link>http://beenje.github.io/blog/posts/running-your-application-over-https-with-traefik/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;div&gt;&lt;p&gt;I just read another very clear article from Miguel Grinberg about &lt;a class="reference external" href="https://blog.miguelgrinberg.com/post/running-your-flask-application-over-https"&gt;Running Your Flask
-Application Over HTTPS&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;As the title suggests, it describes different ways to run a flask application over HTTPS.
-I have been using &lt;a class="reference external" href="http://flask.pocoo.org"&gt;flask&lt;/a&gt; for quite some time, but I didn't even know about
-the &lt;cite&gt;ssl_context&lt;/cite&gt; argument. You should definitively check his article!&lt;/p&gt;
-&lt;p&gt;Using &lt;a class="reference external" href="https://nginx.org/en/"&gt;nginx&lt;/a&gt; as a reverse proxy with a self-signed certificate or &lt;a class="reference external" href="https://letsencrypt.org"&gt;Let’s
-Encrypt&lt;/a&gt; are two options I have been using in the
-past.&lt;/p&gt;
-&lt;p&gt;If your app is available on the internet, you should definitively use
-Let's Encrypt. But if your app is only supposed to be used internally
-on a private network, a self-signed certificate is an option.&lt;/p&gt;
-&lt;div class="section" id="traefik"&gt;
-&lt;h2&gt;Traefik&lt;/h2&gt;
-&lt;p&gt;I now often use &lt;a class="reference external" href="https://www.docker.com"&gt;docker&lt;/a&gt; to deploy my applications.
-I was looking for a way to automatically configure Let's Encrypt.
-I initially found &lt;a class="reference external" href="https://github.com/jwilder/nginx-proxy"&gt;nginx-proxy&lt;/a&gt;
-and &lt;a class="reference external" href="https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion"&gt;docker-letsencrypt-nginx-proxy-companion&lt;/a&gt;. This
-was interesting but wasn't that straight forward to setup.&lt;/p&gt;
-&lt;p&gt;I then discovered &lt;a class="reference external" href="https://traefik.io"&gt;traefik&lt;/a&gt;: "a modern HTTP reverse proxy
-and load balancer made to deploy microservices with ease". And that's
-really the case! I've used it to deploy several applications and I
-was impressed. It's written in go, so single binary. There is also a tiny docker
-image that makes it easy to deploy. It includes Let's Encrypt support (with automatic renewal),
-websocket support (no specific setup required)... And many other features.&lt;/p&gt;
-&lt;p&gt;Here is a &lt;cite&gt;traefik.toml&lt;/cite&gt; configuration example:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;defaultEntryPoints = ["http", "https"]
-
-[web]
-# Port for the status page
-address = ":8080"
-
-# Entrypoints, http and https
-[entryPoints]
-  # http should be redirected to https
-  [entryPoints.http]
-  address = ":80"
-    [entryPoints.http.redirect]
-    entryPoint = "https"
-  # https is the default
-  [entryPoints.https]
-  address = ":443"
-    [entryPoints.https.tls]
-
-# Enable ACME (Let's Encrypt): automatic SSL
-[acme]
-# Email address used for registration
-email = "test@traefik.io"
-storageFile = "/etc/traefik/acme/acme.json"
-entryPoint = "https"
-onDemand = false
-OnHostRule = true
-  # Use a HTTP-01 acme challenge rather than TLS-SNI-01 challenge
-  [acme.httpChallenge]
-  entryPoint = "http"
-
-# Enable Docker configuration backend
-[docker]
-endpoint = "unix:///var/run/docker.sock"
-domain = "example.com"
-watch = true
-exposedbydefault = false&lt;/pre&gt;
-&lt;p&gt;With this simple configuration, you get:&lt;/p&gt;
-&lt;ul class="simple"&gt;
-&lt;li&gt;&lt;p&gt;HTTP redirect on HTTPS&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Let's Encrypt support&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Docker backend support&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;UPDATE (2018-03-04): as mentioned by @jackminardi in the comments, Let's Encrypt &lt;a class="reference external" href="https://community.letsencrypt.org/t/important-what-you-need-to-know-about-tls-sni-validation-issues/50811"&gt;disabled the TLS-SNI
-challenges for most new issuance&lt;/a&gt;.
-Traefik added &lt;a class="reference external" href="https://github.com/containous/traefik/pull/2701"&gt;support for the HTTP-01 challenge&lt;/a&gt;. I updated the above
-configuration to use this validation method: &lt;cite&gt;[acme.httpChallenge]&lt;/cite&gt;.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="a-simple-example"&gt;
-&lt;h2&gt;A simple example&lt;/h2&gt;
-&lt;p&gt;I created a dummy example just to show how to run a flask application over
-HTTPS with traefik and Let's Encrypt.
-Note that traefik is made to dynamically discover backends. So you usually
-don't run it with your app in the same docker-compose.yml file. It usually
-runs separately. But to make it easier, I put both in the same file:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;version: '2'
-services:
-  flask:
-    build: ./flask
-    image: flask
-    command: uwsgi --http-socket 0.0.0.0:5000 --wsgi-file app.py --callable app
-    labels:
-      - "traefik.enable=true"
-      - "traefik.backend=flask"
-      - "traefik.frontend.rule=${TRAEFIK_FRONTEND_RULE}"
-  traefik:
-    image: traefik
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik/traefik.toml:/etc/traefik/traefik.toml:ro
-      - ./traefik/acme:/etc/traefik/acme
-    ports:
-     - "80:80"
-     - "443:443"
-     - "8080:8080"&lt;/pre&gt;
-&lt;p&gt;Traefik requires access to the docker socket to listen for changes in the
-backends. It can thus automatically discover when you start and stop
-containers. You can ovverride default behaviour by using labels in your
-container.&lt;/p&gt;
-&lt;p&gt;Supposing you own the myhost.example.com domain and have access to ports 80 and 443
-(you can setup port forwarding if you run that on your machine behind a
-router at home), you can run:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;$ git clone https://github.com/beenje/flask_traefik_letsencrypt.git
-$ cd flask_traefik_letsencrypt
-$ export TRAEFIK_FRONTEND_RULE=Host:myhost.example.com
-$ docker-compose up&lt;/pre&gt;
-&lt;p&gt;Voilà! Our flask app is available over HTTPS with a real SSL certificate!&lt;/p&gt;
-&lt;img alt="/images/flask_traefik/hello_world.png" src="http://beenje.github.io/blog/images/flask_traefik/hello_world.png"&gt;
-&lt;p&gt;Traefik discovered the flask docker container and requested a certificate for our domain.
-All that automatically!&lt;/p&gt;
-&lt;p&gt;Traefik even comes with a nice dashboard:&lt;/p&gt;
-&lt;img alt="/images/flask_traefik/traefik_dashboard.png" src="http://beenje.github.io/blog/images/flask_traefik/traefik_dashboard.png"&gt;
-&lt;p&gt;With this simple configuration, &lt;a class="reference external" href="https://www.ssllabs.com/index.html"&gt;Qualys SSL Labs&lt;/a&gt;
-gave me an A rating :-)&lt;/p&gt;
-&lt;img alt="/images/flask_traefik/traefik_ssl_report.png" src="http://beenje.github.io/blog/images/flask_traefik/traefik_ssl_report.png"&gt;
-&lt;p&gt;Not as good as the A+ for Miguel's site, but not that bad!
-Especially considering there isn't any specific SSL setup.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="a-more-realistic-deployment"&gt;
-&lt;h2&gt;A more realistic deployment&lt;/h2&gt;
-&lt;p&gt;As I already mentioned, traefik is made to automatically discover backends (docker containers in my case).
-So you usually run it by itself.&lt;/p&gt;
-&lt;p&gt;Here is an example how it can be deployed using &lt;a class="reference external" href="http://docs.ansible.com/ansible/"&gt;Ansible&lt;/a&gt;:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;---
-- name: create traefik directories
-  file:
-    path: /etc/traefik/acme
-    state: directory
-    owner: root
-    group: root
-    mode: 0755
-
-- name: create traefik.toml
-  template:
-    src: traefik.toml.j2
-    dest: /etc/traefik/traefik.toml
-    owner: root
-    group: root
-    mode: 0644
-  notify:
-    - restart traefik
-
-- name: create traefik network
-  docker_network:
-    name: "{{traefik_network}}"
-    state: present
-
-- name: launch traefik container with letsencrypt support
-  docker_container:
-    name: traefik_proxy
-    image: "traefik:{{traefik_version}}"
-    state: started
-    restart_policy: always
-    ports:
-      - "80:80"
-      - "443:443"
-      - "{{traefik_dashboard_port}}:8080"
-    volumes:
-      - /etc/traefik/traefik.toml:/etc/traefik/traefik.toml:ro
-      - /etc/traefik/acme:/etc/traefik/acme:rw
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    # purge networks so that the container is only part of
-    # {{traefik_network}} (and not the default bridge network)
-    purge_networks: yes
-    networks:
-      - name: "{{traefik_network}}"
-
-- name: force all notified handlers to run
-  meta: flush_handlers&lt;/pre&gt;
-&lt;p&gt;Nothing strange here. It's quite similar to what we had in our docker-compose.yml file.
-We created a specific &lt;cite&gt;traefik_network&lt;/cite&gt;. Our docker containers will have to be on that same network.&lt;/p&gt;
-&lt;p&gt;Here is how we could deploy a flask application on the same server using another ansible role:&lt;/p&gt;
-&lt;pre class="literal-block"&gt;- name: launch flask container
-  docker_container:
-    name: flask
-    image: flask
-    command: uwsgi --http-socket 0.0.0.0:5000 --wsgi-file app.py --callable app
-    state: started
-    restart_policy: always
-    purge_networks: yes
-    networks:
-      - name: "{{traefik_network}}"
-    labels:
-      traefik.enable: "true"
-      traefik.backend: "flask"
-      traefik.frontend.rule: "Host:myhost.example.com"
-      traefik.port: "5000"&lt;/pre&gt;
-&lt;p&gt;We make sure the container is on the same network as the traefik proxy.
-Note that the &lt;cite&gt;traefik.port&lt;/cite&gt; label is only required if the container exposes multiple ports.
-It's thus not needed in our example.&lt;/p&gt;
-&lt;p&gt;That's basically it. As you can see, &lt;a class="reference external" href="https://www.docker.com"&gt;docker&lt;/a&gt; and &lt;a class="reference external" href="http://docs.ansible.com/ansible/"&gt;Ansible&lt;/a&gt; make the deployment easy.
-And &lt;a class="reference external" href="https://traefik.io"&gt;traefik&lt;/a&gt; takes care of the Let's Encrypt certificate.&lt;/p&gt;
-&lt;/div&gt;
-&lt;div class="section" id="conclusion"&gt;
-&lt;h2&gt;Conclusion&lt;/h2&gt;
-&lt;p&gt;Traefik comes with many other features and is well &lt;a class="reference external" href="https://docs.traefik.io"&gt;documented&lt;/a&gt;.
-You should check &lt;a class="reference external" href="https://docs.traefik.io/#docker"&gt;this Docker example&lt;/a&gt; that demonstrates load-balancing.
-Really cool.&lt;/p&gt;
-&lt;p&gt;If you use &lt;a class="reference external" href="https://www.docker.com"&gt;docker&lt;/a&gt;, you should really give &lt;a class="reference external" href="https://traefik.io"&gt;traefik&lt;/a&gt; a try!&lt;/p&gt;
-&lt;/div&gt;&lt;/div&gt;</description><category>flask</category><category>https</category><category>python</category><category>traefik</category><guid>http://beenje.github.io/blog/posts/running-your-application-over-https-with-traefik/</guid><pubDate>Thu, 08 Jun 2017 19:49:46 GMT</pubDate></item></channel></rss>
+&lt;/section&gt;</description><category>Ansible</category><category>docker</category><category>lego</category><category>pi</category><category>python</category><guid>http://beenje.github.io/blog/posts/experimenting-with-asyncio-on-a-raspberry-pi/</guid><pubDate>Tue, 18 Jul 2017 20:46:17 GMT</pubDate></item></channel></rss>

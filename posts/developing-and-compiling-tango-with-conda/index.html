@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article#
+" lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Developing and compiling tango with conda | Tchut-Tchut Blog</title>
+<link href="../../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/ipython.min.css" rel="stylesheet" type="text/css">
+<link href="../../assets/css/nikola_ipython.css" rel="stylesheet" type="text/css">
+<meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
+<link rel="alternate" type="application/rss+xml" title="RSS" hreflang="en" href="../../rss.xml">
+<link rel="canonical" href="http://beenje.github.io/blog/posts/developing-and-compiling-tango-with-conda/">
+<!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><meta name="author" content="Benjamin Bertrand">
+<link rel="prev" href="../building-a-gitlab-bot-using-gidgetlab-starlette-and-httpx/" title="Building a GitLab bot using gidgetlab, Starlette and HTTPX" type="text/html">
+<meta property="og:site_name" content="Tchut-Tchut Blog">
+<meta property="og:title" content="Developing and compiling tango with conda">
+<meta property="og:url" content="http://beenje.github.io/blog/posts/developing-and-compiling-tango-with-conda/">
+<meta property="og:description" content="Conda is a popular package manager that can quickly install binary packages and their dependencies.
+Many Tango packages are available on conda-forge: pytango, tango-test, tango-database, tango-starter">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2022-06-17T20:53:19+02:00">
+<meta property="article:tag" content="conda">
+<meta property="article:tag" content="linux">
+<meta property="article:tag" content="Mac">
+<meta property="article:tag" content="python">
+<meta property="article:tag" content="tango">
+<meta property="article:tag" content="windows">
+</head>
+<body>
+<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+
+<!-- Menubar -->
+
+<nav class="navbar navbar-expand-md static-top mb-4
+navbar-dark
+bg-dark
+"><div class="container">
+<!-- This keeps the margins nice -->
+        <a class="navbar-brand" href="../../">
+
+            <span id="blog-title">Tchut-Tchut Blog</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#bs-navbar" aria-controls="bs-navbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="bs-navbar">
+            <ul class="navbar-nav mr-auto">
+<li class="nav-item">
+<a href="../../archive.html" class="nav-link">Archive</a>
+                </li>
+<li class="nav-item">
+<a href="../../categories/" class="nav-link">Tags</a>
+                </li>
+<li class="nav-item">
+<a href="../../rss.xml" class="nav-link">RSS feed</a>
+                </li>
+<li class="nav-item">
+<a href="../../pages/about/index.html" class="nav-link">About</a>
+
+                
+            </li>
+</ul>
+<ul class="navbar-nav navbar-right">
+<li class="nav-item">
+    <a href="index.md" id="sourcelink" class="nav-link">Source</a>
+    </li>
+
+
+                
+            </ul>
+</div>
+<!-- /.navbar-collapse -->
+    </div>
+<!-- /.container -->
+</nav><!-- End of Menubar --><div class="container" id="content" role="main">
+    <div class="body-content">
+        <!--Body content-->
+        
+        
+        
+<article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Developing and compiling tango with conda</a></h1>
+
+        <div class="metadata">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
+                    Benjamin Bertrand
+            </span></p>
+            <p class="dateline">
+            <a href="." rel="bookmark">
+            <time class="published dt-published" datetime="2022-06-17T20:53:19+02:00" itemprop="datePublished" title="2022-06-17 20:53">2022-06-17 20:53</time></a>
+            </p>
+                <p class="commentline">
+    
+    <a href="#disqus_thread" data-disqus-identifier="cache/posts/developing-and-compiling-tango-with-conda.html">Comments</a>
+
+
+            
+        </p>
+<p class="sourceline"><a href="index.md" class="sourcelink">Source</a></p>
+
+        </div>
+        
+
+    </header><div class="e-content entry-content" itemprop="articleBody text">
+    <p><a href="https://docs.conda.io/en/latest/">Conda</a> is a popular package manager that can quickly install binary packages and their dependencies.</p>
+<p>Many <a href="https://www.tango-controls.org">Tango</a> packages are available on <a href="https://github.com/conda-forge">conda-forge</a>: <code>pytango</code>, <code>tango-test</code>, <code>tango-database</code>, <code>tango-starter</code>, <code>tango-admin</code>...
+Most are still Linux only, but a few are also available for Windows (like <code>pytango</code> and <code>tango-test</code>).</p>
+<p>What many people don't know or don't think about is that conda can also be used to setup a development environment.
+The required compilers and build tools, used by <a href="https://docs.conda.io/projects/conda-build/en/latest/index.html">conda-build</a> to compile and create packages, can be installed as any conda package.</p>
+<p>This is something I often do before to create a recipe to check how to compile a software.</p>
+<h3>Installing conda/mamba</h3>
+<p>If you don't have conda already installed, I recommend using <a href="https://github.com/conda-forge/miniforge">Mambaforge</a>, an alternative to <a href="https://docs.conda.io/en/latest/miniconda.html">miniconda</a>.
+<a href="https://github.com/conda-forge/miniforge">Mambaforge</a> is a minimal installer for conda that also inludes <a href="https://mamba.readthedocs.io/en/latest/index.html">mamba</a> and is configured with <a href="https://github.com/conda-forge">conda-forge</a> as the default and only channel.</p>
+<p>If you haven't heard of <code>mamba</code> before, check <a href="https://github.com/mamba-org/mamba">https://github.com/mamba-org/mamba</a>. <code>mamba</code> is a fast alternative conda client. You can use it as a drop-in replacement for conda and benefit from faster download and dependency solving.</p>
+<p><code>conda</code> is also gaining from this development as <code>libmamba</code> was integrated in conda 4.12.0: <a href="https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community">https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community</a>. At this time, it's still an experimental feature that needs to be enabled explicitly.</p>
+<p>To install <code>conda</code> and <code>mamba</code> on Unix like platforms:</p>
+<div class="code"><pre class="code literal-block">curl -L -O <span class="s2">"https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-</span><span class="k">$(</span>uname<span class="k">)</span><span class="s2">-</span><span class="k">$(</span>uname -m<span class="k">)</span><span class="s2">.sh"</span>
+bash Mambaforge-<span class="k">$(</span>uname<span class="k">)</span>-<span class="k">$(</span>uname -m<span class="k">)</span>.sh  -f -b -p ~/mambaforge
+~/mambaforge/bin/mamba init
+</pre></div>
+
+<p>On Windows, use the <a href="https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Windows-x86_64.exe">Mambaforge-Windows-x86_64.exe</a> installer.</p>
+<p>The rest of this post will assume you have conda/mamba installed and conda-forge set as the default channel:</p>
+<div class="code"><pre class="code literal-block">$ conda config --show channels
+channels:
+  - conda-forge
+</pre></div>
+
+<p>If you are used to <code>conda</code> and don't want to install <code>mamba</code>, this isn't an issue. Both are interchangeable.
+Just run <code>conda</code> instead of <code>mamba</code>. Out of habit I often still run <code>conda activate</code> as this wasn't initially supported by <code>mamba</code>, but this isn't the case anymore.</p>
+<h3>Compiling cppTango in a conda environment</h3>
+<p>Let's say you want to compile <a href="https://gitlab.com/tango-controls/cppTango">cppTango</a> to work on a bug fix or new feature.
+To build it on your Linux distribution, you can of course install all the requirements with your OS package manager (apt, yum, dnf...).
+Depending of your OS, versions will differ as well as package names between distributions.</p>
+<p>Conda provides a solution that is OS independent. Create the following <code>tango-dev</code> environment:</p>
+<div class="code"><pre class="code literal-block">mamba create -y -n tango-dev make cmake cxx-compiler libtool pkg-config jpeg omniorb cppzmq zeromq tango-idl
+mamba activate tango-dev
+</pre></div>
+
+<p>To know the list of packages to install, you can refer to the official <a href="https://github.com/conda-forge/cpptango-feedstock/blob/main/recipe/meta.yaml#L25">cpptango-feedstock</a>. I added <code>jpeg</code> here as it's a new requirement to build the main branch.</p>
+<p>Activating the <code>tango-dev</code> environment will export a few variables, like <code>CC</code>, <code>CXX</code> and <code>CMAKE_ARGS</code>.
+You should pass the latter to cmake:</p>
+<div class="code"><pre class="code literal-block">$ <span class="nb">echo</span> <span class="nv">$CC</span>
+/home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-cc
+$ <span class="nb">echo</span> <span class="nv">$CXX</span>
+/home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-c++
+$ <span class="nb">echo</span> <span class="nv">$CMAKE_ARGS</span>
+-DCMAKE_AR<span class="o">=</span>/home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-ar -DCMAKE_CXX_COMPILER_AR<span class="o">=</span>/home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-gcc-ar -DCMAKE_C_COMPILER_AR<span class="o">=</span>/home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-gcc-ar -DCMAKE_RANLIB<span class="o">=</span>/home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-ranlib -DCMAKE_CXX_COMPILER_RANLIB<span class="o">=</span>/home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-gcc-ranlib -DCMAKE_C_COMPILER_RANLIB<span class="o">=</span>/home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-gcc-ranlib -DCMAKE_LINKER<span class="o">=</span>/home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-ld -DCMAKE_STRIP<span class="o">=</span>/home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-strip
+</pre></div>
+
+<p>Note that when using <a href="https://docs.conda.io/projects/conda-build/en/latest/index.html">conda-build</a> even more options are automatically added to <code>CMAKE_ARGS</code>, like <code>CMAKE_INSTALL_PREFIX</code> and <code>CMAKE_INSTALL_LIBDIR</code>.
+We need to pass those manually in our case. Use <code>CONDA_PREFIX</code> to refer to the current activated environment (this variable is automatically set by conda).</p>
+<div class="code"><pre class="code literal-block"><span class="o">(</span>tango-dev<span class="o">)</span> vagrant@bullseye:~$ git clone https://gitlab.com/tango-controls/cppTango.git
+<span class="o">(</span>tango-dev<span class="o">)</span> vagrant@bullseye:~$ <span class="nb">cd</span> cppTango
+<span class="o">(</span>tango-dev<span class="o">)</span> vagrant@bullseye:~/cppTango$ cmake <span class="nv">$CMAKE_ARGS</span> <span class="se">\</span>
+      -DCMAKE_BUILD_TYPE<span class="o">=</span>Debug <span class="se">\</span>
+      -DCMAKE_INSTALL_PREFIX<span class="o">=</span><span class="s2">"</span><span class="nv">$CONDA_PREFIX</span><span class="s2">"</span> <span class="se">\</span>
+      -DCMAKE_INSTALL_LIBDIR<span class="o">=</span>lib <span class="se">\</span>
+      -S . -B build
+-- The C compiler identification is GNU <span class="m">10</span>.3.0
+-- The CXX compiler identification is GNU <span class="m">10</span>.3.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - <span class="k">done</span>
+-- Check <span class="k">for</span> working C compiler: /home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - <span class="k">done</span>
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - <span class="k">done</span>
+-- Check <span class="k">for</span> working CXX compiler: /home/vagrant/mambaforge/envs/tango-dev/bin/x86_64-conda-linux-gnu-c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - <span class="k">done</span>
+-- Found PkgConfig: /home/vagrant/mambaforge/envs/tango-dev/bin/pkg-config <span class="o">(</span>found version <span class="s2">"0.29.2"</span><span class="o">)</span>
+-- CMake: version <span class="m">3</span>.23.2
+-- Target platform: Linux <span class="m">64</span>-bit
+-- C++ Compiler: GNU with version <span class="m">10</span>.3.0
+-- C Compiler: GNU with version <span class="m">10</span>.3.0
+-- Build type: Debug
+-- Environment: <span class="nv">TANGO_HOST</span><span class="o">=</span>
+-- Checking <span class="k">for</span> one of the modules <span class="s1">'tangoidl'</span>
+-- Checking <span class="k">for</span> one of the modules <span class="s1">'omniORB4'</span>
+-- Checking <span class="k">for</span> one of the modules <span class="s1">'omniCOS4'</span>
+-- Checking <span class="k">for</span> one of the modules <span class="s1">'omniDynamic4'</span>
+-- Checking <span class="k">for</span> one of the modules <span class="s1">'libzmq'</span>
+-- Found JPEG: /home/vagrant/mambaforge/envs/tango-dev/lib/libjpeg.so <span class="o">(</span>found version <span class="s2">"90"</span><span class="o">)</span>
+-- Check <span class="k">if</span> cppzmq is present and recent enough: TRUE
+-- Check <span class="k">if</span> libzmq version is &gt;<span class="o">=</span> <span class="m">4</span>.0.5: TRUE
+-- Looking <span class="k">for</span> pthread.h
+-- Looking <span class="k">for</span> pthread.h - found
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthreads
+-- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthreads - not found
+-- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthread
+-- Looking <span class="k">for</span> pthread_create <span class="k">in</span> pthread - found
+-- Found Threads: TRUE
+-- Looking <span class="k">for</span> io.h
+-- Looking <span class="k">for</span> io.h - not found
+-- Looking <span class="k">for</span> unistd.h
+-- Looking <span class="k">for</span> unistd.h - found
+-- Could NOT find Doxygen <span class="o">(</span>missing: DOXYGEN_EXECUTABLE<span class="o">)</span>
+CMake Warning at cppapi/doxygen/CMakeLists.txt:10 <span class="o">(</span>message<span class="o">)</span>:
+  Could not find doxygen/dot, therefore the documentation can not be built.
+
+
+Using <span class="nv">OMNIIDL_PATH</span><span class="o">=</span>
+Using <span class="nv">IDL</span><span class="o">=</span>/home/vagrant/mambaforge/envs/tango-dev/include
+<span class="nv">HOST_NAME</span><span class="o">=</span>bullseye
+-- Configuring <span class="k">done</span>
+-- Generating <span class="k">done</span>
+-- Build files have been written to: /home/vagrant/cppTango/build
+</pre></div>
+
+<p>Note that if you want to build the documentation, you can install <code>doxygen</code> and <code>graphviz</code>: <code>mamba install doxygen graphviz</code>.</p>
+<p>To build: <code>cmake --build build -j2</code></p>
+<p>To test: <code>cmake --build build --target test</code></p>
+<p>To install: <code>cmake --build build --target install</code></p>
+<p>Those commands were run on Debian 11.3 but would work on any Linux distribution.</p>
+<p>Let's look at another example with <a href="https://gitlab.com/tango-controls/TangoDatabase">TangoDatabase</a>.</p>
+<h3>Building TangoDatabase with conda</h3>
+<p>What if you want to work on <a href="https://gitlab.com/tango-controls/TangoDatabase">TangoDatabase</a>?
+You could build it against the current release of <code>cppTango</code>. Check the requirements in the official <a href="https://github.com/conda-forge/tango-database-feedstock/blob/main/recipe/meta.yaml#L16">tango-database-feedstock</a>:</p>
+<div class="code"><pre class="code literal-block">$ mamba create -y -n tango-stable-dev cmake make cxx-compiler libtool pkg-config cppzmq cpptango mysql-devel omniorb
+$ mamba list -n tango-stable-dev <span class="p">|</span> grep cpptango
+cpptango                  <span class="m">9</span>.3.5                he78764c_1    conda-forge
+</pre></div>
+
+<p>What if you want to work against <code>cppTango</code> main branch? You could of course re-use the previous environment where you compiled it yourself. But there is another option! For development purpose, each commit to <code>cppTango</code> main branch,
+creates and publishes a conda package to the <code>tango-controls</code> channel: <a href="https://anaconda.org/tango-controls/cpptango">https://anaconda.org/tango-controls/cpptango</a> (Linux only).
+Let's use that package from the <code>tango-controls/label/dev</code> channel.</p>
+<div class="code"><pre class="code literal-block">$ mamba create -y -n tango-main-dev -c tango-controls/label/dev cmake make cxx-compiler libtool pkg-config cppzmq cpptango mysql-devel omniorb
+$ mamba list -n tango-main-dev <span class="p">|</span> grep cpptango
+cpptango                  <span class="m">9</span>.4.0dev0             g5beab02d    tango-controls/label/dev
+</pre></div>
+
+<p>We can now build <code>TangoDatabase</code> in the <code>tango-main-dev</code> environment.</p>
+<div class="code"><pre class="code literal-block"><span class="o">(</span>base<span class="o">)</span> vagrant@bullseye:~$ conda activate tango-main-dev
+<span class="o">(</span>tango-main-dev<span class="o">)</span> vagrant@bullseye:~$ git clone https://gitlab.com/tango-controls/TangoDatabase.git
+<span class="o">(</span>tango-main-dev<span class="o">)</span> vagrant@bullseye:~$ <span class="nb">cd</span> TangoDatabase/
+<span class="o">(</span>tango-main-dev<span class="o">)</span> vagrant@bullseye:~/TangoDatabase$ cmake <span class="nv">$CMAKE_ARGS</span> <span class="se">\</span>
+      -DCMAKE_BUILD_TYPE<span class="o">=</span>Debug <span class="se">\</span>
+      -DCMAKE_INSTALL_PREFIX<span class="o">=</span><span class="nv">$CONDA_PREFIX</span> <span class="se">\</span>
+      -DMYSQL_INCLUDE_DIR<span class="o">=</span><span class="nv">$CONDA_PREFIX</span>/include/mysql <span class="se">\</span>
+      -S . -B build
+<span class="o">(</span>tango-main-dev<span class="o">)</span> vagrant@bullseye:~/TangoDatabase$ cmake --build build -j2
+<span class="o">(</span>tango-main-dev<span class="o">)</span> vagrant@bullseye:~/TangoDatabase$ ./build/Databaseds --help
+main<span class="o">()</span>: arrived
+usage :  ./build/Databaseds instance_name <span class="o">[</span>-v<span class="o">[</span>trace level<span class="o">]]</span> <span class="o">[</span>-file<span class="o">=</span>&lt;file_name&gt; <span class="p">|</span> -nodb <span class="o">[</span>-dlist &lt;device name list&gt;<span class="o">]</span> <span class="o">]</span>
+</pre></div>
+
+<p>Linux is well supported. What about other operating systems?</p>
+<h3>Building cppTango on macOS</h3>
+<p>Yes, Tango on macOS! This still isn't supported officially but <a href="https://gitlab.com/tjuerges">Thomas Juerges</a> is working on it. At the time of this writing, this hasn't been merged upstream and you need to use the <a href="https://gitlab.com/tjuerges/cppTango/-/tree/main-macOS_build">main-macOS_build branch</a> from his <a href="https://gitlab.com/tjuerges/cppTango">repository</a>.</p>
+<p>Note that this is not an official Tango Controls blessed repository, nor does Tango Controls officially support macOS.</p>
+<p>To build this fork, Thomas created a repository with some scripts to help installing all required dependencies using <a href="https://brew.sh">brew</a>: <a href="https://gitlab.com/tjuerges/build_tango">https://gitlab.com/tjuerges/build_tango</a></p>
+<p>This works nicely, but we'll look here at an alternative with conda.</p>
+<p>Conda provides the clang compilers for macOS but the macOS SDK is still required. Due to its license it can't be installed with conda. If you haven't already done, install the Xcode Command Line Tools by running <code>xcode-select --install</code>. All the rest will be installed with conda.</p>
+<p>Let's create the same <code>tango-dev</code> environment as on Linux:</p>
+<div class="code"><pre class="code literal-block">mamba create -y -n tango-dev make cmake cxx-compiler libtool pkg-config jpeg omniorb cppzmq zeromq tango-idl
+conda activate tango-dev
+</pre></div>
+
+<p>This environment is actually not exacly identical to the Linux one as the <code>cxx-compiler</code> meta-package will install <code>clang</code> on macOS and <code>gcc/gxx</code> on Linux:</p>
+<div class="code"><pre class="code literal-block"><span class="o">(</span>tango-dev<span class="o">)</span> ➜  ~ $ <span class="nb">echo</span> <span class="nv">$CC</span>
+x86_64-apple-darwin13.4.0-clang
+<span class="o">(</span>tango-dev<span class="o">)</span> ➜  ~ $ <span class="nb">echo</span> <span class="nv">$CXX</span>
+x86_64-apple-darwin13.4.0-clang++
+</pre></div>
+
+<p>Compile the <code>main-macOS_build</code> branch:</p>
+<div class="code"><pre class="code literal-block"><span class="o">(</span>tango-dev<span class="o">)</span> ➜  Tango $ git clone https://gitlab.com/tjuerges/cppTango.git
+<span class="o">(</span>tango-dev<span class="o">)</span> ➜  Tango $ <span class="nb">cd</span> cppTango
+<span class="o">(</span>tango-dev<span class="o">)</span> ➜  cppTango git:<span class="o">(</span>main<span class="o">)</span> $ git checkout main-macOS_build
+branch <span class="s1">'main-macOS_build'</span> <span class="nb">set</span> up to track <span class="s1">'origin/main-macOS_build'</span>.
+Switched to a new branch <span class="s1">'main-macOS_build'</span>
+<span class="o">(</span>tango-dev<span class="o">)</span> ➜  cppTango git:<span class="o">(</span>main-macOS_build<span class="o">)</span> $ cmake <span class="nv">$CMAKE_ARGS</span> <span class="se">\</span>
+      -DCMAKE_BUILD_TYPE<span class="o">=</span>Debug <span class="se">\</span>
+      -DCMAKE_INSTALL_PREFIX<span class="o">=</span><span class="s2">"</span><span class="nv">$CONDA_PREFIX</span><span class="s2">"</span> <span class="se">\</span>
+      -DCMAKE_INSTALL_LIBDIR<span class="o">=</span>lib <span class="se">\</span>
+      -S . -B build
+-- The C compiler identification is Clang <span class="m">13</span>.0.1
+-- The CXX compiler identification is Clang <span class="m">13</span>.0.1
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - <span class="k">done</span>
+-- Check <span class="k">for</span> working C compiler: /Users/benjaminbertrand/miniconda/envs/tango-dev/bin/x86_64-apple-darwin13.4.0-clang - skipped
+-- Detecting C compile features
+-- Detecting C compile features - <span class="k">done</span>
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - <span class="k">done</span>
+-- Check <span class="k">for</span> working CXX compiler: /Users/benjaminbertrand/miniconda/envs/tango-dev/bin/x86_64-apple-darwin13.4.0-clang++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - <span class="k">done</span>
+-- Found PkgConfig: /Users/benjaminbertrand/miniconda/envs/tango-dev/bin/pkg-config <span class="o">(</span>found version <span class="s2">"0.29.2"</span><span class="o">)</span>
+-- CMake: version <span class="m">3</span>.23.2
+-- Target platform: Darwin <span class="m">64</span>-bit
+-- C++ Compiler: Clang with version <span class="m">13</span>.0.1
+-- C Compiler: Clang with version <span class="m">13</span>.0.1
+-- Build type: Debug
+-- Environment: <span class="nv">TANGO_HOST</span><span class="o">=</span>
+-- Checking <span class="k">for</span> one of the modules <span class="s1">'tangoidl'</span>
+-- Checking <span class="k">for</span> one of the modules <span class="s1">'omniORB4'</span>
+-- Checking <span class="k">for</span> one of the modules <span class="s1">'omniCOS4'</span>
+-- Checking <span class="k">for</span> one of the modules <span class="s1">'omniDynamic4'</span>
+-- Checking <span class="k">for</span> one of the modules <span class="s1">'libzmq'</span>
+-- Found JPEG: /Users/benjaminbertrand/miniconda/envs/tango-dev/lib/libjpeg.dylib <span class="o">(</span>found version <span class="s2">"90"</span><span class="o">)</span>
+-- Check <span class="k">if</span> cppzmq is present and recent enough: TRUE
+-- Check <span class="k">if</span> libzmq version is &gt;<span class="o">=</span> <span class="m">4</span>.0.5: TRUE
+-- Looking <span class="k">for</span> pthread.h
+-- Looking <span class="k">for</span> pthread.h - found
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Looking <span class="k">for</span> io.h
+-- Looking <span class="k">for</span> io.h - not found
+-- Looking <span class="k">for</span> unistd.h
+-- Looking <span class="k">for</span> unistd.h - found
+-- Could NOT find Doxygen <span class="o">(</span>missing: DOXYGEN_EXECUTABLE<span class="o">)</span>
+CMake Warning at cppapi/doxygen/CMakeLists.txt:10 <span class="o">(</span>message<span class="o">)</span>:
+  Could not find doxygen/dot, therefore the documentation can not be built.
+
+
+Using <span class="nv">OMNIIDL_PATH</span><span class="o">=</span>
+Using <span class="nv">IDL</span><span class="o">=</span>/Users/benjaminbertrand/miniconda/envs/tango-dev/include
+<span class="nv">HOST_NAME</span><span class="o">=</span>benjimbp.local
+-- Configuring <span class="k">done</span>
+-- Generating <span class="k">done</span>
+-- Build files have been written to: /Users/benjaminbertrand/Dev/Tango/cppTango/build
+</pre></div>
+
+<p>Build and install as on Linux:</p>
+<div class="code"><pre class="code literal-block">cmake --build build -j4
+cmake --build build --target install
+</pre></div>
+
+<p>If you prefer you can also run <code>make</code> directly:</p>
+<div class="code"><pre class="code literal-block"><span class="nb">cd</span> build
+make -j4
+make install
+</pre></div>
+
+<p>As you can see, the instructions, including how to create the <code>tango-dev</code> environment, were the same as on Linux!</p>
+<p>We can now build <code>pytango</code>. Support was recently added to the <code>develop_9.4</code> branch in <a href="https://gitlab.com/tango-controls/pytango/-/merge_requests/459">MR 459</a>.</p>
+<p>We first need to add a few extra dependencies required to build <code>pytango</code>: <code>mamba install -y boost numpy six</code>.
+<code>six</code> is only required at runtime, not build time, but we add it now as we'll want to run <code>pytango</code> to test it.</p>
+<div class="code"><pre class="code literal-block"><span class="nb">cd</span> ..
+git clone https://gitlab.com/tango-controls/pytango.git
+git checkout -b develop_9.4 origin/develop_9.4
+<span class="nb">cd</span> pytango
+</pre></div>
+
+<p>You first need to export the <code>BOOST_PYTHON_LIB</code> variable based on the installed python version. You can check it by running <code>python --version</code>:</p>
+<div class="code"><pre class="code literal-block"><span class="o">(</span>tango-dev<span class="o">)</span> ➜  pytango git:<span class="o">(</span>develop_9.4<span class="o">)</span> $ python --version
+Python <span class="m">3</span>.10.5
+
+<span class="o">(</span>tango-dev<span class="o">)</span> ➜  pytango git:<span class="o">(</span>develop_9.4<span class="o">)</span> $ <span class="nb">export</span> <span class="nv">BOOST_PYTHON_LIB</span><span class="o">=</span>boost_python310
+<span class="o">(</span>tango-dev<span class="o">)</span> ➜  pytango git:<span class="o">(</span>develop_9.4<span class="o">)</span> $ python -m pip install --no-binary<span class="o">=</span>:all: --ignore-installed --no-deps .
+</pre></div>
+
+<p>Let's try it:</p>
+<div class="code"><pre class="code literal-block"><span class="o">(</span>tango-dev<span class="o">)</span> ➜  ~ $ python -c <span class="s2">"import tango; print(tango.utils.info())"</span>
+PyTango <span class="m">9</span>.3.4 <span class="o">(</span><span class="m">9</span>, <span class="m">3</span>, <span class="m">4</span>, <span class="s1">'dev'</span>, <span class="m">0</span><span class="o">)</span>
+PyTango compiled with:
+    Python : <span class="m">3</span>.10.5
+    Numpy  : <span class="m">1</span>.22.4
+    Tango  : <span class="m">9</span>.4.0
+    Boost  : <span class="m">1</span>.78.0
+
+PyTango runtime is:
+    Python : <span class="m">3</span>.10.5
+    Numpy  : <span class="m">1</span>.22.4
+    Tango  : <span class="m">9</span>.4.0
+
+PyTango running on:
+uname_result<span class="o">(</span><span class="nv">system</span><span class="o">=</span><span class="s1">'Darwin'</span>, <span class="nv">node</span><span class="o">=</span><span class="s1">'benjimbp.local'</span>, <span class="nv">release</span><span class="o">=</span><span class="s1">'21.4.0'</span>, <span class="nv">version</span><span class="o">=</span><span class="s1">'Darwin Kernel Version 21.4.0: Fri Mar 18 00:45:05 PDT 2022; root:xnu-8020.101.4~15/RELEASE_X86_64'</span>, <span class="nv">machine</span><span class="o">=</span><span class="s1">'x86_64'</span><span class="o">)</span>
+</pre></div>
+
+<p>Hurray!</p>
+<h3>Compiling on Windows</h3>
+<p>To compile on Windows you first need to install the <strong>Build Tools for Visual Studio 2017</strong>. This is the version recommended by conda-forge to create Windows packages. To compile locally, you should be able to use a more recent version.
+I described in a previous post how to create a <a href="../how-to-setup-a-windows-vm-to-build-conda-packages&gt;">Windows VM to build conda packages</a>.
+You can refer to it for more details.</p>
+<p>We will compile TangoTest v3.4 as an example.</p>
+<div class="code"><pre class="code literal-block"><span class="gp gp-VirtualEnv">(base)</span> <span class="go">Z:\&gt;mamba create -y -n tango-dev cmake cxx-compiler cppzmq cpptango omniorb</span>
+<span class="gp gp-VirtualEnv">(base)</span> <span class="go">Z:\&gt;mamba activate tango-dev</span>
+<span class="gp gp-VirtualEnv">(tango-dev)</span> <span class="go">Z:\&gt;git clone https://gitlab.com/tango-controls/TangoTest.git</span>
+<span class="gp gp-VirtualEnv">(tango-dev)</span> <span class="go">Z:\&gt;cd TangoTest</span>
+<span class="gp gp-VirtualEnv">(tango-dev)</span> <span class="go">Z:\&gt;git checkout 3.4</span>
+</pre></div>
+
+<p>As there is no <code>pkg-config</code> on Windows, there are a few extra variables to pass to cmake. Let's create a small <code>bld.bat</code> script to make that easier:</p>
+<div class="code"><pre class="code literal-block"><span class="k">setlocal</span> EnableDelayedExpansion
+
+<span class="k">set</span> <span class="nv">LIBRARY_PREFIX</span><span class="p">=</span><span class="nv">%CONDA_PREFIX%</span>\Library
+<span class="k">set</span> <span class="nv">LIBRARY_LIB</span><span class="p">=</span><span class="nv">%CONDA_PREFIX%</span>\Library\lib
+<span class="k">set</span> <span class="nv">LIBRARY_INC</span><span class="p">=</span><span class="nv">%CONDA_PREFIX%</span>\Library\include
+
+cmake -G <span class="s2">"NMake Makefiles"</span> <span class="se">^</span>
+<span class="se"> </span>     -DCMAKE_CXX_FLAGS=<span class="s2">"-DLOG4TANGO_HAS_DLL -DTANGO_HAS_DLL"</span> <span class="se">^</span>
+<span class="se"> </span>     -DCMAKE_INSTALL_PREFIX:PATH=<span class="s2">"</span><span class="nv">%LIBRARY_PREFIX%</span><span class="s2">"</span> <span class="se">^</span>
+<span class="se"> </span>     -DCMAKE_PREFIX_PATH:PATH=<span class="s2">"</span><span class="nv">%LIBRARY_PREFIX%</span><span class="s2">"</span> <span class="se">^</span>
+<span class="se"> </span>     -DTANGO_PKG_LIBRARY_DIRS:PATH=<span class="s2">"</span><span class="nv">%LIBRARY_LIB%</span><span class="s2">"</span> <span class="se">^</span>
+<span class="se"> </span>     -DTANGO_PKG_INCLUDE_DIRS:PATH=<span class="s2">"</span><span class="nv">%LIBRARY_INC%</span><span class="s2">"</span> <span class="se">^</span>
+<span class="se"> </span>     -DTANGO_PKG_LIBRARIES=<span class="s2">"tango;omniORB4_rt;omniDynamic4_rt;COS4_rt;omnithread_rt;libzmq-mt-4_3_4;comctl32;wsock32;Ws2_32"</span> <span class="se">^</span>
+<span class="se"> </span>     -S . -B build
+</pre></div>
+
+<p>This script is based on the one from the <a href="https://github.com/conda-forge/tango-test-feedstock/blob/main/recipe/bld.bat">official recipe</a>.
+The variables <code>LIBRARY_PREFIX</code>, <code>LIBRARY_LIB</code> and <code>LIBRARY_INC</code> are automatically set by <code>conda-build</code>. When compiling manually we define them using <code>CONDA_PREFIX</code>.</p>
+<p>Run <code>bld.bat</code>:</p>
+<div class="code"><pre class="code literal-block"><span class="gp gp-VirtualEnv">(tango-dev)</span> <span class="go">Z:\TangoTest&gt;bld.bat</span>
+<span class="gp gp-VirtualEnv">(tango-dev)</span> <span class="go">Z:\TangoTest&gt;setlocal EnableDelayedExpansion</span>
+<span class="gp gp-VirtualEnv">(tango-dev)</span> <span class="go">Z:\TangoTest&gt;set LIBRARY_PREFIX=C:\Users\beenj\mambaforge\envs\tango-dev\Library</span>
+<span class="gp gp-VirtualEnv">(tango-dev)</span> <span class="go">Z:\TangoTest&gt;set LIBRARY_LIB=C:\Users\beenj\mambaforge\envs\tango-dev\Library\lib</span>
+<span class="gp gp-VirtualEnv">(tango-dev)</span> <span class="go">Z:\TangoTest&gt;set LIBRARY_INC=C:\Users\beenj\mambaforge\envs\tango-dev\Library\include</span>
+<span class="gp gp-VirtualEnv">(tango-dev)</span> <span class="go">Z:\TangoTest&gt;cmake -G "NMake Makefiles"       -DCMAKE_CXX_FLAGS="-DLOG4TANGO_HAS_DLL -DTANGO_HAS_DLL"       -DCMAKE_INSTALL_PREFIX:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library"       -DCMAKE_PREFIX_PATH:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library"       -DTANGO_PKG_LIBRARY_DIRS:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library\lib"       -DTANGO_PKG_INCLUDE_DIRS:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library\include"       -DTANGO_PKG_LIBRARIES="tango;omniORB4_rt;omniDynamic4_rt;COS4_rt;omnithread_rt;libzmq-mt-4_3_4;comctl32;wsock32;Ws2_32"       -S . -B build</span>
+<span class="go">-- The CXX compiler identification is MSVC 19.16.27045.0</span>
+<span class="go">-- Detecting CXX compiler ABI info</span>
+<span class="go">-- Detecting CXX compiler ABI info - done</span>
+<span class="go">-- Check for working CXX compiler: C:/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/VC/Tools/MSVC/14.16.27023/bin/Hostx64/x64/cl.exe - skipped</span>
+<span class="go">-- Detecting CXX compile features</span>
+<span class="go">-- Detecting CXX compile features - done</span>
+<span class="go">-- Could NOT find PkgConfig (missing: PKG_CONFIG_EXECUTABLE)</span>
+<span class="go">-- Configuring done</span>
+<span class="go">-- Generating done</span>
+<span class="go">-- Build files have been written to: Z:/TangoTest/build</span>
+</pre></div>
+
+<p>We can now compile:</p>
+<div class="code"><pre class="code literal-block"><span class="gp gp-VirtualEnv">(tango-dev)</span> <span class="go">Z:\TangoTest&gt;cmake --build build</span>
+<span class="go">[ 16%] Building CXX object CMakeFiles/TangoTest.dir/ClassFactory.cpp.obj</span>
+<span class="go">ClassFactory.cpp</span>
+<span class="go">Z:\TangoTest\ClassFactory.cpp(57): fatal error C1083: Cannot open include file: 'tango.h': No such file or directory</span>
+<span class="go">NMAKE : fatal error U1077: 'C:\Users\beenj\mambaforge\envs\tango-dev\Library\bin\cmake.exe' : return code '0x2'</span>
+<span class="go">Stop.</span>
+</pre></div>
+
+<p>Something went wrong...
+<code>tango.h</code> wans't found. This is because includes were recently moved in Windows. See <a href="https://gitlab.com/tango-controls/cppTango/-/merge_requests/924">MR924</a>. There is actually a patch for that in the <a href="https://github.com/conda-forge/tango-test-feedstock/blob/main/recipe/tango-include-dirs.patch">recipe</a>.
+Update the <code>CMakeLists.txt</code> to add <code>${TANGO_PKG_INCLUDE_DIRS}/tango</code> to the include directories.</p>
+<div class="code"><pre class="code literal-block"><span class="w">(tango-dev) Z:\TangoTest&gt;git diff</span>
+<span class="gh">diff --git a/CMakeLists.txt b/CMakeLists.txt</span><span class="w"></span>
+<span class="gh">index 5f96806..f36f348 100644</span><span class="w"></span>
+<span class="gd">--- a/CMakeLists.txt</span><span class="w"></span>
+<span class="gi">+++ b/CMakeLists.txt</span><span class="w"></span>
+<span class="gu">@@ -26,7 +26,7 @@ set(HEADERS</span><span class="w"></span>
+<span class="w"> </span>link_directories(${TANGO_PKG_LIBRARY_DIRS})<span class="w"></span>
+
+<span class="w"> </span>add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})<span class="w"></span>
+<span class="gd">-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${TANGO_PKG_INCLUDE_DIRS})</span><span class="w"></span>
+<span class="gi">+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${TANGO_PKG_INCLUDE_DIRS} ${TANGO_PKG_INCLUDE_DIRS}/tango)</span><span class="w"></span>
+<span class="w"> </span>target_compile_options(${PROJECT_NAME} PUBLIC ${TANGO_PKG_CFLAGS_OTHER})<span class="w"></span>
+<span class="w"> </span>target_link_libraries(${PROJECT_NAME} PUBLIC ${TANGO_PKG_LIBRARIES})<span class="w"></span>
+</pre></div>
+
+<p>Run <code>cmake</code> again:</p>
+<div class="code"><pre class="code literal-block"><span class="gp gp-VirtualEnv">(tango-dev)</span> <span class="go">Z:\TangoTest&gt;bld.bat</span>
+<span class="gp gp-VirtualEnv">(tango-dev)</span> <span class="go">Z:\TangoTest&gt;cmake --build build</span>
+
+<span class="go">[100%] Linking CXX executable TangoTest.exe</span>
+<span class="go">[100%] Built target TangoTest</span>
+<span class="gp gp-VirtualEnv">(tango-dev)</span> <span class="go">Z:\TangoTest&gt;cd build</span>
+<span class="gp gp-VirtualEnv">(tango-dev)</span> <span class="go">Z:\TangoTest\build&gt;TangoTest.exe --help</span>
+<span class="go">usage :  TangoTest.exe instance_name [-v[trace level]] [-file=&lt;file_name&gt; | -nodb [-dlist &lt;device name list&gt;] ]</span>
+</pre></div>
+
+<p>Build successful on Windows!</p>
+<h3>Conclusion</h3>
+<p><a href="https://docs.conda.io/en/latest/">Conda</a> gives a reliable way to install binary packages whatever the operating system.
+The long list of packages maintained by <a href="https://github.com/conda-forge">conda-forge</a> includes compilers and build tools,
+allowing to easily setup a development environment which is OS independent.
+You can rely on modern versions of those tools even on an older OS.</p>
+<p>Naturally conda main goal is to avoid having you to compile by installing pre-build packages :-).
+This is for development and testing only. Compile only what you need.
+And if something is missing, submit it to conda-forge <a href="https://github.com/conda-forge/staged-recipes">staged-recipes</a>!</p>
+<p><a href="https://docs.conda.io/en/latest/">Conda</a> is of course just an alternative.
+Sometimes you do have to compile natively to check a platform compatibility.
+Use the solution that works for you!</p>
+    </div>
+    <aside class="postpromonav"><nav><ul itemprop="keywords" class="tags">
+<li><a class="tag p-category" href="../../categories/conda/" rel="tag">conda</a></li>
+            <li><a class="tag p-category" href="../../categories/linux/" rel="tag">linux</a></li>
+            <li><a class="tag p-category" href="../../categories/mac/" rel="tag">Mac</a></li>
+            <li><a class="tag p-category" href="../../categories/python/" rel="tag">python</a></li>
+            <li><a class="tag p-category" href="../../categories/tango/" rel="tag">tango</a></li>
+            <li><a class="tag p-category" href="../../categories/windows/" rel="tag">windows</a></li>
+        </ul>
+<ul class="pager hidden-print">
+<li class="previous">
+                <a href="../building-a-gitlab-bot-using-gidgetlab-starlette-and-httpx/" rel="prev" title="Building a GitLab bot using gidgetlab, Starlette and HTTPX">Previous post</a>
+            </li>
+        </ul></nav></aside><section class="comments hidden-print"><h2>Comments</h2>
+        
+    
+        <div id="disqus_thread"></div>
+        <script>
+        var disqus_shortname ="tchutchut",
+            disqus_url="http://beenje.github.io/blog/posts/developing-and-compiling-tango-with-conda/",
+        disqus_title="Developing and compiling tango with conda",
+        disqus_identifier="cache/posts/developing-and-compiling-tango-with-conda.html",
+        disqus_config = function () {
+            this.language = "en";
+        };
+        (function() {
+            var dsq = document.createElement('script'); dsq.async = true;
+            dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script><noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a>
+</noscript>
+    <a href="https://disqus.com" class="dsq-brlink" rel="nofollow">Comments powered by <span class="logo-disqus">Disqus</span></a>
+
+
+        </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
+            Contents © 2022         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+<a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
+            
+        </footer>
+</div>
+</div>
+
+
+        <script src="../../assets/js/all-nocdn.js"></script><script>
+    baguetteBox.run('div#content', {
+        ignoreClass: 'islink',
+        captions: function(element){var i=element.getElementsByTagName('img')[0];return i===undefined?'':i.alt;}});
+    </script><!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "7d14dff9ef784b3db826518c0f928eb3"}'>
+</script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

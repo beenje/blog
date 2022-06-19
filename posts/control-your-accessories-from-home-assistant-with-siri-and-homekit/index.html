@@ -93,7 +93,7 @@ bg-dark
             <time class="published dt-published" datetime="2017-02-16T22:58:56+01:00" itemprop="datePublished" title="2017-02-16 22:58">2017-02-16 22:58</time></a>
             </p>
                 <p class="commentline">
-        
+    
     <a href="#disqus_thread" data-disqus-identifier="cache/posts/control-your-accessories-from-home-assistant-with-siri-and-homekit.html">Comments</a>
 
 
@@ -105,14 +105,12 @@ bg-dark
         
 
     </header><div class="e-content entry-content" itemprop="articleBody text">
-    <div>
-<p>While reading more about <a class="reference external" href="https://home-assistant.io">Home Assistant</a>, I
+    <p>While reading more about <a class="reference external" href="https://home-assistant.io">Home Assistant</a>, I
 discovered it was possible to control your accessories from Home Assistant
 with Siri and HomeKit. I decided to give that a try.</p>
 <p>This requires to install <a class="reference external" href="https://github.com/nfarina/homebridge">Homebridge</a> and
 the <a class="reference external" href="https://github.com/home-assistant/homebridge-homeassistant">homebridge-homeassitant plugin</a>.</p>
-<div class="section" id="install-homebridge">
-<h2>Install Homebridge</h2>
+<section id="install-homebridge"><h2>Install Homebridge</h2>
 <p>Homebridge is a lightweight NodeJS server that emulates the iOS HomeKit
 API. Let's install it in the same <a class="reference external" href="../home-assistant-on-turris-omnia-via-lxc-container">LXC container as Home Assistant</a>:</p>
 <pre class="literal-block">root@turris:~# lxc-attach -n homeassistant</pre>
@@ -138,9 +136,7 @@ root@homeassistant:~# cd /usr/lib/node_modules/homebridge/
 root@homeassistant:/usr/lib/node_modules/homebridge# npm install --unsafe-perm bignum
 root@homeassistant:/usr/lib/node_modules/homebridge# cd ../hap-nodejs/node_modules/mdns/
 root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# node-gyp BUILDTYPE=Release rebuild</pre>
-</div>
-<div class="section" id="install-and-configure-homebridge-homeassistant-plugin">
-<h2>Install and configure homebridge-homeassistant plugin</h2>
+</section><section id="install-and-configure-homebridge-homeassistant-plugin"><h2>Install and configure homebridge-homeassistant plugin</h2>
 <pre class="literal-block">root@homeassistant:/usr/lib/node_modules/hap-nodejs/node_modules/mdns# cd
 root@homeassistant:~# npm install -g --unsafe-perm homebridge-homeassistant</pre>
 <p>Try to start Homebridge:</p>
@@ -171,9 +167,7 @@ EOF</pre>
 You will need the PIN code to add the Homebridge accessory to HomeKit.</p>
 <p>Check the <a class="reference external" href="https://github.com/home-assistant/homebridge-homeassistant#configuration">Home Assistant plugin page</a>
 for more information on how to configure the plugin.</p>
-</div>
-<div class="section" id="automatically-start-homebridge">
-<h2>Automatically start Homebridge</h2>
+</section><section id="automatically-start-homebridge"><h2>Automatically start Homebridge</h2>
 <p>Let's configure systemd.
 Create the file <cite>/etc/systemd/system/home-assistant@homebridge.service</cite>:</p>
 <pre class="literal-block">root@homeassistant:~# cat &lt;&lt;EOF &gt;&gt; /etc/systemd/system/home-assistant@homebridge.service
@@ -197,9 +191,7 @@ EOF</pre>
 root@homeassistant:~# systemctl enable home-assistant@homebridge
 Created symlink from /etc/systemd/system/multi-user.target.wants/home-assistant@homebridge.service to /etc/systemd/system/home-assistant@homebridge.service.
 root@homeassistant:~# systemctl start home-assistant@homebridge</pre>
-</div>
-<div class="section" id="adding-homebridge-to-ios">
-<h2>Adding Homebridge to iOS</h2>
+</section><section id="adding-homebridge-to-ios"><h2>Adding Homebridge to iOS</h2>
 <p>Homebridge and the Home Assistant plugin are now running.
 Using the Home app on your iOS device, you should be able to add the accessory "Homebridge".
 See <a class="reference external" href="https://github.com/nfarina/homebridge#adding-homebridge-to-ios">Homebridge README</a> for
@@ -212,9 +204,8 @@ more information. You will need to enter the <em>PIN code</em> defined in your
 As described in the <a class="reference external" href="https://github.com/nfarina/homebridge#interacting-with-your-devices">README</a>,
 avoid names usually used by Siri like "Radio" or "Sonos".</p>
 <p>That's it! Homebridge is really a nice addition to Home Assistant if you have some iOS devices at home.</p>
+</section>
 </div>
-</div>
-    </div>
     <aside class="postpromonav"><nav><ul itemprop="keywords" class="tags">
 <li><a class="tag p-category" href="../../categories/home-assistant/" rel="tag">home-assistant</a></li>
             <li><a class="tag p-category" href="../../categories/ios/" rel="tag">iOS</a></li>
@@ -230,7 +221,7 @@ avoid names usually used by Siri like "Radio" or "Sonos".</p>
             </li>
         </ul></nav></aside><section class="comments hidden-print"><h2>Comments</h2>
         
-        
+    
         <div id="disqus_thread"></div>
         <script>
         var disqus_shortname ="tchutchut",
@@ -251,7 +242,7 @@ avoid names usually used by Siri like "Radio" or "Sonos".</p>
 
 
         </section></article><script>var disqus_shortname="tchutchut";(function(){var a=document.createElement("script");a.async=true;a.src="https://"+disqus_shortname+".disqus.com/count.js";(document.getElementsByTagName("head")[0]||document.getElementsByTagName("body")[0]).appendChild(a)}());</script><!--End of body content--><footer id="footer">
-            Contents © 2021         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
+            Contents © 2022         <a href="mailto:beenje@gmail.com">Benjamin Bertrand</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a>         
 <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
 <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
             
