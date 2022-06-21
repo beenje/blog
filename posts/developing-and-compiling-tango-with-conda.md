@@ -349,14 +349,13 @@ To compile on Windows you first need to install the **Build Tools for Visual Stu
 I described in a previous post how to create a [Windows VM to build conda packages](/posts/how-to-setup-a-windows-vm-to-build-conda-packages>).
 You can refer to it for more details.
 
-We will compile TangoTest v3.4 as an example.
+We will compile TangoTest `main` branch as an example.
 
 ```console
 (base) Z:\>mamba create -y -n tango-dev cmake cxx-compiler cppzmq cpptango omniorb
 (base) Z:\>mamba activate tango-dev
 (tango-dev) Z:\>git clone https://gitlab.com/tango-controls/TangoTest.git
 (tango-dev) Z:\>cd TangoTest
-(tango-dev) Z:\>git checkout 3.4
 ```
 
 As there is no `pkg-config` on Windows, there are a few extra variables to pass to cmake. Let's create a small `bld.bat` script to make that easier:
@@ -373,7 +372,7 @@ cmake -G "NMake Makefiles" ^
       -DCMAKE_INSTALL_PREFIX:PATH="%LIBRARY_PREFIX%" ^
       -DCMAKE_PREFIX_PATH:PATH="%LIBRARY_PREFIX%" ^
       -DTANGO_PKG_LIBRARY_DIRS:PATH="%LIBRARY_LIB%" ^
-      -DTANGO_PKG_INCLUDE_DIRS:PATH="%LIBRARY_INC%" ^
+      -DTANGO_PKG_INCLUDE_DIRS:PATH="%LIBRARY_INC%;%LIBRARY_INC%\tango" ^
       -DTANGO_PKG_LIBRARIES="tango;omniORB4_rt;omniDynamic4_rt;COS4_rt;omnithread_rt;libzmq-mt-4_3_4;comctl32;wsock32;Ws2_32" ^
       -S . -B build
 ```
@@ -389,7 +388,7 @@ Run `bld.bat`:
 (tango-dev) Z:\TangoTest>set LIBRARY_PREFIX=C:\Users\beenj\mambaforge\envs\tango-dev\Library
 (tango-dev) Z:\TangoTest>set LIBRARY_LIB=C:\Users\beenj\mambaforge\envs\tango-dev\Library\lib
 (tango-dev) Z:\TangoTest>set LIBRARY_INC=C:\Users\beenj\mambaforge\envs\tango-dev\Library\include
-(tango-dev) Z:\TangoTest>cmake -G "NMake Makefiles"       -DCMAKE_CXX_FLAGS="-DLOG4TANGO_HAS_DLL -DTANGO_HAS_DLL"       -DCMAKE_INSTALL_PREFIX:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library"       -DCMAKE_PREFIX_PATH:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library"       -DTANGO_PKG_LIBRARY_DIRS:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library\lib"       -DTANGO_PKG_INCLUDE_DIRS:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library\include"       -DTANGO_PKG_LIBRARIES="tango;omniORB4_rt;omniDynamic4_rt;COS4_rt;omnithread_rt;libzmq-mt-4_3_4;comctl32;wsock32;Ws2_32"       -S . -B build
+(tango-dev) Z:\TangoTest>cmake -G "NMake Makefiles"       -DCMAKE_CXX_FLAGS="-DLOG4TANGO_HAS_DLL -DTANGO_HAS_DLL"       -DCMAKE_INSTALL_PREFIX:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library"       -DCMAKE_PREFIX_PATH:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library"       -DTANGO_PKG_LIBRARY_DIRS:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library\lib"       -DTANGO_PKG_INCLUDE_DIRS:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library\include;C:\Users\beenj\mambaforge\envs\tango-dev\Library\include\tango"       -DTANGO_PKG_LIBRARIES="tango;omniORB4_rt;omniDynamic4_rt;COS4_rt;omnithread_rt;libzmq-mt-4_3_4;comctl32;wsock32;Ws2_32"       -S . -B build
 -- The CXX compiler identification is MSVC 19.16.27045.0
 -- Detecting CXX compiler ABI info
 -- Detecting CXX compiler ABI info - done
@@ -405,38 +404,6 @@ Run `bld.bat`:
 We can now compile:
 
 ```console
-(tango-dev) Z:\TangoTest>cmake --build build
-[ 16%] Building CXX object CMakeFiles/TangoTest.dir/ClassFactory.cpp.obj
-ClassFactory.cpp
-Z:\TangoTest\ClassFactory.cpp(57): fatal error C1083: Cannot open include file: 'tango.h': No such file or directory
-NMAKE : fatal error U1077: 'C:\Users\beenj\mambaforge\envs\tango-dev\Library\bin\cmake.exe' : return code '0x2'
-Stop.
-```
-
-Something went wrong...
-`tango.h` wans't found. This is because includes were recently moved in Windows. See [MR924](https://gitlab.com/tango-controls/cppTango/-/merge_requests/924). There is actually a patch for that in the [recipe](https://github.com/conda-forge/tango-test-feedstock/blob/main/recipe/tango-include-dirs.patch).
-Update the `CMakeLists.txt` to add `${TANGO_PKG_INCLUDE_DIRS}/tango` to the include directories.
-
-```diff
-(tango-dev) Z:\TangoTest>git diff
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 5f96806..f36f348 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -26,7 +26,7 @@ set(HEADERS
- link_directories(${TANGO_PKG_LIBRARY_DIRS})
-
- add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
--target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${TANGO_PKG_INCLUDE_DIRS})
-+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${TANGO_PKG_INCLUDE_DIRS} ${TANGO_PKG_INCLUDE_DIRS}/tango)
- target_compile_options(${PROJECT_NAME} PUBLIC ${TANGO_PKG_CFLAGS_OTHER})
- target_link_libraries(${PROJECT_NAME} PUBLIC ${TANGO_PKG_LIBRARIES})
-```
-
-Run `cmake` again:
-
-```console
-(tango-dev) Z:\TangoTest>bld.bat
 (tango-dev) Z:\TangoTest>cmake --build build
 
 [100%] Linking CXX executable TangoTest.exe
