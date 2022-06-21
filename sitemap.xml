@@ -298,10 +298,6 @@
   <lastmod>2021-01-06T07:52:00Z</lastmod>
  </url>
  <url>
-  <loc>http://beenje.github.io/blog/posts/compiling-tango-with-conda/</loc>
-  <lastmod>2022-06-13T19:07:00Z</lastmod>
- </url>
- <url>
   <loc>http://beenje.github.io/blog/posts/control-your-accessories-from-home-assistant-with-siri-and-homekit/</loc>
   <lastmod>2021-01-06T07:52:00Z</lastmod>
  </url>
@@ -384,10 +380,6 @@
  <url>
   <loc>http://beenje.github.io/blog/posts/switching-from-git-bigfile-to-git-lfs/</loc>
   <lastmod>2021-01-06T07:52:00Z</lastmod>
- </url>
- <url>
-  <loc>http://beenje.github.io/blog/posts/test-md/</loc>
-  <lastmod>2022-06-13T19:09:00Z</lastmod>
  </url>
  <url>
   <loc>http://beenje.github.io/blog/posts/using-epics-base-with-conda-on-linux-macos-and-windows/</loc>

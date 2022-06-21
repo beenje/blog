@@ -3,7 +3,7 @@
 &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
 &lt;img alt="Creative Commons License BY-NC-SA"
 style="border-width:0; margin-bottom:12px;"
-src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sun, 19 Jun 2022 20:20:27 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Developing and compiling tango with conda</title><link>http://beenje.github.io/blog/posts/developing-and-compiling-tango-with-conda/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;&lt;a href="https://docs.conda.io/en/latest/"&gt;Conda&lt;/a&gt; is a popular package manager that can quickly install binary packages and their dependencies.&lt;/p&gt;
+src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Tue, 21 Jun 2022 12:45:45 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Developing and compiling tango with conda</title><link>http://beenje.github.io/blog/posts/developing-and-compiling-tango-with-conda/</link><dc:creator>Benjamin Bertrand</dc:creator><description>&lt;p&gt;&lt;a href="https://docs.conda.io/en/latest/"&gt;Conda&lt;/a&gt; is a popular package manager that can quickly install binary packages and their dependencies.&lt;/p&gt;
 &lt;p&gt;Many &lt;a href="https://www.tango-controls.org"&gt;Tango&lt;/a&gt; packages are available on &lt;a href="https://github.com/conda-forge"&gt;conda-forge&lt;/a&gt;: &lt;code&gt;pytango&lt;/code&gt;, &lt;code&gt;tango-test&lt;/code&gt;, &lt;code&gt;tango-database&lt;/code&gt;, &lt;code&gt;tango-starter&lt;/code&gt;, &lt;code&gt;tango-admin&lt;/code&gt;...
 Most are still Linux only, but a few are also available for Windows (like &lt;code&gt;pytango&lt;/code&gt; and &lt;code&gt;tango-test&lt;/code&gt;).&lt;/p&gt;
 &lt;p&gt;What many people don't know or don't think about is that conda can also be used to setup a development environment.
@@ -279,12 +279,11 @@ uname_result&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="nv"&gt;system&lt
 &lt;p&gt;To compile on Windows you first need to install the &lt;strong&gt;Build Tools for Visual Studio 2017&lt;/strong&gt;. This is the version recommended by conda-forge to create Windows packages. To compile locally, you should be able to use a more recent version.
 I described in a previous post how to create a &lt;a href="http://beenje.github.io/blog/posts/how-to-setup-a-windows-vm-to-build-conda-packages&amp;gt;"&gt;Windows VM to build conda packages&lt;/a&gt;.
 You can refer to it for more details.&lt;/p&gt;
-&lt;p&gt;We will compile TangoTest v3.4 as an example.&lt;/p&gt;
+&lt;p&gt;We will compile TangoTest &lt;code&gt;main&lt;/code&gt; branch as an example.&lt;/p&gt;
 &lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;&lt;span class="gp gp-VirtualEnv"&gt;(base)&lt;/span&gt; &lt;span class="go"&gt;Z:\&amp;gt;mamba create -y -n tango-dev cmake cxx-compiler cppzmq cpptango omniorb&lt;/span&gt;
 &lt;span class="gp gp-VirtualEnv"&gt;(base)&lt;/span&gt; &lt;span class="go"&gt;Z:\&amp;gt;mamba activate tango-dev&lt;/span&gt;
 &lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\&amp;gt;git clone https://gitlab.com/tango-controls/TangoTest.git&lt;/span&gt;
 &lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\&amp;gt;cd TangoTest&lt;/span&gt;
-&lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\&amp;gt;git checkout 3.4&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 
 &lt;p&gt;As there is no &lt;code&gt;pkg-config&lt;/code&gt; on Windows, there are a few extra variables to pass to cmake. Let's create a small &lt;code&gt;bld.bat&lt;/code&gt; script to make that easier:&lt;/p&gt;
@@ -299,7 +298,7 @@ cmake -G &lt;span class="s2"&gt;"NMake Makefiles"&lt;/span&gt; &lt;span class="s
 &lt;span class="se"&gt; &lt;/span&gt;     -DCMAKE_INSTALL_PREFIX:PATH=&lt;span class="s2"&gt;"&lt;/span&gt;&lt;span class="nv"&gt;%LIBRARY_PREFIX%&lt;/span&gt;&lt;span class="s2"&gt;"&lt;/span&gt; &lt;span class="se"&gt;^&lt;/span&gt;
 &lt;span class="se"&gt; &lt;/span&gt;     -DCMAKE_PREFIX_PATH:PATH=&lt;span class="s2"&gt;"&lt;/span&gt;&lt;span class="nv"&gt;%LIBRARY_PREFIX%&lt;/span&gt;&lt;span class="s2"&gt;"&lt;/span&gt; &lt;span class="se"&gt;^&lt;/span&gt;
 &lt;span class="se"&gt; &lt;/span&gt;     -DTANGO_PKG_LIBRARY_DIRS:PATH=&lt;span class="s2"&gt;"&lt;/span&gt;&lt;span class="nv"&gt;%LIBRARY_LIB%&lt;/span&gt;&lt;span class="s2"&gt;"&lt;/span&gt; &lt;span class="se"&gt;^&lt;/span&gt;
-&lt;span class="se"&gt; &lt;/span&gt;     -DTANGO_PKG_INCLUDE_DIRS:PATH=&lt;span class="s2"&gt;"&lt;/span&gt;&lt;span class="nv"&gt;%LIBRARY_INC%&lt;/span&gt;&lt;span class="s2"&gt;"&lt;/span&gt; &lt;span class="se"&gt;^&lt;/span&gt;
+&lt;span class="se"&gt; &lt;/span&gt;     -DTANGO_PKG_INCLUDE_DIRS:PATH=&lt;span class="s2"&gt;"&lt;/span&gt;&lt;span class="nv"&gt;%LIBRARY_INC%&lt;/span&gt;&lt;span class="s2"&gt;;&lt;/span&gt;&lt;span class="nv"&gt;%LIBRARY_INC%&lt;/span&gt;&lt;span class="s2"&gt;\tango"&lt;/span&gt; &lt;span class="se"&gt;^&lt;/span&gt;
 &lt;span class="se"&gt; &lt;/span&gt;     -DTANGO_PKG_LIBRARIES=&lt;span class="s2"&gt;"tango;omniORB4_rt;omniDynamic4_rt;COS4_rt;omnithread_rt;libzmq-mt-4_3_4;comctl32;wsock32;Ws2_32"&lt;/span&gt; &lt;span class="se"&gt;^&lt;/span&gt;
 &lt;span class="se"&gt; &lt;/span&gt;     -S . -B build
 &lt;/pre&gt;&lt;/div&gt;
@@ -312,7 +311,7 @@ The variables &lt;code&gt;LIBRARY_PREFIX&lt;/code&gt;, &lt;code&gt;LIBRARY_LIB&l
 &lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\TangoTest&amp;gt;set LIBRARY_PREFIX=C:\Users\beenj\mambaforge\envs\tango-dev\Library&lt;/span&gt;
 &lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\TangoTest&amp;gt;set LIBRARY_LIB=C:\Users\beenj\mambaforge\envs\tango-dev\Library\lib&lt;/span&gt;
 &lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\TangoTest&amp;gt;set LIBRARY_INC=C:\Users\beenj\mambaforge\envs\tango-dev\Library\include&lt;/span&gt;
-&lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\TangoTest&amp;gt;cmake -G "NMake Makefiles"       -DCMAKE_CXX_FLAGS="-DLOG4TANGO_HAS_DLL -DTANGO_HAS_DLL"       -DCMAKE_INSTALL_PREFIX:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library"       -DCMAKE_PREFIX_PATH:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library"       -DTANGO_PKG_LIBRARY_DIRS:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library\lib"       -DTANGO_PKG_INCLUDE_DIRS:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library\include"       -DTANGO_PKG_LIBRARIES="tango;omniORB4_rt;omniDynamic4_rt;COS4_rt;omnithread_rt;libzmq-mt-4_3_4;comctl32;wsock32;Ws2_32"       -S . -B build&lt;/span&gt;
+&lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\TangoTest&amp;gt;cmake -G "NMake Makefiles"       -DCMAKE_CXX_FLAGS="-DLOG4TANGO_HAS_DLL -DTANGO_HAS_DLL"       -DCMAKE_INSTALL_PREFIX:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library"       -DCMAKE_PREFIX_PATH:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library"       -DTANGO_PKG_LIBRARY_DIRS:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library\lib"       -DTANGO_PKG_INCLUDE_DIRS:PATH="C:\Users\beenj\mambaforge\envs\tango-dev\Library\include;C:\Users\beenj\mambaforge\envs\tango-dev\Library\include\tango"       -DTANGO_PKG_LIBRARIES="tango;omniORB4_rt;omniDynamic4_rt;COS4_rt;omnithread_rt;libzmq-mt-4_3_4;comctl32;wsock32;Ws2_32"       -S . -B build&lt;/span&gt;
 &lt;span class="go"&gt;-- The CXX compiler identification is MSVC 19.16.27045.0&lt;/span&gt;
 &lt;span class="go"&gt;-- Detecting CXX compiler ABI info&lt;/span&gt;
 &lt;span class="go"&gt;-- Detecting CXX compiler ABI info - done&lt;/span&gt;
@@ -327,34 +326,6 @@ The variables &lt;code&gt;LIBRARY_PREFIX&lt;/code&gt;, &lt;code&gt;LIBRARY_LIB&l
 
 &lt;p&gt;We can now compile:&lt;/p&gt;
 &lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;&lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\TangoTest&amp;gt;cmake --build build&lt;/span&gt;
-&lt;span class="go"&gt;[ 16%] Building CXX object CMakeFiles/TangoTest.dir/ClassFactory.cpp.obj&lt;/span&gt;
-&lt;span class="go"&gt;ClassFactory.cpp&lt;/span&gt;
-&lt;span class="go"&gt;Z:\TangoTest\ClassFactory.cpp(57): fatal error C1083: Cannot open include file: 'tango.h': No such file or directory&lt;/span&gt;
-&lt;span class="go"&gt;NMAKE : fatal error U1077: 'C:\Users\beenj\mambaforge\envs\tango-dev\Library\bin\cmake.exe' : return code '0x2'&lt;/span&gt;
-&lt;span class="go"&gt;Stop.&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;Something went wrong...
-&lt;code&gt;tango.h&lt;/code&gt; wans't found. This is because includes were recently moved in Windows. See &lt;a href="https://gitlab.com/tango-controls/cppTango/-/merge_requests/924"&gt;MR924&lt;/a&gt;. There is actually a patch for that in the &lt;a href="https://github.com/conda-forge/tango-test-feedstock/blob/main/recipe/tango-include-dirs.patch"&gt;recipe&lt;/a&gt;.
-Update the &lt;code&gt;CMakeLists.txt&lt;/code&gt; to add &lt;code&gt;${TANGO_PKG_INCLUDE_DIRS}/tango&lt;/code&gt; to the include directories.&lt;/p&gt;
-&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;&lt;span class="w"&gt;(tango-dev) Z:\TangoTest&amp;gt;git diff&lt;/span&gt;
-&lt;span class="gh"&gt;diff --git a/CMakeLists.txt b/CMakeLists.txt&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
-&lt;span class="gh"&gt;index 5f96806..f36f348 100644&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
-&lt;span class="gd"&gt;--- a/CMakeLists.txt&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
-&lt;span class="gi"&gt;+++ b/CMakeLists.txt&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
-&lt;span class="gu"&gt;@@ -26,7 +26,7 @@ set(HEADERS&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
-&lt;span class="w"&gt; &lt;/span&gt;link_directories(${TANGO_PKG_LIBRARY_DIRS})&lt;span class="w"&gt;&lt;/span&gt;
-
-&lt;span class="w"&gt; &lt;/span&gt;add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})&lt;span class="w"&gt;&lt;/span&gt;
-&lt;span class="gd"&gt;-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${TANGO_PKG_INCLUDE_DIRS})&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
-&lt;span class="gi"&gt;+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${TANGO_PKG_INCLUDE_DIRS} ${TANGO_PKG_INCLUDE_DIRS}/tango)&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
-&lt;span class="w"&gt; &lt;/span&gt;target_compile_options(${PROJECT_NAME} PUBLIC ${TANGO_PKG_CFLAGS_OTHER})&lt;span class="w"&gt;&lt;/span&gt;
-&lt;span class="w"&gt; &lt;/span&gt;target_link_libraries(${PROJECT_NAME} PUBLIC ${TANGO_PKG_LIBRARIES})&lt;span class="w"&gt;&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;
-
-&lt;p&gt;Run &lt;code&gt;cmake&lt;/code&gt; again:&lt;/p&gt;
-&lt;div class="code"&gt;&lt;pre class="code literal-block"&gt;&lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\TangoTest&amp;gt;bld.bat&lt;/span&gt;
-&lt;span class="gp gp-VirtualEnv"&gt;(tango-dev)&lt;/span&gt; &lt;span class="go"&gt;Z:\TangoTest&amp;gt;cmake --build build&lt;/span&gt;
 
 &lt;span class="go"&gt;[100%] Linking CXX executable TangoTest.exe&lt;/span&gt;
 &lt;span class="go"&gt;[100%] Built target TangoTest&lt;/span&gt;
